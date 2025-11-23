@@ -20,42 +20,20 @@ Arrow Tune Calculator is a lightweight, browser-based tool that helps archers ca
 
 🚀 Getting Started
 
-To use the Arrow Tune Calculator:
+To use the Arrow Tune Calculator, go to 
 
-1. Download or copy the index.html file.
-1. Open it in any web browser (Chrome, Safari, Firefox, Edge).
-1. Start entering your arrow and bow details.
-1. All results automatically update live.
+https://dmarcus-wire.github.io/arrow-tune-calcuator/
 
 That’s it!
 
-No build systems, no dependencies, no frameworks — just a simple HTML file.
+Future Improvements (optional ideas)
 
-📱 Using on iOS & Android
-
-You can “install” Arrow Tune Calculator on a mobile device:
-
-iPhone (Safari)
-
-1. Open index.html in Safari
-1. Tap Share → Add to Home Screen
-1. Launch it like a regular app
-
-Android (Chrome)
-
-1. Open the file in Chrome
-1. Tap the three-dot menu
-1. Choose Add to Home Screen
-
-The app will open full-screen and feel like a native app.
-
-1. Future Improvements (optional ideas)
 1. Save multiple arrow setups
 1. Compare two arrows side-by-side
 1. Add dynamic spine calculator
 1. Add color themes (light/dark mode)
 1. Store presets using localStorage
-1. Package as a full mobile app (I can show how when ready)
+1. Package as a full mobile app
 
 📄 License
 
