@@ -11,7 +11,8 @@
     Maintainer: David Marcus
     Description:
       A simple browser-based tool to calculate arrow weight, FOC,
-      grains per pound, and grains per inch with basic visualizations.
+      grains per pound, grains per inch, and basic kinetic data (FPS & momentum),
+      with simple visualizations.
 
     Tech:
       - Single self-contained HTML file (HTML + CSS + JS)
@@ -47,7 +48,6 @@
       margin-bottom: 8px;
     }
 
-    /* Small meta line under the title for version + build date */
     .meta {
       font-size: 0.8rem;
       color: #6b7280;
@@ -243,7 +243,6 @@
       margin-top: 6px;
     }
 
-    /* Simple footer-style line for attribution */
     .footer {
       margin-top: 12px;
       font-size: 0.75rem;
@@ -255,10 +254,9 @@
   <div class="page">
     <h1>Arrow Tune Calculator</h1>
     <div class="subtitle">
-      Enter your bow and arrow details to see total weight, FOC, grains per pound, and grains per inch.
+      Enter your bow and arrow details to see weight, FOC, grains per pound, grains per inch, and basic kinetic data.
     </div>
 
-    <!-- Version + build date are filled in by JavaScript using constants -->
     <div class="meta">
       <span id="appVersion">v0.0.0</span>
       <span>•</span>
@@ -300,6 +298,7 @@
           </div>
         </div>
 
+        <!-- Bow -->
         <div class="card">
           <h2>Bow</h2>
           <div class="field-row">
@@ -322,8 +321,29 @@
               <input id="bowDrawLengthIn" type="number" value="28" step="0.1" />
             </div>
           </div>
+          <div class="field-row">
+            <div class="field">
+              <label
+                for="launchFps"
+                title="Estimated arrow speed at the bow, in feet per second."
+              >
+                Launch speed estimate (fps)
+              </label>
+              <input id="launchFps" type="number" value="280" step="1" />
+            </div>
+            <div class="field">
+              <label
+                for="fpsLossPer10Yards"
+                title="Approximate speed loss in fps for every 10 yards of travel."
+              >
+                Speed loss / 10 yards (fps)
+              </label>
+              <input id="fpsLossPer10Yards" type="number" value="3" step="0.5" />
+            </div>
+          </div>
         </div>
 
+        <!-- Arrow Shaft -->
         <div class="card">
           <h2>Arrow Shaft</h2>
           <div class="field-row">
@@ -348,6 +368,7 @@
           </div>
         </div>
 
+        <!-- Components -->
         <div class="card">
           <h2>Components</h2>
           <div class="field-row">
@@ -424,6 +445,7 @@
           </div>
         </div>
 
+        <!-- Balance Point -->
         <div class="card">
           <h2>Balance Point</h2>
           <div class="field">
@@ -443,6 +465,7 @@
 
       <!-- RIGHT: RESULTS & VISUAL -->
       <div>
+        <!-- Core results -->
         <div class="card">
           <h2>Results</h2>
 
@@ -480,15 +503,61 @@
           </div>
         </div>
 
+        <!-- Kinetics: FPS & Momentum -->
         <div class="card">
-          <h2>FOC Visualization</h2>
+          <h2>Kinetics (FPS & Momentum)</h2>
+
+          <div class="results-row">
+            <span class="label">Launch</span>
+            <span class="value" id="launchKineticsDisplay">– fps / – slug·ft/s</span>
+          </div>
+
+          <div class="results-row">
+            <span class="label">
+              Distance 1
+              <span class="note">
+                (<input
+                  id="dist1Yards"
+                  type="number"
+                  value="30"
+                  step="1"
+                  style="width: 3rem; background:#020617; color:#e5e7eb; border:1px solid #1f2937; border-radius:4px; padding:2px 4px; font-size:0.75rem;"
+                  title="Distance in yards for the first FPS/momentum estimate."
+                /> yd)
+              </span>
+            </span>
+            <span class="value" id="dist1KineticsDisplay">– fps / – slug·ft/s</span>
+          </div>
+
+          <div class="results-row">
+            <span class="label">
+              Distance 2
+              <span class="note">
+                (<input
+                  id="dist2Yards"
+                  type="number"
+                  value="60"
+                  step="1"
+                  style="width: 3rem; background:#020617; color:#e5e7eb; border:1px solid #1f2937; border-radius:4px; padding:2px 4px; font-size:0.75rem;"
+                  title="Distance in yards for the second FPS/momentum estimate."
+                /> yd)
+              </span>
+            </span>
+            <span class="value" id="dist2KineticsDisplay">– fps / – slug·ft/s</span>
+          </div>
+
+          <div class="note">
+            Momentum is computed as: (arrow grains × fps) / 225,400. Values are approximate and based on your launch FPS and speed loss settings.
+          </div>
+        </div>
+
+        <!-- FOC & weight visuals -->
+        <div class="card">
+          <h2>FOC & Weight Distribution</h2>
           <div class="arrow-visual">
             <div class="arrow-track">
-              <!-- Horizontal axis line -->
               <div class="arrow-axis"></div>
-              <!-- Center of the arrow (geometric middle) -->
               <div class="arrow-center-line"></div>
-              <!-- Balance point marker (positioned via JS) -->
               <div id="balanceMarker" class="arrow-balance-marker"></div>
             </div>
             <div class="arrow-legend">
@@ -498,7 +567,6 @@
 
           <div class="weight-visual">
             <div class="weight-bar">
-              <!-- These three segments get width percentages from JS -->
               <div id="weightShaft" class="weight-shaft"></div>
               <div id="weightPoint" class="weight-point"></div>
               <div id="weightFletch" class="weight-fletch"></div>
@@ -511,7 +579,7 @@
           </div>
         </div>
 
-        <!-- Notes card -->
+        <!-- Notes -->
         <div class="card">
           <h2>Notes</h2>
           <div class="field">
@@ -543,36 +611,24 @@
     // -----------------------------
     // App metadata (easy to update)
     // -----------------------------
-    const APP_VERSION = "v0.3.0";
+    const APP_VERSION = "v0.4.0";
     const BUILD_DATE = "2025-11-23";
 
     // -----------------------------
     // Helper functions
     // -----------------------------
 
-    /**
-     * Read a numeric value from an <input> by its id.
-     * Returns 0 if the field is empty or not a valid number.
-     */
     function readNumber(id) {
       const el = document.getElementById(id);
-      const value = parseFloat(el.value);
+      const value = parseFloat(el?.value ?? "");
       return isNaN(value) ? 0 : value;
     }
 
-    /**
-     * Format a number using fixed decimal digits.
-     * Returns a dash if the value is not finite.
-     */
     function formatNumber(value, digits) {
       if (!isFinite(value)) return "–";
       return value.toFixed(digits);
     }
 
-    /**
-     * Update the displayed arrow name in the Results card.
-     * Defaults to "Unnamed arrow" if the field is blank.
-     */
     function updateArrowNameDisplay() {
       const nameInput = document.getElementById("arrowName");
       const nameDisplay = document.getElementById("arrowNameDisplay");
@@ -582,59 +638,87 @@
       nameDisplay.textContent = value || "Unnamed arrow";
     }
 
+    /**
+     * Simple approximate model for arrow speed at a given distance.
+     * fpsLossPer10Yards is the speed lost per 10 yards of travel.
+     */
+    function estimateFpsAtDistance(launchFps, fpsLossPer10Yards, distanceYards) {
+      if (!isFinite(launchFps) || launchFps <= 0) return NaN;
+      if (!isFinite(fpsLossPer10Yards) || fpsLossPer10Yards < 0) return launchFps;
+
+      const loss = (fpsLossPer10Yards * distanceYards) / 10;
+      const v = launchFps - loss;
+      return v > 0 ? v : 0;
+    }
+
+    /**
+     * Momentum in slug·ft/s from arrow weight (grains) and speed (fps).
+     * Using: mass (slugs) = grains / 225,400, then momentum = mass * velocity.
+     */
+    function computeMomentumSlugFtPerSec(arrowWeightGrains, fps) {
+      if (!isFinite(arrowWeightGrains) || !isFinite(fps)) return NaN;
+      if (arrowWeightGrains <= 0 || fps <= 0) return NaN;
+      return (arrowWeightGrains * fps) / 225400;
+    }
+
     // -----------------------------
     // Main calculation & UI update
     // -----------------------------
 
     function calculateAndUpdate() {
-      // 1. Read inputs from the DOM (all values are in common archery units).
+      // Bow
       const bowDrawWeightLb = readNumber("bowDrawWeightLb");
       const bowDrawLengthIn = readNumber("bowDrawLengthIn"); // reserved for future use
+      const launchFps = readNumber("launchFps");
+      const fpsLossPer10Yards = readNumber("fpsLossPer10Yards");
 
+      // Distances for kinetic estimates
+      const dist1Yards = readNumber("dist1Yards");
+      const dist2Yards = readNumber("dist2Yards");
+
+      // Arrow geometry
       const arrowLengthIn = readNumber("arrowLengthIn");
       const bareShaftWeightGr = readNumber("bareShaftWeightGr");
 
+      // Components
       const nockWeightGr = readNumber("nockWeightGr");
       const wrapWeightGr = readNumber("wrapWeightGr");
       const vaneCount = readNumber("vaneCount");
       const vaneWeightGr = readNumber("vaneWeightGr");
-
       const insertWeightGr = readNumber("insertWeightGr");
       const pointWeightGr = readNumber("pointWeightGr");
-
       const glueWeightGr = readNumber("glueWeightGr");
 
+      // Arrow attributes
       const balancePointIn = readNumber("balancePointIn");
       const arrowSpine = readNumber("arrowSpine");
 
-      // 2. Component weights (in grains)
+      // Component weights (grains)
       const shaftWeightGr = bareShaftWeightGr;
       const pointSystemWeightGr = insertWeightGr + pointWeightGr;
       const fletchingSystemWeightGr =
         nockWeightGr +
         wrapWeightGr +
         vaneCount * vaneWeightGr +
-        glueWeightGr; // glue lumped in with rear/overall build
+        glueWeightGr;
 
       const totalArrowWeightGr =
         shaftWeightGr + pointSystemWeightGr + fletchingSystemWeightGr;
 
-      // 3. FOC calculation:
-      //    FOC% = ((balancePoint - (arrowLength / 2)) / arrowLength) * 100
+      // FOC calculation:
       let focPercent = NaN;
       if (arrowLengthIn > 0) {
         focPercent =
           ((balancePointIn - arrowLengthIn / 2) / arrowLengthIn) * 100;
       }
 
-      // 4. Grains per pound (GPP)
-      //    GPP = total arrow grains / bow draw weight (lb)
+      // Grains per pound (GPP)
       let grainsPerPound = NaN;
       if (bowDrawWeightLb > 0) {
         grainsPerPound = totalArrowWeightGr / bowDrawWeightLb;
       }
 
-      // 5. Grains per inch (shaft vs full arrow)
+      // Grains per inch
       let shaftGpi = NaN;
       let arrowGpi = NaN;
       if (arrowLengthIn > 0) {
@@ -643,9 +727,8 @@
       }
 
       // -----------------------------
-      // Update numeric result fields
+      // Core numeric results
       // -----------------------------
-
       const totalEl = document.getElementById("totalArrowWeightGr");
       const focEl = document.getElementById("focPercent");
       const gppEl = document.getElementById("grainsPerPound");
@@ -656,42 +739,34 @@
       if (totalEl) {
         totalEl.textContent = formatNumber(totalArrowWeightGr, 1) + " gr";
       }
-
       if (focEl) {
         focEl.textContent = isFinite(focPercent)
           ? formatNumber(focPercent, 1) + " %"
           : "–";
       }
-
       if (gppEl) {
         gppEl.textContent = isFinite(grainsPerPound)
           ? formatNumber(grainsPerPound, 1) + " gpp"
           : "–";
       }
-
       if (shaftGpiEl) {
         shaftGpiEl.textContent = isFinite(shaftGpi)
           ? formatNumber(shaftGpi, 2) + " gr/in"
           : "–";
       }
-
       if (arrowGpiEl) {
         arrowGpiEl.textContent = isFinite(arrowGpi)
           ? formatNumber(arrowGpi, 2) + " gr/in"
           : "–";
       }
-
       if (spineDisplayEl) {
         spineDisplayEl.textContent = arrowSpine > 0 ? arrowSpine.toString() : "–";
       }
 
-      // -----------------------------
-      // FOC category tag (Low / Typical / High)
-      // -----------------------------
+      // FOC tag
       const focTag = document.getElementById("focTag");
       if (focTag) {
         focTag.style.display = isFinite(focPercent) ? "inline-block" : "none";
-
         if (isFinite(focPercent)) {
           focTag.classList.remove("foc-low", "foc-normal", "foc-high");
           let text = "";
@@ -710,25 +785,54 @@
       }
 
       // -----------------------------
-      // FOC visualization: move balance marker along bar
+      // Kinetics: FPS & Momentum
+      // -----------------------------
+      const launchFpsUsed = launchFps > 0 ? launchFps : NaN;
+      const fps1 = estimateFpsAtDistance(launchFpsUsed, fpsLossPer10Yards, dist1Yards);
+      const fps2 = estimateFpsAtDistance(launchFpsUsed, fpsLossPer10Yards, dist2Yards);
+
+      const launchMomentum = computeMomentumSlugFtPerSec(totalArrowWeightGr, launchFpsUsed);
+      const momentum1 = computeMomentumSlugFtPerSec(totalArrowWeightGr, fps1);
+      const momentum2 = computeMomentumSlugFtPerSec(totalArrowWeightGr, fps2);
+
+      const launchKineticsDisplay = document.getElementById("launchKineticsDisplay");
+      const dist1KineticsDisplay = document.getElementById("dist1KineticsDisplay");
+      const dist2KineticsDisplay = document.getElementById("dist2KineticsDisplay");
+
+      if (launchKineticsDisplay) {
+        const fpsText = isFinite(launchFpsUsed) ? formatNumber(launchFpsUsed, 0) + " fps" : "– fps";
+        const momText = isFinite(launchMomentum) ? formatNumber(launchMomentum, 3) + " slug·ft/s" : "– slug·ft/s";
+        launchKineticsDisplay.textContent = fpsText + " / " + momText;
+      }
+      if (dist1KineticsDisplay) {
+        const fpsText = isFinite(fps1) ? formatNumber(fps1, 0) + " fps" : "– fps";
+        const momText = isFinite(momentum1) ? formatNumber(momentum1, 3) + " slug·ft/s" : "– slug·ft/s";
+        dist1KineticsDisplay.textContent = fpsText + " / " + momText;
+      }
+      if (dist2KineticsDisplay) {
+        const fpsText = isFinite(fps2) ? formatNumber(fps2, 0) + " fps" : "– fps";
+        const momText = isFinite(momentum2) ? formatNumber(momentum2, 3) + " slug·ft/s" : "– slug·ft/s";
+        dist2KineticsDisplay.textContent = fpsText + " / " + momText;
+      }
+
+      // -----------------------------
+      // FOC visualization
       // -----------------------------
       const balanceMarker = document.getElementById("balanceMarker");
       if (balanceMarker) {
         if (arrowLengthIn > 0 && isFinite(balancePointIn)) {
           let ratio = balancePointIn / arrowLengthIn;
-          // Clamp the ratio to [0, 1] so the marker stays within the bar
           if (ratio < 0) ratio = 0;
           if (ratio > 1) ratio = 1;
           const percent = ratio * 100;
           balanceMarker.style.left = percent + "%";
         } else {
-          // If we can't calculate a valid position, default to the center
           balanceMarker.style.left = "50%";
         }
       }
 
       // -----------------------------
-      // Weight distribution bar
+      // Weight distribution
       // -----------------------------
       const weightShaft = document.getElementById("weightShaft");
       const weightPoint = document.getElementById("weightPoint");
@@ -744,7 +848,6 @@
           weightPoint.style.width = pointPct + "%";
           weightFletch.style.width = fletchPct + "%";
         } else {
-          // Neutral fallback if weights are not valid
           weightShaft.style.width = "33%";
           weightPoint.style.width = "33%";
           weightFletch.style.width = "34%";
@@ -756,10 +859,13 @@
     // Initial setup & event wiring
     // -----------------------------
 
-    // Numeric inputs that affect calculations
     const inputIds = [
       "bowDrawWeightLb",
       "bowDrawLengthIn",
+      "launchFps",
+      "fpsLossPer10Yards",
+      "dist1Yards",
+      "dist2Yards",
       "arrowLengthIn",
       "bareShaftWeightGr",
       "nockWeightGr",
@@ -780,13 +886,13 @@
       }
     });
 
-    // Arrow name is text, so we update a separate display whenever it changes.
     const arrowNameInput = document.getElementById("arrowName");
     if (arrowNameInput) {
-      arrowNameInput.addEventListener("input", updateArrowNameDisplay);
+      arrowNameInput.addEventListener("input", () => {
+        updateArrowNameDisplay();
+      });
     }
 
-    // Populate version and build date in the header.
     const versionEl = document.getElementById("appVersion");
     const buildDateEl = document.getElementById("buildDateText");
     if (versionEl) {
@@ -796,7 +902,6 @@
       buildDateEl.textContent = "Build date: " + BUILD_DATE;
     }
 
-    // Run initial updates when the page loads.
     updateArrowNameDisplay();
     calculateAndUpdate();
   </script>
