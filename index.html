@@ -249,7 +249,7 @@
 
     /* FOC shift gauge: back vs front */
     .foc-shift-visual {
-      margin-top: 10px;
+      margin-top: 4px;
       text-align: center;
     }
 
@@ -309,6 +309,15 @@
       margin-top: 12px;
       font-size: 0.75rem;
       color: #4b5563;
+    }
+
+    /* Small titles for each visualization block */
+    .viz-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #e5e7eb;
+      margin-top: 6px;
+      margin-bottom: 2px;
     }
   </style>
 </head>
@@ -617,8 +626,25 @@
         <div class="card">
           <h2>FOC & Weight Distribution</h2>
 
-          <!-- Main FOC visualization: Nock -> Point -->
+          <!-- 1) FOC Shift Gauge -->
+          <div class="foc-shift-visual">
+            <div class="viz-title">FOC Shift Gauge</div>
+            <div class="foc-shift-track">
+              <div class="foc-shift-zero"></div>
+              <div id="focShiftMarker" class="foc-shift-marker"></div>
+            </div>
+            <div class="foc-shift-labels">
+              <span>More weight toward nock / behind center</span>
+              <span>More weight toward point / forward of center</span>
+            </div>
+            <div class="foc-shift-details" id="focShiftDetails">
+              FOC shift: –
+            </div>
+          </div>
+
+          <!-- 2) Arrow balance along length -->
           <div class="arrow-visual">
+            <div class="viz-title">Arrow Balance (Nock → Point)</div>
             <div class="arrow-ends">
               <span>Nock / back of arrow</span>
               <span>Point / front of arrow</span>
@@ -633,8 +659,9 @@
             </div>
           </div>
 
-          <!-- Weight composition bar -->
+          <!-- 3) Weight composition bar -->
           <div class="weight-visual">
+            <div class="viz-title">Weight Composition</div>
             <div class="weight-bar">
               <div id="weightShaft" class="weight-shaft"></div>
               <div id="weightPoint" class="weight-point"></div>
@@ -644,21 +671,6 @@
               <span><span class="dot" style="background:#1d4ed8;"></span> Shaft</span>
               <span><span class="dot" style="background:#ea580c;"></span> Point system</span>
               <span><span class="dot" style="background:#a855f7;"></span> Nock / wrap / vanes + glue</span>
-            </div>
-          </div>
-
-          <!-- FOC shift gauge -->
-          <div class="foc-shift-visual">
-            <div class="foc-shift-track">
-              <div class="foc-shift-zero"></div>
-              <div id="focShiftMarker" class="foc-shift-marker"></div>
-            </div>
-            <div class="foc-shift-labels">
-              <span>More weight toward nock / behind center</span>
-              <span>More weight toward point / forward of center</span>
-            </div>
-            <div class="foc-shift-details" id="focShiftDetails">
-              FOC shift: –
             </div>
           </div>
         </div>
@@ -695,7 +707,7 @@
     // -----------------------------
     // App metadata (easy to update)
     // -----------------------------
-    const APP_VERSION = "v0.5.0";
+    const APP_VERSION = "v0.5.1";
     const BUILD_DATE = "2025-11-23";
 
     // -----------------------------
@@ -780,7 +792,7 @@
       const totalArrowWeightGr =
         shaftWeightGr + pointSystemWeightGr + fletchingSystemWeightGr;
 
-      // FOC
+      // FOC & shift
       let focPercent = NaN;
       let focShiftIn = NaN;
       if (arrowLengthIn > 0) {

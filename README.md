@@ -66,10 +66,10 @@ Future Improvements (optional ideas)
 ## Phase 3 — Advanced Visualizations
 
 ### Visual Tools
-- [ ] Add enhanced arrow weight distribution visualization  
-  - [ ] Left = nock end  
-  - [ ] Right = point end  
-  - [ ] Show FOC shift (balance point vs geometric center)  
+- [x] Add enhanced arrow weight distribution visualization  
+  - [x] Left = nock end  
+  - [x] Right = point end  
+  - [x] Show FOC shift (balance point vs geometric center)  
 - [ ] Add FPS drop visualization over distance  
 - [ ] Add arrow trajectory graph  
   - [ ] User sets max yardage (0–100 yards)  
