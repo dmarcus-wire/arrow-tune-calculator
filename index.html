@@ -4,6 +4,23 @@
   <meta charset="UTF-8" />
   <title>Arrow Tune Calculator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!--
+    Arrow Tune Calculator
+    Author: David Marcus (GitHub: dmarcus-wire)
+    Maintainer: David Marcus
+    Description:
+      A simple browser-based tool to calculate arrow weight, FOC,
+      grains per pound, and grains per inch with basic visualizations.
+
+    Tech:
+      - Single self-contained HTML file (HTML + CSS + JS)
+      - No external libraries or frameworks
+      - Runs locally in any modern browser
+
+    License: MIT
+  -->
+
   <style>
     body {
       margin: 0;
@@ -27,7 +44,18 @@
     .subtitle {
       font-size: 0.9rem;
       color: #9ca3af;
+      margin-bottom: 8px;
+    }
+
+    /* Small meta line under the title for version + build date */
+    .meta {
+      font-size: 0.8rem;
+      color: #6b7280;
       margin-bottom: 16px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
     }
 
     .grid {
@@ -207,13 +235,27 @@
       color: #6b7280;
       margin-top: 6px;
     }
+
+    /* Simple footer-style line for attribution */
+    .footer {
+      margin-top: 12px;
+      font-size: 0.75rem;
+      color: #4b5563;
+    }
   </style>
 </head>
 <body>
   <div class="page">
-    <h1>Arrow Calculator</h1>
+    <h1>Arrow Tune Calculator</h1>
     <div class="subtitle">
       Enter your bow and arrow details to see total weight, FOC, grains per pound, and grains per inch.
+    </div>
+
+    <!-- Version + build date are filled in by JavaScript using constants -->
+    <div class="meta">
+      <span id="appVersion">v0.0.0</span>
+      <span>•</span>
+      <span id="buildDateText">Build date: unknown</span>
     </div>
 
     <div class="grid">
@@ -330,8 +372,11 @@
           <h2>FOC Visualization</h2>
           <div class="arrow-visual">
             <div class="arrow-track">
+              <!-- Horizontal axis line -->
               <div class="arrow-axis"></div>
+              <!-- Center of the arrow (geometric middle) -->
               <div class="arrow-center-line"></div>
+              <!-- Balance point marker (positioned via JS) -->
               <div id="balanceMarker" class="arrow-balance-marker"></div>
             </div>
             <div class="arrow-legend">
@@ -341,6 +386,7 @@
 
           <div class="weight-visual">
             <div class="weight-bar">
+              <!-- These three segments get width percentages from JS -->
               <div id="weightShaft" class="weight-shaft"></div>
               <div id="weightPoint" class="weight-point"></div>
               <div id="weightFletch" class="weight-fletch"></div>
@@ -358,25 +404,53 @@
         </div>
       </div>
     </div>
+
+    <div class="footer">
+      Built by David Marcus • Arrow Tune Calculator • MIT Licensed
+    </div>
   </div>
 
   <script>
-    // --- Helper: safely parse numbers ---
+    // -----------------------------
+    // App metadata (easy to update)
+    // -----------------------------
+    // Bump the version when you make a meaningful change to the app.
+    const APP_VERSION = "v0.1.0";
+    // You can set this manually when you update the file, or
+    // calculate it dynamically if you prefer.
+    const BUILD_DATE = "2025-11-23";
+
+    // -----------------------------
+    // Helper functions
+    // -----------------------------
+
+    /**
+     * Read a numeric value from an <input> by its id.
+     * Returns 0 if the field is empty or not a valid number.
+     */
     function readNumber(id) {
       const el = document.getElementById(id);
       const value = parseFloat(el.value);
       return isNaN(value) ? 0 : value;
     }
 
+    /**
+     * Format a number using fixed decimal digits.
+     * Returns a dash if the value is not finite.
+     */
     function formatNumber(value, digits) {
       if (!isFinite(value)) return "–";
       return value.toFixed(digits);
     }
 
+    // -----------------------------
+    // Main calculation & UI update
+    // -----------------------------
+
     function calculateAndUpdate() {
-      // Read inputs
+      // 1. Read inputs from the DOM (all values are in common archery units).
       const bowDrawWeightLb = readNumber("bowDrawWeightLb");
-      const bowDrawLengthIn = readNumber("bowDrawLengthIn"); // not used yet, but kept for future features
+      const bowDrawLengthIn = readNumber("bowDrawLengthIn"); // reserved for future use
 
       const arrowLengthIn = readNumber("arrowLengthIn");
       const bareShaftWeightGr = readNumber("bareShaftWeightGr");
@@ -391,7 +465,7 @@
 
       const balancePointIn = readNumber("balancePointIn");
 
-      // Component weights
+      // 2. Component weights (in grains)
       const shaftWeightGr = bareShaftWeightGr;
       const pointSystemWeightGr = insertWeightGr + pointWeightGr;
       const fletchingSystemWeightGr =
@@ -400,21 +474,22 @@
       const totalArrowWeightGr =
         shaftWeightGr + pointSystemWeightGr + fletchingSystemWeightGr;
 
-      // FOC calculation:
-      // FOC% = ((balancePoint - (arrowLength / 2)) / arrowLength) * 100
+      // 3. FOC calculation:
+      //    FOC% = ((balancePoint - (arrowLength / 2)) / arrowLength) * 100
       let focPercent = NaN;
       if (arrowLengthIn > 0) {
         focPercent =
           ((balancePointIn - arrowLengthIn / 2) / arrowLengthIn) * 100;
       }
 
-      // Grains per pound (GPP)
+      // 4. Grains per pound (GPP)
+      //    GPP = total arrow grains / bow draw weight (lb)
       let grainsPerPound = NaN;
       if (bowDrawWeightLb > 0) {
         grainsPerPound = totalArrowWeightGr / bowDrawWeightLb;
       }
 
-      // Grains per inch (shaft vs full arrow)
+      // 5. Grains per inch (shaft vs full arrow)
       let shaftGpi = NaN;
       let arrowGpi = NaN;
       if (arrowLengthIn > 0) {
@@ -422,7 +497,10 @@
         arrowGpi = totalArrowWeightGr / arrowLengthIn;
       }
 
-      // --- Update text outputs ---
+      // -----------------------------
+      // Update numeric result fields
+      // -----------------------------
+
       document.getElementById("totalArrowWeightGr").textContent =
         formatNumber(totalArrowWeightGr, 1) + " gr";
 
@@ -438,7 +516,9 @@
       document.getElementById("arrowGpi").textContent =
         isFinite(arrowGpi) ? formatNumber(arrowGpi, 2) + " gr/in" : "–";
 
-      // --- FOC "tag" (low / normal / high) ---
+      // -----------------------------
+      // FOC category tag (Low / Typical / High)
+      // -----------------------------
       const focTag = document.getElementById("focTag");
       focTag.style.display = isFinite(focPercent) ? "inline-block" : "none";
 
@@ -458,19 +538,25 @@
         focTag.textContent = text;
       }
 
-      // --- FOC visualization: move balance marker along the bar ---
+      // -----------------------------
+      // FOC visualization: move balance marker along bar
+      // -----------------------------
       const balanceMarker = document.getElementById("balanceMarker");
       if (arrowLengthIn > 0 && isFinite(balancePointIn)) {
         let ratio = balancePointIn / arrowLengthIn;
+        // Clamp the ratio to [0, 1] so the marker stays within the bar
         if (ratio < 0) ratio = 0;
         if (ratio > 1) ratio = 1;
         const percent = ratio * 100;
         balanceMarker.style.left = percent + "%";
       } else {
+        // If we can't calculate a valid position, default to the center
         balanceMarker.style.left = "50%";
       }
 
-      // --- Weight distribution bar ---
+      // -----------------------------
+      // Weight distribution bar
+      // -----------------------------
       const weightShaft = document.getElementById("weightShaft");
       const weightPoint = document.getElementById("weightPoint");
       const weightFletch = document.getElementById("weightFletch");
@@ -484,13 +570,18 @@
         weightPoint.style.width = pointPct + "%";
         weightFletch.style.width = fletchPct + "%";
       } else {
+        // Neutral fallback if weights are not valid
         weightShaft.style.width = "33%";
         weightPoint.style.width = "33%";
         weightFletch.style.width = "34%";
       }
     }
 
-    // Attach listeners to all inputs so changes update live
+    // -----------------------------
+    // Initial setup & event wiring
+    // -----------------------------
+
+    // Attach listeners to all input fields so that changes trigger recalculation.
     const inputIds = [
       "bowDrawWeightLb",
       "bowDrawLengthIn",
@@ -510,7 +601,17 @@
       el.addEventListener("input", calculateAndUpdate);
     });
 
-    // Initial calculation on page load
+    // Populate version and build date in the header.
+    const versionEl = document.getElementById("appVersion");
+    const buildDateEl = document.getElementById("buildDateText");
+    if (versionEl) {
+      versionEl.textContent = APP_VERSION;
+    }
+    if (buildDateEl) {
+      buildDateEl.textContent = "Build date: " + BUILD_DATE;
+    }
+
+    // Run an initial calculation when the page loads so fields are populated.
     calculateAndUpdate();
   </script>
 </body>
