@@ -28,12 +28,65 @@ That’s it!
 
 Future Improvements (optional ideas)
 
-1. Save multiple arrow setups
-1. Compare two arrows side-by-side
-1. Add dynamic spine calculator
-1. Add color themes (light/dark mode)
-1. Store presets using localStorage
-1. Package as a full mobile app
+# ✅ TODO List — Arrow Tune Calculator
+
+## Phase 1 — Core Enhancements
+
+### Code & Structure
+- [x] Add author and maintainer info  
+- [x] Add inline documentation for calculations and UI sections  
+- [x] Add date/version to the UI  
+
+### UI/UX Improvements
+- [x] Add arrow name field (e.g., “Easton Axis 5.0 250 Spine”)  
+- [x] Add arrow spine field (250, 300, 350, etc.)  
+- [x] Add user notes field  
+- [x] Add hover tooltips explaining each input field  
+- [x] Add glue weight estimate field (5–10 grains typical)  
+
+### Core Calculations
+- [ ] Add momentum calculation  
+- [ ] Add Feet Per Second (FPS):
+  - [ ] FPS at launch  
+  - [ ] FPS at 30 yards (editable)  
+  - [ ] FPS at 60 yards (editable)  
+
+---
+
+## Phase 2 — Data Saving & Power Features
+
+### Local Storage & Shooter Profiles
+- [ ] Save arrow builds locally  
+- [ ] Support multiple saved arrow builds  
+- [ ] Support multiple shooters (per shooter profiles)  
+- [ ] Export saved data to `.csv`  
+
+---
+
+## Phase 3 — Advanced Visualizations
+
+### Visual Tools
+- [ ] Add enhanced arrow weight distribution visualization  
+  - [ ] Left = nock end  
+  - [ ] Right = point end  
+  - [ ] Show FOC shift (balance point vs geometric center)  
+- [ ] Add FPS drop visualization over distance  
+- [ ] Add arrow trajectory graph  
+  - [ ] User sets max yardage (0–100 yards)  
+  - [ ] Show max height of arc in feet  
+- [ ] Add projected kill-effectiveness visualization  
+  - [ ] Based on momentum/energy  
+  - [ ] Color-coded zones from 0 to 80 yards  
+
+---
+
+## Phase 4 — Long-Term / Expert Features
+- [ ] Add dynamic spine estimation  
+- [ ] Add side-by-side arrow comparison mode  
+- [ ] Add environmental adjustments (wind, temp, bow efficiency)  
+- [ ] Convert to PWA (offline support, installable app)  
+- [ ] Add JSON import/export for arrow builds  
+- [ ] Package as a full mobile app
 
 📄 License
 
