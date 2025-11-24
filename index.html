@@ -44,15 +44,15 @@
 
     /* Light mode with archery/hunting feel (tan/olive/earthy) */
     .light-mode {
-      --bg: #f5f5f0;           /* warm off-white */
-      --bg-card: #fffaf2;      /* soft parchment */
-      --bg-elevated: #fffbf2;  /* slightly brighter card */
-      --bg-input: #fff7e6;     /* light tan input */
-      --border: #e2ddcf;       /* warm soft border */
-      --border-soft: #d5c8af;  /* slightly darker edge */
-      --text: #1f2933;         /* deep charcoal */
-      --text-muted: #6b7280;   /* neutral muted */
-      --axis: #d0c4aa;         /* light tan axis lines */
+      --bg: #f5f5f0;
+      --bg-card: #fffaf2;
+      --bg-elevated: #fffbf2;
+      --bg-input: #fff7e6;
+      --border: #e2ddcf;
+      --border-soft: #d5c8af;
+      --text: #1f2933;
+      --text-muted: #6b7280;
+      --axis: #d0c4aa;
     }
 
     body {
@@ -202,18 +202,15 @@
     .foc-normal { background: #064e3b; color: #bbf7d0; }
     .foc-high { background: #7f1d1d; color: #fecaca; }
 
-    /* GPP tags */
     .gpp-low { background: #7f1d1d; color: #fecaca; }
     .gpp-normal { background: #064e3b; color: #bbf7d0; }
     .gpp-high { background: #1e3a8a; color: #bfdbfe; }
 
-    /* GPI (full arrow) tags */
     .gpi-light { background: #7f1d1d; color: #fecaca; }
     .gpi-normal { background: #064e3b; color: #bbf7d0; }
     .gpi-heavy { background: #1e3a8a; color: #bfdbfe; }
     .gpi-ultra { background: #4c1d95; color: #e9d5ff; }
 
-    /* Arrow balance bar */
     .arrow-visual {
       margin-top: 4px;
       text-align: center;
@@ -278,7 +275,6 @@
       color: var(--text-muted);
     }
 
-    /* Weight composition bar */
     .weight-bar {
       margin-top: 8px;
       width: 100%;
@@ -326,7 +322,6 @@
       margin-right: 4px;
     }
 
-    /* FOC shift gauge: back vs front */
     .foc-shift-visual {
       margin-top: 4px;
       text-align: center;
@@ -410,7 +405,6 @@
       color: #4b5563;
     }
 
-    /* Visualization sub-blocks inside cards */
     .viz-block {
       margin-top: 8px;
       padding: 8px 10px;
@@ -430,7 +424,6 @@
       text-align: left;
     }
 
-    /* Trajectory arc graph */
     .traj-graph {
       width: 100%;
       max-width: 420px;
@@ -455,7 +448,7 @@
       margin-top: 4px;
       font-size: 0.75rem;
       color: var(--text-muted);
-      text-align: center;
+      text-align:全面 center;
     }
 
     .traj-label {
@@ -464,7 +457,6 @@
       transition: fill 0.35s ease;
     }
 
-    /* Momentum band & help badge */
     .momentum-band-text {
       font-size: 0.8rem;
     }
@@ -512,7 +504,6 @@
       margin: 2px 0;
     }
 
-    /* Data table */
     .data-table-wrapper {
       overflow-x: auto;
       margin-top: 4px;
@@ -531,7 +522,10 @@
       padding: 4px 6px;
       text-align: left;
       white-space: nowrap;
-      transition: background-color 0.35s ease, border-color 0.35s ease, color 0.35s ease;
+      transition:
+        background-color 0.35s ease,
+        border-color 0.35s ease,
+        color 0.35s ease;
     }
 
     .data-table th {
@@ -550,7 +544,6 @@
       background: var(--bg-elevated);
     }
 
-    /* Theme toggle button (reuses help-badge) */
     #themeToggle {
       margin-left: auto;
       display: inline-flex;
@@ -571,7 +564,7 @@
     </div>
 
     <div class="meta">
-      <span id="appVersion">v0.9.8</span>
+      <span id="appVersion">v0.9.9</span>
       <span>•</span>
       <span id="buildDateText">Build date: 2025-11-23</span>
 
@@ -684,7 +677,7 @@
         <div class="card">
           <h2>Arrow Shaft & Total Weight</h2>
           <div class="card-subtitle">
-            Arrow length, bare shaft weight, and the finished total arrow weight from your scale.
+            Arrow length and the finished total arrow weight from your scale. Component details are optional.
           </div>
           <div class="field-row">
             <div class="field">
@@ -698,30 +691,21 @@
             </div>
             <div class="field">
               <label
-                for="bareShaftWeightGr"
-                title="Weight of the bare arrow shaft only, without any components, in grains."
+                for="totalArrowWeightGrInput"
+                title="Finished arrow weight on your scale, including all components. Used when a full component breakdown is not provided."
               >
-                Bare shaft weight (gr, optional)
+                Total arrow weight (gr)
               </label>
-              <input id="bareShaftWeightGr" type="number" value="300" step="0.1" />
+              <input
+                id="totalArrowWeightGrInput"
+                type="number"
+                value="509.8"
+                step="0.1"
+              />
             </div>
           </div>
-          <div class="field">
-            <label
-              for="totalArrowWeightGrInput"
-              title="Finished arrow weight on your scale, including all components. If set, this value is used for all calculations."
-            >
-              Total arrow weight (gr)
-            </label>
-            <input
-              id="totalArrowWeightGrInput"
-              type="number"
-              value="509.8"
-              step="0.1"
-            />
-          </div>
           <div class="note">
-            Most people only need to enter arrow length, total arrow weight, and balance point. Component weights are optional.
+            Most people only need arrow length, total arrow weight, and balance point. If you enter a full component breakdown in the advanced section, that total will be used instead of this field.
           </div>
         </div>
 
@@ -729,11 +713,11 @@
         <div class="card">
           <h2>Components (Advanced)</h2>
           <div class="card-subtitle">
-            Detailed component weights are only needed if you track each part with a small scale.
+            Detailed component weights, including bare shaft, are only needed if you track each part with a small scale.
           </div>
 
           <div class="note">
-            You can skip this section if you don't know individual component weights. The calculator will still use your total arrow weight above for FOC, GPP, momentum, and trajectory.
+            If you complete all the main component fields (bare shaft, nock, vanes, insert, point), the calculator will use their sum as the total arrow weight. Otherwise, it will use the total arrow weight field above.
           </div>
 
           <div class="field" style="margin-top:6px;">
@@ -744,6 +728,16 @@
           </div>
 
           <div id="componentDetails" style="display:none; margin-top:4px;">
+            <div class="field">
+              <label
+                for="bareShaftWeightGr"
+                title="Weight of the bare arrow shaft only, without any components, in grains."
+              >
+                Bare shaft weight (gr)
+              </label>
+              <input id="bareShaftWeightGr" type="number" value="300" step="0.1" />
+            </div>
+
             <div class="field-row">
               <div class="field">
                 <label
@@ -951,6 +945,11 @@
             </ul>
 
             <p style="margin:4px 0;">
+              Momentum is computed as: <code>(arrow grains × fps) / 225,400</code>.
+              These are still approximations, but they help compare different builds under similar conditions.
+            </p>
+
+            <p style="margin:4px 0;">
               These bands help compare arrow builds, but
               <strong>tuning and shot placement matter more than the numbers alone.</strong>
             </p>
@@ -1011,11 +1010,6 @@
           </div>
 
           <div class="note">
-            Momentum is computed as: (arrow grains × fps) / 225,400.
-            Values are approximate and based on your launch FPS and speed loss settings.
-          </div>
-
-          <div class="note">
             <span
               id="bandsHelpToggle"
               class="help-badge"
@@ -1033,6 +1027,10 @@
             <div class="note-strong">
               These bands are rules of thumb — not guarantees.
             </div>
+            <p style="margin:4px 0%;">
+              Momentum is computed as: <code>(arrow grains × fps) / 225,400</code>.
+              Values here are approximate and depend on your launch FPS and speed loss settings.
+            </p>
             <p style="margin:4px 0%;">
               They come from:
             </p>
@@ -1203,7 +1201,9 @@
               <span><span class="dot" style="background:#a855f7;"></span> Nock / wrap / vanes + glue</span>
             </div>
             <div class="note" id="weightTotals">
-              Shaft: – gr (– %) • Point system: – gr (– %) • Nock / wrap / vanes + glue: – gr (– %)
+              Shaft: – gr (– %)<br>
+              Point system: – gr (– %)<br>
+              Nock / wrap / vanes + glue: – gr (– %)
             </div>
             <div class="note">
               Center line shows the halfway mark: if the blue shaft segment crosses it, more than half of total arrow weight is in the shaft.
@@ -1241,9 +1241,6 @@
   </div>
 
   <script>
-    // -----------------------------
-    // Helper functions
-    // -----------------------------
     function readNumber(id) {
       const el = document.getElementById(id);
       const value = parseFloat(el?.value ?? "");
@@ -1277,7 +1274,6 @@
     function computeMomentumSlugFtPerSec(arrowWeightGrains, fps) {
       if (!isFinite(arrowWeightGrains) || !isFinite(fps)) return NaN;
       if (arrowWeightGrains <= 0 || fps <= 0) return NaN;
-      // mass (slugs) = grains / 225,400; momentum = mass * velocity.
       return (arrowWeightGrains * fps) / 225400;
     }
 
@@ -1297,13 +1293,6 @@
       }
     }
 
-    /**
-     * Update a simple left→right trajectory arc:
-     *  - X axis = distance in yards (0 → slightly beyond arcRangeYards)
-     *  - Y axis = height in feet (fixed 0–20 ft)
-     * The arc range slider chooses how far the arrow flies; the graph adds a little extra
-     * horizontal space beyond that, with tighter scaling at close range so the arc is visible.
-     */
     function updateTrajectoryGraph(launchFps, arcRangeYards, impactMomentum) {
       const lineEl = document.getElementById("trajGraphLine");
       const legendEl = document.getElementById("trajGraphLegend");
@@ -1323,13 +1312,12 @@
         !impactLabel
       ) return;
 
-      const AXIS_MAX_HEIGHT_FEET = 20;  // fixed vertical scale
+      const AXIS_MAX_HEIGHT_FEET = 20;
 
       if (!isFinite(arcRangeYards) || arcRangeYards <= 0) {
         lineEl.setAttribute("points", "");
         legendEl.textContent =
           "Left = bow, right = target. Arc height, angle & impact momentum are approximate.";
-        // move peak & angle elements off-canvas / clear text
         peakDot.setAttribute("cx", "-10");
         peakDot.setAttribute("cy", "-10");
         peakLabel.setAttribute("x", "-10");
@@ -1355,7 +1343,7 @@
       axisMaxYards = Math.max(axisMaxYards, effectiveRangeYards + 2, 10);
 
       const baseFps = isFinite(launchFps) && launchFps > 0 ? launchFps : 280;
-      const speedFactor = 280 / baseFps; // slower arrows = slightly more arc
+      const speedFactor = 280 / baseFps;
 
       const refRangeYards = 60;
       const normalized = effectiveRangeYards / refRangeYards;
@@ -1434,29 +1422,22 @@
         ".";
     }
 
-    // -----------------------------
-    // Main calculation & UI update
-    // -----------------------------
     function calculateAndUpdate() {
-      // Bow
       const bowDrawWeightLb = readNumber("bowDrawWeightLb");
       const bowDrawLengthIn = readNumber("bowDrawLengthIn");
       const launchFps = readNumber("launchFps");
       const fpsLossPer10Yards = readNumber("fpsLossPer10Yards");
 
-      // Distances
       const dist1Yards = readNumber("dist1Yards");
       const dist2Yards = readNumber("dist2Yards");
       const trajMaxDistanceYards = readNumber("trajMaxDistanceYards");
 
       let arcRangeYards = trajMaxDistanceYards > 0 ? trajMaxDistanceYards : 10;
 
-      // Arrow geometry
       const arrowLengthIn = readNumber("arrowLengthIn");
-      const bareShaftWeightGr = readNumber("bareShaftWeightGr");
       const totalArrowWeightGrInput = readNumber("totalArrowWeightGrInput");
 
-      // Components
+      const bareShaftWeightGr = readNumber("bareShaftWeightGr");
       const nockWeightGr = readNumber("nockWeightGr");
       const wrapWeightGr = readNumber("wrapWeightGr");
       const vaneCount = readNumber("vaneCount");
@@ -1465,11 +1446,9 @@
       const pointWeightGr = readNumber("pointWeightGr");
       const glueWeightGr = readNumber("glueWeightGr");
 
-      // Attributes
       const balancePointIn = readNumber("balancePointIn");
       const arrowSpine = readNumber("arrowSpine");
 
-      // Notes
       const userNotesEl = document.getElementById("userNotes");
       const userNotesStr = userNotesEl ? userNotesEl.value.trim() : "";
 
@@ -1487,14 +1466,34 @@
       const componentTotal =
         shaftWeightGr + pointSystemWeightGr + fletchingSystemWeightGr;
 
-      // Decide which total arrow weight to use:
-      // 1) Prefer the explicit total arrow weight input if provided.
-      // 2) Otherwise, fall back to sum of shaft + components.
+      // Detect whether the component breakdown is "complete enough" to trust as total.
+      const componentComplete =
+        shaftWeightGr > 0 &&
+        nockWeightGr > 0 &&
+        vaneCount > 0 &&
+        vaneWeightGr > 0 &&
+        insertWeightGr > 0 &&
+        pointWeightGr > 0;
+      // wrapWeightGr and glueWeightGr may be zero and still considered complete.
+
       let totalArrowWeightGr = 0;
-      if (totalArrowWeightGrInput > 0) {
-        totalArrowWeightGr = totalArrowWeightGrInput;
-      } else {
+      let totalSource = "None";
+
+      if (componentComplete && componentTotal > 0) {
+        // Use full component sum if the user has entered a complete breakdown.
         totalArrowWeightGr = componentTotal;
+        totalSource = "Calculated (full components)";
+      } else if (totalArrowWeightGrInput > 0) {
+        // Otherwise, fall back to the total arrow weight field.
+        totalArrowWeightGr = totalArrowWeightGrInput;
+        totalSource = "Input (total field)";
+      } else if (componentTotal > 0) {
+        // Partial components but no total field — use what we have, but mark as partial.
+        totalArrowWeightGr = componentTotal;
+        totalSource = "Calculated (partial components)";
+      } else {
+        totalArrowWeightGr = 0;
+        totalSource = "Not provided";
       }
 
       let focPercent = NaN;
@@ -1797,16 +1796,18 @@
           weightFletch.style.width = fletchPct + "%";
 
           if (weightTotalsEl) {
-            weightTotalsEl.textContent =
+            weightTotalsEl.innerHTML =
               "Shaft: " +
               formatNumber(shaftWeightGr, 1) +
               " gr (" +
               formatNumber(shaftPct, 1) +
-              " %) • Point system: " +
+              " %)<br>" +
+              "Point system: " +
               formatNumber(pointSystemWeightGr, 1) +
               " gr (" +
               formatNumber(pointPct, 1) +
-              " %) • Nock / wrap / vanes + glue: " +
+              " %)<br>" +
+              "Nock / wrap / vanes + glue: " +
               formatNumber(fletchingSystemWeightGr, 1) +
               " gr (" +
               formatNumber(fletchPct, 1) +
@@ -1817,8 +1818,10 @@
           weightPoint.style.width = "33%";
           weightFletch.style.width = "34%";
           if (weightTotalsEl) {
-            weightTotalsEl.textContent =
-              "Shaft: – gr (– %) • Point system: – gr (– %) • Nock / wrap / vanes + glue: – gr (– %)";
+            weightTotalsEl.innerHTML =
+              "Shaft: – gr (– %)<br>" +
+              "Point system: – gr (– %)<br>" +
+              "Nock / wrap / vanes + glue: – gr (– %)";
           }
         }
       }
@@ -1841,16 +1844,8 @@
         rows.push(["Arrow", "Name", "Input", arrowNameStr, ""]);
         rows.push(["Arrow", "Spine", "Input", arrowSpine > 0 ? arrowSpine.toString() : "–", ""]);
         rows.push(["Arrow", "Arrow length", "Input", formatNumber(arrowLengthIn, 2), "in"]);
-        rows.push(["Arrow", "Bare shaft weight", "Input", formatNumber(bareShaftWeightGr, 1), "gr"]);
 
-        rows.push([
-          "Calculated",
-          "Total arrow weight",
-          totalArrowWeightGrInput > 0 ? "Input (total field)" : "Calculated (components)",
-          totalArrowWeightGr > 0 ? formatNumber(totalArrowWeightGr, 1) : "–",
-          "gr"
-        ]);
-
+        rows.push(["Components", "Bare shaft weight", "Input", formatNumber(bareShaftWeightGr, 1), "gr"]);
         rows.push(["Components", "Nock weight", "Input", formatNumber(nockWeightGr, 1), "gr"]);
         rows.push(["Components", "Wrap weight", "Input", formatNumber(wrapWeightGr, 1), "gr"]);
         rows.push(["Components", "Vane count", "Input", formatNumber(vaneCount, 0), ""]);
@@ -1858,6 +1853,14 @@
         rows.push(["Components", "Insert / outsert", "Input", formatNumber(insertWeightGr, 1), "gr"]);
         rows.push(["Components", "Point weight", "Input", formatNumber(pointWeightGr, 1), "gr"]);
         rows.push(["Components", "Glue weight (est.)", "Input", formatNumber(glueWeightGr, 1), "gr"]);
+
+        rows.push([
+          "Calculated",
+          "Total arrow weight",
+          totalSource,
+          totalArrowWeightGr > 0 ? formatNumber(totalArrowWeightGr, 1) : "–",
+          "gr"
+        ]);
 
         rows.push(["Balance", "Balance point from nock", "Input", formatNumber(balancePointIn, 2), "in"]);
 
@@ -1889,9 +1892,6 @@
       }
     }
 
-    // -----------------------------
-    // Theme toggle
-    // -----------------------------
     function updateThemeToggleLabel() {
       const icon = document.getElementById("themeToggleIcon");
       const text = document.getElementById("themeToggleText");
@@ -1925,9 +1925,6 @@
       }
     }
 
-    // -----------------------------
-    // Initial setup & event wiring
-    // -----------------------------
     const inputIds = [
       "bowDrawWeightLb",
       "bowDrawLengthIn",
@@ -1937,8 +1934,8 @@
       "dist2Yards",
       "trajMaxDistanceYards",
       "arrowLengthIn",
-      "bareShaftWeightGr",
       "totalArrowWeightGrInput",
+      "bareShaftWeightGr",
       "nockWeightGr",
       "wrapWeightGr",
       "vaneCount",
@@ -1970,7 +1967,6 @@
       notesEl.addEventListener("input", calculateAndUpdate);
     }
 
-    // Keep Trajectory Arc range loosely in sync with Distance 2 (one-way).
     const trajInput = document.getElementById("trajMaxDistanceYards");
     const dist2Input = document.getElementById("dist2Yards");
     if (trajInput && dist2Input) {
@@ -1986,7 +1982,6 @@
       });
     }
 
-    // Momentum bands help toggle
     const bandsHelpToggle = document.getElementById("bandsHelpToggle");
     const bandsHelpPanel = document.getElementById("bandsHelpPanel");
     if (bandsHelpToggle && bandsHelpPanel) {
@@ -1998,7 +1993,6 @@
       });
     }
 
-    // Results (FOC/GPP/GPI) help toggle
     const resultsHelpToggle = document.getElementById("resultsHelpToggle");
     const resultsHelpPanel = document.getElementById("resultsHelpPanel");
 
@@ -2011,7 +2005,6 @@
       });
     }
 
-    // Component breakdown visibility toggle
     const compToggle = document.getElementById("enableComponentDetails");
     const compDetails = document.getElementById("componentDetails");
     if (compToggle && compDetails) {
