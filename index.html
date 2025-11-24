@@ -372,9 +372,9 @@
     </div>
 
     <div class="meta">
-      <span id="appVersion">v0.0.0</span>
+      <span id="appVersion">v0.7.1</span>
       <span>•</span>
-      <span id="buildDateText">Build date: unknown</span>
+      <span id="buildDateText">Build date: 2025-11-23</span>
     </div>
 
     <div class="grid">
@@ -680,20 +680,20 @@
 
           <!-- Trajectory arc visualization -->
           <div class="viz-block">
-            <div class="viz-title">Trajectory Arc (Feet vs Yards)</div>
+            <div class="viz-title">Trajectory Arc (Distance vs Height)</div>
             <svg
               id="trajGraph"
               viewBox="0 0 100 60"
               preserveAspectRatio="none"
               class="traj-graph"
             >
-              <!-- Axes: x = feet, y = yards -->
+              <!-- Axes: x = yards, y = feet -->
               <line x1="0" y1="50" x2="100" y2="50" class="traj-axis"></line>
               <line x1="0" y1="10" x2="0" y2="50" class="traj-axis"></line>
 
               <!-- Axis labels -->
               <text x="50" y="58" text-anchor="middle" class="traj-label">
-                Height (feet)
+                Distance (yards)
               </text>
               <text
                 x="2"
@@ -701,14 +701,14 @@
                 text-anchor="start"
                 class="traj-label"
               >
-                Yards
+                Height (feet)
               </text>
 
-              <!-- Data line (feet vs yards) -->
+              <!-- Data line (yards -> feet arc) -->
               <polyline id="trajGraphLine" points=""></polyline>
             </svg>
             <div class="traj-legend" id="trajGraphLegend">
-              Horizontal axis: height in feet. Vertical axis: distance in yards.
+              Left = bow, right = target. Arc height is approximate.
             </div>
           </div>
         </div>
@@ -796,12 +796,6 @@
 
   <script>
     // -----------------------------
-    // App metadata (easy to update)
-    // -----------------------------
-    const APP_VERSION = "v0.7.0";
-    const BUILD_DATE = "2025-11-23";
-
-    // -----------------------------
     // Helper functions
     // -----------------------------
     function readNumber(id) {
@@ -841,10 +835,10 @@
     }
 
     /**
-     * Update the simple trajectory arc:
-     *  - Y axis = distance in yards (0 .. maxDistanceYards)
-     *  - X axis = height in feet (0 .. HmaxFeet)
-     * We draw a scaled parabola that peaks around mid-flight.
+     * Update a simple left→right trajectory arc:
+     *  - X axis = distance in yards (0 .. maxDistanceYards)
+     *  - Y axis = height in feet (0 .. HmaxFeet)
+     * We draw a symmetric parabola peaking at mid-flight.
      */
     function updateTrajectoryGraph(launchFps, maxDistanceYards) {
       const lineEl = document.getElementById("trajGraphLine");
@@ -854,7 +848,7 @@
       if (!isFinite(maxDistanceYards) || maxDistanceYards <= 0) {
         lineEl.setAttribute("points", "");
         legendEl.textContent =
-          "Horizontal axis: height in feet. Vertical axis: distance in yards.";
+          "Left = bow, right = target. Arc height is approximate.";
         return;
       }
 
@@ -862,11 +856,10 @@
 
       // Use launch FPS if valid, otherwise assume ~280 fps as a baseline.
       const baseFps = isFinite(launchFps) && launchFps > 0 ? launchFps : 280;
-      const speedFactor = 280 / baseFps; // slower arrows get a bit more arc
+      const speedFactor = 280 / baseFps; // slower arrows = slightly more arc
 
-      // Approximate peak height in feet (very rough, just for visualization):
-      // - About 3 ft at 40 yd for a ~280 fps arrow
-      // - Scale with distance and speed (slower = higher arc)
+      // Approximate peak height in feet (just for visualization):
+      // About 3 ft at 40 yd for a ~280 fps arrow, scaled.
       let HmaxFeet = (distMaxYards / 40) * 3 * speedFactor;
       HmaxFeet = Math.max(0.5, Math.min(HmaxFeet, 12)); // clamp between 0.5 and 12 ft
 
@@ -877,17 +870,20 @@
         const t = i / steps; // 0..1 along the shot
         const dYards = distMaxYards * t;
 
-        // Simple symmetric parabola: 0 at start & end, Hmax at mid-flight
+        // Symmetric parabola: 0 at start & end, Hmax at t=0.5
         const heightFeet = HmaxFeet * 4 * t * (1 - t); // 4t(1-t) peaks at t=0.5
 
         // Map to SVG:
-        //  - X: 0..HmaxFeet -> 0..100
-        //  - Y: 0..distMaxYards -> 50..10 (0 at bottom, max distance toward top)
-        const xNorm = HmaxFeet > 0 ? heightFeet / HmaxFeet : 0;
-        const x = xNorm * 100;
-
-        const yNorm = dYards / distMaxYards; // 0 at bow, 1 at farthest
-        const y = 50 - yNorm * 40; // 10..50
+        //  - X: distance 0..distMaxYards -> 0..100
+        //  - Y: height 0..HmaxFeet -> 50..10 (ground at bottom, peak up)
+        const x = (dYards / distMaxYards) * 100;
+        let y;
+        if (HmaxFeet > 0) {
+          const yNorm = heightFeet / HmaxFeet; // 0..1
+          y = 50 - yNorm * 40; // 10..50
+        } else {
+          y = 50;
+        }
 
         points.push(`${x},${y}`);
       }
@@ -907,7 +903,7 @@
     function calculateAndUpdate() {
       // Bow
       const bowDrawWeightLb = readNumber("bowDrawWeightLb");
-      const bowDrawLengthIn = readNumber("bowDrawLengthIn"); // reserved for future use
+      const bowDrawLengthIn = readNumber("bowDrawLengthIn"); // reserved for future
       const launchFps = readNumber("launchFps");
       const fpsLossPer10Yards = readNumber("fpsLossPer10Yards");
 
@@ -949,7 +945,7 @@
       let focShiftIn = NaN;
       if (arrowLengthIn > 0) {
         const centerIn = arrowLengthIn / 2;
-        focShiftIn = balancePointIn - centerIn; // + means forward of center
+        focShiftIn = balancePointIn - centerIn; // + = forward of center
         focPercent = (focShiftIn / arrowLengthIn) * 100;
       }
 
@@ -1210,11 +1206,7 @@
       });
     }
 
-    const versionEl = document.getElementById("appVersion");
-    const buildDateEl = document.getElementById("buildDateText");
-    if (versionEl) versionEl.textContent = APP_VERSION;
-    if (buildDateEl) buildDateEl.textContent = "Build date: " + BUILD_DATE;
-
+    // Initial render
     updateArrowNameDisplay();
     calculateAndUpdate();
   </script>
