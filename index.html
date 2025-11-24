@@ -655,6 +655,28 @@
       opacity: 0;
       cursor: pointer;
     }
+
+    /* Saved builds layout */
+    .saved-builds-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .saved-builds-row select {
+      padding: 3px 6px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text);
+      font-size: 0.8rem;
+    }
+
+    .saved-builds-row button {
+      font-size: 0.7rem;
+    }
   </style>
 </head>
 <body>
@@ -665,9 +687,9 @@
     </div>
 
     <div class="meta">
-      <span id="appVersion">v0.9.9</span>
+      <span id="appVersion">v0.9.10</span>
       <span>•</span>
-      <span id="buildDateText">Build date: 2025-11-23</span>
+      <span id="buildDateText">Build date: 2025-11-24</span>
 
       <button id="themeToggle" class="help-badge">
         <span id="themeToggleIcon">🌙</span>
@@ -676,7 +698,7 @@
     </div>
 
     <div class="grid">
-      <!-- LEFT: INPUTS + NOTES -->
+      <!-- LEFT: INPUTS + NOTES + SAVED BUILDS -->
       <div>
         <!-- Bow -->
         <div class="card">
@@ -1003,6 +1025,50 @@
             <textarea id="userNotes" placeholder="Example: Broadhead tune at 30 yards, used on elk hunt, etc."></textarea>
           </div>
         </div>
+
+        <!-- Saved Builds -->
+        <div class="card">
+          <div class="card-header">
+            <h2>Saved Builds</h2>
+            <button
+              class="info-btn"
+              data-info-target="savedBuildsInfo"
+              title="Show information about this section"
+            >
+              i
+            </button>
+          </div>
+          <div id="savedBuildsInfo" class="info-panel">
+            <p>Save and load complete arrow setups in this browser only. Builds are stored locally using your browser's storage (no cloud account required).</p>
+          </div>
+
+          <div class="field">
+            <label for="buildNameInput">Build name</label>
+            <input
+              id="buildNameInput"
+              type="text"
+              placeholder="e.g. Elk 2025 – 70lb / 520gr"
+            />
+          </div>
+
+          <div class="saved-builds-row">
+            <select id="savedBuildsSelect">
+              <option value="">(No saved builds)</option>
+            </select>
+          </div>
+
+          <div class="saved-builds-row" style="margin-top:4px;">
+            <button id="saveBuildBtn" class="csv-btn" type="button">
+              💾 Save / overwrite
+            </button>
+            <button id="loadBuildBtn" class="csv-btn" type="button">
+              📤 Load selected
+            </button>
+            <button id="deleteBuildBtn" class="csv-btn" type="button">
+              ❌ Delete selected
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- RIGHT: RESULTS & VISUALS -->
@@ -1020,7 +1086,7 @@
             </button>
           </div>
           <div id="resultsInfo" class="info-panel">
-            <p>Big-picture summary of your arrow build: total weight, FOC, grains per pound, and grains per inch.</p>
+            <p>Big-picture summary of your arrow build: total weight, FOC, grains per pound, grains per inch.</p>
           </div>
 
           <div class="results-row">
@@ -1465,6 +1531,10 @@
               <span>💾</span>
               <span>Download table CSV</span>
             </button>
+            <button id="downloadInputsCsvBtn" class="csv-btn" type="button">
+              <span>🎯</span>
+              <span>Download inputs-only CSV</span>
+            </button>
             <label class="csv-btn csv-upload-label">
               <span>📂</span>
               <span>Upload CSV (restore inputs)</span>
@@ -1710,6 +1780,9 @@
       const bowModelInput = document.getElementById("bowModel");
       const bowModelStr = bowModelInput ? bowModelInput.value.trim() : "";
 
+      const compToggleEl = document.getElementById("enableComponentDetails");
+      const advancedEnabled = !!(compToggleEl && compToggleEl.checked);
+
       const now = new Date();
       const timestampStr = now.toLocaleString();
 
@@ -1726,29 +1799,18 @@
 
       let weightCompString = "–";
 
-      const componentComplete =
-        shaftWeightGr > 0 &&
-        nockWeightGr > 0 &&
-        vaneCount > 0 &&
-        vaneWeightGr > 0 &&
-        insertWeightGr > 0 &&
-        pointWeightGr > 0;
-
+      // --- NEW TOTAL ARROW WEIGHT LOGIC ---
       let totalArrowWeightGr = 0;
-      let totalSource = "None";
+      let totalSource = "";
 
-      if (componentComplete && componentTotal > 0) {
-        totalArrowWeightGr = componentTotal;
-        totalSource = "Calculated (full components)";
-      } else if (totalArrowWeightGrInput > 0) {
-        totalArrowWeightGr = totalArrowWeightGrInput;
-        totalSource = "Input (total field)";
-      } else if (componentTotal > 0) {
-        totalArrowWeightGr = componentTotal;
-        totalSource = "Calculated (partial components)";
+      if (advancedEnabled) {
+        // Use sum of components when advanced breakdown is on
+        totalArrowWeightGr = componentTotal > 0 ? componentTotal : 0;
+        totalSource = "Components sum (advanced)";
       } else {
-        totalArrowWeightGr = 0;
-        totalSource = "Not provided";
+        // Use total arrow weight field when advanced breakdown is off
+        totalArrowWeightGr = totalArrowWeightGrInput > 0 ? totalArrowWeightGrInput : 0;
+        totalSource = "Total field (Arrow Shaft & Total Weight)";
       }
 
       let focPercent = NaN;
@@ -2119,7 +2181,7 @@
         // Meta
         rows.push(["Meta", "Timestamp", "Auto", timestampStr, ""]);
 
-        // Arrow (right after timestamp)
+        // Arrow
         rows.push(["Arrow", "Name", "Input", arrowNameStr, ""]);
         rows.push(["Arrow", "Spine", "Input", arrowSpine > 0 ? arrowSpine.toString() : "–", ""]);
         rows.push(["Arrow", "Arrow length", "Input", formatNumber(arrowLengthIn, 2), "in"]);
@@ -2146,7 +2208,7 @@
         rows.push(["Components", "Point weight", "Input", formatNumber(pointWeightGr, 1), "gr"]);
         rows.push(["Components", "Glue weight (est.)", "Input", formatNumber(glueWeightGr, 1), "gr"]);
 
-        // Total arrow weight
+        // Total arrow weight (with new source)
         rows.push([
           "Calculated",
           "Total arrow weight",
@@ -2334,7 +2396,10 @@
       const syncVisibility = () => {
         compDetails.style.display = compToggle.checked ? "block" : "none";
       };
-      compToggle.addEventListener("change", syncVisibility);
+      compToggle.addEventListener("change", () => {
+        syncVisibility();
+        calculateAndUpdate(); // recalc because toggle affects total weight logic
+      });
       syncVisibility();
     }
 
@@ -2420,7 +2485,7 @@
       const idxValue = header.indexOf("Value");
 
       if (idxCategory === -1 || idxField === -1 || idxValue === -1) {
-        console.warn("CSV header does not match expected format.");
+        console.warn("CSV header does not match expected Data Table format.");
         return;
       }
 
@@ -2480,9 +2545,59 @@
       calculateAndUpdate();
     }
 
+    // --- Inputs-only CSV exporter ---
+
+    function inputsToCsv() {
+      const fields = [
+        { id: "bowDrawWeightLb", label: "Bow draw weight (lb)" },
+        { id: "bowDrawLengthIn", label: "Bow draw length (in)" },
+        { id: "launchFps", label: "Launch FPS" },
+        { id: "fpsLossPer10Yards", label: "Speed loss per 10yd" },
+        { id: "bowModel", label: "Bow model & year" },
+        { id: "arrowName", label: "Arrow name" },
+        { id: "arrowSpine", label: "Arrow spine" },
+        { id: "arrowLengthIn", label: "Arrow length (in)" },
+        { id: "totalArrowWeightGrInput", label: "Total arrow weight (gr)" },
+        { id: "bareShaftWeightGr", label: "Bare shaft weight (gr)" },
+        { id: "nockWeightGr", label: "Nock weight (gr)" },
+        { id: "wrapWeightGr", label: "Wrap weight (gr)" },
+        { id: "vaneCount", label: "Vane count" },
+        { id: "vaneWeightGr", label: "Vane weight each (gr)" },
+        { id: "insertWeightGr", label: "Insert / outsert (gr)" },
+        { id: "pointWeightGr", label: "Point weight (gr)" },
+        { id: "glueWeightGr", label: "Glue weight (gr)" },
+        { id: "balancePointIn", label: "Balance point from nock (in)" },
+        { id: "dist1Yards", label: "Distance 1 (yd)" },
+        { id: "dist2Yards", label: "Distance 2 (yd)" },
+        { id: "trajMaxDistanceYards", label: "Arc range (yd)" },
+        { id: "userNotes", label: "Notes" },
+      ];
+
+      const compToggle = document.getElementById("enableComponentDetails");
+      const advancedEnabled = !!(compToggle && compToggle.checked);
+
+      const rows = [];
+      rows.push(["ElementId", "Label", "Value", "AdvancedComponentsEnabled"].map(escapeCsvValue).join(","));
+
+      fields.forEach(({ id, label }) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const value = el.value ?? "";
+        rows.push([
+          escapeCsvValue(id),
+          escapeCsvValue(label),
+          escapeCsvValue(value),
+          escapeCsvValue(advancedEnabled ? "true" : "false"),
+        ].join(","));
+      });
+
+      return rows.join("\n");
+    }
+
     function initCsvButtons() {
       const copyBtn = document.getElementById("copyCsvBtn");
       const downloadBtn = document.getElementById("downloadCsvBtn");
+      const downloadInputsBtn = document.getElementById("downloadInputsCsvBtn");
       const uploadInput = document.getElementById("uploadInputsCsv");
 
       if (copyBtn) {
@@ -2510,6 +2625,14 @@
         });
       }
 
+      if (downloadInputsBtn) {
+        downloadInputsBtn.addEventListener("click", () => {
+          const csv = inputsToCsv();
+          if (!csv) return;
+          downloadCsvFile("arrow-tune-inputs.csv", csv);
+        });
+      }
+
       if (uploadInput) {
         uploadInput.addEventListener("change", (e) => {
           const file = e.target.files && e.target.files[0];
@@ -2528,11 +2651,185 @@
       }
     }
 
+    // --- Saved builds (localStorage) ---
+
+    const SAVED_BUILDS_KEY = "arrowTuneSavedBuilds_v1";
+
+    function loadSavedBuilds() {
+      try {
+        const raw = localStorage.getItem(SAVED_BUILDS_KEY);
+        if (!raw) return {};
+        const parsed = JSON.parse(raw);
+        if (typeof parsed === "object" && parsed !== null) {
+          return parsed;
+        }
+      } catch (e) {
+        console.warn("Failed to parse saved builds:", e);
+      }
+      return {};
+    }
+
+    function saveSavedBuilds(builds) {
+      try {
+        localStorage.setItem(SAVED_BUILDS_KEY, JSON.stringify(builds));
+      } catch (e) {
+        console.warn("Failed to save builds:", e);
+      }
+    }
+
+    function refreshSavedBuildsSelect() {
+      const select = document.getElementById("savedBuildsSelect");
+      if (!select) return;
+      const builds = loadSavedBuilds();
+      const current = select.value;
+
+      select.innerHTML = '<option value="">(No saved builds)</option>';
+      const names = Object.keys(builds).sort((a, b) =>
+        a.toLowerCase().localeCompare(b.toLowerCase())
+      );
+      names.forEach((name) => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      });
+
+      if (names.includes(current)) {
+        select.value = current;
+      }
+    }
+
+    function getAllInputState() {
+      const ids = [
+        "bowDrawWeightLb",
+        "bowDrawLengthIn",
+        "launchFps",
+        "fpsLossPer10Yards",
+        "bowModel",
+        "arrowName",
+        "arrowSpine",
+        "arrowLengthIn",
+        "totalArrowWeightGrInput",
+        "bareShaftWeightGr",
+        "nockWeightGr",
+        "wrapWeightGr",
+        "vaneCount",
+        "vaneWeightGr",
+        "insertWeightGr",
+        "pointWeightGr",
+        "glueWeightGr",
+        "balancePointIn",
+        "dist1Yards",
+        "dist2Yards",
+        "trajMaxDistanceYards",
+        "userNotes",
+      ];
+      const state = { fields: {}, advancedEnabled: false };
+
+      ids.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) {
+          state.fields[id] = el.value ?? "";
+        }
+      });
+
+      const compToggle = document.getElementById("enableComponentDetails");
+      state.advancedEnabled = !!(compToggle && compToggle.checked);
+
+      return state;
+    }
+
+    function applyInputState(state) {
+      if (!state || typeof state !== "object") return;
+
+      const fields = state.fields || {};
+      Object.entries(fields).forEach(([id, value]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.value = value;
+      });
+
+      const compToggle = document.getElementById("enableComponentDetails");
+      if (compToggle) {
+        compToggle.checked = !!state.advancedEnabled;
+        const compDetails = document.getElementById("componentDetails");
+        if (compDetails) {
+          compDetails.style.display = compToggle.checked ? "block" : "none";
+        }
+      }
+
+      updateArrowNameDisplay();
+      calculateAndUpdate();
+    }
+
+    function initSavedBuilds() {
+      refreshSavedBuildsSelect();
+
+      const saveBtn = document.getElementById("saveBuildBtn");
+      const loadBtn = document.getElementById("loadBuildBtn");
+      const deleteBtn = document.getElementById("deleteBuildBtn");
+      const nameInput = document.getElementById("buildNameInput");
+      const select = document.getElementById("savedBuildsSelect");
+
+      if (saveBtn && nameInput && select) {
+        saveBtn.addEventListener("click", () => {
+          const name = nameInput.value.trim();
+          if (!name) {
+            alert("Please enter a build name before saving.");
+            return;
+          }
+          const builds = loadSavedBuilds();
+          builds[name] = getAllInputState();
+          saveSavedBuilds(builds);
+          refreshSavedBuildsSelect();
+          select.value = name;
+        });
+      }
+
+      if (loadBtn && select) {
+        loadBtn.addEventListener("click", () => {
+          const name = select.value;
+          if (!name) {
+            alert("Please select a saved build to load.");
+            return;
+          }
+          const builds = loadSavedBuilds();
+          const state = builds[name];
+          if (!state) {
+            alert("Saved build not found.");
+            return;
+          }
+          applyInputState(state);
+          const nameInputEl = document.getElementById("buildNameInput");
+          if (nameInputEl) {
+            nameInputEl.value = name;
+          }
+        });
+      }
+
+      if (deleteBtn && select) {
+        deleteBtn.addEventListener("click", () => {
+          const name = select.value;
+          if (!name) {
+            alert("Please select a saved build to delete.");
+            return;
+          }
+          if (!confirm(`Delete saved build "${name}"?`)) return;
+
+          const builds = loadSavedBuilds();
+          delete builds[name];
+          saveSavedBuilds(builds);
+          refreshSavedBuildsSelect();
+        });
+      }
+    }
+
     updateArrowNameDisplay();
     initTheme();
     initInfoPanels();
     calculateAndUpdate();
     initCsvButtons();
+    initSavedBuilds();
   </script>
 </body>
 </html>
