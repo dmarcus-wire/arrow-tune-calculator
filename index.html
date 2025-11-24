@@ -362,6 +362,23 @@
       fill: #6b7280;
       font-size: 4px;
     }
+
+    /* Momentum band & help badge */
+    .momentum-band-text {
+      font-size: 0.8rem;
+    }
+
+    .help-badge {
+      display: inline-block;
+      margin-top: 3px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      font-size: 0.7rem;
+      color: #e5e7eb;
+      cursor: help;
+    }
   </style>
 </head>
 <body>
@@ -372,7 +389,7 @@
     </div>
 
     <div class="meta">
-      <span id="appVersion">v0.8.3</span>
+      <span id="appVersion">v0.8.4</span>
       <span>•</span>
       <span id="buildDateText">Build date: 2025-11-23</span>
     </div>
@@ -673,9 +690,25 @@
             <span class="value" id="dist2KineticsDisplay">– fps / – slug·ft/s</span>
           </div>
 
+          <div class="results-row">
+            <span class="label">Game momentum band</span>
+            <span class="value">
+              <span id="momentumBandLabel" class="momentum-band-text">–</span>
+            </span>
+          </div>
+
           <div class="note">
             Momentum is computed as: (arrow grains × fps) / 225,400.
             Values are approximate and based on your launch FPS and speed loss settings.
+          </div>
+
+          <div class="note">
+            <span
+              class="help-badge"
+              title="These bands are rough rules of thumb based on arrow momentum and penetration studies (such as Dr. Ed Ashby’s work) and common kinetic-energy charts from major arrow manufacturers. Small–medium game often falls around ~0.25–0.35 slug·ft/s, deer-sized game around ~0.30–0.45, large game like elk or black bear around ~0.45–0.60+, and very large or dangerous game 0.60+ slug·ft/s. These are NOT guarantees of lethality—shot placement, broadhead quality, and local regulations matter most."
+            >
+              Learn more about these bands
+            </span>
           </div>
 
           <!-- Trajectory arc visualization -->
@@ -882,6 +915,23 @@
       if (arrowWeightGrains <= 0 || fps <= 0) return NaN;
       // mass (slugs) = grains / 225,400; momentum = mass * velocity.
       return (arrowWeightGrains * fps) / 225400;
+    }
+
+    // Classify launch momentum into a rough game band.
+    function classifyMomentumBand(momentum) {
+      if (!isFinite(momentum) || momentum <= 0) return null;
+
+      if (momentum < 0.25) {
+        return "very light / target practice";
+      } else if (momentum < 0.35) {
+        return "small game";
+      } else if (momentum < 0.45) {
+        return "deer-size game";
+      } else if (momentum < 0.60) {
+        return "large game (elk/bear)";
+      } else {
+        return "very large / dangerous game";
+      }
     }
 
     /**
@@ -1178,6 +1228,7 @@
         document.getElementById("dist1KineticsDisplay");
       const dist2KineticsDisplay =
         document.getElementById("dist2KineticsDisplay");
+      const momentumBandLabel = document.getElementById("momentumBandLabel");
 
       if (launchKineticsDisplay) {
         const fpsText = isFinite(launchFpsUsed)
@@ -1205,6 +1256,21 @@
           ? formatNumber(momentum2, 3) + " slug·ft/s"
           : "– slug·ft/s";
         dist2KineticsDisplay.textContent = fpsText + " / " + momText;
+      }
+
+      // Momentum band badge based on launch momentum
+      if (momentumBandLabel) {
+        const bandName = classifyMomentumBand(launchMomentum);
+        if (!bandName) {
+          momentumBandLabel.textContent = "–";
+        } else {
+          momentumBandLabel.textContent =
+            "Your setup: " +
+            formatNumber(launchMomentum, 3) +
+            " slug·ft/s → in the '" +
+            bandName +
+            "' band.";
+        }
       }
 
       // Trajectory arc: use ONLY the user arc range (with small fallback)
