@@ -1128,10 +1128,7 @@
             <div class="viz-title">2) Game momentum band (farthest distance)</div>
 
             <div class="results-row">
-              <span class="label">Band classification</span>
-              <span class="value">
-                <span id="momentumBandLabel" class="momentum-band-text">–</span>
-              </span>
+              <span id="momentumBandLabel" class="value momentum-band-text">–</span>
             </div>
 
             <div class="note">
@@ -1718,6 +1715,12 @@
         spineDisplayEl.textContent = arrowSpine > 0 ? arrowSpine.toString() : "–";
       }
 
+      // Band labels for Data Table
+      let focBandLabel = "";
+      let gppBandLabel = "";
+      let gpiBandLabel = "";
+      let momentumBandResultStr = "–";
+
       const focTag = document.getElementById("focTag");
       if (focTag) {
         focTag.style.display = isFinite(focPercent) ? "inline-block" : "none";
@@ -1735,6 +1738,7 @@
             text = "High";
           }
           focTag.textContent = text;
+          focBandLabel = text;
         }
       }
 
@@ -1756,6 +1760,7 @@
             text = "Heavy";
           }
           gppTag.textContent = text;
+          gppBandLabel = text;
         }
       }
 
@@ -1780,6 +1785,7 @@
             text = "Ultra-heavy";
           }
           gpiTag.textContent = text;
+          gpiBandLabel = text;
         }
       }
 
@@ -1842,6 +1848,7 @@
         const farthestDist = Math.max(dist1Yards, dist2Yards, arcRangeYards);
         if (!isFinite(farthestDist) || farthestDist <= 0 || totalArrowWeightGr <= 0) {
           momentumBandLabel.textContent = "–";
+          momentumBandResultStr = "–";
         } else {
           const fpsFar = estimateFpsAtDistance(
             launchFpsUsed,
@@ -1855,8 +1862,9 @@
           const bandName = classifyMomentumBand(momentumFar);
           if (!bandName || !isFinite(momentumFar) || momentumFar <= 0) {
             momentumBandLabel.textContent = "–";
+            momentumBandResultStr = "–";
           } else {
-            momentumBandLabel.textContent =
+            const txt =
               "At ~" +
               Math.round(farthestDist) +
               " yd: " +
@@ -1864,6 +1872,8 @@
               " slug·ft/s → in the '" +
               bandName +
               "' band.";
+            momentumBandLabel.textContent = txt;
+            momentumBandResultStr = txt;
           }
         }
       }
@@ -1987,21 +1997,26 @@
       if (tableBody) {
         const rows = [];
 
+        // Meta
         rows.push(["Meta", "Timestamp", "Auto", timestampStr, ""]);
 
+        // Arrow (moved up to appear right after timestamp)
+        rows.push(["Arrow", "Name", "Input", arrowNameStr, ""]);
+        rows.push(["Arrow", "Spine", "Input", arrowSpine > 0 ? arrowSpine.toString() : "–", ""]);
+        rows.push(["Arrow", "Arrow length", "Input", formatNumber(arrowLengthIn, 2), "in"]);
+
+        // Bow
         rows.push(["Bow", "Draw weight", "Input", formatNumber(bowDrawWeightLb, 1), "lb"]);
         rows.push(["Bow", "Draw length", "Input", formatNumber(bowDrawLengthIn, 1), "in"]);
         rows.push(["Bow", "Launch speed estimate", "Input", formatNumber(launchFps, 0), "fps"]);
         rows.push(["Bow", "Speed loss / 10 yd", "Input", formatNumber(fpsLossPer10Yards, 1), "fps/10yd"]);
 
+        // Distances
         rows.push(["Distances", "Distance 1", "Input", formatNumber(dist1Yards, 0), "yd"]);
         rows.push(["Distances", "Distance 2", "Input", formatNumber(dist2Yards, 0), "yd"]);
         rows.push(["Distances", "Arc range (visual)", "Input", formatNumber(arcRangeYards, 0), "yd"]);
 
-        rows.push(["Arrow", "Name", "Input", arrowNameStr, ""]);
-        rows.push(["Arrow", "Spine", "Input", arrowSpine > 0 ? arrowSpine.toString() : "–", ""]);
-        rows.push(["Arrow", "Arrow length", "Input", formatNumber(arrowLengthIn, 2), "in"]);
-
+        // Components
         rows.push(["Components", "Bare shaft weight", "Input", formatNumber(bareShaftWeightGr, 1), "gr"]);
         rows.push(["Components", "Nock weight", "Input", formatNumber(nockWeightGr, 1), "gr"]);
         rows.push(["Components", "Wrap weight", "Input", formatNumber(wrapWeightGr, 1), "gr"]);
@@ -2011,6 +2026,7 @@
         rows.push(["Components", "Point weight", "Input", formatNumber(pointWeightGr, 1), "gr"]);
         rows.push(["Components", "Glue weight (est.)", "Input", formatNumber(glueWeightGr, 1), "gr"]);
 
+        // Total arrow weight
         rows.push([
           "Calculated",
           "Total arrow weight",
@@ -2019,20 +2035,28 @@
           "gr"
         ]);
 
+        // Balance
         rows.push(["Balance", "Balance point from nock", "Input", formatNumber(balancePointIn, 2), "in"]);
 
+        // Calculated metrics
         rows.push(["Calculated", "FOC", "Calculated", isFinite(focPercent) ? formatNumber(focPercent, 1) : "–", "%"]);
+        rows.push(["Calculated", "FOC band", "Calculated", focBandLabel || "–", ""]);
         rows.push(["Calculated", "Grains per pound (GPP)", "Calculated", isFinite(grainsPerPound) ? formatNumber(grainsPerPound, 1) : "–", "gpp"]);
+        rows.push(["Calculated", "GPP band", "Calculated", gppBandLabel || "–", ""]);
         rows.push(["Calculated", "Shaft GPI (bare)", "Calculated", isFinite(shaftGpi) ? formatNumber(shaftGpi, 2) : "–", "gr/in"]);
         rows.push(["Calculated", "Arrow GPI (full)", "Calculated", isFinite(arrowGpi) ? formatNumber(arrowGpi, 2) : "–", "gr/in"]);
+        rows.push(["Calculated", "Arrow GPI band", "Calculated", gpiBandLabel || "–", ""]);
 
+        // Kinetics
         rows.push(["Kinetics", "Launch speed", "Calculated", isFinite(launchFpsUsed) ? formatNumber(launchFpsUsed, 0) : "–", "fps"]);
         rows.push(["Kinetics", "Launch momentum", "Calculated", isFinite(launchMomentum) ? formatNumber(launchMomentum, 3) : "–", "slug·ft/s"]);
         rows.push(["Kinetics", "Speed @ Dist 1", "Calculated", isFinite(fps1) ? formatNumber(fps1, 0) : "–", "fps"]);
         rows.push(["Kinetics", "Momentum @ Dist 1", "Calculated", isFinite(momentum1) ? formatNumber(momentum1, 3) : "–", "slug·ft/s"]);
         rows.push(["Kinetics", "Speed @ Dist 2", "Calculated", isFinite(fps2) ? formatNumber(fps2, 0) : "–", "fps"]);
         rows.push(["Kinetics", "Momentum @ Dist 2", "Calculated", isFinite(momentum2) ? formatNumber(momentum2, 3) : "–", "slug·ft/s"]);
+        rows.push(["Kinetics", "Game momentum band (farthest distance)", "Calculated", momentumBandResultStr, ""]);
 
+        // Notes
         rows.push(["Notes", "Notes", "Input", userNotesStr || "—", ""]);
 
         let html = "";
