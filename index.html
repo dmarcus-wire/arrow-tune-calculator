@@ -372,7 +372,7 @@
     </div>
 
     <div class="meta">
-      <span id="appVersion">v0.8.2</span>
+      <span id="appVersion">v0.8.3</span>
       <span>•</span>
       <span id="buildDateText">Build date: 2025-11-23</span>
     </div>
@@ -886,14 +886,16 @@
 
     /**
      * Update a simple left→right trajectory arc:
-     *  - X axis = distance in yards (0 .. maxDistanceYards)
+     *  - X axis = distance in yards (0 .. arcRangeYards)
      *  - Y axis = height in feet (0 .. HmaxFeet)
      * We draw a symmetric parabola peaking at mid-flight.
      * Also shows:
      *  - an approximate launch angle at the bow side
      *  - impact momentum text at the right
+     *
+     * HmaxFeet scales with distance: shorter shots = flatter, longer = higher.
      */
-    function updateTrajectoryGraph(launchFps, maxDistanceYards, impactMomentum) {
+    function updateTrajectoryGraph(launchFps, arcRangeYards, impactMomentum) {
       const lineEl = document.getElementById("trajGraphLine");
       const legendEl = document.getElementById("trajGraphLegend");
       const peakDot = document.getElementById("trajPeakDot");
@@ -912,7 +914,7 @@
         !impactLabel
       ) return;
 
-      if (!isFinite(maxDistanceYards) || maxDistanceYards <= 0) {
+      if (!isFinite(arcRangeYards) || arcRangeYards <= 0) {
         lineEl.setAttribute("points", "");
         legendEl.textContent =
           "Left = bow, right = target. Arc height, angle & impact momentum are approximate.";
@@ -929,15 +931,19 @@
         return;
       }
 
-      const distMaxYards = Math.max(maxDistanceYards, 10);
+      const distMaxYards = arcRangeYards;
 
       // Use launch FPS if valid, otherwise assume ~280 fps as a baseline.
       const baseFps = isFinite(launchFps) && launchFps > 0 ? launchFps : 280;
       const speedFactor = 280 / baseFps; // slower arrows = slightly more arc
 
-      // Approx peak height in feet (visual only).
-      let HmaxFeet = (distMaxYards / 40) * 3 * speedFactor;
-      HmaxFeet = Math.max(0.5, Math.min(HmaxFeet, 12)); // clamp between 0.5 and 12 ft
+      // Peak height scaling:
+      //  - Ref: ~4.5 ft at 60 yards for a 280 fps arrow.
+      //  - Use quadratic scaling so short ranges are much flatter.
+      const refRangeYards = 60;
+      const normalized = distMaxYards / refRangeYards; // <=1 for short, >1 for long
+      let HmaxFeet = 4.5 * normalized * normalized * speedFactor;
+      HmaxFeet = Math.max(0.1, Math.min(HmaxFeet, 12)); // clamp between 0.1 and 12 ft
 
       const steps = 30;
       const points = [];
@@ -1201,27 +1207,21 @@
         dist2KineticsDisplay.textContent = fpsText + " / " + momText;
       }
 
-      // Trajectory arc: use user max distance OR furthest of the two distances, or fallback
-      const maxDistanceForArc = Math.max(
-        trajMaxDistanceYards,
-        dist1Yards,
-        dist2Yards,
-        10
-      );
+      // Trajectory arc: use ONLY the user arc range (with small fallback)
+      const arcRangeYards = trajMaxDistanceYards > 0 ? trajMaxDistanceYards : 10;
 
       // Impact momentum at the arc's max distance
-      const impactDistanceYards = maxDistanceForArc;
       const fpsImpact = estimateFpsAtDistance(
         launchFpsUsed,
         fpsLossPer10Yards,
-        impactDistanceYards
+        arcRangeYards
       );
       const impactMomentum = computeMomentumSlugFtPerSec(
         totalArrowWeightGr,
         fpsImpact
       );
 
-      updateTrajectoryGraph(launchFpsUsed, maxDistanceForArc, impactMomentum);
+      updateTrajectoryGraph(launchFpsUsed, arcRangeYards, impactMomentum);
 
       // -----------------------------
       // FOC visualization along arrow (Nock -> Point)
