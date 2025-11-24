@@ -571,7 +571,7 @@
     </div>
 
     <div class="meta">
-      <span id="appVersion">v0.9.7</span>
+      <span id="appVersion">v0.9.8</span>
       <span>•</span>
       <span id="buildDateText">Build date: 2025-11-23</span>
 
@@ -680,11 +680,11 @@
           </div>
         </div>
 
-        <!-- Arrow Shaft -->
+        <!-- Arrow Shaft & Total Weight -->
         <div class="card">
-          <h2>Arrow Shaft</h2>
+          <h2>Arrow Shaft & Total Weight</h2>
           <div class="card-subtitle">
-            The core shaft length and bare weight that everything else builds on.
+            Arrow length, bare shaft weight, and the finished total arrow weight from your scale.
           </div>
           <div class="field-row">
             <div class="field">
@@ -701,90 +701,121 @@
                 for="bareShaftWeightGr"
                 title="Weight of the bare arrow shaft only, without any components, in grains."
               >
-                Bare shaft weight (gr)
+                Bare shaft weight (gr, optional)
               </label>
               <input id="bareShaftWeightGr" type="number" value="300" step="0.1" />
             </div>
           </div>
-        </div>
-
-        <!-- Components -->
-        <div class="card">
-          <h2>Components</h2>
-          <div class="card-subtitle">
-            All the parts you bolt onto the shaft that drive total weight and front-of-center.
-          </div>
-          <div class="field-row">
-            <div class="field">
-              <label
-                for="nockWeightGr"
-                title="Weight of the arrow nock in grains."
-              >
-                Nock weight (gr)
-              </label>
-              <input id="nockWeightGr" type="number" value="10" step="0.1" />
-            </div>
-            <div class="field">
-              <label
-                for="wrapWeightGr"
-                title="Total weight of any arrow wrap in grains. Use 0 if you don't use wraps."
-              >
-                Wrap weight (gr, optional)
-              </label>
-              <input id="wrapWeightGr" type="number" value="0" step="0.1" />
-            </div>
-          </div>
-
-          <div class="field-row">
-            <div class="field">
-              <label
-                for="vaneCount"
-                title="Number of vanes or fletchings on the arrow, usually 3 or 4."
-              >
-                Vane count
-              </label>
-              <input id="vaneCount" type="number" value="3" step="1" />
-            </div>
-            <div class="field">
-              <label
-                for="vaneWeightGr"
-                title="Weight in grains of a single vane or fletching."
-              >
-                Vane weight each (gr)
-              </label>
-              <input id="vaneWeightGr" type="number" value="9" step="0.1" />
-            </div>
-          </div>
-
-          <div class="field-row">
-            <div class="field">
-              <label
-                for="insertWeightGr"
-                title="Weight in grains of the insert, outsert, or half-out component."
-              >
-                Insert / outsert (gr)
-              </label>
-              <input id="insertWeightGr" type="number" value="50" step="0.1" />
-            </div>
-            <div class="field">
-              <label
-                for="pointWeightGr"
-                title="Weight in grains of the point or broadhead."
-              >
-                Point weight (gr)
-              </label>
-              <input id="pointWeightGr" type="number" value="150" step="0.1" />
-            </div>
-          </div>
-
           <div class="field">
             <label
-              for="glueWeightGr"
-              title="Estimated total glue weight in grains (vanes, insert, nock). 5–10 grains is common."
+              for="totalArrowWeightGrInput"
+              title="Finished arrow weight on your scale, including all components. If set, this value is used for all calculations."
             >
-              Glue weight (gr, estimate)
+              Total arrow weight (gr)
             </label>
-            <input id="glueWeightGr" type="number" value="8" step="0.1" />
+            <input
+              id="totalArrowWeightGrInput"
+              type="number"
+              value="509.8"
+              step="0.1"
+            />
+          </div>
+          <div class="note">
+            Most people only need to enter arrow length, total arrow weight, and balance point. Component weights are optional.
+          </div>
+        </div>
+
+        <!-- Components (Advanced) -->
+        <div class="card">
+          <h2>Components (Advanced)</h2>
+          <div class="card-subtitle">
+            Detailed component weights are only needed if you track each part with a small scale.
+          </div>
+
+          <div class="note">
+            You can skip this section if you don't know individual component weights. The calculator will still use your total arrow weight above for FOC, GPP, momentum, and trajectory.
+          </div>
+
+          <div class="field" style="margin-top:6px;">
+            <label style="font-size:0.8rem; display:flex; align-items:center; gap:6px;">
+              <input type="checkbox" id="enableComponentDetails" />
+              <span>Show advanced component breakdown</span>
+            </label>
+          </div>
+
+          <div id="componentDetails" style="display:none; margin-top:4px;">
+            <div class="field-row">
+              <div class="field">
+                <label
+                  for="nockWeightGr"
+                  title="Weight of the arrow nock in grains."
+                >
+                  Nock weight (gr)
+                </label>
+                <input id="nockWeightGr" type="number" value="10" step="0.1" />
+              </div>
+              <div class="field">
+                <label
+                  for="wrapWeightGr"
+                  title="Total weight of any arrow wrap in grains. Use 0 if you don't use wraps."
+                >
+                  Wrap weight (gr, optional)
+                </label>
+                <input id="wrapWeightGr" type="number" value="0" step="0.1" />
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label
+                  for="vaneCount"
+                  title="Number of vanes or fletchings on the arrow, usually 3 or 4."
+                >
+                  Vane count
+                </label>
+                <input id="vaneCount" type="number" value="3" step="1" />
+              </div>
+              <div class="field">
+                <label
+                  for="vaneWeightGr"
+                  title="Weight in grains of a single vane or fletching."
+                >
+                  Vane weight each (gr)
+                </label>
+                <input id="vaneWeightGr" type="number" value="9" step="0.1" />
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label
+                  for="insertWeightGr"
+                  title="Weight in grains of the insert, outsert, or half-out component."
+                >
+                  Insert / outsert (gr)
+                </label>
+                <input id="insertWeightGr" type="number" value="50" step="0.1" />
+              </div>
+              <div class="field">
+                <label
+                  for="pointWeightGr"
+                  title="Weight in grains of the point or broadhead."
+                >
+                  Point weight (gr)
+                </label>
+                <input id="pointWeightGr" type="number" value="150" step="0.1" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label
+                for="glueWeightGr"
+                title="Estimated total glue weight in grains (vanes, insert, nock). 5–10 grains is common."
+              >
+                Glue weight (gr, estimate)
+              </label>
+              <input id="glueWeightGr" type="number" value="8" step="0.1" />
+            </div>
           </div>
         </div>
 
@@ -1239,7 +1270,8 @@
 
       const loss = (fpsLossPer10Yards * distanceYards) / 10;
       const v = launchFps - loss;
-      return v > 0 ? v : 0;
+      const vClamped = v > 0 ? v : 0;
+      return vClamped;
     }
 
     function computeMomentumSlugFtPerSec(arrowWeightGrains, fps) {
@@ -1422,6 +1454,7 @@
       // Arrow geometry
       const arrowLengthIn = readNumber("arrowLengthIn");
       const bareShaftWeightGr = readNumber("bareShaftWeightGr");
+      const totalArrowWeightGrInput = readNumber("totalArrowWeightGrInput");
 
       // Components
       const nockWeightGr = readNumber("nockWeightGr");
@@ -1451,8 +1484,18 @@
         vaneCount * vaneWeightGr +
         glueWeightGr;
 
-      const totalArrowWeightGr =
+      const componentTotal =
         shaftWeightGr + pointSystemWeightGr + fletchingSystemWeightGr;
+
+      // Decide which total arrow weight to use:
+      // 1) Prefer the explicit total arrow weight input if provided.
+      // 2) Otherwise, fall back to sum of shaft + components.
+      let totalArrowWeightGr = 0;
+      if (totalArrowWeightGrInput > 0) {
+        totalArrowWeightGr = totalArrowWeightGrInput;
+      } else {
+        totalArrowWeightGr = componentTotal;
+      }
 
       let focPercent = NaN;
       let focShiftIn = NaN;
@@ -1463,15 +1506,19 @@
       }
 
       let grainsPerPound = NaN;
-      if (bowDrawWeightLb > 0) {
+      if (bowDrawWeightLb > 0 && totalArrowWeightGr > 0) {
         grainsPerPound = totalArrowWeightGr / bowDrawWeightLb;
       }
 
       let shaftGpi = NaN;
       let arrowGpi = NaN;
       if (arrowLengthIn > 0) {
-        shaftGpi = shaftWeightGr / arrowLengthIn;
-        arrowGpi = totalArrowWeightGr / arrowLengthIn;
+        if (shaftWeightGr > 0) {
+          shaftGpi = shaftWeightGr / arrowLengthIn;
+        }
+        if (totalArrowWeightGr > 0) {
+          arrowGpi = totalArrowWeightGr / arrowLengthIn;
+        }
       }
 
       const arrowNameInput = document.getElementById("arrowName");
@@ -1487,7 +1534,9 @@
       const spineDisplayEl = document.getElementById("arrowSpineDisplay");
 
       if (totalEl) {
-        totalEl.textContent = formatNumber(totalArrowWeightGr, 1) + " gr";
+        totalEl.textContent = totalArrowWeightGr > 0
+          ? formatNumber(totalArrowWeightGr, 1) + " gr"
+          : "–";
       }
       if (focEl) {
         focEl.textContent = isFinite(focPercent)
@@ -1635,7 +1684,7 @@
 
       if (momentumBandLabel) {
         const farthestDist = Math.max(dist1Yards, dist2Yards, arcRangeYards);
-        if (!isFinite(farthestDist) || farthestDist <= 0) {
+        if (!isFinite(farthestDist) || farthestDist <= 0 || totalArrowWeightGr <= 0) {
           momentumBandLabel.textContent = "–";
         } else {
           const fpsFar = estimateFpsAtDistance(
@@ -1737,11 +1786,11 @@
       const weightTotalsEl = document.getElementById("weightTotals");
 
       if (weightShaft && weightPoint && weightFletch) {
-        if (totalArrowWeightGr > 0) {
-          const shaftPct = (shaftWeightGr / totalArrowWeightGr) * 100;
-          const pointPct = (pointSystemWeightGr / totalArrowWeightGr) * 100;
+        if (componentTotal > 0) {
+          const shaftPct = (shaftWeightGr / componentTotal) * 100;
+          const pointPct = (pointSystemWeightGr / componentTotal) * 100;
           const fletchPct =
-            (fletchingSystemWeightGr / totalArrowWeightGr) * 100;
+            (fletchingSystemWeightGr / componentTotal) * 100;
 
           weightShaft.style.width = shaftPct + "%";
           weightPoint.style.width = pointPct + "%";
@@ -1794,6 +1843,14 @@
         rows.push(["Arrow", "Arrow length", "Input", formatNumber(arrowLengthIn, 2), "in"]);
         rows.push(["Arrow", "Bare shaft weight", "Input", formatNumber(bareShaftWeightGr, 1), "gr"]);
 
+        rows.push([
+          "Calculated",
+          "Total arrow weight",
+          totalArrowWeightGrInput > 0 ? "Input (total field)" : "Calculated (components)",
+          totalArrowWeightGr > 0 ? formatNumber(totalArrowWeightGr, 1) : "–",
+          "gr"
+        ]);
+
         rows.push(["Components", "Nock weight", "Input", formatNumber(nockWeightGr, 1), "gr"]);
         rows.push(["Components", "Wrap weight", "Input", formatNumber(wrapWeightGr, 1), "gr"]);
         rows.push(["Components", "Vane count", "Input", formatNumber(vaneCount, 0), ""]);
@@ -1804,7 +1861,6 @@
 
         rows.push(["Balance", "Balance point from nock", "Input", formatNumber(balancePointIn, 2), "in"]);
 
-        rows.push(["Calculated", "Total arrow weight", "Calculated", formatNumber(totalArrowWeightGr, 1), "gr"]);
         rows.push(["Calculated", "FOC", "Calculated", isFinite(focPercent) ? formatNumber(focPercent, 1) : "–", "%"]);
         rows.push(["Calculated", "Grains per pound (GPP)", "Calculated", isFinite(grainsPerPound) ? formatNumber(grainsPerPound, 1) : "–", "gpp"]);
         rows.push(["Calculated", "Shaft GPI (bare)", "Calculated", isFinite(shaftGpi) ? formatNumber(shaftGpi, 2) : "–", "gr/in"]);
@@ -1882,6 +1938,7 @@
       "trajMaxDistanceYards",
       "arrowLengthIn",
       "bareShaftWeightGr",
+      "totalArrowWeightGrInput",
       "nockWeightGr",
       "wrapWeightGr",
       "vaneCount",
@@ -1913,6 +1970,7 @@
       notesEl.addEventListener("input", calculateAndUpdate);
     }
 
+    // Keep Trajectory Arc range loosely in sync with Distance 2 (one-way).
     const trajInput = document.getElementById("trajMaxDistanceYards");
     const dist2Input = document.getElementById("dist2Yards");
     if (trajInput && dist2Input) {
@@ -1928,6 +1986,7 @@
       });
     }
 
+    // Momentum bands help toggle
     const bandsHelpToggle = document.getElementById("bandsHelpToggle");
     const bandsHelpPanel = document.getElementById("bandsHelpPanel");
     if (bandsHelpToggle && bandsHelpPanel) {
@@ -1939,6 +1998,7 @@
       });
     }
 
+    // Results (FOC/GPP/GPI) help toggle
     const resultsHelpToggle = document.getElementById("resultsHelpToggle");
     const resultsHelpPanel = document.getElementById("resultsHelpPanel");
 
@@ -1949,6 +2009,17 @@
           resultsHelpPanel.style.display === "";
         resultsHelpPanel.style.display = isHidden ? "block" : "none";
       });
+    }
+
+    // Component breakdown visibility toggle
+    const compToggle = document.getElementById("enableComponentDetails");
+    const compDetails = document.getElementById("componentDetails");
+    if (compToggle && compDetails) {
+      const syncVisibility = () => {
+        compDetails.style.display = compToggle.checked ? "block" : "none";
+      };
+      compToggle.addEventListener("change", syncVisibility);
+      syncVisibility();
     }
 
     updateArrowNameDisplay();
