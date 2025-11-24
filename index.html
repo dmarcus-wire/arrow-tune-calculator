@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Arrow Tune Calculator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- Arrow Tune Calculator v1.0.0 – 2025-11-24 -->
+  <!-- Arrow Tune Calculator v1.0.1 – 2025-11-24 -->
   <style>
     :root {
       --bg: #020617;
@@ -619,7 +619,7 @@
       top: -3px;
       bottom: -3px;
       left: 50%;
-      background: rgba(249, 250, 251, 0.85);
+      background: rgba(249, 250, 252, 0.85);
       opacity: 0.7;
     }
 
@@ -916,7 +916,7 @@
           <div class="chip">
             🏹 Works offline in your browser
           </div>
-          <span class="version-pill">v1.0.0 · 2025-11-24</span>
+          <span class="version-pill">v1.0.1 · 2025-11-24</span>
         </div>
       </div>
       <div class="toolbar">
@@ -1061,10 +1061,16 @@
             </div>
             <div class="field">
               <label class="field-label" for="shaftGpiEstimate">
-                Shaft GPI (optional)
-                <span class="aux">(bare shaft gr / arrow length)</span>
+                Shaft GPI (auto)
+                <span class="aux">(bare shaft gr ÷ arrow length)</span>
               </label>
-              <input id="shaftGpiEstimate" type="number" min="5" max="16" step="0.01" placeholder="e.g. 9.0" />
+              <input
+                id="shaftGpiEstimate"
+                type="number"
+                step="0.01"
+                placeholder="computed from bare shaft & length"
+                readonly
+              />
             </div>
           </div>
 
@@ -1275,8 +1281,16 @@
               <div class="field">
                 <label class="field-label" for="launchFps">
                   Launch FPS (estimated)
+                  <span class="aux">(you can override this)</span>
                 </label>
-                <input id="launchFps" type="number" min="120" max="350" step="1" readonly />
+                <input
+                  id="launchFps"
+                  type="number"
+                  min="120"
+                  max="350"
+                  step="1"
+                  placeholder="auto or manual"
+                />
               </div>
               <div class="field">
                 <label class="field-label" for="speedLossPer10">
@@ -1518,7 +1532,7 @@
       'vaneCount', 'vaneWeight',
       'insertWeight', 'pointWeight', 'glueWeight',
       'notes'
-    ];
+    };
 
     function $(id) {
       return document.getElementById(id);
@@ -1588,6 +1602,7 @@
         insertWeight: getNum('insertWeight'),
         pointWeight: getNum('pointWeight'),
         glueWeight: getNum('glueWeight'),
+        launchFpsManual: getNum('launchFps'),
         speedLossPer10: getNum('speedLossPer10'),
         distance1: getNum('distance1'),
         distance2: getNum('distance2'),
@@ -2081,7 +2096,10 @@
       const focInfo = calcFOC(totalWeight);
       const gppInfo = calcGPP(totalWeight);
       const gpiInfo = calcGPI(totalWeight);
-      const launchFps = estimateLaunchFPS(totalWeight);
+      let launchFps = state.inputs.launchFpsManual || 0;
+      if (!launchFps) {
+        launchFps = estimateLaunchFPS(totalWeight);
+      }
       const farFps = fpsAtDistance(launchFps, state.inputs.distance2 || 60);
       const momentumVal = calcMomentum(totalWeight, farFps);
       const momentumInfo = classifyMomentumBand(momentumVal);
@@ -2169,7 +2187,7 @@
       $('arrowLength').value = i.arrowLength || '';
       $('totalArrowWeight').value = i.totalArrowWeight || '';
       $('balancePoint').value = i.balancePoint || '';
-      $('shaftGpiEstimate').value = i.shaftGpiEstimate || '';
+      $('shaftGpiEstimate').value = ''; // will be recomputed
       $('showComponents').checked = !!i.showComponents;
       $('componentsSection').style.display = i.showComponents ? 'block' : 'none';
       $('bareShaftWeight').value = i.bareShaftWeight || '';
@@ -2185,6 +2203,7 @@
       $('distance2').value = i.distance2 || '';
       $('arcRange').value = i.arcRange || i.distance2 || '';
       $('notes').value = i.notes || '';
+      $('launchFps').value = i.launchFpsManual || ''; // user can still override
       $('savedBuildName').value = build.buildName || '';
 
       readInputs();
@@ -2342,11 +2361,27 @@
       const focInfo = calcFOC(totalWeight);
       const gppInfo = calcGPP(totalWeight);
       const gpiInfo = calcGPI(totalWeight);
-      const launchFps = estimateLaunchFPS(totalWeight);
+
+      // Launch FPS: use manual if provided, else estimate
+      let launchFps = state.inputs.launchFpsManual || 0;
+      if (!launchFps) {
+        launchFps = estimateLaunchFPS(totalWeight);
+      }
+
       const fpsD1 = fpsAtDistance(launchFps, state.inputs.distance1 || 30);
       const fpsD2 = fpsAtDistance(launchFps, state.inputs.distance2 || 60);
       const momentumVal = calcMomentum(totalWeight, fpsD2);
       const momentumInfo = classifyMomentumBand(momentumVal);
+
+      // Auto-calc Shaft GPI (bare shaft gr ÷ arrow length)
+      let shaftGpi = 0;
+      if (state.inputs.bareShaftWeight > 0 && state.inputs.arrowLength > 0) {
+        shaftGpi = state.inputs.bareShaftWeight / state.inputs.arrowLength;
+      }
+      const shaftGpiField = $('shaftGpiEstimate');
+      if (shaftGpiField) {
+        shaftGpiField.value = shaftGpi > 0 ? shaftGpi.toFixed(2) : '';
+      }
 
       setText('totalWeightOut', totalWeight.toFixed(1));
       setText('gppValue', gppInfo.gpp.toFixed(2));
