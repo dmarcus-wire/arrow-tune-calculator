@@ -1047,7 +1047,7 @@
             <input
               id="buildNameInput"
               type="text"
-              placeholder="e.g. Elk 2025 – 70lb / 520gr"
+              placeholder="Will auto-fill with timestamp + weight + FOC + arrow/bow"
             />
           </div>
 
@@ -1326,7 +1326,7 @@
               class="traj-graph"
             >
               <!-- Axes: x = yards, y = feet -->
-              <line x1="0" y1="50" x2="100" y2="50" class="traj-axis"></line>
+              <line x1="0" y1="50" x2="100" x2="100" y2="50" class="traj-axis"></line>
               <line x1="0" y1="10" x2="0" y2="50" class="traj-axis"></line>
 
               <!-- Axis labels -->
@@ -1566,6 +1566,9 @@
   </div>
 
   <script>
+    // Track last auto-generated build name so we don't overwrite user custom text
+    window._lastAutoBuildName = "";
+
     function readNumber(id) {
       const el = document.getElementById(id);
       const value = parseFloat(el?.value ?? "");
@@ -1799,16 +1802,14 @@
 
       let weightCompString = "–";
 
-      // --- NEW TOTAL ARROW WEIGHT LOGIC ---
+      // --- TOTAL ARROW WEIGHT LOGIC (depends on advancedEnabled) ---
       let totalArrowWeightGr = 0;
       let totalSource = "";
 
       if (advancedEnabled) {
-        // Use sum of components when advanced breakdown is on
         totalArrowWeightGr = componentTotal > 0 ? componentTotal : 0;
         totalSource = "Components sum (advanced)";
       } else {
-        // Use total arrow weight field when advanced breakdown is off
         totalArrowWeightGr = totalArrowWeightGrInput > 0 ? totalArrowWeightGrInput : 0;
         totalSource = "Total field (Arrow Shaft & Total Weight)";
       }
@@ -2174,6 +2175,7 @@
         }
       }
 
+      // ---- Data Table ----
       const tableBody = document.getElementById("summaryTableBody");
       if (tableBody) {
         const rows = [];
@@ -2198,15 +2200,17 @@
         rows.push(["Distances", "Distance 2", "Input", formatNumber(dist2Yards, 0), "yd"]);
         rows.push(["Distances", "Arc range (visual)", "Input", formatNumber(arcRangeYards, 0), "yd"]);
 
-        // Components
-        rows.push(["Components", "Bare shaft weight", "Input", formatNumber(bareShaftWeightGr, 1), "gr"]);
-        rows.push(["Components", "Nock weight", "Input", formatNumber(nockWeightGr, 1), "gr"]);
-        rows.push(["Components", "Wrap weight", "Input", formatNumber(wrapWeightGr, 1), "gr"]);
-        rows.push(["Components", "Vane count", "Input", formatNumber(vaneCount, 0), ""]);
-        rows.push(["Components", "Vane weight each", "Input", formatNumber(vaneWeightGr, 1), "gr"]);
-        rows.push(["Components", "Insert / outsert", "Input", formatNumber(insertWeightGr, 1), "gr"]);
-        rows.push(["Components", "Point weight", "Input", formatNumber(pointWeightGr, 1), "gr"]);
-        rows.push(["Components", "Glue weight (est.)", "Input", formatNumber(glueWeightGr, 1), "gr"]);
+        // Components (ONLY if advanced breakdown is enabled)
+        if (advancedEnabled) {
+          rows.push(["Components", "Bare shaft weight", "Input", formatNumber(bareShaftWeightGr, 1), "gr"]);
+          rows.push(["Components", "Nock weight", "Input", formatNumber(nockWeightGr, 1), "gr"]);
+          rows.push(["Components", "Wrap weight", "Input", formatNumber(wrapWeightGr, 1), "gr"]);
+          rows.push(["Components", "Vane count", "Input", formatNumber(vaneCount, 0), ""]);
+          rows.push(["Components", "Vane weight each", "Input", formatNumber(vaneWeightGr, 1), "gr"]);
+          rows.push(["Components", "Insert / outsert", "Input", formatNumber(insertWeightGr, 1), "gr"]);
+          rows.push(["Components", "Point weight", "Input", formatNumber(pointWeightGr, 1), "gr"]);
+          rows.push(["Components", "Glue weight (est.)", "Input", formatNumber(glueWeightGr, 1), "gr"]);
+        }
 
         // Total arrow weight (with new source)
         rows.push([
@@ -2228,7 +2232,11 @@
         rows.push(["Calculated", "Shaft GPI (bare)", "Calculated", isFinite(shaftGpi) ? formatNumber(shaftGpi, 2) : "–", "gr/in"]);
         rows.push(["Calculated", "Arrow GPI (full)", "Calculated", isFinite(arrowGpi) ? formatNumber(arrowGpi, 2) : "–", "gr/in"]);
         rows.push(["Calculated", "Arrow GPI band", "Calculated", gpiBandLabel || "–", ""]);
-        rows.push(["Calculated", "Weight composition", "Calculated", weightCompString, ""]);
+
+        // Weight composition row ONLY if advanced breakdown is enabled
+        if (advancedEnabled) {
+          rows.push(["Calculated", "Weight composition", "Calculated", weightCompString, ""]);
+        }
 
         // Kinetics
         rows.push(["Kinetics", "Launch speed", "Calculated", isFinite(launchFpsUsed) ? formatNumber(launchFpsUsed, 0) : "–", "fps"]);
@@ -2253,6 +2261,39 @@
             "</tr>";
         }
         tableBody.innerHTML = html;
+      }
+
+      // ---- Auto-prefill Saved Build Name ----
+      const buildNameInput = document.getElementById("buildNameInput");
+      if (buildNameInput) {
+        const arrowNameRaw =
+          arrowNameStr === "Unnamed arrow" ? "" : arrowNameStr;
+        const bowModelRaw = bowModelStr;
+
+        const parts = [];
+        parts.push(timestampStr);
+        if (totalArrowWeightGr > 0) {
+          parts.push(formatNumber(totalArrowWeightGr, 1) + " gr");
+        }
+        if (isFinite(focPercent)) {
+          parts.push(formatNumber(focPercent, 1) + " % FOC");
+        }
+        if (arrowNameRaw) {
+          parts.push(arrowNameRaw);
+        } else if (bowModelRaw) {
+          parts.push(bowModelRaw);
+        }
+
+        const autoName = parts.join(" – ");
+        const currentVal = buildNameInput.value.trim();
+        const lastAuto = window._lastAutoBuildName || "";
+
+        // Only overwrite if empty or still matching the previous auto-generated name
+        if (!currentVal || currentVal === lastAuto) {
+          buildNameInput.value = autoName;
+        }
+
+        window._lastAutoBuildName = autoName;
       }
     }
 
@@ -2398,7 +2439,7 @@
       };
       compToggle.addEventListener("change", () => {
         syncVisibility();
-        calculateAndUpdate(); // recalc because toggle affects total weight logic
+        calculateAndUpdate();
       });
       syncVisibility();
     }
@@ -2803,6 +2844,7 @@
           const nameInputEl = document.getElementById("buildNameInput");
           if (nameInputEl) {
             nameInputEl.value = name;
+            window._lastAutoBuildName = ""; // user-picked name now
           }
         });
       }
