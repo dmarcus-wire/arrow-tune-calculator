@@ -494,7 +494,7 @@
     </div>
 
     <div class="meta">
-      <span id="appVersion">v0.9.5</span>
+      <span id="appVersion">v0.9.6</span>
       <span>•</span>
       <span id="buildDateText">Build date: 2025-11-23</span>
     </div>
@@ -726,7 +726,7 @@
           </div>
         </div>
 
-        <!-- Notes (moved to left column) -->
+        <!-- Notes -->
         <div class="card">
           <h2>Notes</h2>
           <div class="card-subtitle">
@@ -920,14 +920,14 @@
             <div class="note-strong">
               These bands are rules of thumb — not guarantees.
             </div>
-            <p style="margin:4px 0;">
+            <p style="margin:4px 0%;">
               They come from:
             </p>
             <ul>
               <li>Arrow penetration studies that focus on <strong>momentum</strong> (like Dr. Ed Ashby’s work).</li>
               <li>Common <strong>kinetic energy charts</strong> published by arrow and broadhead manufacturers.</li>
             </ul>
-            <p style="margin:4px 0;">
+            <p style="margin:4px 0%;">
               Typical interpretations:
             </p>
             <ul>
@@ -936,7 +936,7 @@
               <li><strong>~0.45–0.60+ slug·ft/s</strong>: larger game like elk or black bear.</li>
               <li><strong>0.60+ slug·ft/s</strong>: very large or dangerous game.</li>
             </ul>
-            <p style="margin:4px 0;">
+            <p style="margin:4px 0%;">
               They assume sharp, well-built broadheads and legal setups.
               <strong>Shot placement, arrow flight, and local regulations matter more than any single number.</strong>
             </p>
@@ -1102,7 +1102,7 @@
         <div class="card">
           <h2>Data Table (Inputs & Calculated)</h2>
           <div class="card-subtitle">
-            Spreadsheet-style view of what you entered and what the calculator derived from it.
+            Spreadsheet-style view of what you entered and what the calculator derived from it, with source labels.
           </div>
           <div class="data-table-wrapper">
             <table class="data-table">
@@ -1110,6 +1110,7 @@
                 <tr>
                   <th>Category</th>
                   <th>Field</th>
+                  <th>Source</th>
                   <th>Value</th>
                   <th>Units</th>
                 </tr>
@@ -1377,6 +1378,14 @@
       // Attributes
       const balancePointIn = readNumber("balancePointIn");
       const arrowSpine = readNumber("arrowSpine");
+
+      // Notes
+      const userNotesEl = document.getElementById("userNotes");
+      const userNotesStr = userNotesEl ? userNotesEl.value.trim() : "";
+
+      // Timestamp (when this calculation is rendered)
+      const now = new Date();
+      const timestampStr = now.toLocaleString();
 
       // Component weights (grains)
       const shaftWeightGr = bareShaftWeightGr;
@@ -1742,56 +1751,63 @@
       if (tableBody) {
         const rows = [];
 
+        // Meta
+        rows.push(["Meta", "Timestamp", "Auto", timestampStr, ""]);
+
         // Bow
-        rows.push(["Bow", "Draw weight", formatNumber(bowDrawWeightLb, 1), "lb"]);
-        rows.push(["Bow", "Draw length", formatNumber(bowDrawLengthIn, 1), "in"]);
-        rows.push(["Bow", "Launch speed estimate", formatNumber(launchFps, 0), "fps"]);
-        rows.push(["Bow", "Speed loss / 10 yd", formatNumber(fpsLossPer10Yards, 1), "fps/10yd"]);
+        rows.push(["Bow", "Draw weight", "Input", formatNumber(bowDrawWeightLb, 1), "lb"]);
+        rows.push(["Bow", "Draw length", "Input", formatNumber(bowDrawLengthIn, 1), "in"]);
+        rows.push(["Bow", "Launch speed estimate", "Input", formatNumber(launchFps, 0), "fps"]);
+        rows.push(["Bow", "Speed loss / 10 yd", "Input", formatNumber(fpsLossPer10Yards, 1), "fps/10yd"]);
 
         // Distances & arc
-        rows.push(["Distances", "Distance 1", formatNumber(dist1Yards, 0), "yd"]);
-        rows.push(["Distances", "Distance 2", formatNumber(dist2Yards, 0), "yd"]);
-        rows.push(["Distances", "Arc range (visual)", formatNumber(arcRangeYards, 0), "yd"]);
+        rows.push(["Distances", "Distance 1", "Input", formatNumber(dist1Yards, 0), "yd"]);
+        rows.push(["Distances", "Distance 2", "Input", formatNumber(dist2Yards, 0), "yd"]);
+        rows.push(["Distances", "Arc range (visual)", "Input", formatNumber(arcRangeYards, 0), "yd"]);
 
         // Arrow info
-        rows.push(["Arrow", "Name", arrowNameStr, ""]);
-        rows.push(["Arrow", "Spine", arrowSpine > 0 ? arrowSpine.toString() : "–", ""]);
-        rows.push(["Arrow", "Arrow length", formatNumber(arrowLengthIn, 2), "in"]);
-        rows.push(["Arrow", "Bare shaft weight", formatNumber(bareShaftWeightGr, 1), "gr"]);
+        rows.push(["Arrow", "Name", "Input", arrowNameStr, ""]);
+        rows.push(["Arrow", "Spine", "Input", arrowSpine > 0 ? arrowSpine.toString() : "–", ""]);
+        rows.push(["Arrow", "Arrow length", "Input", formatNumber(arrowLengthIn, 2), "in"]);
+        rows.push(["Arrow", "Bare shaft weight", "Input", formatNumber(bareShaftWeightGr, 1), "gr"]);
 
         // Components
-        rows.push(["Components", "Nock weight", formatNumber(nockWeightGr, 1), "gr"]);
-        rows.push(["Components", "Wrap weight", formatNumber(wrapWeightGr, 1), "gr"]);
-        rows.push(["Components", "Vane count", formatNumber(vaneCount, 0), ""]);
-        rows.push(["Components", "Vane weight each", formatNumber(vaneWeightGr, 1), "gr"]);
-        rows.push(["Components", "Insert / outsert", formatNumber(insertWeightGr, 1), "gr"]);
-        rows.push(["Components", "Point weight", formatNumber(pointWeightGr, 1), "gr"]);
-        rows.push(["Components", "Glue weight (est.)", formatNumber(glueWeightGr, 1), "gr"]);
+        rows.push(["Components", "Nock weight", "Input", formatNumber(nockWeightGr, 1), "gr"]);
+        rows.push(["Components", "Wrap weight", "Input", formatNumber(wrapWeightGr, 1), "gr"]);
+        rows.push(["Components", "Vane count", "Input", formatNumber(vaneCount, 0), ""]);
+        rows.push(["Components", "Vane weight each", "Input", formatNumber(vaneWeightGr, 1), "gr"]);
+        rows.push(["Components", "Insert / outsert", "Input", formatNumber(insertWeightGr, 1), "gr"]);
+        rows.push(["Components", "Point weight", "Input", formatNumber(pointWeightGr, 1), "gr"]);
+        rows.push(["Components", "Glue weight (est.)", "Input", formatNumber(glueWeightGr, 1), "gr"]);
 
         // Balance
-        rows.push(["Balance", "Balance point from nock", formatNumber(balancePointIn, 2), "in"]);
+        rows.push(["Balance", "Balance point from nock", "Input", formatNumber(balancePointIn, 2), "in"]);
 
         // Calculated totals & ratios
-        rows.push(["Calculated", "Total arrow weight", formatNumber(totalArrowWeightGr, 1), "gr"]);
-        rows.push(["Calculated", "FOC", isFinite(focPercent) ? formatNumber(focPercent, 1) : "–", "%"]);
-        rows.push(["Calculated", "Grains per pound (GPP)", isFinite(grainsPerPound) ? formatNumber(grainsPerPound, 1) : "–", "gpp"]);
-        rows.push(["Calculated", "Shaft GPI (bare)", isFinite(shaftGpi) ? formatNumber(shaftGpi, 2) : "–", "gr/in"]);
-        rows.push(["Calculated", "Arrow GPI (full)", isFinite(arrowGpi) ? formatNumber(arrowGpi, 2) : "–", "gr/in"]);
+        rows.push(["Calculated", "Total arrow weight", "Calculated", formatNumber(totalArrowWeightGr, 1), "gr"]);
+        rows.push(["Calculated", "FOC", "Calculated", isFinite(focPercent) ? formatNumber(focPercent, 1) : "–", "%"]);
+        rows.push(["Calculated", "Grains per pound (GPP)", "Calculated", isFinite(grainsPerPound) ? formatNumber(grainsPerPound, 1) : "–", "gpp"]);
+        rows.push(["Calculated", "Shaft GPI (bare)", "Calculated", isFinite(shaftGpi) ? formatNumber(shaftGpi, 2) : "–", "gr/in"]);
+        rows.push(["Calculated", "Arrow GPI (full)", "Calculated", isFinite(arrowGpi) ? formatNumber(arrowGpi, 2) : "–", "gr/in"]);
 
         // Kinetics / momentum
-        rows.push(["Kinetics", "Launch speed", isFinite(launchFpsUsed) ? formatNumber(launchFpsUsed, 0) : "–", "fps"]);
-        rows.push(["Kinetics", "Launch momentum", isFinite(launchMomentum) ? formatNumber(launchMomentum, 3) : "–", "slug·ft/s"]);
-        rows.push(["Kinetics", "Speed @ Dist 1", isFinite(fps1) ? formatNumber(fps1, 0) : "–", "fps"]);
-        rows.push(["Kinetics", "Momentum @ Dist 1", isFinite(momentum1) ? formatNumber(momentum1, 3) : "–", "slug·ft/s"]);
-        rows.push(["Kinetics", "Speed @ Dist 2", isFinite(fps2) ? formatNumber(fps2, 0) : "–", "fps"]);
-        rows.push(["Kinetics", "Momentum @ Dist 2", isFinite(momentum2) ? formatNumber(momentum2, 3) : "–", "slug·ft/s"]);
+        rows.push(["Kinetics", "Launch speed", "Calculated", isFinite(launchFpsUsed) ? formatNumber(launchFpsUsed, 0) : "–", "fps"]);
+        rows.push(["Kinetics", "Launch momentum", "Calculated", isFinite(launchMomentum) ? formatNumber(launchMomentum, 3) : "–", "slug·ft/s"]);
+        rows.push(["Kinetics", "Speed @ Dist 1", "Calculated", isFinite(fps1) ? formatNumber(fps1, 0) : "–", "fps"]);
+        rows.push(["Kinetics", "Momentum @ Dist 1", "Calculated", isFinite(momentum1) ? formatNumber(momentum1, 3) : "–", "slug·ft/s"]);
+        rows.push(["Kinetics", "Speed @ Dist 2", "Calculated", isFinite(fps2) ? formatNumber(fps2, 0) : "–", "fps"]);
+        rows.push(["Kinetics", "Momentum @ Dist 2", "Calculated", isFinite(momentum2) ? formatNumber(momentum2, 3) : "–", "slug·ft/s"]);
+
+        // Notes (last row)
+        rows.push(["Notes", "Notes", "Input", userNotesStr || "—", ""]);
 
         // Fill table body
         let html = "";
-        for (const [cat, field, value, units] of rows) {
+        for (const [cat, field, source, value, units] of rows) {
           html += "<tr>" +
             "<td>" + cat + "</td>" +
             "<td>" + field + "</td>" +
+            "<td>" + source + "</td>" +
             "<td>" + value + "</td>" +
             "<td>" + units + "</td>" +
             "</tr>";
@@ -1837,6 +1853,12 @@
         updateArrowNameDisplay();
         calculateAndUpdate();
       });
+    }
+
+    // Notes should also trigger table updates
+    const notesEl = document.getElementById("userNotes");
+    if (notesEl) {
+      notesEl.addEventListener("input", calculateAndUpdate);
     }
 
     // Distance 2 drives Arc range (one-way)
