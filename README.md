@@ -1,93 +1,55 @@
-# arrow-tune-calcuator
+# Arrow Tune Calculator
 
-🎯 Arrow Tune Calculator
+![Arrow Tune Calculator preview](https://dmarcus-wire.github.io/arrow-tune-calculator/screenshot.png)  
+*(Live demo → https://dmarcus-wire.github.io/arrow-tune-calculator/)*
 
-A simple arrow-tuning tool for archers
+A fast, completely offline, browser-based tuning tool for compound and recurve archers.  
+No tracking, no login, no installation required — works instantly on desktop, iPhone, iPad, or Android. Add it to your home screen for one-tap access at the range.
 
-Arrow Tune Calculator is a lightweight, browser-based tool that helps archers calculate important arrow characteristics such as total arrow weight, FOC (Front of Center), grains per pound, and grains per inch. The tool works completely locally in your browser — no installs, no accounts, no tracking — and is easy to modify for future features.
+## Current Features (v1.0.2 – Nov 2025)
 
-✅ Features
+- Live calculations as you type  
+- Front-of-Center (FOC %) with visual balance-point gauge  
+- Total arrow weight (grains)  
+- Grains Per Pound (GPP)  
+- Grains Per Inch (full arrow & shaft-only GPI)  
+- Weight distribution breakdown (shaft | point system | nock/vanes/wrap)  
+- Clean, mobile-first design  
+- Fully functional offline (PWA-ready)  
 
-- Instant live calculations while you type
-- FOC (Front of Center) with visual indicator
-- Total arrow weight (grains)
-- Grains per Pound (GPP)
-- Grains per Inch (shaft & full arrow)
-- Weight distribution bar (shaft / point system / fletching)
-- Clean, mobile-friendly layout
-- Works on iOS, Android, and desktop browsers
-- Can be installed as a Home-Screen App on mobile devices
+## Coming Soon – Roadmap
 
-🚀 Getting Started
+| Phase | Features | Status |
+|------|--------|--------|
+| Phase 1 | Arrow name & spine fields • Glue weight estimate • Momentum • FPS estimator (muzzle + downrange) • Tooltips & inline help | In active development |
+| Phase 2 | Local save/load builds • Multiple arrow profiles • CSV export • Printable summary table | Next |
+| Phase 3 | FPS drop curve • Interactive trajectory arc (0–100 yd) • Kinetic energy & momentum bands • Kill-effectiveness zones (small → dangerous game) | Planned |
+| Phase 4 | Side-by-side arrow comparison • Wind & environmental adjustments • Full PWA install • JSON import/export • Native mobile app wrapper | Long-term |
 
-To use the Arrow Tune Calculator, go to 
+## Quick Start
 
-https://dmarcus-wire.github.io/arrow-tune-calcuator/
+Just open the link:  
+https://dmarcus-wire.github.io/arrow-tune-calculator/
 
-That’s it!
+Or bookmark it and “Add to Home Screen” on your phone for instant access at the range.
 
-Future Improvements (optional ideas)
+## Why This Tool Exists
 
-# ✅ TODO List — Arrow Tune Calculator
+Most arrow calculators are either spreadsheets, hand written notes, bloated web apps that track you or paid desktop software. This one is intentionally lightweight, privacy-first, and built to work even when you have no signal at the range.
 
-## Phase 1 — Core Enhancements
+## Contributing
 
-### Code & Structure
-- [x] Add author and maintainer info  
-- [x] Add inline documentation for calculations and UI sections  
-- [x] Add date/version to the UI  
+Pull requests are very welcome!  
+The project is vanilla HTML/CSS/JS — easy to read and modify.  
+Current priorities are listed in the roadmap above.
 
-### UI/UX Improvements
-- [x] Add arrow name field (e.g., “Easton Axis 5.0 250 Spine”)  
-- [x] Add arrow spine field (250, 300, 350, etc.)  
-- [x] Add user notes field  
-- [x] Add hover tooltips explaining each input field  
-- [x] Add glue weight estimate field (5–10 grains typical)  
+## Author & Maintainer
 
-### Core Calculations
-- [x] Add momentum calculation  
-- [x] Add Feet Per Second (FPS):
-  - [x] FPS at launch  
-  - [x] FPS at 30 yards (editable)  
-  - [x] FPS at 60 yards (editable)  
+David Marcus ([@dmarcus-wire](https://github.com/dmarcus-wire))  
+Archery addict and software hobbyist.
 
----
+## License
 
-## Phase 2 — Data Saving & Power Features
-
-### Local Storage & Shooter Profiles
-- [ ] Print a table at the bottom similar to a CSV printout
-- [ ] Save arrow builds locally  
-- [ ] Support multiple saved arrow builds  
-- [ ] Support multiple shooters (per shooter profiles)  
-- [ ] Export saved data to `.csv`  
+MIT License – feel free to use, fork, modify, or redistribute.
 
 ---
-
-## Phase 3 — Advanced Visualizations
-
-### Visual Tools
-- [x] Add enhanced arrow weight distribution visualization  
-  - [x] Left = nock end  
-  - [x] Right = point end  
-  - [x] Show FOC shift (balance point vs geometric center)  
-- [ ] Add FPS drop visualization over distance  
-- [x] Add arrow trajectory graph  
-  - [x] User sets max yardage (0–100 yards)  
-  - [x] Show max height of arc in feet  
-- [ ] Add projected kill-effectiveness visualization  
-  - [ ] Based on momentum/energy  
-  - [ ] Color-coded zones from 0 to 80 yards  
-
----
-
-## Phase 4 — Long-Term / Expert Features
-- [ ] Add side-by-side arrow comparison mode  
-- [ ] Add environmental adjustments (wind, temp, bow efficiency)  
-- [ ] Convert to PWA (offline support, installable app)  
-- [ ] Add JSON import/export for arrow builds  
-- [ ] Package as a full mobile app
-
-📄 License
-
-This project is released under the MIT License, meaning you may use, modify, and distribute it freely.
