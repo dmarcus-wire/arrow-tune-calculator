@@ -176,7 +176,7 @@
 
     main {
       display: grid;
-      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.1fr);
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
       gap: 16px;
       margin-top: 10px;
     }
@@ -1755,17 +1755,20 @@
       const svg = $('velocitySvg');
       if (!svg) return;
 
-      const dSelected = state.inputs.velocityDistance || state.inputs.distance2 || 40;
+      const dSelected =
+        state.inputs.velocityDistance ||
+        state.inputs.distance2 ||
+        40;
 
-      // Reuse your existing linear drop model via fpsAtDistance()
+      // Use the same drop model you already use elsewhere
       const vHere = fpsAtDistance(launchFpsUsed, dSelected);
-      const avgV = (launchFpsUsed + vHere) / 2 || 1;
-      const timeSec = (dSelected * 3) / avgV; // yards → feet, then / fps
+      const avgV = (launchFpsUsed + vHere) / 2 || 1;   // fps
+      const timeSec = (dSelected * 3) / avgV;          // yards → feet (×3), then / fps
 
       setValue('velocityAtDistance', vHere > 0 ? vHere.toFixed(1) : '');
       setValue('timeOfFlight', vHere > 0 ? timeSec.toFixed(2) : '');
 
-      // Draw velocity curve
+      // Clear the SVG
       while (svg.firstChild) svg.removeChild(svg.firstChild);
 
       const farDist = Math.max(
@@ -1781,7 +1784,6 @@
 
       function xScale(yd) { return padLeft + (yd / farDist) * w; }
 
-      // Y axis from 0 to launch FPS
       const maxV = Math.max(launchFpsUsed, vHere) || 300;
       function yScale(v) {
         const clamped = Math.max(0, Math.min(maxV, v));
@@ -1826,7 +1828,7 @@
       yLabel.textContent = 'Velocity (fps)';
       svg.appendChild(yLabel);
 
-      // Velocity curve from 0 → farDist using your fpsAtDistance()
+      // Velocity curve
       const steps = 40;
       let d = '';
       for (let i = 0; i <= steps; i++) {
@@ -1836,7 +1838,6 @@
         const Y = yScale(v);
         d += (i === 0 ? 'M' : 'L') + X + ' ' + Y + ' ';
       }
-
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.setAttribute('d', d.trim());
       path.setAttribute('fill', 'none');
@@ -1859,103 +1860,6 @@
         + `to ~${markerV.toFixed(0)} fps at ${dSelected.toFixed(0)} yd `
         + `(time-of-flight ≈ ${timeSec.toFixed(2)} s).`;
       setText('velocitySummary', summary);
-    }
-
-      const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      xAxis.setAttribute('x1', padLeft);
-      xAxis.setAttribute('y1', padTop + h);
-      xAxis.setAttribute('x2', padLeft + w);
-      xAxis.setAttribute('y2', padTop + h);
-      xAxis.setAttribute('stroke', 'rgba(148,163,184,0.9)');
-      xAxis.setAttribute('stroke-width', '1');
-      svg.appendChild(xAxis);
-
-      const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      yAxis.setAttribute('x1', padLeft);
-      yAxis.setAttribute('y1', padTop);
-      yAxis.setAttribute('x2', padLeft);
-      yAxis.setAttribute('y2', padTop + h);
-      yAxis.setAttribute('stroke', 'rgba(148,163,184,0.8)');
-      yAxis.setAttribute('stroke-width', '1');
-      svg.appendChild(yAxis);
-
-      const xLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      xLabel.setAttribute('x', padLeft + w / 2);
-      xLabel.setAttribute('y', padTop + h + 22);
-      xLabel.setAttribute('text-anchor', 'middle');
-      xLabel.setAttribute('font-size', '9');
-      xLabel.setAttribute('fill', 'rgba(148,163,184,0.9)');
-      xLabel.textContent = 'Distance (yd)';
-      svg.appendChild(xLabel);
-
-      const yLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      yLabel.setAttribute('x', padLeft - 22);
-      yLabel.setAttribute('y', padTop + h / 2);
-      yLabel.setAttribute('text-anchor', 'middle');
-      yLabel.setAttribute('font-size', '9');
-      yLabel.setAttribute('fill', 'rgba(148,163,184,0.9)');
-      yLabel.setAttribute('transform', `rotate(-90 ${padLeft-22} ${padTop + h/2})`);
-      yLabel.textContent = 'Height (ft)';
-      svg.appendChild(yLabel);
-
-      const midX = arcRange / 2;
-      const k = peakHeightFt / (midX * midX || 1);
-
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      let d = '';
-      const steps = 40;
-      let peakX = xScale(midX);
-      let peakY = yScale(peakHeightFt);
-
-      for (let s = 0; s <= steps; s++) {
-        const yd = (arcRange * s) / steps;
-        const xRel = yd - midX;
-        const heightFt = peakHeightFt - k * xRel * xRel;
-        const X = xScale(yd);
-        const Y = yScale(Math.max(0, heightFt));
-        if (s === 0) {
-          d += 'M' + X + ' ' + Y + ' ';
-        } else {
-          d += 'L' + X + ' ' + Y + ' ';
-        }
-      }
-      path.setAttribute('d', d.trim());
-      path.setAttribute('fill', 'none');
-      path.setAttribute('stroke', '#22c55e');
-      path.setAttribute('stroke-width', '2');
-      svg.appendChild(path);
-
-      const peakLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      peakLabel.setAttribute('x', peakX);
-      peakLabel.setAttribute('y', peakY - 4);
-      peakLabel.setAttribute('text-anchor', 'middle');
-      peakLabel.setAttribute('font-size', '9');
-      peakLabel.setAttribute('fill', 'rgba(248,250,252,0.95)');
-      peakLabel.textContent = `${peakHeightFt.toFixed(1)} ft`;
-      svg.appendChild(peakLabel);
-
-      const launchLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      launchLabel.setAttribute('x', padLeft + 4);
-      launchLabel.setAttribute('y', padTop + h - 6);
-      launchLabel.setAttribute('font-size', '9');
-      launchLabel.setAttribute('fill', 'rgba(148,163,184,0.9)');
-      launchLabel.textContent = '0 yd';
-      svg.appendChild(launchLabel);
-
-      const tgtLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      tgtLabel.setAttribute('x', xScale(arcRange) - 4);
-      tgtLabel.setAttribute('y', padTop + h - 6);
-      tgtLabel.setAttribute('font-size', '9');
-      tgtLabel.setAttribute('fill', 'rgba(148,163,184,0.9)');
-      tgtLabel.setAttribute('text-anchor', 'end');
-      tgtLabel.textContent = `${arcRange.toFixed(0)} yd`;
-      svg.appendChild(tgtLabel);
-
-      const maxYd = maxX;
-      const summary = `Horizontal axis ≈ 0–${maxYd.toFixed(0)} yd (arc set to ~${arcRange.toFixed(0)} yd). Peak height ≈ ${peakHeightFt.toFixed(1)} ft.`;
-      setText('trajectorySummary', summary);
-      setValue('arcMetaInline', `Peak ≈ ${peakHeightFt.toFixed(1)} ft`);
-      state.computed.trajectorySummary = summary;
     }
 
     function maybeSuggestSpeedLoss(launchFpsUsed, gpp) {
