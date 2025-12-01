@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Arrow Tune Calculator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- Arrow Tune Calculator v1.0.x – UI + Velocity + Efficiency + KE -->
+  <!-- Arrow Tune Calculator v1.0.5 – theme fixed, saved-builds panel, velocity drop-off, KE & efficiency -->
   <style>
     :root {
       --bg: #020617;
@@ -176,7 +176,7 @@
 
     main {
       display: grid;
-      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.2fr);
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.5fr); /* left a bit narrower, right wider */
       gap: 16px;
       margin-top: 10px;
     }
@@ -536,49 +536,6 @@
       white-space: pre-line;
     }
 
-    .momentum-icons {
-      display: flex;
-      justify-content: space-between;
-      gap: 4px;
-      margin-top: 4px;
-      font-size: 0.78rem;
-    }
-
-    .game-icon {
-      flex: 1;
-      text-align: center;
-      border-radius: 999px;
-      padding: 4px 3px;
-      border: 1px solid rgba(148,163,184,0.6);
-      color: var(--text-soft);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1px;
-    }
-
-    .game-icon span.emoji { font-size: 1rem; }
-    .game-icon span.label { font-size: 0.7rem; }
-
-    .game-icon.active {
-      border-color: var(--accent-strong);
-      background: var(--accent-soft);
-      color: var(--accent-strong);
-      font-weight: 600;
-    }
-
-    .game-icon.muted { opacity: 0.55; }
-
-    .learn-link {
-      font-size: 0.75rem;
-      color: var(--info);
-      cursor: pointer;
-      margin-top: 4px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
     .trajectory-svg {
       width: 100%;
       max-width: 380px;
@@ -595,10 +552,20 @@
       background: radial-gradient(circle at top, #eef2ff, #ffffff);
     }
 
-    .trajectory-meta {
-      margin-top: 4px;
-      font-size: 0.75rem;
-      color: var(--text-soft);
+    .velocity-svg {
+      width: 100%;
+      max-width: 380px;
+      height: auto;
+      max-height: 180px;
+      display: block;
+      margin: 0 auto;
+      border-radius: 12px;
+      background: radial-gradient(circle at top, #020617, #020617);
+      border: 1px solid rgba(148,163,184,0.8);
+    }
+
+    [data-theme="light"] .velocity-svg {
+      background: radial-gradient(circle at top, #eef2ff, #ffffff);
     }
 
     .data-table-wrap {
@@ -667,9 +634,9 @@
         <h1><span class="logo-dot"></span>Arrow Tune Calculator</h1>
         <div class="subtitle">Visual, data-rich arrow tuning for bowhunters &amp; target archers.</div>
         <div class="chip-row">
-          <div class="chip">Live FOC, GPP, GPI, KE &amp; momentum</div>
+          <div class="chip">Live FOC, GPP, GPI, momentum &amp; KE</div>
           <div class="chip">🏹 Works offline in your browser</div>
-          <span class="version-pill">v1.0.x · 2025-11-30</span>
+          <span class="version-pill">v1.0.5 · 2025-11-30</span>
         </div>
       </div>
       <div class="toolbar">
@@ -692,6 +659,54 @@
     <main>
       <!-- LEFT COLUMN -->
       <section class="col">
+
+        <!-- Saved builds -->
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">
+                Saved builds
+                <button type="button" class="info-icon" data-info-target="saved-builds-info">i</button>
+              </div>
+              <div class="panel-subtitle">
+                Name, save, reload, and move builds via CSV. Stored only in this browser.
+              </div>
+              <div id="saved-builds-info" class="info-text" hidden>
+                Saved builds are stored in your browser using localStorage. Use the CSV export/import
+                if you want to move setups between browsers or devices.
+              </div>
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label class="field-label" for="savedBuildName">
+                Saved build name
+                <span class="aux">(auto-suggested)</span>
+              </label>
+              <input id="savedBuildName" type="text" placeholder="2025-11 Hoyt RX-9 Easton 5.0 500 gr 70 lb draw">
+            </div>
+            <div class="field">
+              <label class="field-label">&nbsp;</label>
+              <button id="refreshNameBtn" type="button" class="btn" style="width:100%;">🔁 Suggest name</button>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;" class="small">
+            <span>Saved builds:</span>
+            <select id="savedBuildsSelect" style="max-width:260px;">
+              <option value="">(none yet)</option>
+            </select>
+            <button id="loadBuildBtn" type="button" class="btn">📂 Load selected</button>
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;" class="small">
+            <span>Upload inputs CSV:</span>
+            <input id="csvUpload" type="file" accept=".csv" style="max-width:230px;">
+            <span>(uses first data row exported from this tool)</span>
+          </div>
+        </article>
+
         <!-- Bow -->
         <article class="panel">
           <div class="panel-header">
@@ -701,7 +716,7 @@
                 <button type="button" class="info-icon" data-info-target="bow-info">i</button>
               </div>
               <div id="bow-info" class="info-text" hidden>
-                Basic bow setup so we can relate arrow weight to draw weight and estimate speed, energy, and momentum.
+                Basic bow setup so we can relate arrow weight to draw weight and estimate speed, KE, and efficiency.
               </div>
             </div>
           </div>
@@ -735,11 +750,11 @@
               <input id="letOffPct" type="number" min="0" max="100" step="1" placeholder="80">
             </div>
             <div class="field">
-              <label class="field-label" for="launchFps">
-                IBO rating / manual FPS
-                <span class="aux">(optional override for auto FPS estimate)</span>
+              <label class="field-label" for="iboRating">
+                IBO Rating (FPS)
+                <span class="aux">(manufacturer spec or chrono; optional)</span>
               </label>
-              <input id="launchFps" type="number" min="120" max="350" step="1" placeholder="IBO or chrono FPS">
+              <input id="iboRating" type="number" min="200" max="380" step="1" placeholder="e.g. 335">
             </div>
           </div>
         </article>
@@ -772,7 +787,7 @@
             </div>
             <div class="field">
               <label class="field-label" for="straightness">Straightness
-                <span class="aux">(e.g. ±0.001")</span>
+                <span class="aux">(e.g. ±0.001&quot;)</span>
               </label>
               <input id="straightness" type="text" placeholder="±0.001&quot;">
             </div>
@@ -792,8 +807,8 @@
               </div>
               <div id="shaft-info" class="info-text" hidden>
                 Arrow length and the finished total arrow weight from your scale. Most people only need arrow length,
-                total arrow weight, and balance point.
-                If you enter a full component breakdown in the advanced section, that total will be used instead of this field.
+                total arrow weight, and balance point. If you enter a full component breakdown in the advanced section,
+                that total will be used instead of this field.
               </div>
             </div>
           </div>
@@ -834,6 +849,7 @@
                   Detailed component weights are only needed if you track each part with a small scale.
                 </div>
                 <div id="components-info" class="info-text" hidden>
+                  Detailed component weights, including bare shaft, are only needed if you track each part with a small scale.
                   If you complete all the main component fields (bare shaft, nock, vanes, insert, point), the calculator will
                   use their sum as the total arrow weight. Otherwise, it will use the total arrow weight field above.
                 </div>
@@ -880,19 +896,21 @@
           </div>
         </article>
       </section>
+      <!-- RIGHT COLUMN WILL BE IN CHUNK 2 -->
             <!-- RIGHT COLUMN -->
       <section class="col">
-        <!-- FOC & weight distribution -->
+        <!-- FOC, weight distribution & bow/arrow efficiency -->
         <article class="panel">
           <div class="panel-header">
             <div>
-              <div class="panel-title">FOC &amp; weight distribution</div>
+              <div class="panel-title">FOC, Weight Distribution &amp; Bow/Arrow Efficiency</div>
               <div class="panel-subtitle">
-                Visualize front-of-center, balance point, and how your arrow’s weight is distributed.
+                Visualize balance point, FOC, weight split, and how well your arrow matches your bow’s stored energy.
               </div>
             </div>
           </div>
 
+          <!-- Arrow balance -->
           <div class="visual-section">
             <div class="visual-header">
               <div class="visual-title">
@@ -901,7 +919,7 @@
               </div>
             </div>
             <div id="balance-info" class="info-text" hidden>
-              Center line = geometric center, orange marker = balance point (driven by FOC).
+              Center line = geometric center of the arrow. Orange marker = your measured balance point (driven by FOC).
             </div>
             <div class="balance-bar">
               <div class="balance-mid"></div>
@@ -915,6 +933,7 @@
             </div>
           </div>
 
+          <!-- FOC gauge -->
           <div class="visual-section" style="margin-top:8px;">
             <div class="visual-header">
               <div class="visual-title">
@@ -923,7 +942,7 @@
               </div>
             </div>
             <div id="foc-gauge-info" class="info-text" hidden>
-              Shaded zone ≈ common bowhunting FOC range (~10–18% forward of center).
+              Shaded zone ≈ common bowhunting FOC range (~10–18% forward of center). Extreme values can change arrow stability.
             </div>
             <div class="gauge-bar">
               <div class="gauge-range"></div>
@@ -938,6 +957,7 @@
             </div>
           </div>
 
+          <!-- Weight composition -->
           <div class="visual-section" style="margin-top:8px;">
             <div class="visual-header">
               <div class="visual-title">
@@ -947,7 +967,7 @@
             </div>
             <div id="weight-comp-info" class="info-text" hidden>
               Center line shows the halfway mark: if the blue shaft segment crosses it, more than half of total arrow
-              weight is in the shaft.
+              weight is in the shaft. If the red point side dominates, more energy is up front.
             </div>
             <div style="display:flex;flex-direction:column;align-items:center;">
               <div class="weight-bar">
@@ -963,23 +983,53 @@
               </div>
             </div>
           </div>
+
+          <!-- Bow/Arrow Efficiency Match -->
+          <div class="visual-section" style="margin-top:8px;">
+            <div class="visual-header">
+              <div class="visual-title">
+                Bow/Arrow Efficiency Match
+                <button type="button" class="info-icon" data-info-target="efficiency-info">i</button>
+              </div>
+            </div>
+            <div id="efficiency-info" class="info-text" hidden>
+              Efficiency compares the arrow’s kinetic energy to an approximation of the bow’s stored energy.
+              It’s not a lab-grade test, but it helps show if your setup is “too light” or “too heavy” for the bow.
+            </div>
+
+            <div class="gauge-bar">
+              <div class="gauge-range"></div>
+              <div id="efficiencyMarker" class="gauge-marker" style="left:55%;"></div>
+            </div>
+            <div class="gauge-axis-labels">
+              <span>50%</span><span>90%+</span>
+            </div>
+
+            <div id="efficiencyTag" class="chip-tag">
+              Efficiency: <strong><span id="efficiencyValue">0</span>%</strong>
+              <span id="efficiencyBandLabel">(no data)</span>
+            </div>
+            <div class="small" style="margin-top:4px;">
+              Approximate stored energy ≈ (draw weight × draw length / 2) / 12 (ft-lbs).  
+              Tips update as you change arrow weight and FPS.
+            </div>
+          </div>
         </article>
 
-        <!-- Kinetics + Velocity + Trajectory -->
+        <!-- Kinetics (FPS, KE, Momentum & Trajectory) -->
         <article class="panel">
           <div class="panel-header">
             <div>
               <div class="panel-title">
-                Kinetics (FPS, Momentum, KE &amp; Trajectory)
+                Kinetics (FPS, KE, Momentum &amp; Trajectory)
                 <button type="button" class="info-icon" data-info-target="kinetics-info">i</button>
               </div>
               <div class="panel-subtitle">
-                Estimate FPS at distance using bow/arrow rules-of-thumb, then see momentum, KE, arc, and time-of-flight approximations.
+                Estimate FPS at distance, then compare KE and momentum bands for your hunting or 3D setup.
               </div>
               <div id="kinetics-info" class="info-text" hidden>
-                Launch FPS comes from your IBO/manual rating if entered, otherwise from rules-of-thumb:
-                ~15–20 fps per 10 lb of draw weight, ~10 fps per inch of draw length,
-                and ~1–1.5 fps lost for every +5 grains of arrow weight.
+                Launch FPS is estimated from a baseline, IBO rating (if provided), draw weight, draw length,
+                and arrow weight. KE and momentum are calculated at launch and at your farthest distance.
               </div>
             </div>
           </div>
@@ -987,11 +1037,19 @@
           <!-- 1) FPS -->
           <div class="visual-section">
             <div class="visual-header">
-              <div class="visual-title">1) FPS estimate at distance</div>
+              <div class="visual-title">1) FPS estimate</div>
             </div>
             <div class="field-grid">
               <div class="field">
-                <label class="field-label" for="speedLossPer10">Speed loss per 10 yd (fps)
+                <label class="field-label" for="launchFps">
+                  Launch FPS (estimated or measured)
+                  <span class="aux">auto from rules + IBO, or override manually</span>
+                </label>
+                <input id="launchFps" type="number" min="120" max="380" step="1" placeholder="auto or chrono value">
+              </div>
+              <div class="field">
+                <label class="field-label" for="speedLossPer10">
+                  Speed loss per 10 yd (fps)
                   <span class="aux">heavier arrows usually lose fewer fps; suggested, but editable</span>
                 </label>
                 <input id="speedLossPer10" type="number" min="0" max="30" step="0.5">
@@ -1015,55 +1073,42 @@
             </div>
           </div>
 
-          <!-- 2) Game momentum band -->
+          <!-- 2) KE & Momentum bands -->
           <div class="visual-section">
             <div class="visual-header">
               <div class="visual-title">
-                2) Game momentum band (farthest distance)
-                <button type="button" class="info-icon" data-info-target="momentum-info">i</button>
+                2) Kinetic Energy &amp; Momentum (launch vs farthest)
+                <button type="button" class="info-icon" data-info-target="ke-mom-info">i</button>
               </div>
             </div>
-            <div id="momentum-info" class="info-text" hidden>
-              Momentum is computed as: (arrow grains × fps) / 225,400.
-              KE is computed as: (grains × fps²) / 450,240.
-              These approximations help compare different builds under similar conditions.
+            <div id="ke-mom-info" class="info-text" hidden>
+              KE focuses on penetration energy (ft-lbs), while momentum emphasizes “push” and stopping power (slug·ft/s).
+              Many bowhunters cross-check both, especially for larger game.
             </div>
-            <div class="result-pill" style="margin-top:4px;">
-              <div class="result-label">Momentum at farthest distance</div>
-              <div class="result-value" id="momentumBandResult">
-                At ~60 yd: 0.000 slug·ft/s → (no band yet)
+
+            <div class="results-grid" style="margin-top:4px;">
+              <div class="result-pill">
+                <div class="result-label">Momentum at farthest distance</div>
+                <div class="result-value" id="momentumBandResult">
+                  At ~60 yd: 0.000 slug·ft/s → (no band)
+                </div>
+                <div class="small">
+                  Momentum ≈ (arrow grains × fps) / 225,400. Great for comparing heavier vs lighter setups.
+                </div>
               </div>
-              <div class="small">
-                Uses total arrow weight and FPS at your farthest distance to approximate kill-effectiveness bands.
+              <div class="result-pill">
+                <div class="result-label">Kinetic Energy (ft-lbs)</div>
+                <div class="small">
+                  Launch: <strong><span id="keLaunchValue">0.0</span> ft-lbs</strong><br>
+                  At farthest: <strong><span id="keD2Value">0.0</span> ft-lbs</strong>
+                </div>
+                <div class="small" id="keBandLabel">
+                  KE band: (no data)
+                </div>
+                <div class="small" style="margin-top:2px;">
+                  Rough guidance (varies by source): small game &gt;10, deer ~25–40, elk &amp; larger often &gt;45–55.
+                </div>
               </div>
-            </div>
-            <div class="momentum-icons">
-              <div id="iconSmall" class="game-icon muted">
-                <span class="emoji">🦃</span><span class="label">Small game</span>
-              </div>
-              <div id="iconDeer" class="game-icon muted">
-                <span class="emoji">🦌</span><span class="label">Deer-size</span>
-              </div>
-              <div id="iconElk" class="game-icon muted">
-                <span class="emoji">🫎</span><span class="label">Large game</span>
-              </div>
-              <div id="iconDanger" class="game-icon muted">
-                <span class="emoji">🐃</span><span class="label">Very large / dangerous</span>
-              </div>
-            </div>
-            <div class="learn-link" id="learnMomentum">Learn more about these bands</div>
-            <div id="momentumLearnPanel" class="info-text" hidden>
-              <p>
-                These momentum bands are based on commonly cited bowhunting guidelines and are meant as a comparison tool,
-                not a hard safety rule:
-              </p>
-              <ul>
-                <li><strong>~0.35 slug·ft/s</strong>: small game / practice</li>
-                <li><strong>~0.45 slug·ft/s</strong>: deer-sized game</li>
-                <li><strong>~0.55 slug·ft/s</strong>: large game (elk / grizzly bears)</li>
-                <li><strong>~0.65 slug·ft/s and above</strong>: very large / dangerous game</li>
-              </ul>
-              <p>Momentum formula: <code>(arrow grains × fps) / 225,400</code>.</p>
             </div>
           </div>
 
@@ -1077,6 +1122,7 @@
             </div>
             <div id="trajectory-info" class="info-text" hidden>
               Shows a simple arc from bow to target based on your arc range, with a little extra room beyond the target.
+              It is not a physics-perfect model, but useful for visualizing pin gaps and mid-flight height.
             </div>
             <div class="field-grid">
               <div class="field">
@@ -1086,43 +1132,70 @@
                 <input id="arcRange" type="number" min="10" max="155" step="1" value="60">
               </div>
               <div class="field">
-                <label class="field-label" for="arcMetaInline">Peak height (ft) &amp; launch angle</label>
+                <label class="field-label" for="arcMetaInline">Peak height (ft) &amp; launch angle (approx)</label>
                 <input id="arcMetaInline" type="text" readonly>
               </div>
             </div>
             <svg id="trajectorySvg" class="trajectory-svg" viewBox="0 0 320 210" preserveAspectRatio="xMidYMid meet"></svg>
-            <div class="trajectory-meta" id="trajectorySummary">
+            <div class="small" id="trajectorySummary">
               Horizontal axis ≈ 0–61 yd (arc set to ~55 yd). Peak height ≈ 3.8 ft.
-            </div>
-          </div>
-
-          <!-- 4) Velocity drop-off & time-of-flight -->
-          <div class="visual-section">
-            <div class="visual-header">
-              <div class="visual-title">
-                4) Velocity Drop-Off &amp; Time-of-Flight
-                <button type="button" class="info-icon" data-info-target="veldrop-info">i</button>
-              </div>
-            </div>
-            <div id="veldrop-info" class="info-text" hidden>
-              Uses your launch FPS and speed-loss-per-10-yd setting to approximate velocity and time-of-flight at a chosen distance.
-            </div>
-            <div class="field">
-              <label class="field-label" for="velDropDistance">
-                Distance for KE/velocity sample (yd)
-                <span class="aux">use this to think about pin gaps &amp; ranging</span>
-              </label>
-              <input id="velDropDistance" type="range" min="0" max="100" step="1" value="40">
-              <div class="small">
-                Distance: <strong><span id="velDropDistanceValue">40</span> yd</strong> ·
-                Velocity: <strong><span id="velDropVelocity">0.0</span> fps</strong> ·
-                Time-of-flight: <strong><span id="velDropTof">0.00</span> s</strong>
-              </div>
             </div>
           </div>
         </article>
 
-        <!-- Results + notes + efficiency + data table -->
+        <!-- Velocity drop-off & time-of-flight -->
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">
+                Velocity Drop-Off &amp; Time-of-Flight
+                <button type="button" class="info-icon" data-info-target="velocity-info">i</button>
+              </div>
+              <div class="panel-subtitle">
+                See how FPS and time-to-target change with distance to refine pin gaps and ranging.
+              </div>
+              <div id="velocity-info" class="info-text" hidden>
+                Velocity at distance uses a simple drag model fed by your launch FPS and speed loss per 10 yd.
+                Time-of-flight is based on average velocity to that distance. Good for comparing builds, not
+                simulating exact arrow flight like a ballistics solver.
+              </div>
+            </div>
+          </div>
+
+          <div class="visual-section">
+            <div class="visual-header">
+              <div class="visual-title">Distance focus</div>
+            </div>
+            <div class="field-grid">
+              <div class="field">
+                <label class="field-label" for="velDistance">
+                  Distance (yd)
+                  <span class="aux">linked to arc range and Distance 2</span>
+                </label>
+                <input id="velDistance" type="range" min="0" max="100" value="60">
+              </div>
+              <div class="field">
+                <label class="field-label">&nbsp;</label>
+                <input id="velDistanceValue" type="text" readonly value="60 yd">
+              </div>
+            </div>
+            <div class="small" style="margin-top:4px;">
+              Slider range auto-follows your arc range and farthest distance so you’re always in a realistic window.
+            </div>
+          </div>
+
+          <div class="visual-section" style="margin-top:8px;">
+            <div class="visual-header">
+              <div class="visual-title">Velocity curve &amp; time-of-flight</div>
+            </div>
+            <svg id="velocitySvg" class="velocity-svg" viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet"></svg>
+            <div class="small" id="velocitySummary">
+              At 60 yd: ~0.000 s flight time, 0 fps (no data yet).
+            </div>
+          </div>
+        </article>
+
+        <!-- Results & notes -->
         <article class="panel">
           <div class="panel-header">
             <div>
@@ -1131,11 +1204,11 @@
                 <button type="button" class="info-icon" data-info-target="results-info">i</button>
               </div>
               <div class="panel-subtitle">
-                Summary of your build with bands for FOC, GPP, GPI, momentum, KE, and bow/arrow efficiency.
+                Summary of your build with bands for FOC, GPP, GPI, momentum, KE, and efficiency match.
               </div>
               <div id="results-info" class="info-text" hidden>
-                FOC, GPP and GPI bands use common bowhunting guidelines. They are not hard rules, but useful zones to
-                compare different setups. KE and efficiency help you see how well the bow’s stored energy is being used.
+                Bands use common bowhunting guidelines. They are not hard rules, but useful zones to compare setups
+                across bows, arrows, and distances.
               </div>
             </div>
           </div>
@@ -1163,48 +1236,28 @@
               </div>
             </div>
             <div class="result-pill">
-              <div class="result-label">Momentum &amp; KE at farthest distance</div>
-              <div class="result-value">
-                <span id="momentumValue">0.000</span> slug·ft/s
-              </div>
+              <div class="result-label">Momentum at farthest distance</div>
+              <div class="result-value"><span id="momentumValue">0.000</span> slug·ft/s</div>
               <div class="small">
                 Your setup: <span id="momentumBandShort">0.000 slug·ft/s → (no band)</span>
               </div>
+            </div>
+            <div class="result-pill">
+              <div class="result-label">Kinetic Energy summary</div>
               <div class="small">
-                KE: <span id="keLaunchValue">0.0</span> ft-lbs @ launch ·
-                <span id="keFarthestValue">0.0</span> ft-lbs @ farthest
+                Launch KE: <strong><span id="keLaunchValueSummary">0.0</span> ft-lbs</strong><br>
+                Farthest KE: <strong><span id="keD2ValueSummary">0.0</span> ft-lbs</strong>
               </div>
-              <div class="small">
-                KE band: <span id="keBandShort">0.0 ft-lbs → (no band)</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Efficiency dial -->
-          <div class="visual-section" style="margin-top:8px;">
-            <div class="visual-header">
-              <div class="visual-title">
-                Bow/Arrow Efficiency Match
-                <button type="button" class="info-icon" data-info-target="efficiency-info">i</button>
+              <div class="small" id="keBandLabelSummary">
+                KE band: (no data)
               </div>
             </div>
-            <div id="efficiency-info" class="info-text" hidden>
-              Efficiency compares estimated bow stored energy to arrow kinetic energy at launch.
-              It’s a rough “match score” for how well your arrow build fits this bow.
-            </div>
-            <div class="gauge-bar">
-              <div class="gauge-range"></div>
-              <div id="efficiencyMarker" class="gauge-marker" style="left:0%;"></div>
-            </div>
-            <div class="gauge-axis-labels">
-              <span>0%</span><span>120%+</span>
-            </div>
-            <div id="efficiencyTag" class="chip-tag">
-              Match score: <strong><span id="efficiencyValue">0.0</span>%</strong>
-              <span id="efficiencyBandLabel">(no data)</span>
-            </div>
-            <div id="efficiencyTip" class="small">
-              Enter draw weight, draw length, and arrow details to see the match score.
+            <div class="result-pill">
+              <div class="result-label">Bow/Arrow Match efficiency</div>
+              <div class="result-value"><span id="efficiencyValueSummary">0</span>%</div>
+              <div class="small" id="efficiencyBandLabelSummary">
+                Efficiency band: (no data)
+              </div>
             </div>
           </div>
 
@@ -1215,29 +1268,6 @@
                 <span class="aux">(what this build is for – e.g. elk 0–60 yd, TAC, practice)</span>
               </label>
               <textarea id="notes" placeholder="Hunting elk out to ~60 yd. Quiet, forgiving build."></textarea>
-            </div>
-
-            <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;">
-              <div class="field" style="flex:1;">
-                <label class="field-label" for="savedBuildName">Saved build name (auto-suggested)</label>
-                <input id="savedBuildName" type="text" placeholder="2025-11 Hoyt RX-9 Easton 5.0 500 gr 70 lb draw">
-              </div>
-              <button id="refreshNameBtn" type="button" class="btn">💡 Suggest name</button>
-            </div>
-
-            <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;" class="small">
-              <span>Saved builds:</span>
-              <select id="savedBuildsSelect" style="max-width:260px;">
-                <option value="">(none yet)</option>
-              </select>
-              <button id="loadBuildBtn" type="button" class="btn">📂 Load selected</button>
-              <button id="saveBuildBtnInline" type="button" class="btn btn-primary">💾 Save build</button>
-            </div>
-
-            <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;" class="small">
-              <span>Upload inputs CSV:</span>
-              <input id="csvUpload" type="file" accept=".csv" style="max-width:230px;">
-              <span>(uses first data row, exported from this tool)</span>
             </div>
           </div>
 
@@ -1281,18 +1311,20 @@
           </div>
 
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;">
+            <!-- EMAIL BUTTON -->
             <button
               type="button"
               class="btn btn-primary"
-              onclick="window.location.href='mailto:arrow-tune-calculator@tuta.io?subject=Arrow%20Tune%20Calculator%20Feedback&body=Browser%3A%20%0ADevice%3A%20%0ABuild%20summary%20(FOC%2C%20GPP%2C%20GPI%2C%20momentum%2C%20KE)%3A%20%0AWhat%20worked%3A%20%0AWhat%20was%20confusing%3A%20%0AWhat%20you%20wish%20it%20did%3A%20';"
+              onclick="window.location.href='mailto:arrow-tune-calculator@tuta.io?subject=Arrow%20Tune%20Calculator%20Feedback&body=Browser%3A%20%0ADevice%3A%20%0ABuild%20summary%20(FOC%2C%20GPP%2C%20GPI%2C%20momentum%2C%20KE%2C%20efficiency)%3A%20%0AWhat%20worked%3A%20%0AWhat%20was%20confusing%3A%20%0AWhat%20you%20wish%20it%20did%3A%20';"
             >
               ✉️ Email feedback
             </button>
 
+            <!-- GITHUB ISSUE -->
             <a
               class="btn"
               style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;"
-              href="https://github.com/dmarcus-wire/arrow-tune-calculator/issues/new?title=Feedback%3A+Arrow+Tune+Calculator&body=Browser%3A+%0ADevice%3A+%0ABuild+details+(draw+weight%2C+GPP%2C+FOC)%3A+%0AFeedback%3A+"
+              href="https://github.com/dmarcus-wire/arrow-tune-calculator/issues/new?title=Feedback%3A+Arrow+Tune+Calculator&body=Browser%3A+%0ADevice%3A+%0ABuild+details+(draw+weight%2C+GPP%2C+FOC%2C+KE%2C+efficiency)%3A+%0AFeedback%3A+"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -1322,7 +1354,7 @@
       'drawWeight',
       'drawLength',
       'letOffPct',
-      'launchFpsManual',
+      'iboRating',
       'arrowName',
       'arrowSpine',
       'straightness',
@@ -1345,26 +1377,24 @@
       'gpiBand',
       'launchFpsUsed',
       'speedLossPer10',
+      'distance1',
+      'distance2',
       'fpsAtD1',
       'fpsAtD2',
+      'keLaunch',
+      'keD2',
+      'keBand',
       'momentumFarthest',
       'momentumBand',
-      'keLaunch',
-      'keFarthest',
-      'keBand',
       'efficiencyPct',
       'efficiencyBand',
-      'velDropDistance',
-      'velDropVelocity',
-      'velDropTof',
       'weightSummary',
       'trajectorySummary',
+      'velocitySummary',
       'notes'
     ];
 
-    function $(id) {
-      return document.getElementById(id);
-    }
+    function $(id) { return document.getElementById(id); }
 
     function getNum(id) {
       const el = $(id);
@@ -1416,7 +1446,7 @@
         drawWeight: getNum('drawWeight'),
         drawLength: getNum('drawLength'),
         letOffPct: getNum('letOffPct'),
-        launchFpsManual: getNum('launchFps'), // IBO rating / manual FPS override
+        iboRating: getNum('iboRating'),
         arrowName: getStr('arrowName'),
         arrowSpine: getNum('arrowSpine'),
         straightness: getStr('straightness'),
@@ -1432,11 +1462,12 @@
         insertWeight: getNum('insertWeight'),
         pointWeight: getNum('pointWeight'),
         glueWeight: getNum('glueWeight'),
+        launchFpsManual: getNum('launchFps'),
         speedLossPer10: getNum('speedLossPer10'),
         distance1: getNum('distance1'),
         distance2: getNum('distance2'),
         arcRange: getNum('arcRange'),
-        velDropDistance: getNum('velDropDistance'),
+        velDistance: getNum('velDistance'),
         notes: getStr('notes')
       };
     }
@@ -1446,14 +1477,9 @@
       let componentsOk = false;
 
       if (i.showComponents) {
-        if (
-          i.bareShaftWeight > 0 &&
-          i.nockWeight >= 0 &&
-          i.vaneCount >= 0 &&
-          i.vaneWeight >= 0 &&
-          i.insertWeight >= 0 &&
-          i.pointWeight > 0
-        ) {
+        if (i.bareShaftWeight > 0 && i.nockWeight >= 0 &&
+            i.vaneCount >= 0 && i.vaneWeight >= 0 &&
+            i.insertWeight >= 0 && i.pointWeight > 0) {
           componentsOk = true;
         }
       }
@@ -1461,26 +1487,15 @@
       let totalComponents = 0;
       if (componentsOk) {
         const vanesTotal = i.vaneCount * i.vaneWeight;
-        totalComponents =
-          i.bareShaftWeight +
-          i.nockWeight +
-          i.wrapWeight +
-          vanesTotal +
-          i.insertWeight +
-          i.pointWeight +
-          i.glueWeight;
+        totalComponents = i.bareShaftWeight + i.nockWeight + i.wrapWeight +
+                          vanesTotal + i.insertWeight + i.pointWeight + i.glueWeight;
       }
 
-      const total =
-        componentsOk && totalComponents > 0
-          ? totalComponents
-          : i.totalArrowWeight;
+      const total = componentsOk && totalComponents > 0
+        ? totalComponents
+        : i.totalArrowWeight;
 
-      return {
-        totalWeight: total,
-        componentsUsed: componentsOk && totalComponents > 0,
-        totalComponents
-      };
+      return { totalWeight: total, componentsUsed: componentsOk && totalComponents > 0, totalComponents };
     }
 
     function calcFOC() {
@@ -1517,9 +1532,7 @@
 
     function calcGPP(totalWeight) {
       const dw = state.inputs.drawWeight || 0;
-      if (dw <= 0 || totalWeight <= 0) {
-        return { gpp: 0, band: 'no data', bandClass: 'bad' };
-      }
+      if (dw <= 0 || totalWeight <= 0) return { gpp: 0, band: 'no data', bandClass: 'bad' };
       const gpp = totalWeight / dw;
       let band = 'no data';
       let bandClass = 'bad';
@@ -1561,22 +1574,22 @@
     }
 
     function estimateLaunchFPS(totalWeight) {
-      const dw = state.inputs.drawWeight || 0;
-      const dl = state.inputs.drawLength || 0;
+      const i = state.inputs;
+      const dw = i.drawWeight || 0;
+      const dl = i.drawLength || 0;
       if (dw <= 0 || totalWeight <= 0) return 0;
 
-      // Simple baseline model: 70 lb / 28" / 500 gr ≈ 280 fps
       const baseDw = 70;
-      const baseWt = 500;
-      const baseDl = 28;
-      const baseFps = 280;
+      const baseDl = 30;
+      const baseWt = 350;
+      let baseFps = i.iboRating > 0 ? i.iboRating : 280;
 
       const dwDelta = (dw - baseDw) * 2;
       const dlDelta = (dl - baseDl) * 10;
-      const wtDelta = -(totalWeight - baseWt) / 5;
+      const wtDelta = - (totalWeight - baseWt) / 5;
 
       let fps = baseFps + dwDelta + dlDelta + wtDelta;
-      fps = Math.max(140, Math.min(340, fps));
+      fps = Math.max(140, Math.min(380, fps));
       return fps;
     }
 
@@ -1592,12 +1605,6 @@
     function calcMomentum(grains, fps) {
       if (grains <= 0 || fps <= 0) return 0;
       return (grains * fps) / 225400;
-    }
-
-    function calcKE(grains, fps) {
-      if (grains <= 0 || fps <= 0) return 0;
-      // KE (ft-lbs) = (grains * v^2) / 450240
-      return (grains * fps * fps) / 450240;
     }
 
     function classifyMomentumBand(momentum) {
@@ -1625,52 +1632,66 @@
       return { band, bandClass };
     }
 
+    function calcKE(grains, fps) {
+      if (grains <= 0 || fps <= 0) return 0;
+      return (grains / 450240) * fps * fps;
+    }
+
     function classifyKEBand(ke) {
       let band = 'no data';
       let bandClass = 'bad';
-
       if (ke <= 0) {
         band = 'no data';
         bandClass = 'bad';
       } else if (ke < 10) {
-        band = 'Practice / very small game';
+        band = 'Very light / small game only';
         bandClass = 'warn';
       } else if (ke >= 10 && ke < 25) {
-        band = 'Small game / light setups';
+        band = 'Light hunting / small–medium game';
         bandClass = 'good';
-      } else if (ke >= 25 && ke < 40) {
-        band = 'Deer-sized game';
+      } else if (ke >= 25 && ke < 45) {
+        band = 'Typical deer-sized game';
         bandClass = 'good';
-      } else if (ke >= 40 && ke < 55) {
-        band = 'Elk / large game';
+      } else if (ke >= 45 && ke < 55) {
+        band = 'Elk / larger-bodied game (approx)';
         bandClass = 'good';
       } else if (ke >= 55) {
-        band = 'Very large / dangerous game';
+        band = 'Very high KE (heavy setups / big game)';
         bandClass = 'warn';
       }
-
       return { band, bandClass };
     }
 
-    function updateMomentumIcons(momentum) {
-      const icons = [
-        { id: 'iconSmall', min: 0, max: 0.45 },
-        { id: 'iconDeer', min: 0.45, max: 0.55 },
-        { id: 'iconElk', min: 0.55, max: 0.65 },
-        { id: 'iconDanger', min: 0.65, max: 999 }
-      ];
-      icons.forEach(icon => {
-        const el = $(icon.id);
-        if (!el) return;
-        el.classList.remove('active', 'muted');
-        if (momentum <= 0) {
-          el.classList.add('muted');
-        } else if (momentum >= icon.min && momentum < icon.max) {
-          el.classList.add('active');
-        } else {
-          el.classList.add('muted');
-        }
-      });
+    function calcEfficiency(keLaunch) {
+      const i = state.inputs;
+      const dw = i.drawWeight || 0;
+      const dl = i.drawLength || 0;
+      if (dw <= 0 || dl <= 0 || keLaunch <= 0) {
+        return { pct: 0, band: 'no data', bandClass: 'bad' };
+      }
+      const storedEnergy = (dw * dl / 2) / 12; // ft-lbs
+      if (storedEnergy <= 0) {
+        return { pct: 0, band: 'no data', bandClass: 'bad' };
+      }
+      const pct = (keLaunch / storedEnergy) * 100;
+
+      let band = 'no data';
+      let bandClass = 'bad';
+      if (pct < 40) {
+        band = 'Very low efficiency (likely mis-match)';
+        bandClass = 'warn';
+      } else if (pct >= 40 && pct < 55) {
+        band = 'Light / speed-focused arrow';
+        bandClass = 'good';
+      } else if (pct >= 55 && pct < 70) {
+        band = 'Balanced hunting efficiency';
+        bandClass = 'good';
+      } else if (pct >= 70) {
+        band = 'Heavy / energy-rich build';
+        bandClass = 'warn';
+      }
+
+      return { pct, band, bandClass };
     }
 
     function updateFOCAndBalance(focInfo) {
@@ -1684,7 +1705,7 @@
       }
       const marker = $('balanceMarker');
       if (marker) marker.style.left = balancePct + '%';
-      setText('balancePointOut', bp.toFixed(2));
+      setText('balancePointOut', isFinite(bp) ? bp.toFixed(2) : '0.00');
 
       const focMarker = $('focMarker');
       if (focMarker) {
@@ -1704,9 +1725,7 @@
 
     function updateWeightComposition(totalWeight, componentsUsed) {
       const i = state.inputs;
-      let shaft = 0,
-        pointSystem = 0,
-        tail = 0;
+      let shaft = 0, pointSystem = 0, tail = 0;
 
       if (componentsUsed) {
         shaft = i.bareShaftWeight || 0;
@@ -1723,14 +1742,12 @@
         } else {
           shaft = totalWeight * 0.55;
           pointSystem = totalWeight * 0.35;
-          tail = totalWeight * 0.1;
+          tail = totalWeight * 0.10;
         }
       }
 
       const sum = shaft + pointSystem + tail;
-      let sp = 0,
-        pp = 0,
-        tp = 0;
+      let sp = 0, pp = 0, tp = 0;
       if (sum > 0) {
         sp = (shaft / sum) * 100;
         pp = (pointSystem / sum) * 100;
@@ -1771,16 +1788,11 @@
       if (arcRange <= 20) peakHeightFt = 1.0 + (arcRange / 20) * 2.0;
       const yMaxFeet = peakHeightFt * 1.4 || 6;
 
-      const padLeft = 30,
-        padRight = 18,
-        padTop = 20,
-        padBottom = 35;
+      const padLeft = 30, padRight = 18, padTop = 20, padBottom = 35;
       const w = viewWidth - padLeft - padRight;
       const h = viewHeight - padTop - padBottom;
 
-      function xScale(yd) {
-        return padLeft + (yd / maxX) * w;
-      }
+      function xScale(yd) { return padLeft + (yd / maxX) * w; }
       function yScale(ft) {
         const norm = Math.max(0, Math.min(yMaxFeet, ft));
         return padTop + h - (norm / yMaxFeet) * h;
@@ -1819,7 +1831,7 @@
       yLabel.setAttribute('text-anchor', 'middle');
       yLabel.setAttribute('font-size', '9');
       yLabel.setAttribute('fill', 'rgba(148,163,184,0.9)');
-      yLabel.setAttribute('transform', `rotate(-90 ${padLeft - 22} ${padTop + h / 2})`);
+      yLabel.setAttribute('transform', `rotate(-90 ${padLeft-22} ${padTop + h/2})`);
       yLabel.textContent = 'Height (ft)';
       svg.appendChild(yLabel);
 
@@ -1877,9 +1889,7 @@
       svg.appendChild(tgtLabel);
 
       const maxYd = maxX;
-      const summary = `Horizontal axis ≈ 0–${maxYd.toFixed(0)} yd (arc set to ~${arcRange.toFixed(
-        0
-      )} yd). Peak height ≈ ${peakHeightFt.toFixed(1)} ft.`;
+      const summary = `Horizontal axis ≈ 0–${maxYd.toFixed(0)} yd (arc set to ~${arcRange.toFixed(0)} yd). Peak height ≈ ${peakHeightFt.toFixed(1)} ft.`;
       setText('trajectorySummary', summary);
       setValue('arcMetaInline', `Peak ≈ ${peakHeightFt.toFixed(1)} ft`);
       state.computed.trajectorySummary = summary;
@@ -1899,129 +1909,193 @@
       state.inputs.speedLossPer10 = suggested;
     }
 
-    function updateVelocityDropAndTof(launchFpsUsed) {
-      const distEl = $('velDropDistance');
-      if (!distEl) return;
+    function drawVelocityCurve(launchFpsUsed) {
+      const svg = $('velocitySvg');
+      if (!svg) return;
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
 
-      const distYd = parseFloat(distEl.value) || 0;
-      setText('velDropDistanceValue', distYd.toFixed(0));
-
-      if (launchFpsUsed <= 0 || distYd <= 0) {
-        setText('velDropVelocity', '0');
-        setText('velDropTof', '0.00');
-        state.computed.velDropDistance = distYd;
-        state.computed.velDropVelocity = 0;
-        state.computed.velDropTof = 0;
+      if (launchFpsUsed <= 0) {
+        setText('velocitySummary', 'No FPS estimate yet – enter bow, arrow, and/or launch FPS to see velocity and time-of-flight.');
+        state.computed.velocitySummary = 'No velocity data';
         return;
       }
 
-      const vAtD = fpsAtDistance(launchFpsUsed, distYd);
-      setText('velDropVelocity', vAtD.toFixed(1));
+      const i = state.inputs;
+      const lossPer10 = i.speedLossPer10 || 0;
+      const distMax = Math.max(i.arcRange || 60, i.distance2 || 60, 10);
+      const viewWidth = 320;
+      const viewHeight = 180;
 
-      const avgVel = (launchFpsUsed + vAtD) / 2;
-      let tof = 0;
-      if (avgVel > 0) {
-        const distanceFeet = distYd * 3; // yards → feet
-        tof = distanceFeet / avgVel;
+      const padLeft = 30, padRight = 18, padTop = 15, padBottom = 28;
+      const w = viewWidth - padLeft - padRight;
+      const h = viewHeight - padTop - padBottom;
+
+      function vAt(d) {
+        const segments = d / 10;
+        const v = launchFpsUsed - lossPer10 * segments;
+        return Math.max(0, v);
       }
-      setText('velDropTof', tof.toFixed(2));
 
-      state.computed.velDropDistance = distYd;
-      state.computed.velDropVelocity = vAtD;
-      state.computed.velDropTof = tof;
+      let vMin = launchFpsUsed, vMax = 0;
+      const steps = 30;
+      for (let s = 0; s <= steps; s++) {
+        const dY = (distMax * s) / steps;
+        const v = vAt(dY);
+        if (v > vMax) vMax = v;
+        if (v < vMin) vMin = v;
+      }
+      if (vMax <= 0) vMax = launchFpsUsed;
+      if (vMin < 0) vMin = 0;
+
+      function xScale(yd) { return padLeft + (yd / distMax) * w; }
+      function yScale(fps) {
+        const span = vMax - vMin || 1;
+        const norm = (fps - vMin) / span;
+        return padTop + h - norm * h;
+      }
+
+      const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      xAxis.setAttribute('x1', padLeft);
+      xAxis.setAttribute('y1', padTop + h);
+      xAxis.setAttribute('x2', padLeft + w);
+      xAxis.setAttribute('y2', padTop + h);
+      xAxis.setAttribute('stroke', 'rgba(148,163,184,0.9)');
+      xAxis.setAttribute('stroke-width', '1');
+      svg.appendChild(xAxis);
+
+      const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      yAxis.setAttribute('x1', padLeft);
+      yAxis.setAttribute('y1', padTop);
+      yAxis.setAttribute('x2', padLeft);
+      yAxis.setAttribute('y2', padTop + h);
+      yAxis.setAttribute('stroke', 'rgba(148,163,184,0.8)');
+      yAxis.setAttribute('stroke-width', '1');
+      svg.appendChild(yAxis);
+
+      const xLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      xLabel.setAttribute('x', padLeft + w / 2);
+      xLabel.setAttribute('y', padTop + h + 18);
+      xLabel.setAttribute('text-anchor', 'middle');
+      xLabel.setAttribute('font-size', '9');
+      xLabel.setAttribute('fill', 'rgba(148,163,184,0.9)');
+      xLabel.textContent = 'Distance (yd)';
+      svg.appendChild(xLabel);
+
+      const yLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      yLabel.setAttribute('x', padLeft - 25);
+      yLabel.setAttribute('y', padTop + h / 2);
+      yLabel.setAttribute('text-anchor', 'middle');
+      yLabel.setAttribute('font-size', '9');
+      yLabel.setAttribute('fill', 'rgba(148,163,184,0.9)');
+      yLabel.setAttribute('transform', `rotate(-90 ${padLeft-25} ${padTop + h/2})`);
+      yLabel.textContent = 'Velocity (fps)';
+      svg.appendChild(yLabel);
+
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      let d = '';
+      for (let s = 0; s <= steps; s++) {
+        const yd = (distMax * s) / steps;
+        const v = vAt(yd);
+        const X = xScale(yd);
+        const Y = yScale(v);
+        if (s === 0) {
+          d += 'M' + X + ' ' + Y + ' ';
+        } else {
+          d += 'L' + X + ' ' + Y + ' ';
+        }
+      }
+      path.setAttribute('d', d.trim());
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', '#38bdf8');
+      path.setAttribute('stroke-width', '2');
+      svg.appendChild(path);
+
+      const tickText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      tickText.setAttribute('x', xScale(distMax) - 4);
+      tickText.setAttribute('y', padTop + h - 4);
+      tickText.setAttribute('font-size', '9');
+      tickText.setAttribute('fill', 'rgba(148,163,184,0.9)');
+      tickText.setAttribute('text-anchor', 'end');
+      tickText.textContent = `${distMax.toFixed(0)} yd`;
+      svg.appendChild(tickText);
     }
 
-    function updateEfficiency(totalWeight, launchFpsUsed) {
-      const dw = state.inputs.drawWeight || 0;
-      const dl = state.inputs.drawLength || 0;
-      const efficiencyValueEl = $('efficiencyValue');
-      const efficiencyTag = $('efficiencyTag');
-      const efficiencyBandLabel = $('efficiencyBandLabel');
-      const efficiencyMarker = $('efficiencyMarker');
-      const efficiencyTip = $('efficiencyTip');
+    function updateVelocitySection(launchFpsUsed, totalWeight) {
+      const slider = $('velDistance');
+      const out = $('velDistanceValue');
+      if (!slider || !out) return;
 
-      if (
-        !efficiencyValueEl ||
-        !efficiencyTag ||
-        !efficiencyBandLabel ||
-        !efficiencyMarker ||
-        !efficiencyTip
-      ) {
-        return;
-      }
+      const i = state.inputs;
+      const baseRange = i.arcRange || i.distance2 || 60;
+      const far = i.distance2 || baseRange;
+      let maxSlider = Math.max(baseRange, far, 10);
+      slider.max = maxSlider.toFixed(0);
 
-      if (dw <= 0 || dl <= 0 || totalWeight <= 0 || launchFpsUsed <= 0) {
-        efficiencyValueEl.textContent = '0';
-        efficiencyBandLabel.textContent = '(no data)';
-        efficiencyTag.classList.remove('good', 'warn', 'bad');
-        efficiencyTag.classList.add('bad');
-        efficiencyMarker.style.left = '0%';
-        efficiencyTip.textContent =
-          'Enter draw weight, draw length, and arrow details to see the match score.';
-        state.computed.efficiencyPct = 0;
-        state.computed.efficiencyBand = 'no data';
-        return;
-      }
+      let focusDist = i.velDistance || far || baseRange;
+      if (!isFinite(focusDist) || focusDist < 0) focusDist = 0;
+      if (focusDist > maxSlider) focusDist = maxSlider;
 
-      // Stored energy (approx) in ft-lbs: (DW * DL / 2) / 12 (DL in inches)
-      const storedEnergy = (dw * dl / 2) / 12;
+      slider.value = focusDist.toFixed(0);
+      out.value = `${focusDist.toFixed(0)} yd`;
+      state.inputs.velDistance = focusDist;
 
-      // Arrow KE (ft-lbs): (grains * v^2) / 450240
-      const ke = (totalWeight * launchFpsUsed * launchFpsUsed) / 450240;
+      drawVelocityCurve(launchFpsUsed);
 
-      let effPct = storedEnergy > 0 ? (ke / storedEnergy) * 100 : 0;
-      effPct = Math.max(0, Math.min(120, effPct)); // clamp
-
-      let band = 'no data';
-      let bandClass = 'bad';
-      let tip = '';
-
-      if (effPct < 60) {
-        band = 'Under-driven (light arrow for this bow)';
-        bandClass = 'warn';
-        tip =
-          'You may gain penetration and consistency by adding some arrow weight (heavier point or insert).';
-      } else if (effPct >= 60 && effPct <= 85) {
-        band = 'Balanced (good energy transfer)';
-        bandClass = 'good';
-        tip =
-          'Nice match. You can tweak FOC or point weight based on your hunting or 3D goals.';
+      if (launchFpsUsed > 0) {
+        const lossPer10 = i.speedLossPer10 || 0;
+        const segments = focusDist / 10;
+        const vAtFocus = Math.max(0, launchFpsUsed - lossPer10 * segments);
+        const avgV = vAtFocus > 0 ? (launchFpsUsed + vAtFocus) / 2 : launchFpsUsed;
+        const distanceFeet = focusDist * 3;
+        const tof = avgV > 0 ? distanceFeet / avgV : 0;
+        const summary = `At ${focusDist.toFixed(0)} yd: ~${tof.toFixed(2)} s flight time, ~${vAtFocus.toFixed(0)} fps (approx).`;
+        setText('velocitySummary', summary);
+        state.computed.velocitySummary = summary;
       } else {
-        band = 'Very heavy / sluggish';
-        bandClass = 'warn';
-        tip =
-          'Arrow may be overly heavy for this bow. Consider lightening the point or total weight for flatter trajectory.';
+        setText('velocitySummary', 'No FPS estimate yet – enter bow, arrow, and/or launch FPS to see velocity and time-of-flight.');
+        state.computed.velocitySummary = 'No velocity data';
       }
-
-      efficiencyValueEl.textContent = effPct.toFixed(1);
-      efficiencyBandLabel.textContent = band;
-      efficiencyTag.classList.remove('good', 'warn', 'bad');
-      efficiencyTag.classList.add(bandClass);
-      efficiencyTip.textContent = tip;
-
-      const markerPct = (effPct / 120) * 100;
-      efficiencyMarker.style.left = markerPct.toFixed(1) + '%';
-
-      state.computed.efficiencyPct = effPct;
-      state.computed.efficiencyBand = band;
     }
 
-    function updateDataTable(
-      totalWeight,
-      focInfo,
-      gppInfo,
-      gpiInfo,
-      launchFpsUsed,
-      fps1,
-      fps2,
-      momentum,
-      momentumBandObj
-    ) {
+    function updateEfficiencyUI(effInfo, keLaunch, keD2, keBandObj) {
+      const effPctClean = isFinite(effInfo.pct) ? effInfo.pct : 0;
+      const effPctText = effPctClean.toFixed(0);
+
+      const marker = $('efficiencyMarker');
+      if (marker) {
+        // Map 40–80% roughly into gauge range; clamp
+        const clamped = Math.max(40, Math.min(90, effPctClean));
+        const pct = ((clamped - 40) / 50) * 100;
+        marker.style.left = pct + '%';
+      }
+
+      setText('efficiencyValue', effPctText);
+      setText('efficiencyBandLabel', effInfo.band);
+      const effTag = $('efficiencyTag');
+      if (effTag) {
+        effTag.classList.remove('good', 'warn', 'bad');
+        effTag.classList.add(effInfo.bandClass || 'bad');
+      }
+
+      // Summary pills
+      setText('efficiencyValueSummary', effPctText);
+      setText('efficiencyBandLabelSummary', `Efficiency band: ${effInfo.band}`);
+
+      setText('keLaunchValue', keLaunch.toFixed(1));
+      setText('keD2Value', keD2.toFixed(1));
+      setText('keLaunchValueSummary', keLaunch.toFixed(1));
+      setText('keD2ValueSummary', keD2.toFixed(1));
+      setText('keBandLabel', `KE band: ${keBandObj.band}`);
+      setText('keBandLabelSummary', `KE band: ${keBandObj.band}`);
+    }
+
+    function updateDataTable(totalWeight, focInfo, gppInfo, gpiInfo, launchFpsUsed, fps1, fps2, keLaunch, keD2, keBandObj, momentum, momentumBandObj) {
       const body = $('dataTableBody');
       if (!body) return;
       body.innerHTML = '';
 
       if (!state.inputs.showComponents) {
+        // As requested earlier: only write rows when advanced components are on
         return;
       }
 
@@ -2042,23 +2116,15 @@
       addRow('Draw weight (lb)', state.inputs.drawWeight, 'input');
       addRow('Draw length (in)', state.inputs.drawLength, 'input');
       addRow('Let-off (%)', state.inputs.letOffPct, 'input');
-      addRow('IBO rating / manual FPS', state.inputs.launchFpsManual, 'input');
+      addRow('IBO rating (fps)', state.inputs.iboRating, 'input');
 
       // Arrow
       addRow('Arrow name', state.inputs.arrowName, 'input');
       addRow('Arrow spine', state.inputs.arrowSpine, 'input');
       addRow('Straightness', state.inputs.straightness, 'input');
       addRow('Arrow length (in)', state.inputs.arrowLength, 'input');
-      addRow(
-        'Total arrow weight (gr, used)',
-        totalWeight.toFixed(1),
-        'calc'
-      );
-      addRow(
-        'Balance point (in)',
-        state.inputs.balancePoint.toFixed(2),
-        'input'
-      );
+      addRow('Total arrow weight (gr, used)', totalWeight.toFixed(1), 'calc');
+      addRow('Balance point (in)', state.inputs.balancePoint.toFixed(2), 'input');
 
       // Components
       addRow('Bare shaft weight (gr)', state.inputs.bareShaftWeight, 'input');
@@ -2080,73 +2146,27 @@
 
       // Kinetics
       addRow('Launch FPS (used)', launchFpsUsed.toFixed(1), 'calc');
-      addRow(
-        'Speed loss per 10 yd (fps)',
-        state.inputs.speedLossPer10.toFixed(1),
-        'input'
-      );
+      addRow('Speed loss per 10 yd (fps)', state.inputs.speedLossPer10.toFixed(1), 'input');
+      addRow('Distance 1 (yd)', state.inputs.distance1, 'input');
+      addRow('Distance 2 (yd)', state.inputs.distance2, 'input');
       addRow('FPS @ Distance 1', fps1.toFixed(1), 'calc');
       addRow('FPS @ Distance 2', fps2.toFixed(1), 'calc');
-      addRow(
-        'Momentum @ farthest',
-        momentum.toFixed(3) + ' slug·ft/s',
-        'calc'
-      );
+
+      // KE & momentum
+      addRow('Launch KE (ft-lbs)', keLaunch.toFixed(2), 'calc');
+      addRow('KE at farthest (ft-lbs)', keD2.toFixed(2), 'calc');
+      addRow('KE band', keBandObj.band, 'calc');
+      addRow('Momentum @ farthest', momentum.toFixed(3) + ' slug·ft/s', 'calc');
       addRow('Momentum band', momentumBandObj.band, 'calc');
 
-      // KE
-      addRow(
-        'KE @ launch (ft-lbs)',
-        (state.computed.keLaunch || 0).toFixed(1),
-        'calc'
-      );
-      addRow(
-        'KE @ farthest (ft-lbs)',
-        (state.computed.keFarthest || 0).toFixed(1),
-        'calc'
-      );
-      addRow('KE band', state.computed.keBand || 'no data', 'calc');
-
       // Efficiency
-      addRow(
-        'Efficiency (%)',
-        (state.computed.efficiencyPct || 0).toFixed(1),
-        'calc'
-      );
-      addRow(
-        'Efficiency band',
-        state.computed.efficiencyBand || 'no data',
-        'calc'
-      );
+      addRow('Efficiency (%)', (state.computed.efficiencyPct || 0).toFixed(1), 'calc');
+      addRow('Efficiency band', state.computed.efficiencyBand || 'no data', 'calc');
 
-      // Velocity drop sample
-      addRow(
-        'Vel-drop sample distance (yd)',
-        state.computed.velDropDistance ?? 0,
-        'calc'
-      );
-      addRow(
-        'Vel-drop velocity at distance (fps)',
-        (state.computed.velDropVelocity ?? 0).toFixed(1),
-        'calc'
-      );
-      addRow(
-        'Vel-drop time-of-flight (s)',
-        (state.computed.velDropTof ?? 0).toFixed(2),
-        'calc'
-      );
-
-      // Weight & trajectory
-      addRow(
-        'Weight composition',
-        state.computed.weightSummary || '',
-        'calc'
-      );
-      addRow(
-        'Trajectory summary',
-        state.computed.trajectorySummary || '',
-        'calc'
-      );
+      // Weight & trajectory & velocity
+      addRow('Weight composition', state.computed.weightSummary || '', 'calc');
+      addRow('Trajectory summary', state.computed.trajectorySummary || '', 'calc');
+      addRow('Velocity summary', state.computed.velocitySummary || '', 'calc');
 
       // Notes
       addRow('Notes', state.inputs.notes, 'input');
@@ -2178,9 +2198,7 @@
       const dw = state.inputs.drawWeight || 0;
       const month = String(new Date().getMonth() + 1).padStart(2, '0');
       const year = new Date().getFullYear();
-      const label = `${year}-${month} ${bowModel} ${arrowName} ${totalWeight.toFixed(
-        0
-      )} gr ${dw.toFixed(0)} lb draw`;
+      const label = `${year}-${month} ${bowModel} ${arrowName} ${totalWeight.toFixed(0)} gr ${dw.toFixed(0)} lb draw`;
       setValue('savedBuildName', label);
     }
 
@@ -2238,7 +2256,7 @@
       maybeSet('drawWeight', i.drawWeight);
       maybeSet('drawLength', i.drawLength);
       maybeSet('letOffPct', i.letOffPct);
-      maybeSet('launchFps', i.launchFpsManual);
+      maybeSet('iboRating', i.iboRating);
       maybeSet('arrowName', i.arrowName);
       maybeSet('arrowSpine', i.arrowSpine);
       maybeSet('straightness', i.straightness);
@@ -2254,11 +2272,12 @@
       maybeSet('insertWeight', i.insertWeight);
       maybeSet('pointWeight', i.pointWeight);
       maybeSet('glueWeight', i.glueWeight);
+      maybeSet('launchFps', i.launchFpsManual);
       maybeSet('speedLossPer10', i.speedLossPer10);
       maybeSet('distance1', i.distance1);
       maybeSet('distance2', i.distance2);
       maybeSet('arcRange', i.arcRange);
-      maybeSet('velDropDistance', i.velDropDistance || 40);
+      maybeSet('velDistance', i.velDistance);
       maybeSet('notes', i.notes);
 
       $('componentsSection').style.display = i.showComponents ? 'block' : 'none';
@@ -2303,10 +2322,7 @@
           const key = h.trim();
           let v = vals[idx] || '';
           v = v.trim();
-          if (
-            (v.startsWith('"') && v.endsWith('"')) ||
-            (v.startsWith("'") && v.endsWith("'"))
-          ) {
+          if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
             v = v.slice(1, -1);
           }
           map[key] = v;
@@ -2322,10 +2338,7 @@
         setValue('drawWeight', numericOrZero('drawWeight'));
         setValue('drawLength', numericOrZero('drawLength'));
         setValue('letOffPct', numericOrZero('letOffPct'));
-        setValue(
-          'launchFps',
-          numericOrZero('launchFpsManual') || numericOrZero('launchFpsUsed')
-        );
+        setValue('iboRating', numericOrZero('iboRating'));
         setValue('arrowName', map.arrowName || '');
         setValue('arrowSpine', numericOrZero('arrowSpine'));
         setValue('straightness', map.straightness || '');
@@ -2340,11 +2353,12 @@
         setValue('insertWeight', numericOrZero('insertWeight'));
         setValue('pointWeight', numericOrZero('pointWeight'));
         setValue('glueWeight', numericOrZero('glueWeight'));
+        setValue('launchFps', numericOrZero('launchFpsUsed'));
         setValue('speedLossPer10', numericOrZero('speedLossPer10'));
         setValue('distance1', numericOrZero('distance1'));
         setValue('distance2', numericOrZero('distance2'));
         setValue('arcRange', numericOrZero('arcRange'));
-        setValue('velDropDistance', numericOrZero('velDropDistance') || 40);
+        setValue('velDistance', numericOrZero('velDistance'));
         setValue('notes', map.notes || '');
 
         const showComp = !!map.showComponents;
@@ -2367,22 +2381,23 @@
       const gpiInfo = calcGPI(totalWeight);
 
       const launchFpsAuto = estimateLaunchFPS(totalWeight);
-      const launchFpsUsed =
-        state.inputs.launchFpsManual > 0
-          ? state.inputs.launchFpsManual
-          : launchFpsAuto;
+      const launchFpsUsed = state.inputs.launchFpsManual > 0
+        ? state.inputs.launchFpsManual
+        : launchFpsAuto;
 
       maybeSuggestSpeedLoss(launchFpsUsed, gppInfo.gpp);
 
-      const fpsD1 = fpsAtDistance(launchFpsUsed, state.inputs.distance1 || 0);
-      const fpsD2 = fpsAtDistance(launchFpsUsed, state.inputs.distance2 || 0);
+      const d1 = state.inputs.distance1 || 0;
+      const d2 = state.inputs.distance2 || 0;
+      const fpsD1 = fpsAtDistance(launchFpsUsed, d1);
+      const fpsD2 = fpsAtDistance(launchFpsUsed, d2);
       const momentumFarthest = calcMomentum(totalWeight, fpsD2);
       const momentumBandObj = classifyMomentumBand(momentumFarthest);
 
-      // KE at muzzle and farthest
       const keLaunch = calcKE(totalWeight, launchFpsUsed);
-      const keFarthest = calcKE(totalWeight, fpsD2);
-      const keBandObj = classifyKEBand(keFarthest);
+      const keD2 = calcKE(totalWeight, fpsD2);
+      const keBandObj = classifyKEBand(keD2);
+      const effInfo = calcEfficiency(keLaunch);
 
       state.computed = {
         ...state.computed,
@@ -2396,20 +2411,23 @@
         launchFpsUsed,
         fpsAtD1: fpsD1,
         fpsAtD2: fpsD2,
+        keLaunch,
+        keD2,
+        keBand: keBandObj.band,
         momentumFarthest,
         momentumBand: momentumBandObj.band,
-        keLaunch,
-        keFarthest,
-        keBand: keBandObj.band
+        efficiencyPct: effInfo.pct || 0,
+        efficiencyBand: effInfo.band
       };
 
-      // Summary outputs
+      // Results panel updates
       setText('totalWeightOut', totalWeight.toFixed(1));
+
       setText('gppValue', gppInfo.gpp.toFixed(2));
       setText('gppBandLabel', gppInfo.band);
       const gppTag = $('gppTag');
       if (gppTag) {
-        gppTag.classList.remove('good', 'warn', 'bad');
+        gppTag.classList.remove('good','warn','bad');
         gppTag.classList.add(gppInfo.bandClass || 'bad');
       }
 
@@ -2417,37 +2435,24 @@
       setText('gpiBandLabel', gpiInfo.band);
       const gpiTag = $('gpiTag');
       if (gpiTag) {
-        gpiTag.classList.remove('good', 'warn', 'bad');
+        gpiTag.classList.remove('good','warn','bad');
         gpiTag.classList.add(gpiInfo.bandClass || 'bad');
       }
 
       setValue('fpsAtD1', fpsD1 ? fpsD1.toFixed(1) : '');
       setValue('fpsAtD2', fpsD2 ? fpsD2.toFixed(1) : '');
       setText('momentumValue', momentumFarthest.toFixed(3));
-      updateMomentumIcons(momentumFarthest);
 
-      const bandShort = `${momentumFarthest.toFixed(
-        3
-      )} slug·ft/s → ${momentumBandObj.band}`;
+      const bandShort = `${momentumFarthest.toFixed(3)} slug·ft/s → ${momentumBandObj.band}`;
       setText('momentumBandShort', bandShort);
-      const farLabel = `At ~${(state.inputs.distance2 || 60).toFixed(
-        0
-      )} yd: ${momentumFarthest.toFixed(3)} slug·ft/s → ${momentumBandObj.band}`;
+      const farLabel = `At ~${(d2 || 60).toFixed(0)} yd: ${momentumFarthest.toFixed(3)} slug·ft/s → ${momentumBandObj.band}`;
       setText('momentumBandResult', farLabel);
-
-      // KE UI
-      setText('keLaunchValue', keLaunch.toFixed(1));
-      setText('keFarthestValue', keFarthest.toFixed(1));
-      const keBandShort = `${keFarthest.toFixed(1)} ft-lbs → ${keBandObj.band}`;
-      setText('keBandShort', keBandShort);
 
       updateFOCAndBalance(focInfo);
       updateWeightComposition(totalWeight, totalInfo.componentsUsed);
       drawTrajectory(totalWeight, launchFpsUsed, momentumFarthest);
-
-      // Velocity drop & efficiency ratio
-      updateVelocityDropAndTof(launchFpsUsed);
-      updateEfficiency(totalWeight, launchFpsUsed);
+      updateEfficiencyUI(effInfo, keLaunch, keD2, keBandObj);
+      updateVelocitySection(launchFpsUsed, totalWeight);
 
       updateDataTable(
         totalWeight,
@@ -2457,6 +2462,9 @@
         launchFpsUsed,
         fpsD1,
         fpsD2,
+        keLaunch,
+        keD2,
+        keBandObj,
         momentumFarthest,
         momentumBandObj
       );
@@ -2472,18 +2480,6 @@
       recalcAndRender();
     }
 
-    function onVelDropChange() {
-      readInputs();
-      const totalInfo = calcTotalWeight();
-      const totalWeight = totalInfo.totalWeight || 0;
-      const launchFpsAuto = estimateLaunchFPS(totalWeight);
-      const launchFpsUsed =
-        state.inputs.launchFpsManual > 0
-          ? state.inputs.launchFpsManual
-          : launchFpsAuto;
-      updateVelocityDropAndTof(launchFpsUsed);
-    }
-
     document.addEventListener('DOMContentLoaded', () => {
       loadTheme();
 
@@ -2494,7 +2490,7 @@
       const themeToggle = $('themeToggle');
       if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
 
-      document.addEventListener('input', e => {
+      document.addEventListener('input', (e) => {
         const target = e.target;
         if (!target) return;
         if (target.id === 'csvUpload') return;
@@ -2508,8 +2504,11 @@
           return;
         }
 
-        if (target.id === 'velDropDistance') {
-          onVelDropChange();
+        if (target.id === 'velDistance') {
+          const d = parseFloat(target.value) || 0;
+          setValue('velDistanceValue', `${d.toFixed(0)} yd`);
+          readInputs();
+          recalcAndRender();
           return;
         }
 
@@ -2519,9 +2518,7 @@
       const showComponents = $('showComponents');
       if (showComponents) {
         showComponents.addEventListener('change', () => {
-          $('componentsSection').style.display = showComponents.checked
-            ? 'block'
-            : 'none';
+          $('componentsSection').style.display = showComponents.checked ? 'block' : 'none';
           onAnyInputChange();
         });
       }
@@ -2566,15 +2563,6 @@
         downloadInputsCsvBtn.addEventListener('click', downloadInputsCsv);
       }
 
-      const learnMomentum = $('learnMomentum');
-      if (learnMomentum) {
-        learnMomentum.addEventListener('click', () => {
-          const panel = $('momentumLearnPanel');
-          if (!panel) return;
-          panel.hidden = !panel.hidden;
-        });
-      }
-
       loadSavedBuildsFromStorage();
       renderSavedBuildsSelect();
       readInputs();
@@ -2583,3 +2571,4 @@
   </script>
 </body>
 </html>
+ 
