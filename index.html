@@ -176,7 +176,7 @@
 
     main {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.1fr);
       gap: 16px;
       margin-top: 10px;
     }
@@ -669,7 +669,7 @@
         <div class="chip-row">
           <div class="chip">Live FOC, GPP, GPI &amp; momentum</div>
           <div class="chip">🏹 Works offline in your browser</div>
-          <span class="version-pill">v1.0.4 · 2025-11-29</span>
+          <span class="version-pill">v1.0.3 · 2025-11-25</span>
         </div>
       </div>
       <div class="toolbar">
@@ -736,13 +736,6 @@
             <div class="field">
               <label class="field-label" for="letOffPct">Let-off (%)</label>
               <input id="letOffPct" type="number" min="0" max="100" step="1" placeholder="80">
-            </div>
-            <!-- MOVED: Launch FPS → Bow as IBO Rating -->
-            <div class="field">
-              <label class="field-label" for="launchFps">IBO Rating (FPS)
-                <span class="aux">(manufacturer spec or chrono)</span>
-              </label>
-              <input id="launchFps" type="number" min="120" max="370" step="1" placeholder="factory IBO or chrono">
             </div>
           </div>
         </article>
@@ -885,55 +878,105 @@
           </div>
         </article>
 
-        <!-- Build notes & saved setups (moved from right) -->
+        <!-- Results + notes + data table -->
         <article class="panel">
           <div class="panel-header">
             <div>
               <div class="panel-title">
-                Build notes &amp; saved setups
+                Results &amp; notes
+                <button type="button" class="info-icon" data-info-target="results-info">i</button>
               </div>
               <div class="panel-subtitle">
-                Describe what this build is for and manage saved setups.
+                Summary of your build with bands for FOC, GPP, GPI, and momentum.
+              </div>
+              <div id="results-info" class="info-text" hidden>
+                FOC, GPP and GPI bands use common bowhunting guidelines. They are not hard rules, but useful zones to
+                compare different setups.
               </div>
             </div>
           </div>
 
-          <div class="field">
-            <label class="field-label" for="notes">
-              Notes
-              <span class="aux">(what this build is for – e.g. elk 0–60 yd, TAC, practice)</span>
-            </label>
-            <textarea id="notes" placeholder="Hunting elk out to ~60 yd. Quiet, forgiving build."></textarea>
-          </div>
-
-          <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;">
-            <div class="field" style="flex:1;">
-              <label class="field-label" for="savedBuildName">Saved build name (auto-suggested)</label>
-              <input id="savedBuildName" type="text" placeholder="2025-11 Hoyt RX-9 Easton 5.0 500 gr 70 lb draw">
+          <div class="results-grid">
+            <div class="result-pill">
+              <div class="result-label">Total arrow weight (used for calcs)</div>
+              <div class="result-value"><span id="totalWeightOut">0.0</span> gr</div>
+              <div class="small">
+                Uses component sum when advanced breakdown is fully filled; otherwise uses Total arrow weight field.
+              </div>
             </div>
-            <button id="refreshNameBtn" type="button" class="btn">🔁 Suggest name</button>
+            <div class="result-pill">
+              <div class="result-label">Grains per pound (GPP)</div>
+              <div class="result-value"><span id="gppValue">0.0</span> GPP</div>
+              <div id="gppTag" class="chip-tag">
+                GPP band: <strong><span id="gppBandLabel">(no data)</span></strong>
+              </div>
+            </div>
+            <div class="result-pill">
+              <div class="result-label">Arrow GPI (full arrow)</div>
+              <div class="result-value"><span id="gpiFullValue">0.0</span> GPI</div>
+              <div id="gpiTag" class="chip-tag">
+                GPI band: <strong><span id="gpiBandLabel">(no data)</span></strong>
+              </div>
+            </div>
+            <div class="result-pill">
+              <div class="result-label">Momentum at farthest distance</div>
+              <div class="result-value"><span id="momentumValue">0.000</span> slug·ft/s</div>
+              <div class="small">
+                Your setup: <span id="momentumBandShort">0.000 slug·ft/s → (no band)</span>
+              </div>
+            </div>
           </div>
 
-          <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;" class="small">
-            <span>Saved builds:</span>
-            <select id="savedBuildsSelect" style="max-width:260px;">
-              <option value="">(none yet)</option>
-            </select>
-            <button id="saveBuildInlineBtn" type="button" class="btn">💾 Save build</button>
-            <button id="loadBuildBtn" type="button" class="btn">📂 Load selected</button>
+          <div style="margin-top:8px;">
+            <div class="field">
+              <label class="field-label" for="notes">
+                Notes
+                <span class="aux">(what this build is for – e.g. elk 0–60 yd, TAC, practice)</span>
+              </label>
+              <textarea id="notes" placeholder="Hunting elk out to ~60 yd. Quiet, forgiving build."></textarea>
+            </div>
+
+            <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;">
+              <div class="field" style="flex:1;">
+                <label class="field-label" for="savedBuildName">Saved build name (auto-suggested)</label>
+                <input id="savedBuildName" type="text" placeholder="2025-11 Hoyt RX-9 Easton 5.0 500 gr 70 lb draw">
+              </div>
+              <button id="refreshNameBtn" type="button" class="btn">🔁 Suggest name</button>
+            </div>
+
+            <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;" class="small">
+              <span>Saved builds:</span>
+              <select id="savedBuildsSelect" style="max-width:260px;">
+                <option value="">(none yet)</option>
+              </select>
+              <button id="loadBuildBtn" type="button" class="btn">📂 Load selected</button>
+            </div>
+
+            <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;" class="small">
+              <span>Upload inputs CSV:</span>
+              <input id="csvUpload" type="file" accept=".csv" style="max-width:230px;">
+              <span>(uses first data row, exported from this tool)</span>
+            </div>
           </div>
 
-          <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;" class="small">
-            <span>Upload inputs CSV:</span>
-            <input id="csvUpload" type="file" accept=".csv" style="max-width:230px;">
-            <span>(uses first data row, exported from this tool)</span>
+          <div class="data-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Field</th>
+                  <th>Value</th>
+                  <th>Type</th>
+                </tr>
+              </thead>
+              <tbody id="dataTableBody"></tbody>
+            </table>
           </div>
         </article>
       </section>
 
       <!-- RIGHT COLUMN -->
       <section class="col">
-        <!-- FOC & weight distribution (moved here, above kinetics) -->
+        <!-- FOC & weight distribution -->
         <article class="panel">
           <div class="panel-header">
             <div>
@@ -1030,7 +1073,7 @@
               <div id="kinetics-info" class="info-text" hidden>
                 Launch FPS is estimated from common archery rules-of-thumb:
                 ~15–20 fps per 10 lb of draw weight, ~10 fps per inch of draw length,
-                and ~1–1.5 fps lost for every +5 grains of arrow weight. You can override with your bow's IBO rating.
+                and ~1–1.5 fps lost for every +5 grains of arrow weight.
               </div>
             </div>
           </div>
@@ -1041,7 +1084,12 @@
               <div class="visual-title">1) FPS estimate</div>
             </div>
             <div class="field-grid">
-              <!-- Launch FPS field removed from here; now in Bow as IBO Rating -->
+              <div class="field">
+                <label class="field-label" for="launchFps">Launch FPS (estimated)
+                  <span class="aux">from draw weight, draw length &amp; arrow weight</span>
+                </label>
+                <input id="launchFps" type="number" min="120" max="350" step="1" placeholder="auto or manual">
+              </div>
               <div class="field">
                 <label class="field-label" for="speedLossPer10">Speed loss per 10 yd (fps)
                   <span class="aux">heavier arrows usually lose fewer fps; suggested, but editable</span>
@@ -1165,131 +1213,6 @@
           </div>
         </article>
 
-        <!-- 4) Velocity Drop-Off and Time-of-Flight -->
-        <div class="visual-section">
-          <div class="visual-header">
-            <div class="visual-title">
-              4) Velocity Drop-Off &amp; Time-of-Flight
-              <button type="button" class="info-icon" data-info-target="velocity-info">i</button>
-            </div>
-          </div>
-
-          <div id="velocity-info" class="info-text" hidden>
-            Estimates how your arrow slows down over distance and how long it takes to reach the target.
-            Uses your current launch FPS and speed-loss settings, and plots a velocity curve from 0 to your farthest distance.
-          </div>
-
-          <div class="field-grid">
-            <div class="field">
-              <label class="field-label" for="velocityDistance">
-                Distance to target (yd)
-                <span class="aux">(live slider for pin-gap feel)</span>
-              </label>
-              <input
-                id="velocityDistance"
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                value="40"
-                oninput="document.getElementById('velocityDistanceLabel').textContent = this.value + ' yd';"
-              >
-              <div class="small" style="margin-top:2px;">
-                Selected distance: <strong><span id="velocityDistanceLabel">40 yd</span></strong>
-              </div>
-            </div>
-
-            <div class="field">
-              <label class="field-label" for="velocityAtDistance">
-                Velocity at distance (fps)
-                <span class="aux">(based on current drop model)</span>
-              </label>
-              <input id="velocityAtDistance" type="text" readonly>
-
-              <label class="field-label" for="timeOfFlight" style="margin-top:6px;">
-                Time-of-flight (s)
-                <span class="aux">Distance / average velocity</span>
-              </label>
-              <input id="timeOfFlight" type="text" readonly>
-            </div>
-          </div>
-
-          <svg
-            id="velocitySvg"
-            class="trajectory-svg"
-            viewBox="0 0 320 160"
-            preserveAspectRatio="xMidYMid meet"
-            style="margin-top:6px;"
-          ></svg>
-
-          <div class="trajectory-meta" id="velocitySummary">
-            Velocity curve from 0–60 yd based on your launch FPS and speed-loss settings.
-          </div>
-        </div>
-
-        <!-- Results + data table (notes moved left) -->
-        <article class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="panel-title">
-                Results summary
-                <button type="button" class="info-icon" data-info-target="results-info">i</button>
-              </div>
-              <div class="panel-subtitle">
-                Summary of your build with bands for FOC, GPP, GPI, and momentum.
-              </div>
-              <div id="results-info" class="info-text" hidden>
-                FOC, GPP and GPI bands use common bowhunting guidelines. They are not hard rules, but useful zones to
-                compare different setups.
-              </div>
-            </div>
-          </div>
-
-          <div class="results-grid">
-            <div class="result-pill">
-              <div class="result-label">Total arrow weight (used for calcs)</div>
-              <div class="result-value"><span id="totalWeightOut">0.0</span> gr</div>
-              <div class="small">
-                Uses component sum when advanced breakdown is fully filled; otherwise uses Total arrow weight field.
-              </div>
-            </div>
-            <div class="result-pill">
-              <div class="result-label">Grains per pound (GPP)</div>
-              <div class="result-value"><span id="gppValue">0.0</span> GPP</div>
-              <div id="gppTag" class="chip-tag">
-                GPP band: <strong><span id="gppBandLabel">(no data)</span></strong>
-              </div>
-            </div>
-            <div class="result-pill">
-              <div class="result-label">Arrow GPI (full arrow)</div>
-              <div class="result-value"><span id="gpiFullValue">0.0</span> GPI</div>
-              <div id="gpiTag" class="chip-tag">
-                GPI band: <strong><span id="gpiBandLabel">(no data)</span></strong>
-              </div>
-            </div>
-            <div class="result-pill">
-              <div class="result-label">Momentum at farthest distance</div>
-              <div class="result-value"><span id="momentumValue">0.000</span> slug·ft/s</div>
-              <div class="small">
-                Your setup: <span id="momentumBandShort">0.000 slug·ft/s → (no band)</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="data-table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Field</th>
-                  <th>Value</th>
-                  <th>Type</th>
-                </tr>
-              </thead>
-              <tbody id="dataTableBody"></tbody>
-            </table>
-          </div>
-        </article>
-
         <!-- Feedback panel -->
         <article class="panel">
           <div class="panel-header">
@@ -1347,8 +1270,8 @@
         </article>
       </section>
     </main>
-  </div>
 
+    <!-- SCRIPT COMES AFTER THIS IN CHUNK 2 -->
   <script>
     const state = { inputs: {}, computed: {}, savedBuilds: [] };
     let speedLossManual = false;
@@ -1462,7 +1385,6 @@
         distance1: getNum('distance1'),
         distance2: getNum('distance2'),
         arcRange: getNum('arcRange'),
-        velocityDistance: getNum('velocityDistance'),
         notes: getStr('notes')
       };
     }
@@ -1750,47 +1672,7 @@
         const norm = Math.max(0, Math.min(yMaxFeet, ft));
         return padTop + h - (norm / yMaxFeet) * h;
       }
-    
-    function updateVelocityDropoff(launchFpsUsed) {
-      const svg = $('velocitySvg');
-      if (!svg) return;
 
-      const dSelected =
-        state.inputs.velocityDistance ||
-        state.inputs.distance2 ||
-        40;
-
-      // Use the same drop model you already use elsewhere
-      const vHere = fpsAtDistance(launchFpsUsed, dSelected);
-      const avgV = (launchFpsUsed + vHere) / 2 || 1;   // fps
-      const timeSec = (dSelected * 3) / avgV;          // yards → feet (×3), then / fps
-
-      setValue('velocityAtDistance', vHere > 0 ? vHere.toFixed(1) : '');
-      setValue('timeOfFlight', vHere > 0 ? timeSec.toFixed(2) : '');
-
-      // Clear the SVG
-      while (svg.firstChild) svg.removeChild(svg.firstChild);
-
-      const farDist = Math.max(
-        state.inputs.distance2 || 60,
-        state.inputs.arcRange || 60,
-        100
-      );
-      const viewWidth = 320;
-      const viewHeight = 160;
-      const padLeft = 30, padRight = 18, padTop = 20, padBottom = 30;
-      const w = viewWidth - padLeft - padRight;
-      const h = viewHeight - padTop - padBottom;
-
-      function xScale(yd) { return padLeft + (yd / farDist) * w; }
-
-      const maxV = Math.max(launchFpsUsed, vHere) || 300;
-      function yScale(v) {
-        const clamped = Math.max(0, Math.min(maxV, v));
-        return padTop + h - (clamped / maxV) * h;
-      }
-
-      // Axes
       const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
       xAxis.setAttribute('x1', padLeft);
       xAxis.setAttribute('y1', padTop + h);
@@ -1811,7 +1693,7 @@
 
       const xLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       xLabel.setAttribute('x', padLeft + w / 2);
-      xLabel.setAttribute('y', padTop + h + 20);
+      xLabel.setAttribute('y', padTop + h + 22);
       xLabel.setAttribute('text-anchor', 'middle');
       xLabel.setAttribute('font-size', '9');
       xLabel.setAttribute('fill', 'rgba(148,163,184,0.9)');
@@ -1819,47 +1701,73 @@
       svg.appendChild(xLabel);
 
       const yLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      yLabel.setAttribute('x', padLeft - 24);
+      yLabel.setAttribute('x', padLeft - 22);
       yLabel.setAttribute('y', padTop + h / 2);
       yLabel.setAttribute('text-anchor', 'middle');
       yLabel.setAttribute('font-size', '9');
       yLabel.setAttribute('fill', 'rgba(148,163,184,0.9)');
-      yLabel.setAttribute('transform', `rotate(-90 ${padLeft-24} ${padTop + h/2})`);
-      yLabel.textContent = 'Velocity (fps)';
+      yLabel.setAttribute('transform', `rotate(-90 ${padLeft-22} ${padTop + h/2})`);
+      yLabel.textContent = 'Height (ft)';
       svg.appendChild(yLabel);
 
-      // Velocity curve
-      const steps = 40;
-      let d = '';
-      for (let i = 0; i <= steps; i++) {
-        const yd = (farDist * i) / steps;
-        const v = fpsAtDistance(launchFpsUsed, yd);
-        const X = xScale(yd);
-        const Y = yScale(v);
-        d += (i === 0 ? 'M' : 'L') + X + ' ' + Y + ' ';
-      }
+      const midX = arcRange / 2;
+      const k = peakHeightFt / (midX * midX || 1);
+
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      let d = '';
+      const steps = 40;
+      let peakX = xScale(midX);
+      let peakY = yScale(peakHeightFt);
+
+      for (let s = 0; s <= steps; s++) {
+        const yd = (arcRange * s) / steps;
+        const xRel = yd - midX;
+        const heightFt = peakHeightFt - k * xRel * xRel;
+        const X = xScale(yd);
+        const Y = yScale(Math.max(0, heightFt));
+        if (s === 0) {
+          d += 'M' + X + ' ' + Y + ' ';
+        } else {
+          d += 'L' + X + ' ' + Y + ' ';
+        }
+      }
       path.setAttribute('d', d.trim());
       path.setAttribute('fill', 'none');
       path.setAttribute('stroke', '#22c55e');
       path.setAttribute('stroke-width', '2');
       svg.appendChild(path);
 
-      // Marker at selected distance
-      const markerX = xScale(dSelected);
-      const markerV = fpsAtDistance(launchFpsUsed, dSelected);
-      const markerY = yScale(markerV);
-      const marker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      marker.setAttribute('cx', markerX);
-      marker.setAttribute('cy', markerY);
-      marker.setAttribute('r', '3');
-      marker.setAttribute('fill', '#f97316');
-      svg.appendChild(marker);
+      const peakLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      peakLabel.setAttribute('x', peakX);
+      peakLabel.setAttribute('y', peakY - 4);
+      peakLabel.setAttribute('text-anchor', 'middle');
+      peakLabel.setAttribute('font-size', '9');
+      peakLabel.setAttribute('fill', 'rgba(248,250,252,0.95)');
+      peakLabel.textContent = `${peakHeightFt.toFixed(1)} ft`;
+      svg.appendChild(peakLabel);
 
-      const summary = `Velocity drops from ~${launchFpsUsed.toFixed(0)} fps at the bow `
-        + `to ~${markerV.toFixed(0)} fps at ${dSelected.toFixed(0)} yd `
-        + `(time-of-flight ≈ ${timeSec.toFixed(2)} s).`;
-      setText('velocitySummary', summary);
+      const launchLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      launchLabel.setAttribute('x', padLeft + 4);
+      launchLabel.setAttribute('y', padTop + h - 6);
+      launchLabel.setAttribute('font-size', '9');
+      launchLabel.setAttribute('fill', 'rgba(148,163,184,0.9)');
+      launchLabel.textContent = '0 yd';
+      svg.appendChild(launchLabel);
+
+      const tgtLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      tgtLabel.setAttribute('x', xScale(arcRange) - 4);
+      tgtLabel.setAttribute('y', padTop + h - 6);
+      tgtLabel.setAttribute('font-size', '9');
+      tgtLabel.setAttribute('fill', 'rgba(148,163,184,0.9)');
+      tgtLabel.setAttribute('text-anchor', 'end');
+      tgtLabel.textContent = `${arcRange.toFixed(0)} yd`;
+      svg.appendChild(tgtLabel);
+
+      const maxYd = maxX;
+      const summary = `Horizontal axis ≈ 0–${maxYd.toFixed(0)} yd (arc set to ~${arcRange.toFixed(0)} yd). Peak height ≈ ${peakHeightFt.toFixed(1)} ft.`;
+      setText('trajectorySummary', summary);
+      setValue('arcMetaInline', `Peak ≈ ${peakHeightFt.toFixed(1)} ft`);
+      state.computed.trajectorySummary = summary;
     }
 
     function maybeSuggestSpeedLoss(launchFpsUsed, gpp) {
@@ -2207,7 +2115,6 @@
       updateFOCAndBalance(focInfo);
       updateWeightComposition(totalWeight, totalInfo.componentsUsed);
       drawTrajectory(totalWeight, launchFpsUsed, momentumFarthest);
-      updateVelocityDropoff(launchFpsUsed);
       updateDataTable(totalWeight, focInfo, gppInfo, gpiInfo, launchFpsUsed, fpsD1, fpsD2, momentumFarthest, momentumBandObj);
     }
 
@@ -2263,15 +2170,6 @@
       const saveBtn = $('saveBuildBtn');
       if (saveBtn) {
         saveBtn.addEventListener('click', () => {
-          readInputs();
-          recalcAndRender();
-          saveBuild();
-        });
-      }
-
-      const saveInlineBtn = $('saveBuildInlineBtn');
-      if (saveInlineBtn) {
-        saveInlineBtn.addEventListener('click', () => {
           readInputs();
           recalcAndRender();
           saveBuild();
