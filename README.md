@@ -10,7 +10,7 @@ Arrow Tune Calculator is a lightweight, browser-based tool that helps archers ca
 
 Use the calculator here:
 
-👉 **https://dmarcus-wire.github.io/arrow-tune-calcuator/**
+👉 **https://dmarcus-wire.github.io/arrow-tune-calculator/**
 
 (Open in your browser on desktop or mobile. It works on iOS, Android, and desktop browsers.)
 
