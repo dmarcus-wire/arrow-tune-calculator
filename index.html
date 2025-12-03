@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Arrow Tune Calculator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- Arrow Tune Calculator v1.0.5 – theme fixed, saved-builds panel, velocity drop-off, KE & efficiency -->
+<!-- Arrow Tune Calculator v1.0.6 – velocity chart ticks, time-of-flight overlay, slider-synced distance -->
   <style>
     :root {
       --bg: #020617;
@@ -636,7 +636,7 @@
         <div class="chip-row">
           <div class="chip">Live FOC, GPP, GPI, momentum &amp; KE</div>
           <div class="chip">🏹 Works offline in your browser</div>
-          <span class="version-pill">v1.0.5 · 2025-11-30</span>
+          <span class="version-pill">v1.0.6 · 2025-12-02</span>
         </div>
       </div>
       <div class="toolbar">
@@ -1036,7 +1036,7 @@
           <!-- 1) FPS -->
           <div class="visual-section">
             <div class="visual-header">
-              <div class="visual-title">1) FPS estimate</div>
+              <div class="visual-title">FPS estimate</div>
             </div>
             <div class="field-grid">
               <div class="field">
@@ -1076,7 +1076,7 @@
           <div class="visual-section">
             <div class="visual-header">
               <div class="visual-title">
-                2) Kinetic Energy &amp; Momentum (launch vs farthest)
+                Kinetic Energy &amp; Momentum (launch vs farthest)
                 <button type="button" class="info-icon" data-info-target="ke-mom-info">i</button>
               </div>
             </div>
@@ -1115,7 +1115,7 @@
           <div class="visual-section">
             <div class="visual-header">
               <div class="visual-title">
-                3) Trajectory Arc (Distance vs Height)
+                Trajectory Arc (Distance vs Height)
                 <button type="button" class="info-icon" data-info-target="trajectory-info">i</button>
               </div>
             </div>
@@ -1893,7 +1893,6 @@
       setValue('arcMetaInline', `Peak ≈ ${peakHeightFt.toFixed(1)} ft`);
       state.computed.trajectorySummary = summary;
     }
-
     function maybeSuggestSpeedLoss(launchFpsUsed, gpp) {
       if (speedLossManual) return;
       let suggested = 5;
@@ -1908,13 +1907,16 @@
       state.inputs.speedLossPer10 = suggested;
     }
 
-    function drawVelocityCurve(launchFpsUsed) {
+    function drawVelocityCurve(launchFpsUsed, focusDist, tofSeconds, vAtFocus) {
       const svg = $('velocitySvg');
       if (!svg) return;
       while (svg.firstChild) svg.removeChild(svg.firstChild);
 
       if (launchFpsUsed <= 0) {
-        setText('velocitySummary', 'No FPS estimate yet – enter bow, arrow, and/or launch FPS to see velocity and time-of-flight.');
+        setText(
+          'velocitySummary',
+          'No FPS estimate yet – enter bow, arrow, and/or launch FPS to see velocity and time-of-flight.'
+        );
         state.computed.velocitySummary = 'No velocity data';
         return;
       }
@@ -1925,7 +1927,7 @@
       const viewWidth = 320;
       const viewHeight = 180;
 
-      const padLeft = 30, padRight = 18, padTop = 15, padBottom = 28;
+      const padLeft = 34, padRight = 18, padTop = 15, padBottom = 30;
       const w = viewWidth - padLeft - padRight;
       const h = viewHeight - padTop - padBottom;
 
@@ -1935,24 +1937,34 @@
         return Math.max(0, v);
       }
 
-      let vMin = launchFpsUsed, vMax = 0;
-      const steps = 30;
+      // Scan curve to determine vMin / vMax for scaling
+      let vMin = Infinity;
+      let vMax = 0;
+      const steps = 40;
       for (let s = 0; s <= steps; s++) {
         const dY = (distMax * s) / steps;
         const v = vAt(dY);
         if (v > vMax) vMax = v;
         if (v < vMin) vMin = v;
       }
+      if (!isFinite(vMin)) vMin = 0;
       if (vMax <= 0) vMax = launchFpsUsed;
       if (vMin < 0) vMin = 0;
+      if (vMax - vMin < 20) {
+        // Keep at least some span so ticks don't collapse
+        vMax = vMin + 20;
+      }
 
-      function xScale(yd) { return padLeft + (yd / distMax) * w; }
+      function xScale(yd) {
+        return padLeft + (yd / distMax) * w;
+      }
       function yScale(fps) {
         const span = vMax - vMin || 1;
         const norm = (fps - vMin) / span;
         return padTop + h - norm * h;
       }
 
+      // Axes
       const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
       xAxis.setAttribute('x1', padLeft);
       xAxis.setAttribute('y1', padTop + h);
@@ -1971,9 +1983,75 @@
       yAxis.setAttribute('stroke-width', '1');
       svg.appendChild(yAxis);
 
+      // Helper to pick a "nice" tick step
+      function chooseStep(max, targetTicks) {
+        const raw = max / targetTicks;
+        const candidates = [5, 10, 20, 25, 50, 100];
+        let best = candidates[0];
+        let bestDiff = Infinity;
+        for (const c of candidates) {
+          const diff = Math.abs(raw - c);
+          if (diff < bestDiff) {
+            bestDiff = diff;
+            best = c;
+          }
+        }
+        return best;
+      }
+
+      // X-axis ticks (distance)
+      const xStep = chooseStep(distMax, 5);
+      for (let d = 0; d <= distMax + 0.001; d += xStep) {
+        const x = xScale(d);
+        // light vertical grid line
+        const grid = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        grid.setAttribute('x1', x);
+        grid.setAttribute('y1', padTop);
+        grid.setAttribute('x2', x);
+        grid.setAttribute('y2', padTop + h);
+        grid.setAttribute('stroke', 'rgba(148,163,184,0.15)');
+        grid.setAttribute('stroke-width', '1');
+        svg.appendChild(grid);
+
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', x);
+        label.setAttribute('y', padTop + h + 13);
+        label.setAttribute('text-anchor', 'middle');
+        label.setAttribute('font-size', '9');
+        label.setAttribute('fill', 'rgba(148,163,184,0.9)');
+        label.textContent = d.toFixed(0);
+        svg.appendChild(label);
+      }
+
+      // Y-axis ticks (velocity)
+      const vSpan = vMax - vMin;
+      const yStep = chooseStep(vSpan, 4);
+      const vStart = Math.ceil(vMin / yStep) * yStep;
+      for (let v = vStart; v <= vMax + 0.001; v += yStep) {
+        const y = yScale(v);
+        const grid = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        grid.setAttribute('x1', padLeft);
+        grid.setAttribute('y1', y);
+        grid.setAttribute('x2', padLeft + w);
+        grid.setAttribute('y2', y);
+        grid.setAttribute('stroke', 'rgba(148,163,184,0.15)');
+        grid.setAttribute('stroke-width', '1');
+        svg.appendChild(grid);
+
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', padLeft - 4);
+        label.setAttribute('y', y + 3);
+        label.setAttribute('text-anchor', 'end');
+        label.setAttribute('font-size', '9');
+        label.setAttribute('fill', 'rgba(148,163,184,0.9)');
+        label.textContent = v.toFixed(0);
+        svg.appendChild(label);
+      }
+
+      // Axis labels
       const xLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       xLabel.setAttribute('x', padLeft + w / 2);
-      xLabel.setAttribute('y', padTop + h + 18);
+      xLabel.setAttribute('y', padTop + h + 26);
       xLabel.setAttribute('text-anchor', 'middle');
       xLabel.setAttribute('font-size', '9');
       xLabel.setAttribute('fill', 'rgba(148,163,184,0.9)');
@@ -1981,15 +2059,16 @@
       svg.appendChild(xLabel);
 
       const yLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      yLabel.setAttribute('x', padLeft - 25);
+      yLabel.setAttribute('x', padLeft - 26);
       yLabel.setAttribute('y', padTop + h / 2);
       yLabel.setAttribute('text-anchor', 'middle');
       yLabel.setAttribute('font-size', '9');
       yLabel.setAttribute('fill', 'rgba(148,163,184,0.9)');
-      yLabel.setAttribute('transform', `rotate(-90 ${padLeft-25} ${padTop + h/2})`);
+      yLabel.setAttribute('transform', `rotate(-90 ${padLeft-26} ${padTop + h/2})`);
       yLabel.textContent = 'Velocity (fps)';
       svg.appendChild(yLabel);
 
+      // Velocity curve path
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       let d = '';
       for (let s = 0; s <= steps; s++) {
@@ -2009,14 +2088,44 @@
       path.setAttribute('stroke-width', '2');
       svg.appendChild(path);
 
-      const tickText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      tickText.setAttribute('x', xScale(distMax) - 4);
-      tickText.setAttribute('y', padTop + h - 4);
-      tickText.setAttribute('font-size', '9');
-      tickText.setAttribute('fill', 'rgba(148,163,184,0.9)');
-      tickText.setAttribute('text-anchor', 'end');
-      tickText.textContent = `${distMax.toFixed(0)} yd`;
-      svg.appendChild(tickText);
+      // Focus marker + time-of-flight label
+      if (typeof focusDist === 'number' && focusDist >= 0) {
+        const clampedDist = Math.min(distMax, focusDist);
+        const vFocus = vAtFocus > 0 ? vAtFocus : vAt(clampedDist);
+        const xF = xScale(clampedDist);
+        const yF = yScale(vFocus);
+
+        // Vertical helper line
+        const vLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        vLine.setAttribute('x1', xF);
+        vLine.setAttribute('y1', yF);
+        vLine.setAttribute('x2', xF);
+        vLine.setAttribute('y2', padTop + h);
+        vLine.setAttribute('stroke', 'rgba(56,189,248,0.6)');
+        vLine.setAttribute('stroke-width', '1');
+        vLine.setAttribute('stroke-dasharray', '4 3');
+        svg.appendChild(vLine);
+
+        // Point marker
+        const marker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        marker.setAttribute('cx', xF);
+        marker.setAttribute('cy', yF);
+        marker.setAttribute('r', '3');
+        marker.setAttribute('fill', '#38bdf8');
+        svg.appendChild(marker);
+
+        // Time-of-flight label
+        if (typeof tofSeconds === 'number' && tofSeconds > 0) {
+          const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          label.setAttribute('x', xF);
+          label.setAttribute('y', yF - 6);
+          label.setAttribute('text-anchor', 'middle');
+          label.setAttribute('font-size', '9');
+          label.setAttribute('fill', 'rgba(248,250,252,0.95)');
+          label.textContent = `~${tofSeconds.toFixed(2)} s`;
+          svg.appendChild(label);
+        }
+      }
     }
 
     function updateVelocitySection(launchFpsUsed, totalWeight) {
@@ -2038,22 +2147,30 @@
       out.value = `${focusDist.toFixed(0)} yd`;
       state.inputs.velDistance = focusDist;
 
-      drawVelocityCurve(launchFpsUsed);
+      let tof = 0;
+      let vAtFocus = 0;
 
       if (launchFpsUsed > 0) {
         const lossPer10 = i.speedLossPer10 || 0;
         const segments = focusDist / 10;
-        const vAtFocus = Math.max(0, launchFpsUsed - lossPer10 * segments);
+        vAtFocus = Math.max(0, launchFpsUsed - lossPer10 * segments);
         const avgV = vAtFocus > 0 ? (launchFpsUsed + vAtFocus) / 2 : launchFpsUsed;
         const distanceFeet = focusDist * 3;
-        const tof = avgV > 0 ? distanceFeet / avgV : 0;
+        tof = avgV > 0 ? distanceFeet / avgV : 0;
+
         const summary = `At ${focusDist.toFixed(0)} yd: ~${tof.toFixed(2)} s flight time, ~${vAtFocus.toFixed(0)} fps (approx).`;
         setText('velocitySummary', summary);
         state.computed.velocitySummary = summary;
       } else {
-        setText('velocitySummary', 'No FPS estimate yet – enter bow, arrow, and/or launch FPS to see velocity and time-of-flight.');
+        setText(
+          'velocitySummary',
+          'No FPS estimate yet – enter bow, arrow, and/or launch FPS to see velocity and time-of-flight.'
+        );
         state.computed.velocitySummary = 'No velocity data';
       }
+
+      // Draw curve with focus marker + time-of-flight label
+      drawVelocityCurve(launchFpsUsed, focusDist, tof, vAtFocus);
     }
 
     function updateEfficiencyUI(effInfo, keLaunch, keD2, keBandObj) {
@@ -2088,7 +2205,20 @@
       setText('keBandLabelSummary', `KE band: ${keBandObj.band}`);
     }
 
-    function updateDataTable(totalWeight, focInfo, gppInfo, gpiInfo, launchFpsUsed, fps1, fps2, keLaunch, keD2, keBandObj, momentum, momentumBandObj) {
+    function updateDataTable(
+      totalWeight,
+      focInfo,
+      gppInfo,
+      gpiInfo,
+      launchFpsUsed,
+      fps1,
+      fps2,
+      keLaunch,
+      keD2,
+      keBandObj,
+      momentum,
+      momentumBandObj
+    ) {
       const body = $('dataTableBody');
       if (!body) return;
       body.innerHTML = '';
@@ -2570,4 +2700,3 @@
   </script>
 </body>
 </html>
- 
