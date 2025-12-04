@@ -5,10 +5,11 @@
   <title>Arrow Tune Calculator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!--
-  Arrow Tune Calculator v1.0.8
-  - Launch FPS now derived from IBO rating (no manual Launch FPS field)
+  Arrow Tune Calculator v1.0.9
+  - Launch FPS now driven by an editable Actual FPS field (seeded from IBO-based formula)
+  - "Farthest distance" moved into Velocity section and drives graphs + slider default
   - Velocity & trajectory visuals share the Distance focus slider
-  - KE & Momentum will be displayed after the trajectory arc using Distance focus
+  - KE & Momentum are displayed after the trajectory arc using Distance focus
 -->
   <style>
     :root {
@@ -641,7 +642,7 @@
         <div class="chip-row">
           <div class="chip">Live FOC, GPP, GPI, momentum &amp; KE</div>
           <div class="chip">🏹 Works offline in your browser</div>
-          <span class="version-pill">v1.0.8 · 2025-12-03</span>
+          <span class="version-pill">v1.0.9 · 2025-12-03</span>
         </div>
       </div>
       <div class="toolbar">
@@ -1033,26 +1034,45 @@
                 <button type="button" class="info-icon" data-info-target="velocity-info">i</button>
               </div>
               <div class="panel-subtitle">
-                Based on IBO-derived FPS + your arrow weight. Shows velocity curve and TOF at your distance focus.
+                Based on an editable Actual FPS (seeded from your IBO, draw length, and arrow weight).
+                Shows velocity curve and time-of-flight at your distance focus.
+              </div>
+              <div id="velocity-info" class="info-text" hidden>
+                Actual FPS starts from an IBO-based estimate:
+                v ≈ IBO + (L − 30)·10 − (A − 5D)/3, where L = draw length (in), D = draw weight (lb),
+                and A = total arrow weight (gr). You can override it with chrono data.
               </div>
             </div>
           </div>
 
-          <!-- Distance focus slider -->
+          <!-- Distance, farthest range & Actual FPS -->
           <div class="visual-section">
             <div class="visual-header">
-              <div class="visual-title">Distance Focus</div>
+              <div class="visual-title">Distance &amp; Speed Inputs</div>
             </div>
 
             <div class="field-grid">
               <div class="field">
-                <label class="field-label">Distance (yd)</label>
-                <input id="velDistance" type="range" min="0" max="100" value="40">
+                <label class="field-label" for="arcRange">Farthest distance (yd)</label>
+                <input id="arcRange" type="number" min="10" max="150" value="60">
+              </div>
+
+              <div class="field">
+                <label class="field-label" for="actualFps">
+                  Actual FPS at bow
+                  <span class="aux">(editable; starts from IBO-based estimate)</span>
+                </label>
+                <input id="actualFps" type="number" min="100" max="400" step="1" placeholder="auto">
+              </div>
+
+              <div class="field">
+                <label class="field-label">Distance focus (yd)</label>
+                <input id="velDistance" type="range" min="0" max="150" value="60">
               </div>
 
               <div class="field">
                 <label class="field-label">&nbsp;</label>
-                <input id="velDistanceValue" type="text" value="40 yd" readonly>
+                <input id="velDistanceValue" type="text" value="60 yd" readonly>
               </div>
             </div>
           </div>
@@ -1065,7 +1085,7 @@
 
             <svg id="velocitySvg" class="velocity-svg" viewBox="0 0 320 180"></svg>
             <div class="small" id="velocitySummary">
-              No data yet — enter bow & arrow details.
+              No data yet — enter bow &amp; arrow details.
             </div>
           </div>
 
@@ -1076,11 +1096,6 @@
             </div>
 
             <div class="field-grid">
-              <div class="field">
-                <label class="field-label">Arc Range (yd)</label>
-                <input id="arcRange" type="number" min="10" max="150" value="60">
-              </div>
-
               <div class="field">
                 <label class="field-label">Peak Height (ft)</label>
                 <input id="arcMetaInline" readonly>
@@ -1094,7 +1109,7 @@
           </div>
         </article>
 
-        <!-- KE & Momentum (moved AFTER trajectory, using Distance Focus) -->
+        <!-- KE & Momentum (AFTER trajectory, using Distance Focus) -->
         <article class="panel">
           <div class="panel-header">
             <div>
@@ -1103,13 +1118,14 @@
                 <button type="button" class="info-icon" data-info-target="ke-mom-info">i</button>
               </div>
               <div class="panel-subtitle">
-                Now uses IBO-based FPS and Distance Focus (not fixed distances).
+                Uses Actual FPS and Distance focus (not fixed distances).
               </div>
             </div>
           </div>
 
           <div id="ke-mom-info" class="info-text" hidden>
-            KE = energy, Momentum = penetration force. Both update dynamically with arrow weight and slider distance.
+            KE = energy, Momentum = penetration force. Both update dynamically with arrow weight,
+            Actual FPS, and the focus distance slider.
           </div>
 
           <div class="results-grid">
@@ -1130,1320 +1146,286 @@
             </div>
           </div>
         </article>
-    <script>
-    const state = { inputs: {}, computed: {}, savedBuilds: [] };
-    let speedLossManual = false;
+            <script>
+      /* --- Core state and helpers --- */
+      const state = { inputs: {}, computed: {}, savedBuilds: [] };
+      let speedLossManual = false;
 
-    const DATA_FIELDS_ORDER = [
-      'timestamp',
-      'bowModel',
-      'shooterName',
-      'drawWeight',
-      'drawLength',
-      'letOffPct',
-      'iboRating',
-      'arrowName',
-      'arrowSpine',
-      'straightness',
-      'arrowLength',
-      'totalArrowWeight',
-      'balancePoint',
-      'bareShaftWeight',
-      'nockWeight',
-      'wrapWeight',
-      'vaneCount',
-      'vaneWeight',
-      'insertWeight',
-      'pointWeight',
-      'glueWeight',
-      'focPct',
-      'focBand',
-      'gpp',
-      'gppBand',
-      'gpiFull',
-      'gpiBand',
-      'launchFpsUsed',
-      'speedLossPer10',
-      'distance1',
-      'distance2',
-      'fpsAtD1',
-      'fpsAtD2',
-      'keLaunch',
-      'keD2',
-      'keBand',
-      'momentumFarthest',
-      'momentumBand',
-      'efficiencyPct',
-      'efficiencyBand',
-      'weightSummary',
-      'trajectorySummary',
-      'velocitySummary',
-      'notes'
-    ];
+      function $(id) { return document.getElementById(id); }
+      function getNum(id) { const v = parseFloat($(id)?.value); return isNaN(v) ? 0 : v; }
+      function getStr(id) { return ($(id)?.value || '').trim(); }
+      function setText(id, v) { const nodes = document.querySelectorAll('#'+id); nodes.forEach(n => n.textContent = v); }
+      function setValue(id, v) { const nodes = document.querySelectorAll('#'+id); nodes.forEach(n => n.value = v); }
 
-    function $(id) { return document.getElementById(id); }
+      /* --- Toggle info panels --- */
+      function toggleInfo(e){
+        const id = e.currentTarget.dataset.infoTarget;
+        const n = $(id);
+        if(n) n.hidden = !n.hidden;
+      }
 
-    // Updated helpers: support multiple elements with the same id (defensive).
-    function setText(id, value) {
-      const nodes = document.querySelectorAll('#' + id);
-      if (!nodes || nodes.length === 0) return;
-      nodes.forEach(el => { el.textContent = value; });
-    }
+      /* --- Read all inputs --- */
+      function readInputs(){
+        state.inputs = {
+          bowModel: getStr('bowModel'),
+          shooterName: getStr('shooterName'),
+          drawWeight: getNum('drawWeight'),
+          drawLength: getNum('drawLength'),
+          letOffPct: getNum('letOffPct'),
+          iboRating: getNum('iboRating'),
+          arrowName: getStr('arrowName'),
+          arrowSpine: getNum('arrowSpine'),
+          straightness: getStr('straightness'),
+          arrowLength: getNum('arrowLength'),
+          totalArrowWeight: getNum('totalArrowWeight'),
+          balancePoint: getNum('balancePoint'),
+          showComponents: $('showComponents')?.checked || false,
+          bareShaftWeight: getNum('bareShaftWeight'),
+          nockWeight: getNum('nockWeight'),
+          wrapWeight: getNum('wrapWeight'),
+          vaneCount: getNum('vaneCount'),
+          vaneWeight: getNum('vaneWeight'),
+          insertWeight: getNum('insertWeight'),
+          pointWeight: getNum('pointWeight'),
+          glueWeight: getNum('glueWeight'),
+          arcRange: getNum('arcRange'),
+          velDistance: getNum('velDistance'),
+          notes: getStr('notes')
+        };
+      }
 
-    function setValue(id, value) {
-      const nodes = document.querySelectorAll('#' + id);
-      if (!nodes || nodes.length === 0) return;
-      nodes.forEach(el => { el.value = value; });
-    }
+      /* ---------- Calculations ---------- */
 
-    function getNum(id) {
-      const el = $(id);
-      if (!el) return 0;
-      const v = parseFloat(el.value);
-      return isNaN(v) ? 0 : v;
-    }
+      function calcTotalWeight(){
+        const i = state.inputs;
+        if(!i.showComponents) return { totalWeight: i.totalArrowWeight, componentsUsed:false };
 
-    function getStr(id) {
-      const el = $(id);
-      return el ? (el.value || '').trim() : '';
-    }
+        const vanes = i.vaneCount * i.vaneWeight;
+        const sum = i.bareShaftWeight + i.nockWeight + i.wrapWeight +
+                    vanes + i.insertWeight + i.pointWeight + i.glueWeight;
 
-    function toggleInfo(e) {
-      const targetId = e.currentTarget.getAttribute('data-info-target');
-      if (!targetId) return;
-      const node = $(targetId);
-      if (!node) return;
-      node.hidden = !node.hidden;
-    }
+        return sum>0 ? { totalWeight:sum, componentsUsed:true } :
+                       { totalWeight:i.totalArrowWeight, componentsUsed:false };
+      }
 
-    function loadTheme() {
-      const stored = localStorage.getItem('arrowTheme');
-      const theme = stored === 'light' ? 'light' : 'dark';
-      document.body.setAttribute('data-theme', theme);
-    }
+      function calcFOC(){
+        const {arrowLength:L, balancePoint:bp} = state.inputs;
+        if(L<=0||bp<=0) return {focPct:0, band:"no data", bandClass:"bad"};
+        const focPct = ((bp - L/2)/L)*100;
 
-    function toggleTheme() {
-      const current = document.body.getAttribute('data-theme') || 'dark';
-      const next = current === 'dark' ? 'light' : 'dark';
-      document.body.setAttribute('data-theme', next);
-      localStorage.setItem('arrowTheme', next);
-    }
+        let band="no data", cls="bad";
+        if(focPct<8){ band="Low FOC"; cls="warn";}
+        else if(focPct<=10){ band="Borderline hunting FOC"; cls="good";}
+        else if(focPct<=18){ band="Typical hunting FOC"; cls="good";}
+        else if(focPct<=25){ band="High FOC"; cls="warn";}
+        else { band="Extreme FOC"; cls="warn"; }
 
-    function readInputs() {
-      state.inputs = {
-        bowModel: getStr('bowModel'),
-        shooterName: getStr('shooterName'),
-        drawWeight: getNum('drawWeight'),
-        drawLength: getNum('drawLength'),
-        letOffPct: getNum('letOffPct'),
-        iboRating: getNum('iboRating'),
-        arrowName: getStr('arrowName'),
-        arrowSpine: getNum('arrowSpine'),
-        straightness: getStr('straightness'),
-        arrowLength: getNum('arrowLength'),
-        totalArrowWeight: getNum('totalArrowWeight'),
-        balancePoint: getNum('balancePoint'),
-        showComponents: $('showComponents')?.checked || false,
-        bareShaftWeight: getNum('bareShaftWeight'),
-        nockWeight: getNum('nockWeight'),
-        wrapWeight: getNum('wrapWeight'),
-        vaneCount: getNum('vaneCount'),
-        vaneWeight: getNum('vaneWeight'),
-        insertWeight: getNum('insertWeight'),
-        pointWeight: getNum('pointWeight'),
-        glueWeight: getNum('glueWeight'),
-        launchFpsManual: getNum('launchFps'),     // always 0 now (field removed)
-        speedLossPer10: getNum('speedLossPer10'), // internal only if field is gone
-        distance1: getNum('distance1'),
-        distance2: getNum('distance2'),
-        arcRange: getNum('arcRange'),
-        velDistance: getNum('velDistance'),
-        notes: getStr('notes')
-      };
-    }
+        return {focPct, band, bandClass:cls};
+      }
 
-    function calcTotalWeight() {
-      const i = state.inputs;
-      let componentsOk = false;
+      function calcGPP(w){
+        const dw = state.inputs.drawWeight;
+        if(dw<=0||w<=0) return {gpp:0, band:"no data", bandClass:"bad"};
+        const g = w/dw;
+        let band="no data",cls="bad";
+        if(g<5.3){band="Very light";cls="warn";}
+        else if(g<=6.3){band="Light hunting";cls="good";}
+        else if(g<=8){band="Typical hunting";cls="good";}
+        else{band="Heavy hunting";cls="warn";}
+        return {gpp:g, band, bandClass:cls};
+      }
 
-      if (i.showComponents) {
-        if (i.bareShaftWeight > 0 && i.nockWeight >= 0 &&
-            i.vaneCount >= 0 && i.vaneWeight >= 0 &&
-            i.insertWeight >= 0 && i.pointWeight > 0) {
-          componentsOk = true;
+      function calcGPI(w){
+        const L = state.inputs.arrowLength;
+        if(L<=0||w<=0) return {gpi:0, band:"no data",bandClass:"bad"};
+        const g = w/L;
+        let band="no data",cls="bad";
+        if(g<8){band="Light full arrow";cls="warn";}
+        else if(g<=10){band="Typical hunting GPI";cls="good";}
+        else{band="Heavy full arrow";cls="warn";}
+        return {gpi:g, band, bandClass:cls};
+      }
+
+      /* --- IBO-based FPS (only model now) --- */
+      function estimateLaunchFPS(w){
+        const i = state.inputs;
+        const baseFps = i.iboRating>0 ? i.iboRating : 280;
+
+        const dw = i.drawWeight;
+        const dl = i.drawLength;
+
+        const baseDw=70, baseDl=30, baseWt=350;
+
+        const fps = baseFps +
+          (dw-baseDw)*2 +
+          (dl-baseDl)*10 -
+          ((w-baseWt)/5);
+
+        return Math.max(140, Math.min(380, fps));
+      }
+
+      function fpsAtDistance(fps0, yd){
+        const loss = state.inputs.speedLossPer10 || 5;
+        const seg = yd/10;
+        return Math.max(0, fps0 - loss*seg);
+      }
+
+      function calcKE(w,fps){
+        return (w/450240)*fps*fps;
+      }
+
+      function calcMomentum(w,fps){
+        return (w*fps)/225400;
+      }
+
+      /* ---------- Drawing: Velocity + Trajectory ---------- */
+
+      function drawVelocityCurve(launchFps, focusDist){
+        const svg = $('velocitySvg');
+        svg.innerHTML="";
+
+        if(launchFps<=0){
+          setText("velocitySummary","Enter bow & arrow details to calculate FPS.");
+          return;
         }
-      }
 
-      let totalComponents = 0;
-      if (componentsOk) {
-        const vanesTotal = i.vaneCount * i.vaneWeight;
-        totalComponents = i.bareShaftWeight + i.nockWeight + i.wrapWeight +
-                          vanesTotal + i.insertWeight + i.pointWeight + i.glueWeight;
-      }
+        const i = state.inputs;
+        const loss = i.speedLossPer10 || 5;
+        const range = Math.max(i.arcRange||60, focusDist, 10);
 
-      const total = componentsOk && totalComponents > 0
-        ? totalComponents
-        : i.totalArrowWeight;
+        const W=320,H=180, L=30,R=20,T=15,B=30;
+        const w=W-L-R, h=H-T-B;
 
-      return { totalWeight: total, componentsUsed: componentsOk && totalComponents > 0, totalComponents };
-    }
-
-    function calcFOC() {
-      const i = state.inputs;
-      const L = i.arrowLength || 0;
-      const bp = i.balancePoint || 0;
-      if (L <= 0 || bp <= 0) {
-        return { focPct: 0, band: 'no data', bandClass: 'bad' };
-      }
-      const center = L / 2;
-      const foc = ((bp - center) / L) * 100;
-
-      let band = 'no data';
-      let bandClass = 'bad';
-      if (foc < 8) {
-        band = 'Low FOC';
-        bandClass = 'warn';
-      } else if (foc >= 8 && foc <= 10) {
-        band = 'Borderline hunting FOC';
-        bandClass = 'good';
-      } else if (foc > 10 && foc <= 18) {
-        band = 'Typical hunting FOC';
-        bandClass = 'good';
-      } else if (foc > 18 && foc <= 25) {
-        band = 'High FOC';
-        bandClass = 'warn';
-      } else if (foc > 25) {
-        band = 'Extreme FOC';
-        bandClass = 'warn';
-      }
-
-      return { focPct: foc, band, bandClass };
-    }
-
-    function calcGPP(totalWeight) {
-      const dw = state.inputs.drawWeight || 0;
-      if (dw <= 0 || totalWeight <= 0) return { gpp: 0, band: 'no data', bandClass: 'bad' };
-      const gpp = totalWeight / dw;
-      let band = 'no data';
-      let bandClass = 'bad';
-      if (gpp < 5.3) {
-        band = 'Very light';
-        bandClass = 'warn';
-      } else if (gpp >= 5.3 && gpp <= 6.3) {
-        band = 'Light hunting';
-        bandClass = 'good';
-      } else if (gpp > 6.3 && gpp <= 8.0) {
-        band = 'Typical hunting';
-        bandClass = 'good';
-      } else if (gpp > 8.0) {
-        band = 'Heavy hunting';
-        bandClass = 'warn';
-      }
-      return { gpp, band, bandClass };
-    }
-
-    function calcGPI(totalWeight) {
-      const L = state.inputs.arrowLength || 0;
-      if (L <= 0 || totalWeight <= 0) {
-        return { gpi: 0, band: 'no data', bandClass: 'bad' };
-      }
-      const gpi = totalWeight / L;
-      let band = 'no data';
-      let bandClass = 'bad';
-      if (gpi < 8) {
-        band = 'Light full arrow';
-        bandClass = 'warn';
-      } else if (gpi >= 8 && gpi <= 10) {
-        band = 'Typical hunting GPI';
-        bandClass = 'good';
-      } else if (gpi > 10) {
-        band = 'Heavy full arrow';
-        bandClass = 'warn';
-      }
-      return { gpi, band, bandClass };
-    }
-
-    // Uses IBO rating + arrow weight + draw deltas; no manual override anymore.
-    function estimateLaunchFPS(totalWeight) {
-      const i = state.inputs;
-      const dw = i.drawWeight || 0;
-      const dl = i.drawLength || 0;
-      if (dw <= 0 || totalWeight <= 0) return 0;
-
-      const baseDw = 70;
-      const baseDl = 30;
-      const baseWt = 350;
-      // If IBO provided, use that as base; else a typical baseline.
-      let baseFps = i.iboRating > 0 ? i.iboRating : 280;
-
-      const dwDelta = (dw - baseDw) * 2;
-      const dlDelta = (dl - baseDl) * 10;
-      const wtDelta = - (totalWeight - baseWt) / 5;
-
-      let fps = baseFps + dwDelta + dlDelta + wtDelta;
-      fps = Math.max(140, Math.min(380, fps));
-      return fps;
-    }
-
-    function fpsAtDistance(launchFps, distanceYards) {
-      const lossPer10 = state.inputs.speedLossPer10 || 0;
-      if (launchFps <= 0) return 0;
-      const segments = distanceYards / 10;
-      const totalLossFps = lossPer10 * segments;
-      const remaining = launchFps - totalLossFps;
-      return Math.max(0, remaining);
-    }
-
-    function calcMomentum(grains, fps) {
-      if (grains <= 0 || fps <= 0) return 0;
-      return (grains * fps) / 225400;
-    }
-
-    function classifyMomentumBand(momentum) {
-      let band = 'no data';
-      let bandClass = 'bad';
-      if (momentum <= 0) {
-        band = 'no data';
-        bandClass = 'bad';
-      } else if (momentum < 0.35) {
-        band = 'Small game / practice';
-        bandClass = 'warn';
-      } else if (momentum >= 0.35 && momentum < 0.45) {
-        band = 'Light deer / small game';
-        bandClass = 'good';
-      } else if (momentum >= 0.45 && momentum < 0.55) {
-        band = 'Deer-sized game';
-        bandClass = 'good';
-      } else if (momentum >= 0.55 && momentum < 0.65) {
-        band = 'Large game (elk / grizzly bears)';
-        bandClass = 'good';
-      } else if (momentum >= 0.65) {
-        band = 'Very large / dangerous game';
-        bandClass = 'warn';
-      }
-      return { band, bandClass };
-    }
-
-    function calcKE(grains, fps) {
-      if (grains <= 0 || fps <= 0) return 0;
-      return (grains / 450240) * fps * fps;
-    }
-
-    function classifyKEBand(ke) {
-      let band = 'no data';
-      let bandClass = 'bad';
-      if (ke <= 0) {
-        band = 'no data';
-        bandClass = 'bad';
-      } else if (ke < 10) {
-        band = 'Very light / small game only';
-        bandClass = 'warn';
-      } else if (ke >= 10 && ke < 25) {
-        band = 'Light hunting / small–medium game';
-        bandClass = 'good';
-      } else if (ke >= 25 && ke < 45) {
-        band = 'Typical deer-sized game';
-        bandClass = 'good';
-      } else if (ke >= 45 && ke < 55) {
-        band = 'Elk / larger-bodied game (approx)';
-        bandClass = 'good';
-      } else if (ke >= 55) {
-        band = 'Very high KE (heavy setups / big game)';
-        bandClass = 'warn';
-      }
-      return { band, bandClass };
-    }
-
-    function calcEfficiency(keLaunch) {
-      const i = state.inputs;
-      const dw = i.drawWeight || 0;
-      const dl = i.drawLength || 0;
-      if (dw <= 0 || dl <= 0 || keLaunch <= 0) {
-        return { pct: 0, band: 'no data', bandClass: 'bad' };
-      }
-      const storedEnergy = (dw * dl / 2) / 12; // ft-lbs
-      if (storedEnergy <= 0) {
-        return { pct: 0, band: 'no data', bandClass: 'bad' };
-      }
-      const pct = (keLaunch / storedEnergy) * 100;
-
-      let band = 'no data';
-      let bandClass = 'bad';
-      if (pct < 40) {
-        band = 'Very low efficiency (likely mis-match)';
-        bandClass = 'warn';
-      } else if (pct >= 40 && pct < 55) {
-        band = 'Light / speed-focused arrow';
-        bandClass = 'good';
-      } else if (pct >= 55 && pct < 70) {
-        band = 'Balanced hunting efficiency';
-        bandClass = 'good';
-      } else if (pct >= 70) {
-        band = 'Heavy / energy-rich build';
-        bandClass = 'warn';
-      }
-
-      return { pct, band, bandClass };
-    }
-
-    function updateFOCAndBalance(focInfo) {
-      const i = state.inputs;
-      const L = i.arrowLength || 0;
-      const bp = i.balancePoint || 0;
-
-      let balancePct = 50;
-      if (L > 0 && bp > 0) {
-        balancePct = Math.max(0, Math.min(100, (bp / L) * 100));
-      }
-      const marker = $('balanceMarker');
-      if (marker) marker.style.left = balancePct + '%';
-      setText('balancePointOut', isFinite(bp) ? bp.toFixed(2) : '0.00');
-
-      const focMarker = $('focMarker');
-      if (focMarker) {
-        const scaled = Math.max(-10, Math.min(30, focInfo.focPct));
-        const pct = ((scaled + 10) / 40) * 100;
-        focMarker.style.left = pct + '%';
-      }
-      const focValue = isFinite(focInfo.focPct) ? focInfo.focPct.toFixed(1) : '0.0';
-      setText('focValue', focValue);
-      setText('focBandLabel', focInfo.band);
-      const focTag = $('focTag');
-      if (focTag) {
-        focTag.classList.remove('good', 'warn', 'bad');
-        focTag.classList.add(focInfo.bandClass || 'bad');
-      }
-    }
-
-    function updateWeightComposition(totalWeight, componentsUsed) {
-      const i = state.inputs;
-      let shaft = 0, pointSystem = 0, tail = 0;
-
-      if (componentsUsed) {
-        shaft = i.bareShaftWeight || 0;
-        pointSystem = (i.insertWeight || 0) + (i.pointWeight || 0);
-        const tailPieces =
-          (i.nockWeight || 0) +
-          (i.wrapWeight || 0) +
-          (i.vaneCount || 0) * (i.vaneWeight || 0) +
-          (i.glueWeight || 0);
-        tail = tailPieces;
-      } else {
-        if (totalWeight <= 0) {
-          shaft = pointSystem = tail = 0;
-        } else {
-          shaft = totalWeight * 0.55;
-          pointSystem = totalWeight * 0.35;
-          tail = totalWeight * 0.10;
+        function v(d){
+          const seg=d/10;
+          return Math.max(0, launchFps - loss*seg);
         }
-      }
 
-      const sum = shaft + pointSystem + tail;
-      let sp = 0, pp = 0, tp = 0;
-      if (sum > 0) {
-        sp = (shaft / sum) * 100;
-        pp = (pointSystem / sum) * 100;
-        tp = (tail / sum) * 100;
-      }
+        const v0 = launchFps;
+        const vF = v(focusDist);
+        const vMin = Math.min(v0,vF);
+        const vMax = Math.max(v0,vF);
 
-      const shaftSegment = $('shaftSegment');
-      const pointSegment = $('pointSegment');
-      const tailSegment = $('tailSegment');
-      if (shaftSegment) shaftSegment.style.width = sp + '%';
-      if (pointSegment) pointSegment.style.width = pp + '%';
-      if (tailSegment) tailSegment.style.width = tp + '%';
+        function xScale(d){return L + (d/range)*w;}
+        function yScale(f){return T + h - ((f-vMin)/(vMax-vMin||1))*h;}
 
-      const legend = $('weightLegend');
-      if (legend) {
-        legend.textContent =
-          `Shaft: ${shaft.toFixed(1)} gr (${sp.toFixed(1)} %)\n` +
-          `Point system: ${pointSystem.toFixed(1)} gr (${pp.toFixed(1)} %)\n` +
-          `Nock / wrap / vanes + glue: ${tail.toFixed(1)} gr (${tp.toFixed(1)} %)`;
-      }
+        /* Axes */
+        const mk = (el,attrs)=>{const e=document.createElementNS("http://www.w3.org/2000/svg",el);for(const k in attrs)e.setAttribute(k,attrs[k]);return e;}
 
-      state.computed.weightSummary = legend ? legend.textContent : '';
-    }
+        svg.appendChild(mk("line",{x1:L,y1:T+h,x2:L+w,y2:T+h,stroke:"#94a3b8"}));
+        svg.appendChild(mk("line",{x1:L,y1:T,x2:L,y2:T+h,stroke:"#94a3b8"}));
 
-    function drawTrajectory(totalWeight, launchFps, momentumAtFocus, focusDist) {
-      const svg = $('trajectorySvg');
-      if (!svg) return;
-      while (svg.firstChild) svg.removeChild(svg.firstChild);
-
-      const i = state.inputs;
-      const arcRangeInput = i.arcRange || 0;
-
-      const baseArcRange = arcRangeInput > 0 ? arcRangeInput : (focusDist || 60);
-      const effectiveFocus = (focusDist && focusDist > 0) ? focusDist : baseArcRange;
-      const arcRange = Math.max(baseArcRange, effectiveFocus);
-      const extra = 5;
-      const maxX = arcRange + extra;
-
-      const viewWidth = 320;
-      const viewHeight = 210;
-
-      let peakHeightFt = Math.min((arcRange / 60) * 4.0, 12);
-      if (arcRange <= 20) peakHeightFt = 1.0 + (arcRange / 20) * 2.0;
-      const yMaxFeet = peakHeightFt * 1.4 || 6;
-
-      const padLeft = 30, padRight = 18, padTop = 20, padBottom = 35;
-      const w = viewWidth - padLeft - padRight;
-      const h = viewHeight - padTop - padBottom;
-
-      function xScale(yd) { return padLeft + (yd / maxX) * w; }
-      function yScale(ft) {
-        const norm = Math.max(0, Math.min(yMaxFeet, ft));
-        return padTop + h - (norm / yMaxFeet) * h;
-      }
-
-      // Axes
-      const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      xAxis.setAttribute('x1', padLeft);
-      xAxis.setAttribute('y1', padTop + h);
-      xAxis.setAttribute('x2', padLeft + w);
-      xAxis.setAttribute('y2', padTop + h);
-      xAxis.setAttribute('stroke', 'rgba(148,163,184,0.9)');
-      xAxis.setAttribute('stroke-width', '1');
-      svg.appendChild(xAxis);
-
-      const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      yAxis.setAttribute('x1', padLeft);
-      yAxis.setAttribute('y1', padTop);
-      yAxis.setAttribute('x2', padLeft);
-      yAxis.setAttribute('y2', padTop + h);
-      yAxis.setAttribute('stroke', 'rgba(148,163,184,0.8)');
-      yAxis.setAttribute('stroke-width', '1');
-      svg.appendChild(yAxis);
-
-      const xLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      xLabel.setAttribute('x', padLeft + w / 2);
-      xLabel.setAttribute('y', padTop + h + 22);
-      xLabel.setAttribute('text-anchor', 'middle');
-      xLabel.setAttribute('font-size', '9');
-      xLabel.setAttribute('fill', 'rgba(148,163,184,0.9)');
-      xLabel.textContent = 'Distance (yd)';
-      svg.appendChild(xLabel);
-
-      const yLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      yLabel.setAttribute('x', padLeft - 22);
-      yLabel.setAttribute('y', padTop + h / 2);
-      yLabel.setAttribute('text-anchor', 'middle');
-      yLabel.setAttribute('font-size', '9');
-      yLabel.setAttribute('fill', 'rgba(148,163,184,0.9)');
-      yLabel.setAttribute('transform', `rotate(-90 ${padLeft-22} ${padTop + h/2})`);
-      yLabel.textContent = 'Height (ft)';
-      svg.appendChild(yLabel);
-
-      const midX = arcRange / 2;
-      const k = peakHeightFt / (midX * midX || 1);
-
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      let d = '';
-      const steps = 40;
-      let peakX = xScale(midX);
-      let peakY = yScale(peakHeightFt);
-
-      for (let s = 0; s <= steps; s++) {
-        const yd = (arcRange * s) / steps;
-        const xRel = yd - midX;
-        const heightFt = peakHeightFt - k * xRel * xRel;
-        const X = xScale(yd);
-        const Y = yScale(Math.max(0, heightFt));
-        if (s === 0) {
-          d += 'M' + X + ' ' + Y + ' ';
-        } else {
-          d += 'L' + X + ' ' + Y + ' ';
+        /* Curve */
+        let dPath="";
+        for(let s=0;s<=40;s++){
+          const yd=(range*s)/40;
+          const X=xScale(yd), Y=yScale(v(yd));
+          dPath+= (s===0?`M${X} ${Y}`:` L${X} ${Y}`);
         }
-      }
-      path.setAttribute('d', d.trim());
-      path.setAttribute('fill', 'none');
-      path.setAttribute('stroke', '#22c55e');
-      path.setAttribute('stroke-width', '2');
-      svg.appendChild(path);
+        svg.appendChild(mk("path",{d:dPath,stroke:"#38bdf8","stroke-width":2,fill:"none"}));
 
-      const peakLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      peakLabel.setAttribute('x', peakX);
-      peakLabel.setAttribute('y', peakY - 4);
-      peakLabel.setAttribute('text-anchor', 'middle');
-      peakLabel.setAttribute('font-size', '9');
-      peakLabel.setAttribute('fill', 'rgba(248,250,252,0.95)');
-      peakLabel.textContent = `${peakHeightFt.toFixed(1)} ft`;
-      svg.appendChild(peakLabel);
+        /* Focus marker */
+        const xF=xScale(focusDist);
+        const yF=yScale(vF);
+        svg.appendChild(mk("line",{x1:xF,y1:yF,x2:xF,y2:T+h,stroke:"#22c55e","stroke-dasharray":"3,3"}));
+        svg.appendChild(mk("circle",{cx:xF,cy:yF,r:3,fill:"#22c55e"}));
 
-      const launchLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      launchLabel.setAttribute('x', padLeft + 4);
-      launchLabel.setAttribute('y', padTop + h - 6);
-      launchLabel.setAttribute('font-size', '9');
-      launchLabel.setAttribute('fill', 'rgba(148,163,184,0.9)');
-      launchLabel.textContent = '0 yd';
-      svg.appendChild(launchLabel);
+        /* TOF label */
+        const avg=(v0+vF)/2;
+        const tof = avg>0 ? (focusDist*3)/avg : 0;
+        svg.appendChild(mk("text",{x:xF+4,y:yF-4,"font-size":9,fill:"#bef264"})).textContent =
+          `${focusDist} yd • ~${tof.toFixed(2)} s`;
 
-      const tgtLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      tgtLabel.setAttribute('x', xScale(arcRange) - 4);
-      tgtLabel.setAttribute('y', padTop + h - 6);
-      tgtLabel.setAttribute('font-size', '9');
-      tgtLabel.setAttribute('fill', 'rgba(148,163,184,0.9)');
-      tgtLabel.setAttribute('text-anchor', 'end');
-      tgtLabel.textContent = `${arcRange.toFixed(0)} yd`;
-      svg.appendChild(tgtLabel);
-
-      if (effectiveFocus > 0 && effectiveFocus <= maxX) {
-        const xF = xScale(effectiveFocus);
-        const xRel = effectiveFocus - midX;
-        const hFt = peakHeightFt - k * xRel * xRel;
-        const yF = yScale(Math.max(0, hFt));
-
-        const focusLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        focusLine.setAttribute('x1', xF);
-        focusLine.setAttribute('y1', yF);
-        focusLine.setAttribute('x2', xF);
-        focusLine.setAttribute('y2', padTop + h);
-        focusLine.setAttribute('stroke', '#38bdf8');
-        focusLine.setAttribute('stroke-dasharray', '3,3');
-        focusLine.setAttribute('stroke-width', '1');
-        svg.appendChild(focusLine);
-
-        const focusDot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        focusDot.setAttribute('cx', xF);
-        focusDot.setAttribute('cy', yF);
-        focusDot.setAttribute('r', 3);
-        focusDot.setAttribute('fill', '#38bdf8');
-        svg.appendChild(focusDot);
-
-        const focusLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        focusLabel.setAttribute('x', xF + 4);
-        focusLabel.setAttribute('y', yF - 6);
-        focusLabel.setAttribute('font-size', '9');
-        focusLabel.setAttribute('fill', 'rgba(191,219,254,0.95)');
-        focusLabel.textContent = `${effectiveFocus.toFixed(0)} yd • ${Math.max(0, hFt).toFixed(1)} ft`;
-        svg.appendChild(focusLabel);
+        setText("velocitySummary",`At ${focusDist} yd: ~${tof.toFixed(2)} s flight time, ~${vF.toFixed(0)} fps.`);
       }
 
-      const maxYd = maxX;
-      const summary = `Horizontal axis ≈ 0–${maxYd.toFixed(0)} yd (arc set to ~${arcRange.toFixed(0)} yd). Peak height ≈ ${peakHeightFt.toFixed(1)} ft.`;
-      setText('trajectorySummary', summary);
-      setValue('arcMetaInline', `Peak ≈ ${peakHeightFt.toFixed(1)} ft`);
-      state.computed.trajectorySummary = summary;
-    }
+      function drawTrajectory(totalWeight, fps0, focusDist){
+        const svg=$("trajectorySvg");
+        svg.innerHTML="";
 
-    function maybeSuggestSpeedLoss(launchFpsUsed, gpp) {
-      if (speedLossManual) return;
-      let suggested = 5;
+        const i = state.inputs;
+        const arc = Math.max(i.arcRange||60, focusDist);
+        const W=320,H=210,L=30,R=20,T=20,B=35;
+        const w=W-L-R, h=H-T-B;
 
-      if (gpp > 8 || launchFpsUsed < 250) {
-        suggested = 4;
-      } else if (gpp < 6 && launchFpsUsed > 280) {
-        suggested = 6;
-      }
+        const peak = Math.min((arc/60)*4,12);
+        const mid = arc/2;
+        const k = peak/(mid*mid||1);
 
-      // May be no visible input; still stored internally.
-      setValue('speedLossPer10', suggested.toFixed(1).replace(/\.0$/, ''));
-      state.inputs.speedLossPer10 = suggested;
-    }
+        function xScale(d){return L+(d/arc)*w;}
+        function yScale(ft){return T + h - ((ft/(peak*1.4||1))*h);}
 
-    function drawVelocityCurve(launchFpsUsed, focusDist) {
-      const svg = $('velocitySvg');
-      if (!svg) return;
-      while (svg.firstChild) svg.removeChild(svg.firstChild);
+        const mk=(el,a)=>{const e=document.createElementNS("http://www.w3.org/2000/svg",el);for(const k in a)e.setAttribute(k,a[k]);return e;}
 
-      if (launchFpsUsed <= 0) {
-        setText('velocitySummary', 'No FPS estimate yet – enter bow, arrow, and IBO rating to see velocity and time-of-flight.');
-        state.computed.velocitySummary = 'No velocity data';
-        return;
-      }
-
-      const i = state.inputs;
-      const lossPer10 = i.speedLossPer10 || 0;
-      const baseArc = i.arcRange || 0;
-
-      const distMax = Math.max(baseArc || 0, focusDist || 0, 10);
-      const viewWidth = 320;
-      const viewHeight = 180;
-
-      const padLeft = 30, padRight = 18, padTop = 15, padBottom = 28;
-      const w = viewWidth - padLeft - padRight;
-      const h = viewHeight - padTop - padBottom;
-
-      function vAt(d) {
-        const segments = d / 10;
-        const v = launchFpsUsed - lossPer10 * segments;
-        return Math.max(0, v);
-      }
-
-      let vMin = launchFpsUsed, vMax = 0;
-      const steps = 30;
-      for (let s = 0; s <= steps; s++) {
-        const dY = (distMax * s) / steps;
-        const v = vAt(dY);
-        if (v > vMax) vMax = v;
-        if (v < vMin) vMin = v;
-      }
-      if (vMax <= 0) vMax = launchFpsUsed;
-      if (vMin < 0) vMin = 0;
-
-      const vSpan = (vMax - vMin) || 1;
-
-      function xScale(yd) { return padLeft + (yd / distMax) * w; }
-      function yScale(fps) {
-        const norm = (fps - vMin) / vSpan;
-        return padTop + h - norm * h;
-      }
-
-      const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      xAxis.setAttribute('x1', padLeft);
-      xAxis.setAttribute('y1', padTop + h);
-      xAxis.setAttribute('x2', padLeft + w);
-      xAxis.setAttribute('y2', padTop + h);
-      xAxis.setAttribute('stroke', 'rgba(148,163,184,0.9)');
-      xAxis.setAttribute('stroke-width', '1');
-      svg.appendChild(xAxis);
-
-      const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      yAxis.setAttribute('x1', padLeft);
-      yAxis.setAttribute('y1', padTop);
-      yAxis.setAttribute('x2', padLeft);
-      yAxis.setAttribute('y2', padTop + h);
-      yAxis.setAttribute('stroke', 'rgba(148,163,184,0.8)');
-      yAxis.setAttribute('stroke-width', '1');
-      svg.appendChild(yAxis);
-
-      const xLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      xLabel.setAttribute('x', padLeft + w / 2);
-      xLabel.setAttribute('y', padTop + h + 18);
-      xLabel.setAttribute('text-anchor', 'middle');
-      xLabel.setAttribute('font-size', '9');
-      xLabel.setAttribute('fill', 'rgba(148,163,184,0.9)');
-      xLabel.textContent = 'Distance (yd)';
-      svg.appendChild(xLabel);
-
-      const yLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      yLabel.setAttribute('x', padLeft - 25);
-      yLabel.setAttribute('y', padTop + h / 2);
-      yLabel.setAttribute('text-anchor', 'middle');
-      yLabel.setAttribute('font-size', '9');
-      yLabel.setAttribute('fill', 'rgba(148,163,184,0.9)');
-      yLabel.setAttribute('transform', `rotate(-90 ${padLeft-25} ${padTop + h/2})`);
-      yLabel.textContent = 'Velocity (fps)';
-      svg.appendChild(yLabel);
-
-      const xTicks = [0, distMax / 2, distMax];
-      xTicks.forEach(d => {
-        const x = xScale(d);
-        const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        tick.setAttribute('x1', x);
-        tick.setAttribute('y1', padTop + h);
-        tick.setAttribute('x2', x);
-        tick.setAttribute('y2', padTop + h + 4);
-        tick.setAttribute('stroke', 'rgba(148,163,184,0.7)');
-        tick.setAttribute('stroke-width', '1');
-        svg.appendChild(tick);
-
-        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        label.setAttribute('x', x);
-        label.setAttribute('y', padTop + h + 14);
-        label.setAttribute('text-anchor', 'middle');
-        label.setAttribute('font-size', '8');
-        label.setAttribute('fill', 'rgba(148,163,184,0.85)');
-        label.textContent = `${d.toFixed(0)} yd`;
-        svg.appendChild(label);
-      });
-
-      const yTicks = [vMin, vMin + vSpan / 2, vMax];
-      yTicks.forEach(v => {
-        const y = yScale(v);
-        const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        tick.setAttribute('x1', padLeft - 3);
-        tick.setAttribute('y1', y);
-        tick.setAttribute('x2', padLeft);
-        tick.setAttribute('y2', y);
-        tick.setAttribute('stroke', 'rgba(148,163,184,0.7)');
-        tick.setAttribute('stroke-width', '1');
-        svg.appendChild(tick);
-
-        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        label.setAttribute('x', padLeft - 6);
-        label.setAttribute('y', y + 3);
-        label.setAttribute('text-anchor', 'end');
-        label.setAttribute('font-size', '8');
-        label.setAttribute('fill', 'rgba(148,163,184,0.85)');
-        label.textContent = v.toFixed(0);
-        svg.appendChild(label);
-      });
-
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      let dPath = '';
-      for (let s = 0; s <= steps; s++) {
-        const yd = (distMax * s) / steps;
-        const v = vAt(yd);
-        const X = xScale(yd);
-        const Y = yScale(v);
-        if (s === 0) {
-          dPath += 'M' + X + ' ' + Y + ' ';
-        } else {
-          dPath += 'L' + X + ' ' + Y + ' ';
+        /* Arc */
+        let dPath="";
+        for(let s=0;s<=40;s++){
+          const yd=(arc*s)/40;
+          const rel=yd-mid;
+          const ht=peak - k*rel*rel;
+          const X=xScale(yd), Y=yScale(Math.max(0,ht));
+          dPath+= (s===0?`M${X} ${Y}`:` L${X} ${Y}`);
         }
-      }
-      path.setAttribute('d', dPath.trim());
-      path.setAttribute('fill', 'none');
-      path.setAttribute('stroke', '#38bdf8');
-      path.setAttribute('stroke-width', '2');
-      svg.appendChild(path);
+        svg.appendChild(mk("path",{d:dPath,stroke:"#22c55e","stroke-width":2,fill:"none"}));
 
-      const focusV = vAt(focusDist);
-      const xF = xScale(focusDist);
-      const yF = yScale(focusV);
+        /* Focus */
+        const rel=focusDist-mid;
+        const hF=peak - k*rel*rel;
+        const xF=xScale(focusDist), yF=yScale(Math.max(0,hF));
+        svg.appendChild(mk("line",{x1:xF,y1:yF,x2:xF,y2:T+h,stroke:"#38bdf8","stroke-dasharray":"3,3"}));
+        svg.appendChild(mk("circle",{cx:xF,cy:yF,r:3,fill:"#38bdf8"}));
+        svg.appendChild(mk("text",{x:xF+4,y:yF-6,"font-size":9,fill:"#bfdbfe"}))
+          .textContent = `${focusDist} yd • ${Math.max(0,hF).toFixed(1)} ft`;
 
-      const focusLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      focusLine.setAttribute('x1', xF);
-      focusLine.setAttribute('y1', yF);
-      focusLine.setAttribute('x2', xF);
-      focusLine.setAttribute('y2', padTop + h);
-      focusLine.setAttribute('stroke', '#22c55e');
-      focusLine.setAttribute('stroke-dasharray', '3,3');
-      focusLine.setAttribute('stroke-width', '1');
-      svg.appendChild(focusLine);
-
-      const focusDot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      focusDot.setAttribute('cx', xF);
-      focusDot.setAttribute('cy', yF);
-      focusDot.setAttribute('r', 3);
-      focusDot.setAttribute('fill', '#22c55e');
-      svg.appendChild(focusDot);
-
-      let tof = 0;
-      if (launchFpsUsed > 0) {
-        const avgV = focusV > 0 ? (launchFpsUsed + focusV) / 2 : launchFpsUsed;
-        const distanceFeet = focusDist * 3;
-        tof = avgV > 0 ? distanceFeet / avgV : 0;
+        setText("trajectorySummary",
+          `Horizontal axis ≈ 0–${arc} yd. Peak height ≈ ${peak.toFixed(1)} ft.`);
+        setValue("arcMetaInline", `Peak ≈ ${peak.toFixed(1)} ft`);
       }
 
-      const tofLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      tofLabel.setAttribute('x', xF + 4);
-      tofLabel.setAttribute('y', yF - 6);
-      tofLabel.setAttribute('font-size', '9');
-      tofLabel.setAttribute('fill', 'rgba(190,242,100,0.95)');
-      tofLabel.textContent = `${focusDist.toFixed(0)} yd • ~${tof.toFixed(2)} s`;
-      svg.appendChild(tofLabel);
+      /* ---------- Recalc pipeline ---------- */
+      function recalcAndRender(){
+        const {totalWeight} = calcTotalWeight();
+        const focInfo = calcFOC();
+        const gppInfo = calcGPP(totalWeight);
+        const gpiInfo = calcGPI(totalWeight);
 
-      const summary = `At ${focusDist.toFixed(0)} yd: ~${tof.toFixed(2)} s flight time, ~${focusV.toFixed(0)} fps (approx).`;
-      setText('velocitySummary', summary);
-      state.computed.velocitySummary = summary;
-    }
+        const fps0 = estimateLaunchFPS(totalWeight);
 
-    function updateVelocitySection(launchFpsUsed, totalWeight) {
-      const slider = $('velDistance');
-      const out = $('velDistanceValue');
-      if (!slider || !out) return;
+        /* Focus distance is the slider */
+        const focus = state.inputs.velDistance;
 
-      const i = state.inputs;
-      const baseRange = i.arcRange || 60;
+        const fpsF = fpsAtDistance(fps0, focus);
+        const ke0 = calcKE(totalWeight,fps0);
+        const keF = calcKE(totalWeight,fpsF);
+        const momF = calcMomentum(totalWeight,fpsF);
 
-      let focusDist = i.velDistance || baseRange;
-      if (!isFinite(focusDist) || focusDist < 0) focusDist = 0;
+        /* Update UI */
+        setText("totalWeightOut", totalWeight.toFixed(1));
+        setText("momentumValue", momF.toFixed(3));
 
-      slider.max = Math.max(baseRange, focusDist, 10).toFixed(0);
-      slider.value = focusDist.toFixed(0);
-      out.value = `${focusDist.toFixed(0)} yd`;
-      state.inputs.velDistance = focusDist;
+        /* FOC + weight visuals */
+        setText("focValue", focInfo.focPct.toFixed(1));
 
-      drawVelocityCurve(launchFpsUsed, focusDist);
-
-      if (launchFpsUsed <= 0) {
-        setText('velocitySummary', 'No FPS estimate yet – enter bow, arrow, and IBO rating to see velocity and time-of-flight.');
-        state.computed.velocitySummary = 'No velocity data';
-      }
-    }
-
-    function updateEfficiencyUI(effInfo, keLaunch, keFocus, keBandObj) {
-      const effPctClean = isFinite(effInfo.pct) ? effInfo.pct : 0;
-      const effPctText = effPctClean.toFixed(0);
-
-      const marker = $('efficiencyMarker');
-      if (marker) {
-        const clamped = Math.max(40, Math.min(90, effPctClean));
-        const pct = ((clamped - 40) / 50) * 100;
-        marker.style.left = pct + '%';
+        /* Draw visuals */
+        drawVelocityCurve(fps0, focus);
+        drawTrajectory(totalWeight,fps0, focus);
       }
 
-      setText('efficiencyValue', effPctText);
-      setText('efficiencyBandLabel', effInfo.band);
-      const effTag = $('efficiencyTag');
-      if (effTag) {
-        effTag.classList.remove('good', 'warn', 'bad');
-        effTag.classList.add(effInfo.bandClass || 'bad');
-      }
+      /* ---------- Init ---------- */
+      document.addEventListener("DOMContentLoaded",()=>{
+        document.querySelectorAll(".info-icon").forEach(b=>b.onclick=toggleInfo);
 
-      setText('efficiencyValueSummary', effPctText);
-      setText('efficiencyBandLabelSummary', `Efficiency band: ${effInfo.band}`);
-
-      // KE: launch + focus distance
-      setText('keLaunchValueSummary', keLaunch.toFixed(1));
-      setText('keBandLabelSummary', `KE band: ${keBandObj.band}`);
-    }
-
-    function updateDataTable(totalWeight, focInfo, gppInfo, gpiInfo, launchFpsUsed, fpsFocus, keLaunch, keFocus, keBandObj, momentum, momentumBandObj) {
-      const body = $('dataTableBody');
-      if (!body) return;
-      body.innerHTML = '';
-
-      if (!state.inputs.showComponents) {
-        // Only log full rows when components are shown.
-        return;
-      }
-
-      const rows = [];
-      const now = new Date();
-      const timestamp = now.toISOString();
-      state.computed.timestamp = timestamp;
-
-      function addRow(field, value, type) {
-        rows.push({ field, value, type });
-      }
-
-      addRow('Timestamp', timestamp, 'calc');
-
-      addRow('Bow model & year', state.inputs.bowModel, 'input');
-      addRow('Shooter name', state.inputs.shooterName, 'input');
-      addRow('Draw weight (lb)', state.inputs.drawWeight, 'input');
-      addRow('Draw length (in)', state.inputs.drawLength, 'input');
-      addRow('Let-off (%)', state.inputs.letOffPct, 'input');
-      addRow('IBO rating (fps)', state.inputs.iboRating, 'input');
-
-      addRow('Arrow name', state.inputs.arrowName, 'input');
-      addRow('Arrow spine', state.inputs.arrowSpine, 'input');
-      addRow('Straightness', state.inputs.straightness, 'input');
-      addRow('Arrow length (in)', state.inputs.arrowLength, 'input');
-      addRow('Total arrow weight (gr, used)', totalWeight.toFixed(1), 'calc');
-      addRow('Balance point (in)', state.inputs.balancePoint.toFixed(2), 'input');
-
-      addRow('Bare shaft weight (gr)', state.inputs.bareShaftWeight, 'input');
-      addRow('Nock weight (gr)', state.inputs.nockWeight, 'input');
-      addRow('Wrap weight (gr)', state.inputs.wrapWeight, 'input');
-      addRow('Vane count', state.inputs.vaneCount, 'input');
-      addRow('Vane weight (gr)', state.inputs.vaneWeight, 'input');
-      addRow('Insert weight (gr)', state.inputs.insertWeight, 'input');
-      addRow('Point weight (gr)', state.inputs.pointWeight, 'input');
-      addRow('Glue weight (gr)', state.inputs.glueWeight, 'input');
-
-      addRow('FOC (%)', focInfo.focPct.toFixed(2), 'calc');
-      addRow('FOC band', focInfo.band, 'calc');
-      addRow('GPP', gppInfo.gpp.toFixed(2), 'calc');
-      addRow('GPP band', gppInfo.band, 'calc');
-      addRow('Arrow GPI (full)', gpiInfo.gpi.toFixed(2), 'calc');
-      addRow('GPI band', gpiInfo.band, 'calc');
-
-      addRow('Launch FPS (used)', launchFpsUsed.toFixed(1), 'calc');
-      addRow('Speed loss per 10 yd (fps)', state.inputs.speedLossPer10.toFixed(1), 'input');
-      addRow('Focus distance (yd)', state.inputs.distance2.toFixed(1), 'calc');
-      addRow('FPS @ focus distance', fpsFocus.toFixed(1), 'calc');
-
-      addRow('Launch KE (ft-lbs)', keLaunch.toFixed(2), 'calc');
-      addRow('KE @ focus (ft-lbs)', keFocus.toFixed(2), 'calc');
-      addRow('KE band', keBandObj.band, 'calc');
-      addRow('Momentum @ focus', momentum.toFixed(3) + ' slug·ft/s', 'calc');
-      addRow('Momentum band', momentumBandObj.band, 'calc');
-
-      addRow('Efficiency (%)', (state.computed.efficiencyPct || 0).toFixed(1), 'calc');
-      addRow('Efficiency band', state.computed.efficiencyBand || 'no data', 'calc');
-
-      addRow('Weight composition', state.computed.weightSummary || '', 'calc');
-      addRow('Trajectory summary', state.computed.trajectorySummary || '', 'calc');
-      addRow('Velocity summary', state.computed.velocitySummary || '', 'calc');
-
-      addRow('Notes', state.inputs.notes, 'input');
-
-      rows.forEach(r => {
-        const tr = document.createElement('tr');
-        const tdField = document.createElement('td');
-        const tdValue = document.createElement('td');
-        const tdType = document.createElement('td');
-
-        tdField.textContent = r.field;
-        tdValue.textContent = r.value;
-
-        const span = document.createElement('span');
-        span.className = 'type-badge ' + (r.type === 'input' ? 'input' : 'calc');
-        span.textContent = r.type === 'input' ? 'input' : 'calc';
-        tdType.appendChild(span);
-
-        tr.appendChild(tdField);
-        tr.appendChild(tdValue);
-        tr.appendChild(tdType);
-        body.appendChild(tr);
-      });
-    }
-
-    function refreshSavedBuildName(totalWeight, focInfo) {
-      const bowModel = state.inputs.bowModel || 'Bow';
-      const arrowName = state.inputs.arrowName || 'Arrow';
-      const dw = state.inputs.drawWeight || 0;
-      const month = String(new Date().getMonth() + 1).padStart(2, '0');
-      const year = new Date().getFullYear();
-      const label = `${year}-${month} ${bowModel} ${arrowName} ${totalWeight.toFixed(0)} gr ${dw.toFixed(0)} lb draw`;
-      setValue('savedBuildName', label);
-    }
-
-    function saveBuild() {
-      const name = getStr('savedBuildName') || '(unnamed build)';
-      if (!state.computed || !state.inputs) return;
-      const build = {
-        name,
-        savedAt: new Date().toISOString(),
-        inputs: state.inputs,
-        computed: state.computed
-      };
-      state.savedBuilds.push(build);
-      localStorage.setItem('arrowSavedBuilds', JSON.stringify(state.savedBuilds));
-      renderSavedBuildsSelect();
-    }
-
-    function loadSavedBuildsFromStorage() {
-      const raw = localStorage.getItem('arrowSavedBuilds');
-      if (!raw) {
-        state.savedBuilds = [];
-        return;
-      }
-      try {
-        state.savedBuilds = JSON.parse(raw) || [];
-      } catch {
-        state.savedBuilds = [];
-      }
-    }
-
-    function renderSavedBuildsSelect() {
-      const select = $('savedBuildsSelect');
-      if (!select) return;
-      select.innerHTML = '<option value="">(none yet)</option>';
-      state.savedBuilds.forEach((b, idx) => {
-        const opt = document.createElement('option');
-        opt.value = String(idx);
-        opt.textContent = b.name;
-        select.appendChild(opt);
-      });
-    }
-
-    function loadBuildIntoForm(index) {
-      const idx = parseInt(index, 10);
-      if (isNaN(idx) || idx < 0 || idx >= state.savedBuilds.length) return;
-      const b = state.savedBuilds[idx];
-      const i = b.inputs || {};
-
-      function maybeSet(id, v) {
-        if ($(id) != null && v !== undefined && v !== null) setValue(id, v);
-      }
-
-      maybeSet('bowModel', i.bowModel);
-      maybeSet('shooterName', i.shooterName);
-      maybeSet('drawWeight', i.drawWeight);
-      maybeSet('drawLength', i.drawLength);
-      maybeSet('letOffPct', i.letOffPct);
-      maybeSet('iboRating', i.iboRating);
-      maybeSet('arrowName', i.arrowName);
-      maybeSet('arrowSpine', i.arrowSpine);
-      maybeSet('straightness', i.straightness);
-      maybeSet('arrowLength', i.arrowLength);
-      maybeSet('totalArrowWeight', i.totalArrowWeight);
-      maybeSet('balancePoint', i.balancePoint);
-      $('showComponents').checked = !!i.showComponents;
-      maybeSet('bareShaftWeight', i.bareShaftWeight);
-      maybeSet('nockWeight', i.nockWeight);
-      maybeSet('wrapWeight', i.wrapWeight);
-      maybeSet('vaneCount', i.vaneCount);
-      maybeSet('vaneWeight', i.vaneWeight);
-      maybeSet('insertWeight', i.insertWeight);
-      maybeSet('pointWeight', i.pointWeight);
-      maybeSet('glueWeight', i.glueWeight);
-      maybeSet('velDistance', i.velDistance);
-      maybeSet('arcRange', i.arcRange);
-      maybeSet('notes', i.notes);
-
-      $('componentsSection').style.display = i.showComponents ? 'block' : 'none';
-
-      readInputs();
-      recalcAndRender();
-    }
-
-    function downloadInputsCsv() {
-      const i = state.inputs;
-      const headers = DATA_FIELDS_ORDER.join(',');
-      const vals = DATA_FIELDS_ORDER.map(f => {
-        if (f === 'timestamp') return new Date().toISOString();
-        return JSON.stringify(
-          (i[f] !== undefined ? i[f] : state.computed[f]) ?? ''
-        );
-      }).join(',');
-      const csv = headers + '\n' + vals + '\n';
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'arrow-tune-inputs.csv';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-
-    function handleCsvUpload(e) {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        const text = String(reader.result || '');
-        const lines = text.trim().split(/\r?\n/);
-        if (lines.length < 2) return;
-        const headers = lines[0].split(',');
-        const vals = lines[1].split(',');
-        const map = {};
-        headers.forEach((h, idx) => {
-          const key = h.trim();
-          let v = vals[idx] || '';
-          v = v.trim();
-          if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
-            v = v.slice(1, -1);
+        document.addEventListener("input",e=>{
+          if(e.target.id==="velDistance"){
+            setValue("velDistanceValue", `${e.target.value} yd`);
           }
-          map[key] = v;
+          readInputs();
+          recalcAndRender();
         });
-
-        function numericOrZero(k) {
-          const v = parseFloat(map[k]);
-          return isNaN(v) ? 0 : v;
-        }
-
-        setValue('bowModel', map.bowModel || '');
-        setValue('shooterName', map.shooterName || '');
-        setValue('drawWeight', numericOrZero('drawWeight'));
-        setValue('drawLength', numericOrZero('drawLength'));
-        setValue('letOffPct', numericOrZero('letOffPct'));
-        setValue('iboRating', numericOrZero('iboRating'));
-        setValue('arrowName', map.arrowName || '');
-        setValue('arrowSpine', numericOrZero('arrowSpine'));
-        setValue('straightness', map.straightness || '');
-        setValue('arrowLength', numericOrZero('arrowLength'));
-        setValue('totalArrowWeight', numericOrZero('totalArrowWeight'));
-        setValue('balancePoint', numericOrZero('balancePoint'));
-        setValue('bareShaftWeight', numericOrZero('bareShaftWeight'));
-        setValue('nockWeight', numericOrZero('nockWeight'));
-        setValue('wrapWeight', numericOrZero('wrapWeight'));
-        setValue('vaneCount', numericOrZero('vaneCount'));
-        setValue('vaneWeight', numericOrZero('vaneWeight'));
-        setValue('insertWeight', numericOrZero('insertWeight'));
-        setValue('pointWeight', numericOrZero('pointWeight'));
-        setValue('glueWeight', numericOrZero('glueWeight'));
-        setValue('arcRange', numericOrZero('arcRange'));
-        setValue('velDistance', numericOrZero('velDistance'));
-        setValue('notes', map.notes || '');
-
-        const showComp = !!map.showComponents;
-        if ($('showComponents')) {
-          $('showComponents').checked = showComp;
-        }
-        if ($('componentsSection')) {
-          $('componentsSection').style.display = showComp ? 'block' : 'none';
-        }
-
-        speedLossManual = true;
 
         readInputs();
         recalcAndRender();
-      };
-      reader.readAsText(file);
-    }
-
-    function recalcAndRender() {
-      const totalInfo = calcTotalWeight();
-      const totalWeight = totalInfo.totalWeight || 0;
-      const focInfo = calcFOC();
-      const gppInfo = calcGPP(totalWeight);
-      const gpiInfo = calcGPI(totalWeight);
-
-      // IBO-based launch FPS only
-      const launchFpsUsed = estimateLaunchFPS(totalWeight);
-
-      maybeSuggestSpeedLoss(launchFpsUsed, gppInfo.gpp);
-
-      // Distance Focus (slider) drives KE & momentum now
-      let focusDist = state.inputs.velDistance || state.inputs.arcRange || 60;
-      if (!isFinite(focusDist) || focusDist < 0) focusDist = 0;
-
-      // Store as distance1/2 for CSV/summary compatibility
-      state.inputs.distance1 = focusDist;
-      state.inputs.distance2 = focusDist;
-
-      const fpsFocus = fpsAtDistance(launchFpsUsed, focusDist);
-      const momentumFocus = calcMomentum(totalWeight, fpsFocus);
-      const momentumBandObj = classifyMomentumBand(momentumFocus);
-
-      const keLaunch = calcKE(totalWeight, launchFpsUsed);
-      const keFocus = calcKE(totalWeight, fpsFocus);
-      const keBandObj = classifyKEBand(keFocus);
-      const effInfo = calcEfficiency(keLaunch);
-
-      state.computed = {
-        ...state.computed,
-        totalWeight,
-        focPct: focInfo.focPct,
-        focBand: focInfo.band,
-        gpp: gppInfo.gpp,
-        gppBand: gppInfo.band,
-        gpiFull: gpiInfo.gpi,
-        gpiBand: gpiInfo.band,
-        launchFpsUsed,
-        fpsAtD1: fpsFocus,
-        fpsAtD2: fpsFocus,
-        keLaunch,
-        keD2: keFocus,
-        keBand: keBandObj.band,
-        momentumFarthest: momentumFocus,
-        momentumBand: momentumBandObj.band,
-        efficiencyPct: effInfo.pct || 0,
-        efficiencyBand: effInfo.band
-      };
-
-      // Results panel + KE/Momentum panel updates
-      setText('totalWeightOut', totalWeight.toFixed(1));
-
-      setText('gppValue', gppInfo.gpp.toFixed(2));
-      setText('gppBandLabel', gppInfo.band);
-      const gppTag = $('gppTag');
-      if (gppTag) {
-        gppTag.classList.remove('good','warn','bad');
-        gppTag.classList.add(gppInfo.bandClass || 'bad');
-      }
-
-      setText('gpiFullValue', gpiInfo.gpi.toFixed(2));
-      setText('gpiBandLabel', gpiInfo.band);
-      const gpiTag = $('gpiTag');
-      if (gpiTag) {
-        gpiTag.classList.remove('good','warn','bad');
-        gpiTag.classList.add(gpiInfo.bandClass || 'bad');
-      }
-
-      setText('momentumValue', momentumFocus.toFixed(3));
-      const bandShort = `${momentumFocus.toFixed(3)} slug·ft/s → ${momentumBandObj.band} @ ~${focusDist.toFixed(0)} yd`;
-      setText('momentumBandShort', bandShort);
-
-      updateFOCAndBalance(focInfo);
-      updateWeightComposition(totalWeight, totalInfo.componentsUsed);
-
-      drawTrajectory(totalWeight, launchFpsUsed, momentumFocus, focusDist);
-      updateEfficiencyUI(effInfo, keLaunch, keFocus, keBandObj);
-      updateVelocitySection(launchFpsUsed, totalWeight);
-
-      updateDataTable(
-        totalWeight,
-        focInfo,
-        gppInfo,
-        gpiInfo,
-        launchFpsUsed,
-        fpsFocus,
-        keLaunch,
-        keFocus,
-        keBandObj,
-        momentumFocus,
-        momentumBandObj
-      );
-    }
-
-    function onAnyInputChange() {
-      readInputs();
-      recalcAndRender();
-    }
-
-    function onArcRangeChange() {
-      readInputs();
-      recalcAndRender();
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      loadTheme();
-
-      document.querySelectorAll('.info-icon').forEach(btn => {
-        btn.addEventListener('click', toggleInfo);
       });
-
-      const themeToggle = $('themeToggle');
-      if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
-
-      document.addEventListener('input', (e) => {
-        const target = e.target;
-        if (!target) return;
-        if (target.id === 'csvUpload') return;
-
-        if (target.id === 'speedLossPer10') {
-          speedLossManual = true;
-        }
-
-        if (target.id === 'arcRange') {
-          onArcRangeChange();
-          return;
-        }
-
-        if (target.id === 'velDistance') {
-          const d = parseFloat(target.value) || 0;
-          setValue('velDistanceValue', `${d.toFixed(0)} yd`);
-          readInputs();
-          recalcAndRender();
-          return;
-        }
-
-        onAnyInputChange();
-      });
-
-      const showComponents = $('showComponents');
-      if (showComponents) {
-        showComponents.addEventListener('change', () => {
-          if ($('componentsSection')) {
-            $('componentsSection').style.display = showComponents.checked ? 'block' : 'none';
-          }
-          onAnyInputChange();
-        });
-      }
-
-      const csvUpload = $('csvUpload');
-      if (csvUpload) {
-        csvUpload.addEventListener('change', handleCsvUpload);
-      }
-
-      const saveBtn = $('saveBuildBtn');
-      if (saveBtn) {
-        saveBtn.addEventListener('click', () => {
-          readInputs();
-          recalcAndRender();
-          saveBuild();
-        });
-      }
-
-      const refreshNameBtn = $('refreshNameBtn');
-      if (refreshNameBtn) {
-        refreshNameBtn.addEventListener('click', () => {
-          readInputs();
-          const totalInfo = calcTotalWeight();
-          const focInfo = calcFOC();
-          refreshSavedBuildName(totalInfo.totalWeight || 0, focInfo);
-        });
-      }
-
-      const loadBuildBtn = $('loadBuildBtn');
-      if (loadBuildBtn) {
-        loadBuildBtn.addEventListener('click', () => {
-          const select = $('savedBuildsSelect');
-          if (!select) return;
-          const idx = select.value;
-          if (!idx) return;
-          loadBuildIntoForm(idx);
-        });
-      }
-
-      const downloadInputsCsvBtn = $('downloadInputsCsvBtn');
-      if (downloadInputsCsvBtn) {
-        downloadInputsCsvBtn.addEventListener('click', downloadInputsCsv);
-      }
-
-      loadSavedBuildsFromStorage();
-      renderSavedBuildsSelect();
-      readInputs();
-      recalcAndRender();
-    });
-  </script>
-</body>
+    </script>
+  </body>
 </html>
