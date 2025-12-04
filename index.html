@@ -5,7 +5,7 @@
   <title>Arrow Tune Calculator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!--
-  Arrow Tune Calculator v1.0.8
+  Arrow Tune Calculator v1.0.9
   - Launch FPS now derived from IBO rating (no manual Launch FPS field)
   - Velocity & trajectory visuals share the Distance focus slider
   - KE & Momentum will be displayed after the trajectory arc using Distance focus
@@ -641,7 +641,7 @@
         <div class="chip-row">
           <div class="chip">Live FOC, GPP, GPI, momentum &amp; KE</div>
           <div class="chip">🏹 Works offline in your browser</div>
-          <span class="version-pill">v1.0.8 · 2025-12-03</span>
+          <span class="version-pill">v1.0.9 · 2025-12-03</span>
         </div>
       </div>
       <div class="toolbar">
@@ -756,7 +756,7 @@
             </div>
             <div class="field">
               <label class="field-label" for="iboRating">
-                IBO Rating (FPS)
+                IBO/ATA Rating (FPS)
                 <span class="aux">(manufacturer spec or chrono)</span>
               </label>
               <input id="iboRating" type="number" min="200" max="380" step="1" placeholder="e.g. 335">
@@ -1033,7 +1033,7 @@
                 <button type="button" class="info-icon" data-info-target="velocity-info">i</button>
               </div>
               <div class="panel-subtitle">
-                Based on IBO-derived FPS + your arrow weight. Shows velocity curve and TOF at your distance focus.
+                Based on IBO/ATA-derived FPS + your arrow weight. Shows velocity curve and TOF at your distance focus.
               </div>
             </div>
           </div>
@@ -1057,6 +1057,31 @@
             </div>
           </div>
 
+          <!-- Actual FPS (chrono / override) -->
+          <div class="visual-section" style="margin-top:8px;">
+            <div class="visual-header">
+              <div class="visual-title">
+                Actual FPS (Chrono / Override)
+              </div>
+            </div>
+            <div class="field-grid">
+              <div class="field">
+                <label class="field-label" for="actualFps">
+                  Actual FPS
+                  <span class="aux">Starts from calculated estimate — edit if you have chrono data.</span>
+                </label>
+                <input
+                  id="actualFps"
+                  type="number"
+                  min="140"
+                  max="380"
+                  step="1"
+                  placeholder="Calculated estimate"
+                >
+              </div>
+            </div>
+          </div>
+
           <!-- Velocity Chart -->
           <div class="visual-section" style="margin-top:8px;">
             <div class="visual-header">
@@ -1065,7 +1090,7 @@
 
             <svg id="velocitySvg" class="velocity-svg" viewBox="0 0 320 180"></svg>
             <div class="small" id="velocitySummary">
-              No data yet — enter bow & arrow details.
+              No data yet — enter bow &amp; arrow details.
             </div>
           </div>
 
@@ -1103,7 +1128,7 @@
                 <button type="button" class="info-icon" data-info-target="ke-mom-info">i</button>
               </div>
               <div class="panel-subtitle">
-                Now uses IBO-based FPS and Distance Focus (not fixed distances).
+                Now uses IBO/ATA-based FPS and Distance Focus (not fixed distances).
               </div>
             </div>
           </div>
@@ -1130,7 +1155,8 @@
             </div>
           </div>
         </article>
-    <script>
+      </section>
+          <script>
     const state = { inputs: {}, computed: {}, savedBuilds: [] };
     let speedLossManual = false;
 
@@ -1163,6 +1189,7 @@
       'gpiFull',
       'gpiBand',
       'launchFpsUsed',
+      'actualFps',
       'speedLossPer10',
       'distance1',
       'distance2',
@@ -1252,7 +1279,8 @@
         insertWeight: getNum('insertWeight'),
         pointWeight: getNum('pointWeight'),
         glueWeight: getNum('glueWeight'),
-        launchFpsManual: getNum('launchFps'),     // always 0 now (field removed)
+        launchFpsManual: getNum('launchFps'),     // legacy, always 0 now
+        actualFps: getNum('actualFps'),
         speedLossPer10: getNum('speedLossPer10'), // internal only if field is gone
         distance1: getNum('distance1'),
         distance2: getNum('distance2'),
@@ -1363,7 +1391,7 @@
       return { gpi, band, bandClass };
     }
 
-    // Uses IBO rating + arrow weight + draw deltas; no manual override anymore.
+    // Uses IBO/ATA rating + arrow weight + draw deltas.
     function estimateLaunchFPS(totalWeight) {
       const i = state.inputs;
       const dw = i.drawWeight || 0;
@@ -1373,7 +1401,7 @@
       const baseDw = 70;
       const baseDl = 30;
       const baseWt = 350;
-      // If IBO provided, use that as base; else a typical baseline.
+      // If IBO/ATA provided, use that as base; else a typical baseline.
       let baseFps = i.iboRating > 0 ? i.iboRating : 280;
 
       const dwDelta = (dw - baseDw) * 2;
@@ -1383,6 +1411,36 @@
       let fps = baseFps + dwDelta + dlDelta + wtDelta;
       fps = Math.max(140, Math.min(380, fps));
       return fps;
+    }
+
+    // Get the FPS used for all calculations:
+    // - If Actual FPS is blank, prefill it with the estimate.
+    // - If user typed a value, use that.
+    // - If something goes wrong, fall back to the estimate.
+    function getEffectiveLaunchFPS(totalWeight) {
+      const suggested = estimateLaunchFPS(totalWeight);
+      const inputEl = $('actualFps');
+      let actual = state.inputs.actualFps || 0;
+
+      if (inputEl) {
+        const raw = (inputEl.value || '').trim();
+        if (raw === '') {
+          // Prefill with suggestion if user hasn't typed anything
+          if (suggested > 0) {
+            actual = suggested;
+            inputEl.value = suggested.toFixed(0);
+          }
+        } else {
+          // Use parsed numeric from state
+          actual = state.inputs.actualFps || 0;
+        }
+      }
+
+      if (!actual || actual <= 0) {
+        actual = suggested;
+      }
+
+      return actual || 0;
     }
 
     function fpsAtDistance(launchFps, distanceYards) {
@@ -1746,7 +1804,7 @@
       while (svg.firstChild) svg.removeChild(svg.firstChild);
 
       if (launchFpsUsed <= 0) {
-        setText('velocitySummary', 'No FPS estimate yet – enter bow, arrow, and IBO rating to see velocity and time-of-flight.');
+        setText('velocitySummary', 'No FPS estimate yet – enter bow, arrow, and IBO/ATA rating to see velocity and time-of-flight.');
         state.computed.velocitySummary = 'No velocity data';
         return;
       }
@@ -1948,7 +2006,7 @@
       drawVelocityCurve(launchFpsUsed, focusDist);
 
       if (launchFpsUsed <= 0) {
-        setText('velocitySummary', 'No FPS estimate yet – enter bow, arrow, and IBO rating to see velocity and time-of-flight.');
+        setText('velocitySummary', 'No FPS estimate yet – enter bow, arrow, and IBO/ATA rating to see velocity and time-of-flight.');
         state.computed.velocitySummary = 'No velocity data';
       }
     }
@@ -2006,7 +2064,7 @@
       addRow('Draw weight (lb)', state.inputs.drawWeight, 'input');
       addRow('Draw length (in)', state.inputs.drawLength, 'input');
       addRow('Let-off (%)', state.inputs.letOffPct, 'input');
-      addRow('IBO rating (fps)', state.inputs.iboRating, 'input');
+      addRow('IBO/ATA rating (fps)', state.inputs.iboRating, 'input');
 
       addRow('Arrow name', state.inputs.arrowName, 'input');
       addRow('Arrow spine', state.inputs.arrowSpine, 'input');
@@ -2032,6 +2090,7 @@
       addRow('GPI band', gpiInfo.band, 'calc');
 
       addRow('Launch FPS (used)', launchFpsUsed.toFixed(1), 'calc');
+      addRow('Actual FPS field', (state.inputs.actualFps || 0).toFixed(1), 'input');
       addRow('Speed loss per 10 yd (fps)', state.inputs.speedLossPer10.toFixed(1), 'input');
       addRow('Focus distance (yd)', state.inputs.distance2.toFixed(1), 'calc');
       addRow('FPS @ focus distance', fpsFocus.toFixed(1), 'calc');
@@ -2154,6 +2213,7 @@
       maybeSet('glueWeight', i.glueWeight);
       maybeSet('velDistance', i.velDistance);
       maybeSet('arcRange', i.arcRange);
+      maybeSet('actualFps', i.actualFps);
       maybeSet('notes', i.notes);
 
       $('componentsSection').style.display = i.showComponents ? 'block' : 'none';
@@ -2231,6 +2291,7 @@
         setValue('glueWeight', numericOrZero('glueWeight'));
         setValue('arcRange', numericOrZero('arcRange'));
         setValue('velDistance', numericOrZero('velDistance'));
+        setValue('actualFps', numericOrZero('actualFps'));
         setValue('notes', map.notes || '');
 
         const showComp = !!map.showComponents;
@@ -2256,8 +2317,8 @@
       const gppInfo = calcGPP(totalWeight);
       const gpiInfo = calcGPI(totalWeight);
 
-      // IBO-based launch FPS only
-      const launchFpsUsed = estimateLaunchFPS(totalWeight);
+      // Effective launch FPS: use Actual FPS field if present, otherwise IBO/ATA-based estimate.
+      const launchFpsUsed = getEffectiveLaunchFPS(totalWeight);
 
       maybeSuggestSpeedLoss(launchFpsUsed, gppInfo.gpp);
 
@@ -2299,7 +2360,7 @@
         efficiencyBand: effInfo.band
       };
 
-      // Results panel + KE/Momentum panel updates
+      // Results panel + KE/Momentum panel updates (if those elements exist)
       setText('totalWeightOut', totalWeight.toFixed(1));
 
       setText('gppValue', gppInfo.gpp.toFixed(2));
@@ -2386,6 +2447,7 @@
           return;
         }
 
+        // For all other inputs (including actualFps), just recalc
         onAnyInputChange();
       });
 
