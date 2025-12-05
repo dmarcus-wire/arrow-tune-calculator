@@ -86,21 +86,21 @@ Fully theme-aware and mobile-ready.
 
 ## 🧮 How Calculations Work
 
-### Launch Speed (FPS)
-Estimated using:
-- IBO/ATA rating  
-- Draw weight  
-- Draw length  
-- Total arrow weight  
-- String accessory weight  
+# 🏹 Summary of Formulas
 
-You may override this with **chronograph FPS** for maximum accuracy.
-
-### Peak Height Formula
-Uses closed-form projectile motion equations:
-
-- Computes true apex height of the arrow *before* reaching the target  
-- Useful for treestand shooting, blinds, windows, and shooting lanes
+| Metric | Formula |
+|-------|---------|
+| GPP | W / DW |
+| GPI | W / L |
+| FOC | ((BP – L/2) / L) × 100 |
+| Launch KE | (W × FPS²) / 450240 |
+| Launch Momentum | (W × FPS) / 225400 |
+| Velocity @ Distance | FPS × e^(–d/300) |
+| Impact KE | (W × V²) / 450240 |
+| Impact Momentum | (W × V) / 225400 |
+| Time to Impact | distance_ft / (FPS × 0.8) |
+| Peak Height | (FPS² × sin²θ) / (2g) |
+| Launch Angle θ | θ = ½ arcsin((R × g) / FPS²) |
 
 ---
 
