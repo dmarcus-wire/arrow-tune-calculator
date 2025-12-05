@@ -57,7 +57,7 @@
           </div>
         </div>
         <p style="color:var(--light);">Offline • Mobile-friendly • Live calculations<br>
-          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.2</span>
+          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.3</span>
         </p>
       </div>
 
@@ -213,9 +213,40 @@
         </div>
       </div>
 
+      <!-- Game Effectiveness — NEW BEAUTIFUL CARD STYLE -->
       <div class="card">
         <div class="card-header"><h2>Game Effectiveness</h2></div>
-        <table><thead><tr><th>Game</th><th>Min KE</th><th>Min Momentum</th><th>Status</th></tr></thead><tbody id="effectivenessTable"></tbody></table>
+        <div class="grid-2" style="text-align:center; gap:1rem;">
+          
+          <!-- Small Game -->
+          <div class="card">
+            <h3 style="color:var(--success); margin:0;">Small Game</h3>
+            <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 25 ft-lbs • 0.30 slug·ft/s</div>
+            <div style="font-size:2.8rem; font-weight:bold; color:var(--success);" id="smallGameStatus">Send it</div>
+          </div>
+
+          <!-- Whitetail Deer -->
+          <div class="card">
+            <h3 style="color:var(--primary); margin:0;">Whitetail Deer</h3>
+            <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 55 ft-lbs • 0.50 slug·ft/s</div>
+            <div style="font-size:2.8rem; font-weight:bold; color:var(--primary);" id="deerStatus">Send it</div>
+          </div>
+
+          <!-- Elk -->
+          <div class="card">
+            <h3 style="color:var(--warning); margin:0;">Elk</h3>
+            <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 70 ft-lbs • 0.60 slug·ft/s</div>
+            <div style="font-size:2.8rem; font-weight:bold; color:var(--warning);" id="elkStatus">Send it</div>
+          </div>
+
+          <!-- Moose / Bear -->
+          <div class="card">
+            <h3 style="color:var(--danger); margin:0;">Moose / Bear</h3>
+            <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 90 ft-lbs • 0.80 slug·ft/s</div>
+            <div style="font-size:2.8rem; font-weight:bold; color:var(--danger);" id="mooseStatus">Send it</div>
+          </div>
+
+        </div>
       </div>
 
       <div class="card">
@@ -447,17 +478,19 @@
     document.getElementById('compLabel').textContent = `Comp.: ${((comp/weight)*100).toFixed(0)}%`;
 
     // Game Effectiveness
-    const games = [["Small Game",25,0.30],["Deer",50,0.45],["Elk",65,0.60],["Moose",80,0.75]];
-    document.getElementById('effectivenessTable').innerHTML = games.map(g => `
-      <tr>
-        <td>${g[0]}</td>
-        <td>${g[1]}+ ft-lbs</td>
-        <td>${g[2].toFixed(2)}+ slug·ft/s</td>
-        <td style="color:${impactKE>=g[1] && impactMom>=g[2]?'var(--success)':'var(--danger)'}">
-          <strong>${impactKE.toFixed(0)} / ${impactMom.toFixed(3)}</strong>
-        </td>
-      </tr>
-    `).join('');
+    // Game Effectiveness — NEW CARD STYLE
+    const games = [
+      { name: "Small Game",     ke: 25, mom: 0.30, id: "smallGameStatus" },
+      { name: "Whitetail Deer", ke: 55, mom: 0.50, id: "deerStatus" },
+      { name: "Elk",            ke: 70, mom: 0.60, id: "elkStatus" },
+      { name: "Moose / Bear",   ke: 90, mom: 0.80, id: "mooseStatus" }
+    ];
+
+    games.forEach(g => {
+      const ok = impactKE >= g.ke && impactMom >= g.mom;
+      document.getElementById(g.id).textContent = ok ? "Send it" : "Don’t";
+      document.getElementById(g.id).style.color = ok ? "var(--success)" : "var(--danger)";
+    });
 
     // Build Summary
     const summary = {
