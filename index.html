@@ -18,7 +18,7 @@
     h1,h2,h3,h4 { color:var(--text); }
     label { display:block; margin:1rem 0 0.4rem; font-weight:600; font-size:0.95rem; }
     input, select, textarea { width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:8px; background:var(--card); color:var(--text); font-size:1rem; }
-    input:focus, select:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(14,165,233,0.2); }
+    input:focus, select:focus, textarea:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(14,165,233,0.2); }
     button { padding:0.75rem 1.2rem; border:none; border-radius:8px; background:var(--primary); color:white; font-weight:600; cursor:pointer; }
     .btn-small { padding:0.5rem 0.9rem; font-size:0.9rem; }
     .btn-refresh { background:var(--warning); }
@@ -41,34 +41,27 @@
     .dark-only { display: none; }
     .dark .light-only { display: none; }
     .dark .dark-only { display: block; }
+
     #outputs-column,
     #outputs-column * {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
       font-weight: 600 !important;
       letter-spacing: -0.02em;
     }
-
-    /* Titles inside output cards */
     #outputs-column h3 {
       font-size: 1.15rem !important;
       margin: 0 0 0.4rem 0;
       font-weight: 700 !important;
     }
-
-    /* Big numbers (GPP, GPI, Total Weight, Launch KE, etc.) */
     #outputs-column div[style*="font-size:2.5rem"],
     #outputs-column div[style*="font-size:3rem"] {
       font-size: 2.6rem !important;
       line-height: 1.1;
     }
-
-    /* FOC % — now perfectly sized */
     #focValue {
       font-size: 4.2rem !important;
       line-height: 1;
     }
-
-    /* Game Effectiveness "Send it" / "Don’t" — now perfectly sized */
     #smallGameStatus,
     #deerStatus,
     #elkStatus,
@@ -76,12 +69,28 @@
       font-size: 2.4rem !important;
       font-weight: 800 !important;
     }
-
-    /* Small text (ft-lbs, seconds, etc.) */
     #outputs-column small {
       font-weight: 500 !important;
       font-size: 0.9rem;
       opacity: 0.85;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.6rem 1.1rem;
+      border-radius: 999px;
+      box-shadow: 0 6px 18px rgba(15,23,42,0.25);
+      font-size: 0.9rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease-out;
+      z-index: 999;
     }
   </style>
 </head>
@@ -99,14 +108,17 @@
           </div>
         </div>
         <p style="color:var(--light);">Offline • Mobile-friendly • Live calculations<br>
-          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.4</span>
+          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.5</span>
         </p>
       </div>
 
       <div class="card">
         <div class="card-header"><h2>Your Setups</h2><button class="info-btn" title="Save and load your setups">i</button></div>
         <label>Build Name</label>
-        <div class="flex"><input type="text" id="buildName" placeholder="e.g. 2025-John-Hoyt70"><button class="btn-small" id="suggestName">Suggest</button></div>
+        <div class="flex">
+          <input type="text" id="buildName" placeholder="e.g. 2025 Hoyt RX-9 70lb 500gr">
+          <button class="btn-small" id="suggestName">Suggest</button>
+        </div>
         <div class="flex" style="margin-top:1rem;gap:0.5rem;flex-wrap:wrap;">
           <button id="saveBuild">Save Build</button>
           <select id="loadBuildSelect"><option value="">– Load Build –</option></select>
@@ -123,7 +135,14 @@
           <div><label>Draw Weight (lbs)</label><input type="number" id="drawWeight" value="70" step="0.5"></div>
           <div><label>Draw Length (in)</label><input type="number" id="drawLength" value="29" step="0.5"></div>
           <div><label>String Add-ons (grains)</label><input type="number" id="stringWeightSimple" value="0" step="0.5"></div>
-          <div><label>Application</label><select id="application"><option>Target / 3D</option><option selected>Hunting</option><option>Other</option></select></div>
+          <div>
+            <label>Application</label>
+            <select id="application">
+              <option>Target / 3D</option>
+              <option selected>Hunting</option>
+              <option>Other</option>
+            </select>
+          </div>
         </div>
 
         <div class="flex" style="margin-top:1rem;justify-content:space-between;">
@@ -147,7 +166,13 @@
         <label>Arrow Name</label><input type="text" id="arrowName">
         <div class="grid-2">
           <div><label>Arrow Length (in)</label><input type="number" id="arrowLength" value="28.5" step="0.5"></div>
-          <div><label>Total Arrow Weight (grains)</label><input type="number" id="totalArrowWeightSimple" value="450" step="0.5"></div>
+          <div>
+            <label>Total Arrow Weight (grains)</label>
+            <input type="number" id="totalArrowWeightSimple" value="450" step="0.5">
+            <small id="totalWeightHint" style="display:block;margin-top:0.25rem;font-size:0.85rem;color:var(--light);">
+              When Advanced Components is off, this is the full arrow weight (shaft + point + components).
+            </small>
+          </div>
           <div><label>Point Weight (grains)</label><input type="number" id="pointWeight" value="125" step="0.5"></div>
           <div><label>Balance Point from Nock (in)</label><input type="number" id="balancePoint" value="18.5" step="0.05"></div>
         </div>
@@ -172,6 +197,9 @@
       <div class="card">
         <div class="card-header"><h2>Notes</h2></div>
         <textarea id="notes" rows="4" placeholder="Tuning notes, chronograph data..."></textarea>
+        <small style="display:block;margin-top:0.35rem;font-size:0.85rem;color:var(--light);">
+          Notes are saved with your build.
+        </small>
       </div>
     </div>
 
@@ -185,10 +213,23 @@
             <h3 style="color:var(--primary);">Actual Launch FPS</h3>
             <input type="number" id="actualFPS" step="0.1" style="font-size:2.5rem;text-align:center;border:3px solid var(--primary);border-radius:12px;padding:0.5rem;">
             <button class="btn-small btn-refresh" id="recalcFPS">Recalculate</button>
+            <small id="fpsSource" style="display:block;margin-top:0.35rem;font-size:0.85rem;color:var(--light);">
+              Estimated from IBO, draw, arrow &amp; string weight
+            </small>
           </div>
-          <div class="card"><h3 style="color:var(--success);">GPP</h3><div style="font-size:2.5rem;" id="gppValue">-</div></div>
-          <div class="card"><h3 style="color:var(--warning);">GPI</h3><div style="font-size:2.5rem;" id="gpiValue">-</div></div>
-          <div class="card"><h3>Total Weight</h3><div style="font-size:2.5rem;" id="finalArrowWeight">-</div></div>
+          <div class="card">
+            <h3 style="color:var(--success);">GPP</h3>
+            <div style="font-size:2.5rem;" id="gppValue">-</div>
+            <small id="gppHint" style="display:block;margin-top:0.25rem;font-size:0.85rem;color:var(--light);"></small>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--warning);">GPI</h3>
+            <div style="font-size:2.5rem;" id="gpiValue">-</div>
+          </div>
+          <div class="card">
+            <h3>Total Weight</h3>
+            <div style="font-size:2.5rem;" id="finalArrowWeight">-</div>
+          </div>
         </div>
       </div>
 
@@ -228,66 +269,100 @@
         </div>
       </div>
 
-      <!-- Velocity, Trajectory & Impact -->
+      <!-- Velocity, Trajectory & Impact (card-only version) -->
       <div class="card">
-        <div class="card-header"><h2>Velocity, Trajectory & Impact @ <span id="distanceValue">50</span> yards</h2></div>
-        <input type="range" id="distanceSlider" min="0" max="120" value="50" style="width:100%;">
-        <div style="height:200px;margin:1.5rem 0;background:var(--card);border-radius:12px;overflow:hidden;border:2px solid var(--border);">
-          <svg width="100%" height="200" id="velocityCurve">
-            <path id="velocityPath" fill="none" stroke="var(--primary)" stroke-width="5"/>
-            <circle id="velocityMarker" r="12" fill="var(--primary)"/>
-            <text id="velocityLabel" x="50%" y="50" text-anchor="middle" fill="var(--text)" font-weight="bold" font-size="22">-</text>
-          </svg>
-        </div>
-        <div style="height:160px;background:linear-gradient(to top,#87CEEB40 0%,transparent 100%);border-radius:12px;overflow:hidden;border:2px solid var(--border);">
-          <svg width="100%" height="160" id="trajectoryArc" viewBox="0 0 500 160">
-            <path id="trajPath" fill="none" stroke="#22c55e" stroke-width="5"/>
-            <circle id="trajMarker" r="10" fill="#22c55e"/>
-            <text id="peakLabel" x="250" y="40" text-anchor="middle" dominant-baseline="middle" fill="#22c55e" font-weight="bold" font-size="18">-</text>
-          </svg>
+        <div class="card-header">
+          <h2>Velocity, Trajectory & Impact @ <span id="distanceValue">50</span> yards</h2>
         </div>
 
+        <!-- Distance slider -->
+        <input type="range" id="distanceSlider" min="0" max="120" value="50" list="distanceTicks" style="width:100%;">
+        <datalist id="distanceTicks">
+          <option value="0" label="0"></option>
+          <option value="20" label="20"></option>
+          <option value="40" label="40"></option>
+          <option value="60" label="60"></option>
+          <option value="80" label="80"></option>
+          <option value="100" label="100"></option>
+          <option value="120" label="120"></option>
+        </datalist>
+
+        <!-- NEW: simple metric cards for velocity & peak height -->
+        <div class="grid-2" style="margin-top:1.25rem;">
+          <div class="card text-center">
+            <h3>Velocity @ <span id="velocityDistanceLabel">50</span> yd</h3>
+            <div style="font-size:3rem;" id="velocityAtDistance">-</div>
+            <small>FPS (estimated at target)</small>
+          </div>
+          <div class="card text-center">
+            <h3>Peak Height on Flight</h3>
+            <div style="font-size:3rem;" id="peakHeightValue">-</div>
+              <small>
+                ft above line • highest point at
+                <span id="peakDistanceValue">-</span> yd before the target
+              </small>
+          </div>
+        </div>
+
+        <!-- Existing KE / impact cards -->
         <div class="grid-2" style="margin-top:1rem;">
-          <div class="card text-center"><h3 style="color:var(--success);">Launch KE</h3><div style="font-size:3rem;" id="keValue">-</div><small>ft-lbs</small></div>
-          <div class="card text-center"><h3 style="color:var(--warning);">Time to Impact</h3><div style="font-size:3rem;" id="timeToImpact">-</div><small>seconds</small></div>
-          <div class="card text-center"><h3 style="color:var(--primary);">Impact KE</h3><div style="font-size:3rem;" id="impactKE">-</div><small>ft-lbs</small></div>
-          <div class="card text-center"><h3 style="color:var(--danger);">Impact Momentum</h3><div style="font-size:3rem;" id="impactMom">-</div><small>slug·ft/s</small></div>
+          <div class="card text-center">
+            <h3 style="color:var(--success);">Launch KE</h3>
+            <div style="font-size:3rem;" id="keValue">-</div>
+            <small>ft-lbs</small>
+          </div>
+          <div class="card text-center">
+            <h3 style="color:var(--warning);">Time to Impact</h3>
+            <div style="font-size:3rem;" id="timeToImpact">-</div>
+            <small>seconds</small>
+          </div>
+          <div class="card text-center">
+            <h3 style="color:var(--primary);">Impact KE</h3>
+            <div style="font-size:3rem;" id="impactKE">-</div>
+            <small>ft-lbs</small>
+          </div>
+          <div class="card text-center">
+            <h3 style="color:var(--danger);">Impact Momentum</h3>
+            <div style="font-size:3rem;" id="impactMom">-</div>
+            <small>slug·ft/s</small>
+          </div>
         </div>
       </div>
 
       <!-- Game Effectiveness -->
       <div class="card">
         <div class="card-header"><h2>Game Effectiveness</h2></div>
+
+        <div style="margin-bottom:0.75rem;font-size:0.95rem;color:var(--light);">
+          Impact @ <span id="gameDistanceDisplay">50</span> yd:
+          <span id="gameKE">–</span> ft-lbs,
+          <span id="gameMom">–</span> slug·ft/s
+        </div>
+
         <div class="grid-2" style="text-align:center; gap:1rem;">
-          
-          <!-- Small Game -->
           <div class="card">
             <h3 style="color:var(--success); margin:0;">Small / Thin-skinned</h3>
             <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 25 ft-lbs • 0.30 slug·ft/s</div>
-            <div style="font-size:2.8rem; font-weight:bold; color:var(--success);" id="smallGameStatus">Send it</div>
+            <div style="font-size:2.8rem; font-weight:bold;" id="smallGameStatus">Send it</div>
           </div>
 
-          <!-- Whitetail Deer -->
           <div class="card">
             <h3 style="color:var(--primary); margin:0;">Medium Game</h3>
             <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 50 ft-lbs • 0.45 slug·ft/s</div>
-            <div style="font-size:2.8rem; font-weight:bold; color:var(--primary);" id="deerStatus">Send it</div>
+            <div style="font-size:2.8rem; font-weight:bold;" id="deerStatus">Send it</div>
           </div>
 
-          <!-- Elk -->
           <div class="card">
             <h3 style="color:var(--warning); margin:0;">Large / Tough Game</h3>
             <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 65 ft-lbs • 0.60 slug·ft/s</div>
-            <div style="font-size:2.8rem; font-weight:bold; color:var(--warning);" id="elkStatus">Send it</div>
+            <div style="font-size:2.8rem; font-weight:bold;" id="elkStatus">Send it</div>
           </div>
 
-          <!-- Moose / Bear -->
           <div class="card">
             <h3 style="color:var(--danger); margin:0;">Dangerous / Extreme</h3>
             <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 85 ft-lbs • 0.75 slug·ft/s</div>
-            <div style="font-size:2.8rem; font-weight:bold; color:var(--danger);" id="mooseStatus">Send it</div>
+            <div style="font-size:2.8rem; font-weight:bold;" id="mooseStatus">Send it</div>
           </div>
-
         </div>
       </div>
 
@@ -300,7 +375,18 @@
 
   <a href="https://www.patreon.com/cw/ArrowTuneCalculator" target="_blank" class="patreon-btn">Support on Patreon</a>
 
+  <div id="toast"></div>
+
 <script>
+  let toastTimer;
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.style.opacity = '1';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+  }
+
   // Dark mode
   const darkToggle = document.getElementById('darkModeToggle');
   if (localStorage.getItem('dark')==='1' || (!localStorage.getItem('dark') && matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -316,12 +402,41 @@
   function refreshBuilds() {
     loadSelect.innerHTML = '<option value="">– Load Build –</option>';
     const builds = JSON.parse(localStorage.getItem('atc') || '{}');
-    Object.keys(builds).sort().forEach(n => {
+    const keys = Object.keys(builds).sort();
+
+    if (keys.length === 0) {
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = 'No saved builds yet';
+      opt.disabled = true;
+      loadSelect.appendChild(opt);
+      return;
+    }
+
+    keys.forEach(n => {
       const o = document.createElement('option'); o.value = n; o.textContent = n; loadSelect.appendChild(o);
     });
   }
 
-  // Show/hide advanced sections
+  // Arrow weight mode UI
+  function updateArrowWeightMode() {
+    const toggle = document.getElementById('toggleArrow');
+    const simpleTotal = document.getElementById('totalArrowWeightSimple');
+    const hint = document.getElementById('totalWeightHint');
+    const isAdv = toggle.checked;
+
+    if (isAdv) {
+      simpleTotal.readOnly = true;
+      simpleTotal.style.opacity = 0.6;
+      hint.textContent = 'In Advanced mode, total arrow weight is calculated from shaft, vanes, insert, nock, wrap, glue, and point.';
+    } else {
+      simpleTotal.readOnly = false;
+      simpleTotal.style.opacity = 1;
+      hint.textContent = 'When Advanced Components is off, this is the full arrow weight (shaft + point + components).';
+    }
+  }
+
+  // Show/hide advanced sections + recalc
   document.getElementById('toggleString').onchange = e => {
     document.getElementById('stringAdvanced').style.display = e.target.checked ? 'block' : 'none';
     calculateEverything();
@@ -329,13 +444,20 @@
 
   document.getElementById('toggleArrow').onchange = e => {
     document.getElementById('arrowAdvanced').style.display = e.target.checked ? 'block' : 'none';
+    updateArrowWeightMode();
     calculateEverything();
   };
 
-  // Save build (with checkbox support)
+  // Save build (with checkbox support & overwrite confirmation)
   document.getElementById('saveBuild').onclick = () => {
     const n = document.getElementById('buildName').value.trim();
     if (!n) return alert('Name required');
+    const all = JSON.parse(localStorage.getItem('atc') || '{}');
+
+    if (all[n] && !confirm(`Overwrite existing build "${n}"?`)) {
+      return;
+    }
+
     const data = {};
     document.querySelectorAll('input,select,textarea').forEach(el => {
       if (!el.id) return;
@@ -345,10 +467,10 @@
         data[el.id] = { type: 'value', value: el.value };
       }
     });
-    const all = JSON.parse(localStorage.getItem('atc') || '{}');
+
     all[n] = data;
     localStorage.setItem('atc', JSON.stringify(all));
-    alert('Saved!');
+    showToast('Build saved');
     refreshBuilds();
   };
 
@@ -374,37 +496,50 @@
           el.value = stored.value ?? '';
         }
       } else {
-        // Legacy: simple value
         if (el.type !== 'checkbox') {
           el.value = stored ?? '';
         }
-        // For legacy checkbox values we just leave default checked state
       }
     });
 
+    updateArrowWeightMode();
     calculateEverything();
+    showToast('Build loaded');
   };
 
   document.getElementById('deleteBuild').onclick = () => {
     const n = loadSelect.value;
-    if (!n || !confirm('Delete?')) return;
+    if (!n || !confirm('Delete this build?')) return;
     const all = JSON.parse(localStorage.getItem('atc') || '{}');
     delete all[n];
     localStorage.setItem('atc', JSON.stringify(all));
     refreshBuilds();
+    showToast('Build deleted');
   };
 
-  // Suggest Name (fixed template)
+  // Suggest Name
   document.getElementById('suggestName').onclick = () => {
     const d = new Date().toISOString().slice(0,10);
     const b = document.getElementById('bowModel').value.trim() || 'Bow';
     const dw = document.getElementById('drawWeight').value || '70';
     const arrow = document.getElementById('arrowName').value.trim() || 'Arrow';
     const weight = getArrowWeight().toFixed(0);
-    document.getElementById('buildName').value = `${d}-${b}-${dw}lb-${arrow}-${weight}gr`;
+    document.getElementById('buildName').value = `${d} ${b} ${dw}lb ${arrow} ${weight}gr`;
   };
 
-  // Arrow weight helper (now computes advanced total itself)
+  // FPS source indicators
+  const fpsInput = document.getElementById('actualFPS');
+  const fpsSource = document.getElementById('fpsSource');
+
+  function markFpsEstimated() {
+    fpsSource.textContent = 'Estimated from IBO, draw, arrow & string weight';
+  }
+
+  function markFpsChrono() {
+    fpsSource.textContent = 'Using manual FPS (chronograph)';
+  }
+
+  // Arrow weight helper
   function getArrowWeight() {
     const pointWeight = parseFloat(document.getElementById('pointWeight').value) || 125;
 
@@ -419,13 +554,11 @@
 
       const advTotal = bare + nock + wrap + vanes + insert + glue;
 
-      // Keep display in sync
       document.getElementById('arrowTotal').textContent = advTotal.toFixed(1);
 
       return advTotal + pointWeight;
     }
 
-    // Simple mode
     return parseFloat(document.getElementById('totalArrowWeightSimple').value) || 0;
   }
 
@@ -439,19 +572,17 @@
       ['peepWeight','dloopWeight','kisserWeight','silencersWeight'].reduce((a,id)=>a+(parseFloat(document.getElementById(id).value)||0),0) :
       parseFloat(document.getElementById('stringWeightSimple').value) || 25;
 
-    // Update advanced string total
     if (document.getElementById('toggleString').checked) {
       const total = ['peepWeight','dloopWeight','kisserWeight','silencersWeight'].reduce((a,id)=>a+(parseFloat(document.getElementById(id).value)||0),0);
       document.getElementById('stringTotal').textContent = total;
     }
 
-    // Actual FPS – stays unless Recalculate clicked
-    const fpsInput = document.getElementById('actualFPS');
     let fps = parseFloat(fpsInput.value);
     if (recalcFPS || isNaN(fps) || fps <= 0) {
       const base = ibo * Math.sqrt((450 + stringW) / (450 + weight + stringW));
       fps = base * 0.94;
       fpsInput.value = fps.toFixed(1);
+      markFpsEstimated();
     }
 
     const foc = ((balance - len/2) / len) * 100;
@@ -459,9 +590,30 @@
     document.getElementById('balanceMarker').setAttribute('cx', 50 + (balance/len)*400);
     document.getElementById('balanceText').textContent = balance.toFixed(2) + '"';
 
-    document.getElementById('gppValue').textContent = (weight/dw).toFixed(1);
-    document.getElementById('gpiValue').textContent = (weight/len).toFixed(1);
+    const gpp = weight / dw;
+    const gpi = weight / len;
+    document.getElementById('gppValue').textContent = gpp.toFixed(1);
+    document.getElementById('gpiValue').textContent = gpi.toFixed(1);
     document.getElementById('finalArrowWeight').textContent = weight.toFixed(1) + ' gr';
+
+    // GPP hint
+    const gppHint = document.getElementById('gppHint');
+    let gppText = '';
+    let gppColor = 'var(--light)';
+
+    if (gpp < 5) {
+      gppText = 'Very light – often not recommended for most hunting bows.';
+      gppColor = 'var(--danger)';
+    } else if (gpp < 6) {
+      gppText = 'Light arrow – flatter trajectory, more 3D/target style.';
+    } else if (gpp <= 8) {
+      gppText = 'Solid all-around hunting weight.';
+      gppColor = 'var(--success)';
+    } else {
+      gppText = 'Heavy arrow – penetration-focused setups.';
+    }
+    gppHint.textContent = gppText;
+    gppHint.style.color = gppColor;
 
     const launchKE = (weight * fps * fps) / 450240;
     const launchMom = (weight * fps) / 225400;
@@ -478,55 +630,48 @@
     document.getElementById('impactKE').textContent = impactKE.toFixed(1);
     document.getElementById('impactMom').textContent = impactMom.toFixed(3);
     document.getElementById('timeToImpact').textContent = time.toFixed(2);
-    document.getElementById('velocityLabel').textContent = currentV.toFixed(0) + ' FPS';
 
-    // Velocity curve
-    const path = [];
-    for (let d = 0; d <= 120; d += 10) {
-      const v = fps * Math.exp(-d/300);
-      const x = 20 + (d/120)*460;
-      const y = 180 - (v/fps)*150;
-      path.push(d===0 ? `M ${x} ${y}` : `L ${x} ${y}`);
-    }
-    document.getElementById('velocityPath').setAttribute('d', path.join(''));
-    document.getElementById('velocityMarker').setAttribute('cx', 20 + (distYards/120)*460);
-    document.getElementById('velocityMarker').setAttribute('cy', 180 - (currentV/fps)*150);
+    // Velocity card
+    document.getElementById('velocityDistanceLabel').textContent = distYards;
+    document.getElementById('velocityAtDistance').textContent = currentV.toFixed(0);
 
-    // Trajectory arc – stops at slider distance
-    const traj = [];
-    let peak = 0;
+    // --- New: closed-form projectile peak height ---
+    // Use feet for distance and ft/s for speed
+    const g = 32.174;              // ft/s^2
+    const v0 = fps;                // ft/s
+    const R_ft = distYards * 3;    // yards -> feet
+
+    let peakHeightFt = 0;
     let peakYard = 0;
 
-    const launchAngleDeg = 3.5;
-    const launchAngleRad = launchAngleDeg * Math.PI / 180;
-    const v0x = fps * Math.cos(launchAngleRad);
-    const v0y = fps * Math.sin(launchAngleRad);
+    if (v0 > 0 && R_ft > 0) {
+      // Range equation: R = v0^2 * sin(2θ) / g
+      // => sin(2θ) = R * g / v0^2
+      let sin2theta = (R_ft * g) / (v0 * v0);
 
-    const maxD = distYards;
+      if (sin2theta > 0) {
+        // Clamp to [0,1] in case of tiny numeric overshoot
+        sin2theta = Math.min(1, Math.max(0, sin2theta));
 
-    for (let d = 0; d <= maxD; d += 5) {
-      const t = d / v0x;
-      const y = v0y * t - 16.1 * t * t;
-      if (y > peak) {
-        peak = y;
-        peakYard = d;
+        const theta = 0.5 * Math.asin(sin2theta); // radians
+        const sinTheta = Math.sin(theta);
+
+        // H_max = v0^2 * sin^2(θ) / (2g)
+        peakHeightFt = (v0 * v0 * sinTheta * sinTheta) / (2 * g);
+
+        // For a symmetric trajectory (start & end at same height),
+        // the apex is halfway to the target.
+        peakYard = distYards / 2;
       }
-      const x = 20 + (d / 120) * 460;
-      const sy = Math.max(0, 140 - y * 6);
-      traj.push(d === 0 ? `M ${x} 140` : `L ${x} ${sy}`);
     }
 
-    document.getElementById('trajPath').setAttribute('d', traj.join(''));
+    document.getElementById('peakHeightValue').textContent = peakHeightFt.toFixed(1);
+    document.getElementById('peakDistanceValue').textContent = peakYard.toFixed(0);
 
-    const currentT = distYards / v0x;
-    const currentY = v0y * currentT - 16.1 * currentT * currentT;
-    const markerX = 20 + (distYards / 120) * 460;
-    const markerY = Math.max(0, 140 - currentY * 6);
-    document.getElementById('trajMarker').setAttribute('cx', markerX);
-    document.getElementById('trajMarker').setAttribute('cy', markerY);
-
-    const peakText = `Peak: ${peak.toFixed(1)} ft @ ${peakYard} yd`;
-    document.getElementById('peakLabel').textContent = peakText;
+    // Game effectiveness header
+    document.getElementById('gameDistanceDisplay').textContent = distYards;
+    document.getElementById('gameKE').textContent = impactKE.toFixed(1);
+    document.getElementById('gameMom').textContent = impactMom.toFixed(3);
 
     // Arrow Weight Composition
     const isAdv = document.getElementById('toggleArrow').checked;
@@ -535,7 +680,8 @@
       shaft = parseFloat(document.getElementById('bareShaft').value) || 0;
       const nock = parseFloat(document.getElementById('nockWeight').value) || 0;
       const wrap = parseFloat(document.getElementById('wrapWeight').value) || 0;
-      const vanes = (parseFloat(document.getElementById('vaneWeightEach').value) || 0) * (parseFloat(document.getElementById('vaneCount').value) || 0);
+      const vanes = (parseFloat(document.getElementById('vaneWeightEach').value) || 0) *
+                    (parseFloat(document.getElementById('vaneCount').value) || 0);
       const insert = parseFloat(document.getElementById('insertWeight').value) || 0;
       const glue = parseFloat(document.getElementById('glueWeight').value) || 0;
       comp = nock + wrap + vanes + insert + glue;
@@ -563,16 +709,17 @@
 
     // Game Effectiveness
     const games = [
-      { name: "Class 1: Small / Thin-skinned", ke: 25, mom: 0.30, id: "smallGameStatus" },
-      { name: "Class 2: Medium Game",          ke: 50, mom: 0.45, id: "deerStatus" },
-      { name: "Class 3: Large / Tough Game",   ke: 65, mom: 0.60, id: "elkStatus" },
-      { name: "Class 4: Dangerous / Extreme",  ke: 85, mom: 0.75, id: "mooseStatus" }
+      { ke: 25, mom: 0.30, id: "smallGameStatus" },
+      { ke: 50, mom: 0.45, id: "deerStatus" },
+      { ke: 65, mom: 0.60, id: "elkStatus" },
+      { ke: 85, mom: 0.75, id: "mooseStatus" }
     ];
 
     games.forEach(g => {
       const ok = impactKE >= g.ke && impactMom >= g.mom;
-      document.getElementById(g.id).textContent = ok ? "Send it" : "Don’t";
-      document.getElementById(g.id).style.color = ok ? "var(--success)" : "var(--danger)";
+      const el = document.getElementById(g.id);
+      el.textContent = ok ? "Send it" : "Don’t";
+      el.style.color = ok ? "var(--success)" : "var(--danger)";
     });
 
     // Build Summary
@@ -583,10 +730,10 @@
       "IBO Speed": ibo + " FPS",
       "Arrow Length": len.toFixed(2) + " in",
       "Total Arrow Weight": weight.toFixed(1) + " gr",
-      "Point Weight": point.toFixed(0) + " gr",
+      "Point Weight": (parseFloat(document.getElementById('pointWeight').value) || 125).toFixed(0) + " gr",
       "FOC": foc.toFixed(1) + "%",
-      "GPP": (weight/dw).toFixed(1),
-      "GPI": (weight/len).toFixed(1),
+      "GPP": gpp.toFixed(1),
+      "GPI": gpi.toFixed(1),
       "Launch FPS": fps.toFixed(1),
       "Launch KE": launchKE.toFixed(1) + " ft-lbs",
       "Launch Momentum": launchMom.toFixed(3) + " slug·ft/s",
@@ -597,8 +744,8 @@
       "Time to Impact": time.toFixed(2) + " s"
     };
 
-    document.getElementById('summaryTable').innerHTML = '<table>' + 
-      Object.entries(summary).map(([k,v]) => 
+    document.getElementById('summaryTable').innerHTML = '<table>' +
+      Object.entries(summary).map(([k,v]) =>
         `<tr><td style="font-weight:600;padding:0.5rem;">${k}</td><td style="text-align:right;padding:0.5rem;">${v}</td></tr>`
       ).join('') + '</table>';
   }
@@ -616,19 +763,20 @@
       `Launch KE: ${document.getElementById('keValue').textContent} ft-lbs\n` +
       `Impact KE @ ${document.getElementById('distanceValue').textContent}yd: ${document.getElementById('impactKE').textContent} ft-lbs\n` +
       `Time to Impact: ${document.getElementById('timeToImpact').textContent}s`;
-    navigator.clipboard.writeText(text).then(()=>alert('Copied to clipboard!'));
+    navigator.clipboard.writeText(text).then(()=>showToast('Summary copied'));
   };
 
   // Distance slider
-  document.getElementById('distanceSlider').oninput = e => { 
-    document.getElementById('distanceValue').textContent = e.target.value; 
-    calculateEverything(); 
+  document.getElementById('distanceSlider').oninput = e => {
+    document.getElementById('distanceValue').textContent = e.target.value;
+    calculateEverything();
   };
 
-  // All inputs trigger calculation (FPS stays unless actively edited)
+  // All inputs trigger calculation (FPS stays manual if you're actively editing it)
   document.querySelectorAll('input,select,textarea').forEach(el => {
     el.addEventListener('input', () => {
       if (document.activeElement.id === 'actualFPS') {
+        markFpsChrono();
         calculateEverything(false);
       } else {
         calculateEverything();
@@ -636,8 +784,10 @@
     });
   });
 
+  // Init
   refreshBuilds();
-  calculateEverything();
+  updateArrowWeightMode();
+  calculateEverything(true);
 </script>
 </body>
 </html>
