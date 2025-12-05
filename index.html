@@ -123,7 +123,7 @@
           <div><label>Draw Weight (lbs)</label><input type="number" id="drawWeight" value="70" step="0.5"></div>
           <div><label>Draw Length (in)</label><input type="number" id="drawLength" value="29" step="0.5"></div>
           <div><label>String Add-ons (grains)</label><input type="number" id="stringWeightSimple" value="0" step="0.5"></div>
-          <div><label>Application</label><select id="application" step="0.5"><option>Target / 3D</option><option selected>Hunting</option><option>Other</option></select></div>
+          <div><label>Application</label><select id="application"><option>Target / 3D</option><option selected>Hunting</option><option>Other</option></select></div>
         </div>
 
         <div class="flex" style="margin-top:1rem;justify-content:space-between;">
@@ -255,7 +255,7 @@
         </div>
       </div>
 
-      <!-- Game Effectiveness — NEW BEAUTIFUL CARD STYLE -->
+      <!-- Game Effectiveness -->
       <div class="card">
         <div class="card-header"><h2>Game Effectiveness</h2></div>
         <div class="grid-2" style="text-align:center; gap:1rem;">
@@ -321,17 +321,30 @@
     });
   }
 
-  document.getElementById('toggleString').onchange = e => document.getElementById('stringAdvanced').style.display = e.target.checked ? 'block' : 'none';
+  // Show/hide advanced sections
+  document.getElementById('toggleString').onchange = e => {
+    document.getElementById('stringAdvanced').style.display = e.target.checked ? 'block' : 'none';
+    calculateEverything();
+  };
+
   document.getElementById('toggleArrow').onchange = e => {
     document.getElementById('arrowAdvanced').style.display = e.target.checked ? 'block' : 'none';
     calculateEverything();
   };
 
+  // Save build (with checkbox support)
   document.getElementById('saveBuild').onclick = () => {
     const n = document.getElementById('buildName').value.trim();
     if (!n) return alert('Name required');
     const data = {};
-    document.querySelectorAll('input,select,textarea').forEach(el => data[el.id] = el.value);
+    document.querySelectorAll('input,select,textarea').forEach(el => {
+      if (!el.id) return;
+      if (el.type === 'checkbox') {
+        data[el.id] = { type: 'checkbox', checked: el.checked };
+      } else {
+        data[el.id] = { type: 'value', value: el.value };
+      }
+    });
     const all = JSON.parse(localStorage.getItem('atc') || '{}');
     all[n] = data;
     localStorage.setItem('atc', JSON.stringify(all));
@@ -339,12 +352,36 @@
     refreshBuilds();
   };
 
+  // Load build (handles new structured format + legacy simple values)
   loadSelect.onchange = () => {
     const n = loadSelect.value;
     if (!n) return;
     const all = JSON.parse(localStorage.getItem('atc') || '{}');
     const d = all[n];
-    Object.keys(d).forEach(k => { const el = document.getElementById(k); if (el) el.value = d[k]; });
+    if (!d) return;
+
+    Object.keys(d).forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+
+      const stored = d[id];
+
+      if (stored && typeof stored === 'object' && 'type' in stored) {
+        if (stored.type === 'checkbox') {
+          el.checked = !!stored.checked;
+          el.dispatchEvent(new Event('change'));
+        } else {
+          el.value = stored.value ?? '';
+        }
+      } else {
+        // Legacy: simple value
+        if (el.type !== 'checkbox') {
+          el.value = stored ?? '';
+        }
+        // For legacy checkbox values we just leave default checked state
+      }
+    });
+
     calculateEverything();
   };
 
@@ -357,25 +394,39 @@
     refreshBuilds();
   };
 
-  // Suggest Name
+  // Suggest Name (fixed template)
   document.getElementById('suggestName').onclick = () => {
     const d = new Date().toISOString().slice(0,10);
     const b = document.getElementById('bowModel').value.trim() || 'Bow';
     const dw = document.getElementById('drawWeight').value || '70';
     const arrow = document.getElementById('arrowName').value.trim() || 'Arrow';
     const weight = getArrowWeight().toFixed(0);
-    document.getElementById('buildName').value = `${d}-${s}-${b}-${dw}lb-${arrow}-${weight}gr`;
+    document.getElementById('buildName').value = `${d}-${b}-${dw}lb-${arrow}-${weight}gr`;
   };
 
+  // Arrow weight helper (now computes advanced total itself)
   function getArrowWeight() {
     const pointWeight = parseFloat(document.getElementById('pointWeight').value) || 125;
 
     if (document.getElementById('toggleArrow').checked) {
-      const advTotal = parseFloat(document.getElementById('arrowTotal').textContent) || 0;
+      const bare   = parseFloat(document.getElementById('bareShaft').value)        || 0;
+      const nock   = parseFloat(document.getElementById('nockWeight').value)       || 0;
+      const wrap   = parseFloat(document.getElementById('wrapWeight').value)       || 0;
+      const vanes  = (parseFloat(document.getElementById('vaneWeightEach').value)  || 0) *
+                     (parseFloat(document.getElementById('vaneCount').value)       || 0);
+      const insert = parseFloat(document.getElementById('insertWeight').value)     || 0;
+      const glue   = parseFloat(document.getElementById('glueWeight').value)       || 0;
+
+      const advTotal = bare + nock + wrap + vanes + insert + glue;
+
+      // Keep display in sync
+      document.getElementById('arrowTotal').textContent = advTotal.toFixed(1);
+
       return advTotal + pointWeight;
-    } else {
-      return parseFloat(document.getElementById('totalArrowWeightSimple').value) || 0;
     }
+
+    // Simple mode
+    return parseFloat(document.getElementById('totalArrowWeightSimple').value) || 0;
   }
 
   function calculateEverything(recalcFPS = false) {
@@ -388,22 +439,13 @@
       ['peepWeight','dloopWeight','kisserWeight','silencersWeight'].reduce((a,id)=>a+(parseFloat(document.getElementById(id).value)||0),0) :
       parseFloat(document.getElementById('stringWeightSimple').value) || 25;
 
-    // Update advanced totals
+    // Update advanced string total
     if (document.getElementById('toggleString').checked) {
       const total = ['peepWeight','dloopWeight','kisserWeight','silencersWeight'].reduce((a,id)=>a+(parseFloat(document.getElementById(id).value)||0),0);
       document.getElementById('stringTotal').textContent = total;
     }
-    if (document.getElementById('toggleArrow').checked) {
-      const total = parseFloat(document.getElementById('bareShaft').value||0) +
-        parseFloat(document.getElementById('nockWeight').value||0) +
-        parseFloat(document.getElementById('wrapWeight').value||0) +
-        (parseFloat(document.getElementById('vaneWeightEach').value||0) * parseFloat(document.getElementById('vaneCount').value||0)) +
-        parseFloat(document.getElementById('insertWeight').value||0) +
-        parseFloat(document.getElementById('glueWeight').value||0);
-      document.getElementById('arrowTotal').textContent = total.toFixed(1);
-    }
 
-    // Actual FPS – stays forever unless Recalculate clicked
+    // Actual FPS – stays unless Recalculate clicked
     const fpsInput = document.getElementById('actualFPS');
     let fps = parseFloat(fpsInput.value);
     if (recalcFPS || isNaN(fps) || fps <= 0) {
@@ -450,7 +492,7 @@
     document.getElementById('velocityMarker').setAttribute('cx', 20 + (distYards/120)*460);
     document.getElementById('velocityMarker').setAttribute('cy', 180 - (currentV/fps)*150);
 
-    // Trajectory arc – FINAL: Stops at slider distance
+    // Trajectory arc – stops at slider distance
     const traj = [];
     let peak = 0;
     let peakYard = 0;
@@ -520,12 +562,11 @@
     document.getElementById('compLabel').textContent = `Comp.: ${((comp/weight)*100).toFixed(0)}%`;
 
     // Game Effectiveness
-    // Game Effectiveness — NEW CARD STYLE
     const games = [
-      { name: "Class 1: Small / Thin-skinned",     ke: 25, mom: 0.30, id: "smallGameStatus" },
-      { name: "Class 2: Medium Game", ke: 50, mom: 0.45, id: "deerStatus" },
-      { name: "Class 3: Large / Tough Game",            ke: 65, mom: 0.60, id: "elkStatus" },
-      { name: "Class 4: Dangerous / Extreme",   ke: 85, mom: 0.75, id: "mooseStatus" }
+      { name: "Class 1: Small / Thin-skinned", ke: 25, mom: 0.30, id: "smallGameStatus" },
+      { name: "Class 2: Medium Game",          ke: 50, mom: 0.45, id: "deerStatus" },
+      { name: "Class 3: Large / Tough Game",   ke: 65, mom: 0.60, id: "elkStatus" },
+      { name: "Class 4: Dangerous / Extreme",  ke: 85, mom: 0.75, id: "mooseStatus" }
     ];
 
     games.forEach(g => {
@@ -584,7 +625,7 @@
     calculateEverything(); 
   };
 
-  // All inputs trigger calculation (FPS stays safe)
+  // All inputs trigger calculation (FPS stays unless actively edited)
   document.querySelectorAll('input,select,textarea').forEach(el => {
     el.addEventListener('input', () => {
       if (document.activeElement.id === 'actualFPS') {
