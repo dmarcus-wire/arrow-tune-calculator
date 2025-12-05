@@ -130,19 +130,15 @@
     input:checked + .slider:before { transform:translateX(26px); }
 
     .info-btn {
-      background:none;
-      border:none;
-      font-size:1.1rem;
-      cursor:help;
-      color:var(--light);
-      padding:0;
-      width:1.4rem;
-      height:1.4rem;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
+      font-size: 1.8rem;       /* bigger, stands out */
+      color: var(--primary);   /* bright blue */
+      font-weight: 900;        /* bold */
+      opacity: 0.9;
     }
-    .info-btn:hover { color:var(--primary); }
+    .info-btn:hover {
+      opacity: 1;
+      transform: scale(1.2);   /* nice hover pop */
+    }
 
     .advanced {
       display:none;
@@ -1428,8 +1424,6 @@
     } else {
       simpleTotal.readOnly = false;
       simpleTotal.style.opacity = 1;
-      hint.textContent =
-        'When Advanced Components is off, this is the full arrow weight (shaft + point + components).';
     }
   }
 
@@ -1626,7 +1620,7 @@
       focHint.textContent = 'Enter arrow length, balance point, and weight to compute FOC.';
       focHint.style.color = 'var(--light)';
     } else if (foc >= 12 && foc <= 18) {
-      focHint.textContent = 'In the common ideal range for hunting (12–18%).';
+      focHint.textContent = 'Ideal range for hunting.';
       focHint.style.color = 'var(--success)';
     } else if (foc < 10) {
       focHint.textContent = 'Very low FOC – may be less stable with broadheads.';
@@ -1635,7 +1629,7 @@
       focHint.textContent = 'Very high FOC – heavy front can reduce speed but increase penetration focus.';
       focHint.style.color = 'var(--warning)';
     } else {
-      focHint.textContent = 'Within a workable range; many setups run 10–20%.';
+      focHint.textContent = 'Workable range; many setups run 10–20%.';
       focHint.style.color = 'var(--light)';
     }
 
