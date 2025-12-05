@@ -1,2555 +1,525 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Arrow Tune Calculator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!--
-    Arrow Tune Calculator v1.0.10 (clean)
-    - Preserves v1.0.9 features: trajectory arc, momentum & KE, theme toggle, saved builds, suggest name, CSV
-    - Adds Add'l String Weight to bow setup and folds it into FPS estimate
-    - Actual FPS auto-estimates from IBO/ATA + draw length/weight + total arrow + string weight, but remains chrono-overridable
-    - "Furthest Shot" used for trajectory/velocity visuals
-  -->
+  <meta name="description" content="Offline arrow tuning calculator – FOC, velocity, impact KE, composition, and more." />
+  <link href="https://rsms.me/inter/inter.css" rel="stylesheet">
   <style>
-    :root {
-      --bg: #020617;
-      --bg-card: #030712;
-      --bg-soft: #0b1220;
-      --border: #1f2937;
-      --accent: #22c55e;
-      --accent-soft: rgba(34, 197, 94, 0.12);
-      --accent-strong: #16a34a;
-      --accent-warn: #f97316;
-      --accent-bad: #ef4444;
-      --text: #e5e7eb;
-      --text-muted: #9ca3af;
-      --text-soft: #6b7280;
-      --shadow-soft: 0 12px 30px rgba(15, 23, 42, 0.8);
-      --radius-lg: 18px;
-      --radius-md: 12px;
-      --radius-sm: 8px;
-      --focus-ring: 0 0 0 1px #22c55e, 0 0 0 4px rgba(34, 197, 94, 0.3);
-      --info: #38bdf8;
-    }
-
-    [data-theme="light"] {
-      --bg: #f5f3e8;
-      --bg-card: #ffffff;
-      --bg-soft: #f2eee2;
-      --border: #d4d4d4;
-      --accent: #15803d;
-      --accent-soft: rgba(21, 128, 61, 0.08);
-      --accent-strong: #16a34a;
-      --accent-warn: #ea580c;
-      --accent-bad: #b91c1c;
-      --text: #111827;
-      --text-muted: #4b5563;
-      --text-soft: #6b7280;
-      --shadow-soft: 0 10px 24px rgba(15, 23, 42, 0.2);
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, #0b1120, var(--bg));
-      color: var(--text);
-      min-height: 100vh;
-      padding: 16px;
-      transition: background 0.3s ease, color 0.3s ease;
-    }
-
-    .app-shell {
-      max-width: 1200px;
-      margin: 0 auto;
-      background:
-        radial-gradient(circle at top left, rgba(34,197,94,0.03), transparent),
-        radial-gradient(circle at bottom right, rgba(59,130,246,0.03), transparent),
-        var(--bg-card);
-      border-radius: 24px;
-      box-shadow: var(--shadow-soft);
-      padding: 20px 18px 24px;
-      border: 1px solid rgba(148,163,184,0.5);
-    }
-
-    @media (min-width: 960px) {
-      .app-shell { padding: 24px 28px 30px; }
-    }
-
-    .header-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-
-    .title-block { display: flex; flex-direction: column; gap: 4px; }
-
-    h1 {
-      margin: 0;
-      font-size: 1.4rem;
-      font-weight: 700;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .logo-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: linear-gradient(135deg, #22c55e, #a3e635);
-      box-shadow: 0 0 12px rgba(34,197,94,0.8);
-    }
-
-    .subtitle {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    .chip-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 2px;
-    }
-
-    .chip {
-      border-radius: 999px;
-      padding: 2px 10px;
-      border: 1px solid rgba(148,163,184,0.6);
-      font-size: 0.75rem;
-      color: var(--text-soft);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,64,175,0.5));
-    }
-
-    [data-theme="light"] .chip {
-      background: linear-gradient(135deg, #fefce8, #ffffff);
-    }
-
-    .version-pill {
-      font-size: 0.75rem;
-      padding: 2px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.7);
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
-
-    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-
-    .theme-toggle,
-    .btn {
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.7);
-      padding: 4px 10px;
-      font-size: 0.8rem;
-      background: linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,64,175,0.5));
-      color: var(--text);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
-    }
-
-    [data-theme="light"] .theme-toggle,
-    [data-theme="light"] .btn {
-      background: linear-gradient(135deg, #fefce8, #ffffff);
-    }
-
-    .theme-toggle:hover,
-    .btn:hover {
-      transform: translateY(-0.5px);
-      box-shadow: 0 0 0 1px rgba(148,163,184,0.7);
-    }
-
-    .btn-primary {
-      border-color: var(--accent-strong);
-      background: linear-gradient(135deg, var(--accent-strong), #22c55e);
-      color: #022c22;
-      font-weight: 600;
-    }
-
-    main {
-      display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.5fr);
-      gap: 16px;
-      margin-top: 10px;
-    }
-
-    @media (max-width: 960px) {
-      main { grid-template-columns: minmax(0, 1fr); }
-    }
-
-    .col { display: flex; flex-direction: column; gap: 12px; }
-
-    .panel {
-      border-radius: var(--radius-lg);
-      background: radial-gradient(circle at top, rgba(15,23,42,0.96), var(--bg-card));
-      border: 1px solid rgba(148,163,184,0.55);
-      padding: 12px 12px 14px;
-      box-shadow: 0 8px 18px rgba(15,23,42,0.7);
-    }
-
-    [data-theme="light"] .panel {
-      background: radial-gradient(circle at top, #fefce8, #ffffff);
-      border-color: rgba(148,163,184,0.8);
-    }
-
-    .panel-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-
-    .panel-title {
-      font-size: 1rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .panel-subtitle {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    .field-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap: 8px 10px;
-    }
-
-    @media (max-width: 720px) {
-      .field-grid { grid-template-columns: minmax(0,1fr); }
-    }
-
-    .field { display: flex; flex-direction: column; gap: 2px; }
-
-    .field-label {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      display: flex;
-      align-items: baseline;
-      gap: 4px;
-    }
-
-    .field-label .aux {
-      font-weight: 400;
-      font-size: 0.7rem;
-      color: var(--text-soft);
-    }
-
-    .field input,
-    .field textarea,
-    .field select {
-      border-radius: 10px;
-      border: 1px solid rgba(148,163,184,0.8);
-      background: rgba(15,23,42,0.85);
-      color: var(--text);
-      font-size: 0.84rem;
-      padding: 6px 8px;
-      outline: none;
-      width: 100%;
-      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s, transform 0.08s;
-    }
-
-    [data-theme="light"] .field input,
-    [data-theme="light"] .field textarea,
-    [data-theme="light"] .field select {
-      background: #ffffff;
-    }
-
-    .field input:focus,
-    .field textarea:focus,
-    .field select:focus {
-      border-color: var(--accent);
-      box-shadow: var(--focus-ring);
-      transform: translateY(-0.5px);
-    }
-
-    .field input[readonly] {
-      background: rgba(15,23,42,0.6);
-      color: var(--text-soft);
-    }
-
-    [data-theme="light"] .field input[readonly] {
-      background: #f9fafb;
-    }
-
-    .field textarea { min-height: 70px; resize: vertical; }
-
-    .toggle-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin: 4px 0;
-      font-size: 0.8rem;
-      color: var(--text-soft);
-    }
-
-    .toggle-row input[type=checkbox] {
-      width: 16px;
-      height: 16px;
-      cursor: pointer;
-    }
-
-    .info-icon {
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.7);
-      background: rgba(15,23,42,0.9);
-      color: var(--info);
-      width: 18px;
-      height: 18px;
-      font-size: 0.75rem;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      padding: 0;
-    }
-
-    [data-theme="light"] .info-icon { background: #ffffff; }
-
-    .info-text {
-      font-size: 0.76rem;
-      color: var(--text-soft);
-      margin-top: 4px;
-      padding: 4px 6px;
-      border-left: 2px solid rgba(148,163,184,0.7);
-      background: radial-gradient(circle at left, rgba(15,23,42,0.7), transparent);
-      border-radius: 0 10px 10px 0;
-    }
-
-    [data-theme="light"] .info-text {
-      background: radial-gradient(circle at left, #fefce8, transparent);
-    }
-
-    .info-text[hidden] { display: none; }
-
-    .chip-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 0.76rem;
-      border: 1px solid rgba(148,163,184,0.9);
-      background: radial-gradient(circle at top, rgba(15,23,42,0.95), rgba(15,23,42,0.8));
-      color: var(--text-soft);
-      margin-top: 4px;
-    }
-
-    [data-theme="light"] .chip-tag {
-      background: radial-gradient(circle at top, #fefce8, #ffffff);
-    }
-
-    .chip-tag.good {
-      border-color: var(--accent);
-      background: var(--accent-soft);
-      color: var(--accent-strong);
-    }
-
-    .chip-tag.warn {
-      border-color: var(--accent-warn);
-      background: rgba(249,115,22,0.12);
-      color: var(--accent-warn);
-    }
-
-    .chip-tag.bad {
-      border-color: var(--accent-bad);
-      background: rgba(239,68,68,0.12);
-      color: var(--accent-bad);
-    }
-
-    .results-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap: 8px;
-    }
-
-    @media (max-width: 720px) {
-      .results-grid { grid-template-columns: minmax(0,1fr); }
-    }
-
-    .result-pill {
-      border-radius: 12px;
-      border: 1px solid rgba(148,163,184,0.8);
-      padding: 6px 8px;
-      background: radial-gradient(circle at top, rgba(15,23,42,0.9), rgba(15,23,42,0.7));
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      font-size: 0.8rem;
-    }
-
-    [data-theme="light"] .result-pill {
-      background: radial-gradient(circle at top, #fefce8, #ffffff);
-    }
-
-    .result-label { font-size: 0.75rem; color: var(--text-soft); }
-    .result-value { font-size: 0.9rem; font-weight: 600; }
-
-    .visual-section {
-      margin-top: 8px;
-      border-radius: var(--radius-md);
-      padding: 8px 10px;
-      border: 1px solid rgba(148,163,184,0.7);
-      background: radial-gradient(circle at top, rgba(15,23,42,0.9), rgba(15,23,42,0.7));
-    }
-
-    [data-theme="light"] .visual-section {
-      background: radial-gradient(circle at top, #fefce8, #ffffff);
-    }
-
-    .visual-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 4px;
-    }
-
-    .visual-title { font-size: 0.86rem; font-weight: 700; }
-
-    .balance-bar {
-      position: relative;
-      height: 10px;
-      margin: 6px 0 3px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, rgba(37,99,235,0.3), rgba(22,163,74,0.3));
-      overflow: hidden;
-    }
-
-    .balance-mid {
-      position: absolute;
-      left: 50%;
-      top: -3px;
-      bottom: -3px;
-      width: 2px;
-      background: rgba(248,250,252,0.9);
-      opacity: 0.8;
-    }
-
-    .balance-marker {
-      position: absolute;
-      width: 4px;
-      top: -3px;
-      bottom: -3px;
-      background: #f97316;
-      border-radius: 999px;
-      box-shadow: 0 0 6px rgba(249,115,22,0.9);
-    }
-
-    .balance-labels {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.7rem;
-      color: var(--text-soft);
-      margin-top: 2px;
-    }
-
-    .gauge-bar {
-      position: relative;
-      margin: 6px 0 2px;
-      height: 14px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, rgba(148,163,184,0.3), rgba(148,163,184,0.6));
-      overflow: hidden;
-    }
-
-    .gauge-range {
-      position: absolute;
-      left: 45%;
-      width: 25%;
-      top: 0;
-      bottom: 0;
-      background: linear-gradient(90deg, rgba(34,197,94,0.3), rgba(22,163,74,0.7));
-    }
-
-    .gauge-marker {
-      position: absolute;
-      top: -3px;
-      bottom: -3px;
-      width: 2px;
-      background: #22c55e;
-      box-shadow: 0 0 6px rgba(34,197,94,0.9);
-    }
-
-    .gauge-axis-labels {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.7rem;
-      color: var(--text-soft);
-      margin-top: 2px;
-    }
-
-    .weight-bar {
-      position: relative;
-      height: 16px;
-      max-width: 360px;
-      width: 100%;
-      border-radius: 999px;
-      overflow: hidden;
-      margin-top: 6px;
-      display: flex;
-    }
-
-    .weight-segment { height: 100%; }
-
-    .weight-segment.shaft {
-      background: linear-gradient(90deg, rgba(59,130,246,0.9), rgba(37,99,235,0.95));
-    }
-
-    .weight-segment.point {
-      background: linear-gradient(90deg, rgba(220,38,38,0.9), rgba(248,113,113,0.95));
-    }
-
-    .weight-segment.tail {
-      background: linear-gradient(90deg, rgba(16,185,129,0.9), rgba(52,211,153,0.95));
-    }
-
-    .weight-midline {
-      position: absolute;
-      left: 50%;
-      top: -3px;
-      bottom: -3px;
-      width: 2px;
-      background: rgba(248,250,252,0.9);
-      opacity: 0.8;
-    }
-
-    .weight-legend {
-      font-size: 0.75rem;
-      color: var(--text-soft);
-      text-align: center;
-      margin-top: 4px;
-      white-space: pre-line;
-    }
-
-    .trajectory-svg {
-      width: 100%;
-      max-width: 380px;
-      height: auto;
-      max-height: 260px;
-      display: block;
-      margin: 0 auto;
-      border-radius: 12px;
-      background: radial-gradient(circle at top, #0b1120, #020617);
-      border: 1px solid rgba(148,163,184,0.8);
-    }
-
-    [data-theme="light"] .trajectory-svg {
-      background: radial-gradient(circle at top, #eef2ff, #ffffff);
-    }
-
-    .velocity-svg {
-      width: 100%;
-      max-width: 380px;
-      height: auto;
-      max-height: 180px;
-      display: block;
-      margin: 0 auto;
-      border-radius: 12px;
-      background: radial-gradient(circle at top, #020617, #020617);
-      border: 1px solid rgba(148,163,184,0.8);
-    }
-
-    [data-theme="light"] .velocity-svg {
-      background: radial-gradient(circle at top, #eef2ff, #ffffff);
-    }
-
-    .data-table-wrap {
-      margin-top: 8px;
-      max-height: 260px;
-      overflow: auto;
-      border-radius: var(--radius-md);
-      border: 1px solid rgba(148,163,184,0.7);
-      background: radial-gradient(circle at top, rgba(15,23,42,0.98), rgba(15,23,42,0.9));
-    }
-
-    [data-theme="light"] .data-table-wrap {
-      background: radial-gradient(circle at top, #fefce8, #ffffff);
-    }
-
-    table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
-
-    thead {
-      position: sticky;
-      top: 0;
-      background: rgba(15,23,42,0.95);
-      z-index: 1;
-    }
-
-    [data-theme="light"] thead { background: #fef3c7; }
-
-    th, td {
-      padding: 4px 6px;
-      border-bottom: 1px solid rgba(148,163,184,0.5);
-      text-align: left;
-      white-space: nowrap;
-    }
-
-    tbody tr:nth-child(odd) { background: rgba(15,23,42,0.7); }
-    tbody tr:nth-child(even){ background: rgba(15,23,42,0.85); }
-
-    [data-theme="light"] tbody tr:nth-child(odd) { background: rgba(254,249,195,0.5); }
-    [data-theme="light"] tbody tr:nth-child(even){ background: #ffffff; }
-
-    .type-badge {
-      display: inline-block;
-      padding: 1px 5px;
-      border-radius: 999px;
-      font-size: 0.7rem;
-      border: 1px solid rgba(148,163,184,0.7);
-      color: var(--text-soft);
-    }
-
-    .type-badge.input {
-      border-color: rgba(59,130,246,0.9);
-      color: #60a5fa;
-    }
-
-    .type-badge.calc {
-      border-color: var(--accent-strong);
-      color: var(--accent-strong);
-    }
-
-    .small { font-size: 0.72rem; }
+    :root { --bg:#f8fafc; --card:#ffffff; --text:#1e293b; --light:#64748b; --border:#e2e8f0; --primary:#0ea5e9; --success:#22c55e; --warning:#f59e0b; --danger:#ef4444; }
+    .dark { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --light:#94a3b8; --border:#334155; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); padding:1rem; min-height:100vh; line-height:1.6; }
+    .container { max-width:1400px; margin:auto; display:grid; gap:1.5rem; }
+    @media (min-width:1024px) { .container { grid-template-columns:1fr 1fr; } }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.5rem; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+    .card-header { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:0.75rem; margin-bottom:1rem; font-size:1.3rem; font-weight:600; }
+    h1,h2,h3,h4 { color:var(--text); }
+    label { display:block; margin:1rem 0 0.4rem; font-weight:600; font-size:0.95rem; }
+    input, select, textarea { width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:8px; background:var(--card); color:var(--text); font-size:1rem; }
+    input:focus, select:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(14,165,233,0.2); }
+    button { padding:0.75rem 1.2rem; border:none; border-radius:8px; background:var(--primary); color:white; font-weight:600; cursor:pointer; }
+    .btn-small { padding:0.5rem 0.9rem; font-size:0.9rem; }
+    .btn-refresh { background:var(--warning); }
+    .flex { display:flex; gap:1rem; align-items:center; }
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    .toggle-switch { position:relative; display:inline-block; width:56px; height:30px; }
+    .toggle-switch input { opacity:0; width:0; height:0; }
+    .slider { position:absolute; cursor:pointer; inset:0; background:#cbd5e1; border-radius:34px; transition:.3s; }
+    .slider:before { position:absolute; content:""; height:24px; width:24px; left:3px; bottom:3px; background:white; border-radius:50%; transition:.3s; }
+    input:checked + .slider { background:var(--primary); }
+    input:checked + .slider:before { transform:translateX(26px); }
+    .info-btn { background:none; border:none; font-size:1.4rem; cursor:help; color:var(--light); }
+    .info-btn:hover { color:var(--primary); }
+    .advanced { display:none; margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; margin-top:0.5rem; font-size:0.95rem; }
+    th, td { padding:0.6rem; text-align:left; border-bottom:1px solid var(--border); }
+    th { background:var(--bg); font-weight:600; }
+    .patreon-btn { display:block; margin:3rem auto; background:#ff424d; color:white; text-decoration:none; padding:1rem 2rem; border-radius:12px; font-weight:bold; text-align:center; max-width:300px; }
+    .light-only { display: block; }
+    .dark-only { display: none; }
+    .dark .light-only { display: none; }
+    .dark .dark-only { display: block; }
   </style>
 </head>
-<body data-theme="dark">
-  <div class="app-shell">
-    <header class="header-row">
-      <div class="title-block">
-        <h1><span class="logo-dot"></span>Arrow Tune Calculator</h1>
-        <div class="subtitle">Visual, data-rich arrow tuning for bowhunters &amp; target archers.</div>
-        <div class="chip-row">
-          <div class="chip">Live FOC, GPP, GPI, momentum &amp; KE</div>
-          <div class="chip">🏹 Works offline in your browser</div>
-          <span class="version-pill">v1.0.10 · 2025-12-03</span>
+<body>
+  <div class="container">
+    <!-- LEFT: INPUTS -->
+    <div id="inputs-column">
+      <div class="card">
+        <div class="card-header">
+          <h1>Arrow Tune Calculator</h1>
+          <div class="flex">
+            <span style="color:var(--light);">Light</span>
+            <label class="toggle-switch"><input type="checkbox" id="darkModeToggle"><span class="slider"></span></label>
+            <span style="color:var(--light);">Dark</span>
+          </div>
+        </div>
+        <p style="color:var(--light);">Offline • Mobile-friendly • Live calculations</p>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h2>Manage Builds</h2><button class="info-btn" title="Save and load your setups">i</button></div>
+        <label>Build Name</label>
+        <div class="flex"><input type="text" id="buildName" placeholder="e.g. 2025-John-Hoyt70"><button class="btn-small" id="suggestName">Suggest</button></div>
+        <div class="flex" style="margin-top:1rem;gap:0.5rem;flex-wrap:wrap;">
+          <button id="saveBuild">Save Build</button>
+          <select id="loadBuildSelect"><option value="">– Load Build –</option></select>
+          <button style="background:var(--danger);" id="deleteBuild">Delete</button>
         </div>
       </div>
-      <div class="toolbar">
-        <button id="themeToggle" type="button" class="theme-toggle">🌗 Theme</button>
-        <button id="saveBuildBtn" type="button" class="btn btn-primary">💾 Save build</button>
-        <button id="downloadInputsCsvBtn" type="button" class="btn">⬇️ Inputs-only CSV</button>
-        <a
-          href="https://patreon.com/ArrowTuneCalculator"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="btn"
-          style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;"
-          title="Help fund new features like AI suggestions, gear presets, and mobile enhancements."
-        >
-          ❤️ Support on Patreon
-        </a>
+
+      <!-- Bow Setup -->
+      <div class="card">
+        <div class="card-header"><h2>Bow Setup</h2><button class="info-btn" title="Your bow specs">i</button></div>
+        <label>Application</label><select id="application"><option>Target / 3D</option><option selected>Hunting</option><option>Other</option></select>
+        <label>Shooter Name</label><input type="text" id="shooterName">
+        <label>Bow Model</label><input type="text" id="bowModel">
+        <div class="grid-2">
+          <div><label>Draw Weight (lbs)</label><input type="number" id="drawWeight" value="70" step="0.5"></div>
+          <div><label>Draw Length (in)</label><input type="number" id="drawLength" value="29" step="0.25"></div>
+        </div>
+        <label>IBO Speed (FPS)</label><input type="number" id="iboRating" value="350">
+        <label>String Add-ons (grains)</label><input type="number" id="stringWeightSimple" value="25">
+        <div class="flex" style="margin-top:1rem;justify-content:space-between;">
+          <label>Advanced String Components</label>
+          <label class="toggle-switch"><input type="checkbox" id="toggleString"><span class="slider"></span></label>
+        </div>
+        <div id="stringAdvanced" class="advanced">
+          <div class="grid-2">
+            <div><label>Peep</label><input type="number" id="peepWeight" value="0" step="0.5"></div>
+            <div><label>D-Loop</label><input type="number" id="dloopWeight" value="0" step="0.5"></div>
+            <div><label>Kisser</label><input type="number" id="kisserWeight" value="0" step="0.5"></div>
+            <div><label>Silencers</label><input type="number" id="silencersWeight" value="0" step="0.5"></div>
+          </div>
+          <p style="text-align:right;font-weight:600;">Total: <span id="stringTotal">0</span> grains</p>
+        </div>
       </div>
-    </header>
 
-    <main>
-      <!-- LEFT COLUMN -->
-      <section class="col">
-
-        <!-- Saved builds -->
-        <article class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="panel-title">
-                Saved builds
-                <button type="button" class="info-icon" data-info-target="saved-builds-info">i</button>
-              </div>
-              <div class="panel-subtitle">
-                Name, save, reload, and move builds via CSV. Stored only in this browser.
-              </div>
-              <div id="saved-builds-info" class="info-text" hidden>
-                Saved builds are stored in your browser using localStorage. Use the CSV export/import
-                if you want to move setups between browsers or devices.
-              </div>
-            </div>
+      <!-- Arrow Setup -->
+      <div class="card">
+        <div class="card-header"><h2>Arrow Setup</h2><button class="info-btn" title="Measure from nock throat to end of shaft">i</button></div>
+        <label>Arrow Name</label><input type="text" id="arrowName">
+        <label>Arrow Length (in)</label><input type="number" id="arrowLength" value="28.5" step="0.01">
+        <label>Total Arrow Weight (grains)</label><input type="number" id="totalArrowWeightSimple" value="450" step="0.1">
+        <label>Point Weight (grains)</label><input type="number" id="pointWeight" value="125">
+        <label>Balance Point from Nock (in)</label><input type="number" id="balancePoint" value="18.5" step="0.01">
+        <div class="flex" style="margin-top:1rem;justify-content:space-between;">
+          <label>Advanced Arrow Components</label>
+          <label class="toggle-switch"><input type="checkbox" id="toggleArrow"><span class="slider"></span></label>
+        </div>
+        <div id="arrowAdvanced" class="advanced">
+          <div class="grid-2">
+            <div><label>Bare Shaft</label><input type="number" id="bareShaft" value="0" step="0.1"></div>
+            <div><label>Nock System</label><input type="number" id="nockWeight" value="0" step="0.1"></div>
+            <div><label>Wrap</label><input type="number" id="wrapWeight" value="0" step="0.1"></div>
+            <div><label>Vane Weight (each)</label><input type="number" id="vaneWeightEach" value="0" step="0.1"></div>
+            <div><label>Vane Count</label><input type="number" id="vaneCount" value="0" step="1"></div>
+            <div><label>Insert/Outsert</label><input type="number" id="insertWeight" value="0" step="0.5"></div>
+            <div><label>Glue / Pin Nock</label><input type="number" id="glueWeight" value="0" step="0.5"></div>
           </div>
+          <p style="text-align:right;font-weight:600;">Total: <span id="arrowTotal">0.0</span> grains</p>
+        </div>
+      </div>
 
-          <div class="field-grid">
-            <div class="field">
-              <label class="field-label" for="savedBuildName">
-                Saved build name
-                <span class="aux">(auto-suggested)</span>
-              </label>
-              <input id="savedBuildName" type="text" placeholder="2025 Hoyt RX-9 Easton 5.0 500 gr 70 lb draw">
-            </div>
-            <div class="field">
-              <label class="field-label">&nbsp;</label>
-              <button id="refreshNameBtn" type="button" class="btn" style="width:100%;">🔁 Suggest name</button>
-            </div>
+      <div class="card">
+        <div class="card-header"><h2>Notes</h2></div>
+        <textarea id="notes" rows="4" placeholder="Tuning notes, chronograph data..."></textarea>
+      </div>
+    </div>
+
+    <!-- RIGHT: OUTPUTS -->
+    <div id="outputs-column">
+      <!-- Arrow Efficiency -->
+      <div class="card">
+        <div class="card-header"><h2>Arrow Efficiency</h2></div>
+        <div class="grid-2" style="text-align:center;">
+          <div class="card">
+            <h3 style="color:var(--primary);">Actual Launch FPS</h3>
+            <input type="number" id="actualFPS" step="0.1" style="font-size:2.5rem;text-align:center;border:3px solid var(--primary);border-radius:12px;padding:0.5rem;">
+            <button class="btn-small btn-refresh" id="recalcFPS">Recalculate</button>
           </div>
+          <div class="card"><h3 style="color:var(--success);">GPP</h3><div style="font-size:2.5rem;" id="gppValue">-</div></div>
+          <div class="card"><h3 style="color:var(--warning);">GPI</h3><div style="font-size:2.5rem;" id="gpiValue">-</div></div>
+          <div class="card"><h3>Total Weight</h3><div style="font-size:2.5rem;" id="finalArrowWeight">-</div></div>
+        </div>
+      </div>
 
-          <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;" class="small">
-            <span>Saved builds:</span>
-            <select id="savedBuildsSelect" style="max-width:260px;">
-              <option value="">(none yet)</option>
-            </select>
-            <button id="loadBuildBtn" type="button" class="btn">📂 Load selected</button>
-          </div>
+      <!-- FOC -->
+      <div class="card">
+        <div class="card-header"><h2>Front of Center (FOC)</h2></div>
+        <div style="text-align:center;">
+          <div style="font-size:5rem;font-weight:bold;color:var(--primary);" id="focValue">-</div>
+          <svg width="100%" height="160" viewBox="0 0 500 160" style="max-width:500px;margin:1rem auto;border:2px solid var(--border);border-radius:12px;">
+            <rect x="50" y="70" width="400" height="20" fill="#e2e8f0" rx="10"/>
+            <circle cx="250" cy="80" r="16" fill="var(--warning)" stroke="white" stroke-width="4"/>
+            <circle id="balanceMarker" cx="250" cy="80" r="20" fill="var(--primary)" stroke="white" stroke-width="5"/>
+            <text id="balanceText" x="250" y="130" text-anchor="middle" fill="var(--primary)" font-weight="bold" font-size="20">-</text>
+            <rect x="320" y="60" width="130" height="40" fill="var(--success)" opacity="0.25" rx="15"/>
+            <text x="385" y="85" text-anchor="middle" fill="var(--success)" font-weight="bold" font-size="16">12-18% Ideal</text>
+          </svg>
+        </div>
+      </div>
 
-          <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;" class="small">
-            <span>Upload inputs CSV:</span>
-            <input id="csvUpload" type="file" accept=".csv" style="max-width:230px;">
-            <span>(uses first data row exported from this tool)</span>
-          </div>
-        </article>
+      <!-- Arrow Weight Composition -->
+      <div class="card">
+        <div class="card-header"><h2>Arrow Weight Composition</h2></div>
+        <div style="text-align:center;">
+          <svg width="100%" height="200" viewBox="0 0 500 200" style="max-width:500px;margin:1.5rem auto;border:2px solid var(--border);border-radius:12px;">
+            <rect x="50" y="90" width="400" height="20" fill="#e2e8f0" rx="10"/>
+            <rect x="50" y="90" width="0" height="20" fill="#94a3b8" rx="10" id="shaftBar"/>
+            <rect x="50" y="90" width="0" height="20" fill="#0ea5e9" rx="10" id="pointBar"/>
+            <rect x="50" y="90" width="0" height="20" fill="#22c55e" rx="10" id="compBar"/>
+            <text x="250" y="65" text-anchor="middle" fill="var(--text)" font-size="16" font-weight="600">Arrow Weight Composition</text>
+            <text x="150" y="135" text-anchor="middle" fill="#1e293b" class="light-only" font-weight="bold" font-size="15" id="shaftLabel">Shaft: 0%</text>
+            <text x="250" y="135" text-anchor="middle" fill="#1e293b" class="light-only" font-weight="bold" font-size="15" id="pointLabel">Point: 0%</text>
+            <text x="350" y="135" text-anchor="middle" fill="#1e293b" class="light-only" font-weight="bold" font-size="15" id="compLabel">Components: 0%</text>
+            <text x="150" y="135" text-anchor="middle" fill="#e2e8f0" class="dark-only" font-weight="bold" font-size="15" id="shaftLabel-dark">Shaft: 0%</text>
+            <text x="250" y="135" text-anchor="middle" fill="#e2e8f0" class="dark-only" font-weight="bold" font-size="15" id="pointLabel-dark">Point: 0%</text>
+            <text x="350" y="135" text-anchor="middle" fill="#e2e8f0" class="dark-only" font-weight="bold" font-size="15" id="compLabel-dark">Components: 0%</text>
+          </svg>
+        </div>
+      </div>
 
-        <!-- Bow -->
-        <article class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="panel-title">
-                Bow
-                <button type="button" class="info-icon" data-info-target="bow-info">i</button>
-              </div>
-              <div id="bow-info" class="info-text" hidden>
-                Basic bow setup so we can relate arrow weight to draw weight and estimate speed, KE, and efficiency.
-              </div>
-            </div>
-          </div>
-          <div class="field-grid">
-            <div class="field">
-              <label class="field-label" for="bowModel">Bow model &amp; year
-                <span class="aux">(e.g. 2025 Hoyt RX-9)</span>
-              </label>
-              <input id="bowModel" type="text" placeholder="2025 Hoyt RX-9">
-            </div>
-            <div class="field">
-              <label class="field-label" for="shooterName">Shooter name
-                <span class="aux">(optional)</span>
-              </label>
-              <input id="shooterName" type="text" placeholder="Shooter">
-            </div>
-            <div class="field">
-              <label class="field-label" for="drawWeight">Draw weight (lb)
-                <span class="aux">Rule: ~15–20 fps per 10 lb change</span>
-              </label>
-              <input id="drawWeight" type="number" min="10" max="100" step="0.5" value="70">
-            </div>
-            <div class="field">
-              <label class="field-label" for="drawLength">Draw length (in)
-                <span class="aux">Rule: ~10 fps per inch change</span>
-              </label>
-              <input id="drawLength" type="number" min="20" max="34" step="0.25" value="28">
-            </div>
-            <div class="field">
-              <label class="field-label" for="letOffPct">Let-off (%)</label>
-              <input id="letOffPct" type="number" min="0" max="100" step="1" placeholder="80">
-            </div>
-            <div class="field">
-              <label class="field-label" for="iboRating">
-                IBO/ATA Rating (FPS)
-                <span class="aux">(manufacturer spec or chrono)</span>
-              </label>
-              <input id="iboRating" type="number" min="200" max="380" step="1" placeholder="e.g. 335">
-            </div>
-            <div class="field">
-              <label class="field-label" for="stringWeightExtra">
-                Add'l string weight (gr)
-                <span class="aux">(peep, D-loop, silencers, etc.)</span>
-              </label>
-              <input id="stringWeightExtra" type="number" min="0" max="200" step="0.5" value="0">
-            </div>
-          </div>
-        </article>
+      <!-- Velocity, Trajectory & Impact -->
+      <div class="card">
+        <div class="card-header"><h2>Velocity, Trajectory & Impact @ <span id="distanceValue">50</span> yards</h2></div>
+        <input type="range" id="distanceSlider" min="0" max="120" value="50" style="width:100%;">
+        <div style="height:200px;margin:1.5rem 0;background:var(--card);border-radius:12px;overflow:hidden;border:2px solid var(--border);">
+          <svg width="100%" height="200" id="velocityCurve">
+            <path id="velocityPath" fill="none" stroke="var(--primary)" stroke-width="5"/>
+            <circle id="velocityMarker" r="12" fill="var(--primary)"/>
+            <text id="velocityLabel" x="50%" y="50" text-anchor="middle" fill="var(--text)" font-weight="bold" font-size="22">-</text>
+          </svg>
+        </div>
+        <div style="height:160px;background:linear-gradient(to top,#87CEEB40 0%,transparent 100%);border-radius:12px;overflow:hidden;border:2px solid var(--border);">
+          <svg width="100%" height="160" id="trajectoryArc" viewBox="0 0 500 160">
+            <path id="trajPath" fill="none" stroke="#22c55e" stroke-width="5"/>
+            <circle id="trajMarker" r="10" fill="#22c55e"/>
+            <text id="peakLabel" x="250" y="40" text-anchor="middle" dominant-baseline="middle" fill="#22c55e" font-weight="bold" font-size="18">-</text>
+          </svg>
+        </div>
 
-        <!-- Arrow info -->
-        <article class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="panel-title">
-                Arrow info
-                <button type="button" class="info-icon" data-info-target="arrow-info">i</button>
-              </div>
-              <div id="arrow-info" class="info-text" hidden>
-                High-level labels so you can compare different arrow builds. Useful when saving multiple arrows or shooters.
-              </div>
-            </div>
-          </div>
-          <div class="field-grid">
-            <div class="field">
-              <label class="field-label" for="arrowName">Arrow name
-                <span class="aux">(e.g. Easton 5.0 250 spine match grade)</span>
-              </label>
-              <input id="arrowName" type="text" placeholder="Easton 5.0 250 spine match grade">
-            </div>
-            <div class="field">
-              <label class="field-label" for="arrowSpine">Arrow spine
-                <span class="aux">(e.g. 250, 300, 350)</span>
-              </label>
-              <input id="arrowSpine" type="number" min="150" max="800" step="10" placeholder="300">
-            </div>
-            <div class="field">
-              <label class="field-label" for="straightness">Straightness
-                <span class="aux">(e.g. ±0.001&quot;)</span>
-              </label>
-              <input id="straightness" type="text" placeholder="±0.001&quot;">
-            </div>
-          </div>
-        </article>
+        <div class="grid-2" style="margin-top:1rem;">
+          <div class="card text-center"><h3 style="color:var(--success);">Launch KE</h3><div style="font-size:3rem;" id="keValue">-</div><small>ft-lbs</small></div>
+          <div class="card text-center"><h3 style="color:var(--warning);">Time to Impact</h3><div style="font-size:3rem;" id="timeToImpact">-</div><small>seconds</small></div>
+          <div class="card text-center"><h3 style="color:var(--primary);">Impact KE</h3><div style="font-size:3rem;" id="impactKE">-</div><small>ft-lbs</small></div>
+          <div class="card text-center"><h3 style="color:var(--danger);">Impact Momentum</h3><div style="font-size:3rem;" id="impactMom">-</div><small>slug·ft/s</small></div>
+        </div>
+      </div>
 
-        <!-- Arrow shaft & total weight + components -->
-        <article class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="panel-title">
-                Arrow shaft &amp; total weight
-                <button type="button" class="info-icon" data-info-target="shaft-info">i</button>
-              </div>
-              <div class="panel-subtitle">
-                Arrow length and finished total arrow weight from your scale. Component details are optional.
-              </div>
-              <div id="shaft-info" class="info-text" hidden>
-                Arrow length and the finished total arrow weight from your scale. Most people only need arrow length,
-                total arrow weight, and balance point. If you enter a full component breakdown in the advanced section,
-                that total will be used instead of this field.
-              </div>
-            </div>
-          </div>
-          <div class="field-grid">
-            <div class="field">
-              <label class="field-label" for="arrowLength">Arrow length (in)
-                <span class="aux">nock throat to end of shaft (excluding point)</span>
-              </label>
-              <input id="arrowLength" type="number" min="20" max="36" step="0.25" value="28.25">
-            </div>
-            <div class="field">
-              <label class="field-label" for="totalArrowWeight">Total arrow weight (gr)
-                <span class="aux">finished arrow on scale; rule: +5 gr ≈ −1–1.5 fps</span>
-              </label>
-              <input id="totalArrowWeight" type="number" min="200" max="900" step="0.1" value="500">
-            </div>
-            <div class="field">
-              <label class="field-label" for="balancePoint">Balance point (in from nock)
-                <span class="aux">(measure to balance point)</span>
-              </label>
-              <input id="balancePoint" type="number" min="10" max="36" step="0.01" value="18.5">
-            </div>
-          </div>
+      <div class="card">
+        <div class="card-header"><h2>Game Effectiveness</h2></div>
+        <table><thead><tr><th>Game</th><th>Min KE</th><th>Min Momentum</th><th>Status</th></tr></thead><tbody id="effectivenessTable"></tbody></table>
+      </div>
 
-          <div class="toggle-row">
-            <input id="showComponents" type="checkbox">
-            <label for="showComponents">Show advanced component breakdown</label>
-          </div>
+      <div class="card">
+        <div class="card-header"><h2>Build Summary</h2><button class="btn-small" id="copySummary">Copy</button></div>
+        <div id="summaryTable" style="font-size:1rem;"></div>
+      </div>
+    </div>
+  </div>
 
-          <div id="componentsSection" class="panel" style="margin-top:6px; padding:8px 10px; display:none;">
-            <div class="panel-header" style="margin-bottom:4px;">
-              <div>
-                <div class="panel-title" style="font-size:0.9rem;">
-                  Components (Advanced)
-                  <button type="button" class="info-icon" data-info-target="components-info">i</button>
-                </div>
-                <div class="panel-subtitle">
-                  Detailed component weights are only needed if you track each part with a small scale.
-                </div>
-                <div id="components-info" class="info-text" hidden>
-                  Detailed component weights, including bare shaft, are only needed if you track each part with a small scale.
-                  If you complete all the main component fields (bare shaft, nock, vanes, insert, point), the calculator will
-                  use their sum as the total arrow weight. Otherwise, it will use the total arrow weight field above.
-                </div>
-              </div>
-            </div>
-            <div class="field-grid">
-              <div class="field">
-                <label class="field-label" for="bareShaftWeight">Bare shaft weight (gr)</label>
-                <input id="bareShaftWeight" type="number" min="100" max="600" step="0.1">
-              </div>
-              <div class="field">
-                <label class="field-label" for="nockWeight">Nock weight (gr)</label>
-                <input id="nockWeight" type="number" min="3" max="30" step="0.1">
-              </div>
-              <div class="field">
-                <label class="field-label" for="wrapWeight">Wrap weight (gr)
-                  <span class="aux">(optional)</span>
-                </label>
-                <input id="wrapWeight" type="number" min="0" max="40" step="0.1">
-              </div>
-              <div class="field">
-                <label class="field-label" for="vaneCount">Vane count</label>
-                <input id="vaneCount" type="number" min="0" max="6" step="1" value="3">
-              </div>
-              <div class="field">
-                <label class="field-label" for="vaneWeight">Vane weight (each, gr)</label>
-                <input id="vaneWeight" type="number" min="1" max="25" step="0.1">
-              </div>
-              <div class="field">
-                <label class="field-label" for="insertWeight">Insert / outsert / half-out (gr)</label>
-                <input id="insertWeight" type="number" min="0" max="120" step="0.1">
-              </div>
-              <div class="field">
-                <label class="field-label" for="pointWeight">Point weight (gr)</label>
-                <input id="pointWeight" type="number" min="50" max="300" step="0.1">
-              </div>
-              <div class="field">
-                <label class="field-label" for="glueWeight">Glue weight estimate (gr)
-                  <span class="aux">(5–10 gr typical)</span>
-                </label>
-                <input id="glueWeight" type="number" min="0" max="30" step="0.1">
-              </div>
-            </div>
-          </div>
-        </article>
+  <a href="https://www.patreon.com/yourname" target="_blank" class="patreon-btn">Support on Patreon</a>
 
-        <!-- Notes -->
-        <article class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="panel-title">Session notes</div>
-              <div class="panel-subtitle">
-                Optional notes about this build, tuning session, or shooting conditions.
-              </div>
-            </div>
-          </div>
-          <div class="field">
-            <label class="field-label" for="notes">Notes</label>
-            <textarea id="notes" placeholder="Chrono conditions, broadhead type, rest tuning, paper tear notes, etc."></textarea>
-          </div>
-        </article>
-      </section>
+<script>
+  // Dark mode
+  const darkToggle = document.getElementById('darkModeToggle');
+  if (localStorage.getItem('dark')==='1' || (!localStorage.getItem('dark') && matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.body.classList.add('dark'); darkToggle.checked = true;
+  }
+  darkToggle.addEventListener('change', () => {
+    document.body.classList.toggle('dark', darkToggle.checked);
+    localStorage.setItem('dark', darkToggle.checked ? '1' : '0');
+  });
 
-      <!-- RIGHT COLUMN -->
-      <section class="col">
+  // Build system
+  const loadSelect = document.getElementById('loadBuildSelect');
+  function refreshBuilds() {
+    loadSelect.innerHTML = '<option value="">– Load Build –</option>';
+    const builds = JSON.parse(localStorage.getItem('atc') || '{}');
+    Object.keys(builds).sort().forEach(n => {
+      const o = document.createElement('option'); o.value = n; o.textContent = n; loadSelect.appendChild(o);
+    });
+  }
 
-        <!-- FOC, weight distribution & bow/arrow efficiency -->
-        <article class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="panel-title">FOC, Weight Distribution &amp; Bow/Arrow Efficiency</div>
-              <div class="panel-subtitle">
-                Visualize balance point, FOC, weight split, and how well your arrow matches your bow’s stored energy.
-              </div>
-            </div>
-          </div>
+  document.getElementById('toggleString').onchange = e => document.getElementById('stringAdvanced').style.display = e.target.checked ? 'block' : 'none';
+  document.getElementById('toggleArrow').onchange = e => {
+    document.getElementById('arrowAdvanced').style.display = e.target.checked ? 'block' : 'none';
+    calculateEverything();
+  };
 
-          <!-- Arrow balance -->
-          <div class="visual-section">
-            <div class="visual-header">
-              <div class="visual-title">
-                Arrow Balance (Nock → Point)
-                <button type="button" class="info-icon" data-info-target="balance-info">i</button>
-              </div>
-            </div>
-            <div id="balance-info" class="info-text" hidden>
-              Center line = geometric center. Orange marker = your measured balance point (driven by FOC).
-            </div>
+  document.getElementById('saveBuild').onclick = () => {
+    const n = document.getElementById('buildName').value.trim();
+    if (!n) return alert('Name required');
+    const data = {};
+    document.querySelectorAll('input,select,textarea').forEach(el => data[el.id] = el.value);
+    const all = JSON.parse(localStorage.getItem('atc') || '{}');
+    all[n] = data;
+    localStorage.setItem('atc', JSON.stringify(all));
+    alert('Saved!');
+    refreshBuilds();
+  };
 
-            <div class="balance-bar">
-              <div class="balance-mid"></div>
-              <div id="balanceMarker" class="balance-marker"></div>
-            </div>
-            <div class="balance-labels">
-              <span>Nock end</span>
-              <span>Point end</span>
-            </div>
-            <div class="chip-tag" id="balanceSummaryTag">
-              Balance point: <strong><span id="balancePointOut">0.0</span>"</strong>
-            </div>
-          </div>
+  loadSelect.onchange = () => {
+    const n = loadSelect.value;
+    if (!n) return;
+    const all = JSON.parse(localStorage.getItem('atc') || '{}');
+    const d = all[n];
+    Object.keys(d).forEach(k => { const el = document.getElementById(k); if (el) el.value = d[k]; });
+    calculateEverything();
+  };
 
-          <!-- FOC gauge -->
-          <div class="visual-section" style="margin-top:8px;">
-            <div class="visual-header">
-              <div class="visual-title">
-                FOC Shift Gauge
-                <button type="button" class="info-icon" data-info-target="foc-gauge-info">i</button>
-              </div>
-            </div>
+  document.getElementById('deleteBuild').onclick = () => {
+    const n = loadSelect.value;
+    if (!n || !confirm('Delete?')) return;
+    const all = JSON.parse(localStorage.getItem('atc') || '{}');
+    delete all[n];
+    localStorage.setItem('atc', JSON.stringify(all));
+    refreshBuilds();
+  };
 
-            <div id="foc-gauge-info" class="info-text" hidden>
-              Green zone ≈ typical hunting FOC. Extreme values may affect flight stability.
-            </div>
+  // Suggest Name
+  document.getElementById('suggestName').onclick = () => {
+    const d = new Date().toISOString().slice(0,10);
+    const s = document.getElementById('shooterName').value.trim() || 'Shooter';
+    const b = document.getElementById('bowModel').value.trim() || 'Bow';
+    const dw = document.getElementById('drawWeight').value || '70';
+    const arrow = document.getElementById('arrowName').value.trim() || 'Arrow';
+    const weight = getArrowWeight().toFixed(0);
+    document.getElementById('buildName').value = `${d}-${s}-${b}-${dw}lb-${arrow}-${weight}gr`;
+  };
 
-            <div class="gauge-bar">
-              <div class="gauge-range"></div>
-              <div id="focMarker" class="gauge-marker"></div>
-            </div>
-            <div class="gauge-axis-labels">
-              <span>-10%</span><span>+30%</span>
-            </div>
+  function getArrowWeight() {
+    const pointWeight = parseFloat(document.getElementById('pointWeight').value) || 125;
 
-            <div id="focTag" class="chip-tag">
-              FOC: <strong><span id="focValue">0.0</span>%</strong>
-              <span id="focBandLabel">(no data)</span>
-            </div>
-          </div>
+    if (document.getElementById('toggleArrow').checked) {
+      const advTotal = parseFloat(document.getElementById('arrowTotal').textContent) || 0;
+      return advTotal + pointWeight;
+    } else {
+      return parseFloat(document.getElementById('totalArrowWeightSimple').value) || 0;
+    }
+  }
 
-          <!-- Weight composition -->
-          <div class="visual-section" style="margin-top:8px;">
-            <div class="visual-header">
-              <div class="visual-title">
-                Weight Composition
-                <button type="button" class="info-icon" data-info-target="weight-comp-info">i</button>
-              </div>
-            </div>
+  function calculateEverything(recalcFPS = false) {
+    const len = parseFloat(document.getElementById('arrowLength').value) || 28;
+    const weight = getArrowWeight();
+    const balance = parseFloat(document.getElementById('balancePoint').value) || 18.5;
+    const ibo = parseFloat(document.getElementById('iboRating').value) || 350;
+    const dw = parseFloat(document.getElementById('drawWeight').value) || 70;
+    const stringW = document.getElementById('toggleString').checked ?
+      ['peepWeight','dloopWeight','kisserWeight','silencersWeight'].reduce((a,id)=>a+(parseFloat(document.getElementById(id).value)||0),0) :
+      parseFloat(document.getElementById('stringWeightSimple').value) || 25;
 
-            <div id="weight-comp-info" class="info-text" hidden>
-              Shows where your arrow mass sits: shaft, point system, and tail components.
-            </div>
+    // Update advanced totals
+    if (document.getElementById('toggleString').checked) {
+      const total = ['peepWeight','dloopWeight','kisserWeight','silencersWeight'].reduce((a,id)=>a+(parseFloat(document.getElementById(id).value)||0),0);
+      document.getElementById('stringTotal').textContent = total;
+    }
+    if (document.getElementById('toggleArrow').checked) {
+      const total = parseFloat(document.getElementById('bareShaft').value||0) +
+        parseFloat(document.getElementById('nockWeight').value||0) +
+        parseFloat(document.getElementById('wrapWeight').value||0) +
+        (parseFloat(document.getElementById('vaneWeightEach').value||0) * parseFloat(document.getElementById('vaneCount').value||0)) +
+        parseFloat(document.getElementById('insertWeight').value||0) +
+        parseFloat(document.getElementById('glueWeight').value||0);
+      document.getElementById('arrowTotal').textContent = total.toFixed(1);
+    }
 
-            <div style="display:flex;flex-direction:column;align-items:center;">
-              <div class="weight-bar">
-                <div id="shaftSegment" class="weight-segment shaft"></div>
-                <div id="pointSegment" class="weight-segment point"></div>
-                <div id="tailSegment" class="weight-segment tail"></div>
-                <div class="weight-midline"></div>
-              </div>
-              <div id="weightLegend" class="weight-legend">
-                Shaft: 0.0 gr (0%)  
-                Point system: 0.0 gr (0%)  
-                Nock/wrap/vanes/glue: 0.0 gr (0%)
-              </div>
-            </div>
-          </div>
+    // Actual FPS – stays forever unless Recalculate clicked
+    const fpsInput = document.getElementById('actualFPS');
+    let fps = parseFloat(fpsInput.value);
+    if (recalcFPS || isNaN(fps) || fps <= 0) {
+      const base = ibo * Math.sqrt((450 + stringW) / (450 + weight + stringW));
+      fps = base * 0.94;
+      fpsInput.value = fps.toFixed(1);
+    }
 
-          <!-- Bow/Arrow Efficiency -->
-          <div class="visual-section" style="margin-top:8px;">
-            <div class="visual-header">
-              <div class="visual-title">
-                Bow/Arrow Efficiency Match
-                <button type="button" class="info-icon" data-info-target="efficiency-info">i</button>
-              </div>
-            </div>
+    const foc = ((balance - len/2) / len) * 100;
+    document.getElementById('focValue').textContent = foc.toFixed(1) + '%';
+    document.getElementById('balanceMarker').setAttribute('cx', 50 + (balance/len)*400);
+    document.getElementById('balanceText').textContent = balance.toFixed(2) + '"';
 
-            <div id="efficiency-info" class="info-text" hidden>
-              Compares arrow kinetic energy vs bow draw settings. Useful for matching arrow weight to bow.
-            </div>
+    document.getElementById('gppValue').textContent = (weight/dw).toFixed(1);
+    document.getElementById('gpiValue').textContent = (weight/len).toFixed(1);
+    document.getElementById('finalArrowWeight').textContent = weight.toFixed(1) + ' gr';
 
-            <div class="gauge-bar">
-              <div class="gauge-range"></div>
-              <div id="efficiencyMarker" class="gauge-marker"></div>
-            </div>
-            <div class="gauge-axis-labels">
-              <span>50%</span><span>90%+</span>
-            </div>
+    const launchKE = (weight * fps * fps) / 450240;
+    const launchMom = (weight * fps) / 225400;
+    document.getElementById('keValue').textContent = launchKE.toFixed(1);
 
-            <div id="efficiencyTag" class="chip-tag">
-              Efficiency: <strong><span id="efficiencyValue">0</span>%</strong>
-              <span id="efficiencyBandLabel">(no data)</span>
-            </div>
-          </div>
-        </article>
-        <!--- CHUNK 2 START-->
-                <!-- Velocity Drop-Off & Time-of-Flight -->
-        <article class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="panel-title">
-                Velocity Drop-Off &amp; Time-of-Flight
-                <button type="button" class="info-icon" data-info-target="velocity-info">i</button>
-              </div>
-              <div class="panel-subtitle">
-                Uses dynamic (IBO-adjusted) Actual FPS + arrow weight. Distance focus below drives both charts.
-              </div>
-              <div id="velocity-info" class="info-text" hidden>
-                The curve estimates how your arrow slows down over distance, and how long it takes to reach the target.
-                Adjust the distance slider to see updated speed and time-of-flight at that range.
-              </div>
-            </div>
-          </div>
+    const distYards = parseFloat(document.getElementById('distanceSlider').value) || 50;
+    document.getElementById('distanceValue').textContent = distYards;
 
-          <!-- Distance focus slider -->
-          <div class="visual-section">
-            <div class="visual-header">
-              <div class="visual-title">Distance Focus</div>
-            </div>
+    const currentV = fps * Math.exp(-distYards/300);
+    const impactKE = (weight * currentV * currentV) / 450240;
+    const impactMom = (weight * currentV) / 225400;
+    const time = (distYards * 3) / (fps * 0.8);
 
-            <div class="field-grid">
-              <div class="field">
-                <label class="field-label" for="velDistance">Distance (yd)</label>
-                <input id="velDistance" type="range" min="0" max="100" value="40">
-              </div>
+    document.getElementById('impactKE').textContent = impactKE.toFixed(1);
+    document.getElementById('impactMom').textContent = impactMom.toFixed(3);
+    document.getElementById('timeToImpact').textContent = time.toFixed(2);
+    document.getElementById('velocityLabel').textContent = currentV.toFixed(0) + ' FPS';
 
-              <div class="field">
-                <label class="field-label" for="velDistanceValue">&nbsp;</label>
-                <input id="velDistanceValue" type="text" value="40 yd" readonly>
-              </div>
-            </div>
-          </div>
+    // Velocity curve
+    const path = [];
+    for (let d = 0; d <= 120; d += 10) {
+      const v = fps * Math.exp(-d/300);
+      const x = 20 + (d/120)*460;
+      const y = 180 - (v/fps)*150;
+      path.push(d===0 ? `M ${x} ${y}` : `L ${x} ${y}`);
+    }
+    document.getElementById('velocityPath').setAttribute('d', path.join(''));
+    document.getElementById('velocityMarker').setAttribute('cx', 20 + (distYards/120)*460);
+    document.getElementById('velocityMarker').setAttribute('cy', 180 - (currentV/fps)*150);
 
-          <!-- Actual FPS (live auto-updating) + Furthest Shot field -->
-          <div class="visual-section" style="margin-top:8px;">
-            <div class="visual-header">
-              <div class="visual-title">Actual FPS &amp; Max Range</div>
-            </div>
+    // Trajectory arc – FINAL: Stops at slider distance
+    const traj = [];
+    let peak = 0;
+    let peakYard = 0;
 
-            <div class="field-grid">
-              <div class="field">
-                <label class="field-label" for="actualFps">
-                  Actual FPS
-                  <span class="aux">Auto-calculated from bow specs (editable)</span>
-                </label>
-                <input
-                  id="actualFps"
-                  type="number"
-                  min="140"
-                  max="380"
-                  step="1"
-                  placeholder="Calculated"
-                >
-              </div>
+    const launchAngleDeg = 3.5;
+    const launchAngleRad = launchAngleDeg * Math.PI / 180;
+    const v0x = fps * Math.cos(launchAngleRad);
+    const v0y = fps * Math.sin(launchAngleRad);
 
-              <div class="field">
-                <label class="field-label" for="arcRange">
-                  Furthest Shot (yd)
-                  <span class="aux">(sets trajectory max distance)</span>
-                </label>
-                <input id="arcRange" type="number" min="10" max="150" value="60">
-              </div>
-            </div>
-          </div>
+    const maxD = distYards;
 
-          <!-- Velocity Chart -->
-          <div class="visual-section" style="margin-top:8px;">
-            <div class="visual-header">
-              <div class="visual-title">Velocity Curve &amp; Time-of-Flight</div>
-            </div>
+    for (let d = 0; d <= maxD; d += 5) {
+      const t = d / v0x;
+      const y = v0y * t - 16.1 * t * t;
+      if (y > peak) {
+        peak = y;
+        peakYard = d;
+      }
+      const x = 20 + (d / 120) * 460;
+      const sy = Math.max(0, 140 - y * 6);
+      traj.push(d === 0 ? `M ${x} 140` : `L ${x} ${sy}`);
+    }
 
-            <svg id="velocitySvg" class="velocity-svg" viewBox="0 0 320 180"></svg>
-            <div class="small" id="velocitySummary">
-              No data yet — enter bow &amp; arrow details.
-            </div>
-          </div>
-        </article>
+    document.getElementById('trajPath').setAttribute('d', traj.join(''));
 
-        <!-- Trajectory Arc (Distance vs Height) -->
-        <article class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="panel-title">
-                Trajectory Arc (Distance vs Height)
-                <button type="button" class="info-icon" data-info-target="trajectory-info">i</button>
-              </div>
-              <div class="panel-subtitle">
-                Simple ballistic-style arc using your Actual FPS and Furthest Shot range. Focus distance highlights impact point.
-              </div>
-              <div id="trajectory-info" class="info-text" hidden>
-                This is a simplified visualization of arrow flight. It shows relative arc shape, peak height, and an
-                approximate impact point at your focus distance. Use it to compare builds, not as a sight tape.
-              </div>
-            </div>
-          </div>
+    const currentT = distYards / v0x;
+    const currentY = v0y * currentT - 16.1 * currentT * currentT;
+    const markerX = 20 + (distYards / 120) * 460;
+    const markerY = Math.max(0, 140 - currentY * 6);
+    document.getElementById('trajMarker').setAttribute('cx', markerX);
+    document.getElementById('trajMarker').setAttribute('cy', markerY);
 
-          <div class="visual-section">
-            <div class="visual-header">
-              <div class="visual-title">Arc View</div>
-            </div>
+    const peakText = `Peak: ${peak.toFixed(1)} ft @ ${peakYard} yd`;
+    document.getElementById('peakLabel').textContent = peakText;
 
-            <svg id="trajectorySvg" class="trajectory-svg" viewBox="0 0 320 210"></svg>
-            <div class="small" id="trajectorySummary">
-              No data yet — enter bow &amp; arrow details.
-            </div>
-          </div>
-        </article>
+    // Arrow Weight Composition
+    const isAdv = document.getElementById('toggleArrow').checked;
+    let shaft = 0, point = 0, comp = 0;
+    if (isAdv) {
+      shaft = parseFloat(document.getElementById('bareShaft').value) || 0;
+      const nock = parseFloat(document.getElementById('nockWeight').value) || 0;
+      const wrap = parseFloat(document.getElementById('wrapWeight').value) || 0;
+      const vanes = (parseFloat(document.getElementById('vaneWeightEach').value) || 0) * (parseFloat(document.getElementById('vaneCount').value) || 0);
+      const insert = parseFloat(document.getElementById('insertWeight').value) || 0;
+      const glue = parseFloat(document.getElementById('glueWeight').value) || 0;
+      comp = nock + wrap + vanes + insert + glue;
+      point = parseFloat(document.getElementById('pointWeight').value) || 125;
+    } else {
+      point = parseFloat(document.getElementById('pointWeight').value) || 125;
+      shaft = weight - point;
+      comp = 0;
+    }
 
-        <!-- Key Results & Metrics -->
-        <article class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="panel-title">Key Results &amp; Metrics</div>
-              <div class="panel-subtitle">
-                Live metrics from your current inputs — arrow weight, GPP/GPI, KE, momentum, and impact estimates.
-              </div>
-            </div>
-          </div>
+    const totalW = 400;
+    const shaftW = (shaft / weight) * totalW;
+    const pointW = (point / weight) * totalW;
+    const compW = (comp / weight) * totalW;
 
-          <div class="results-grid">
-            <div class="result-pill">
-              <div class="result-label">Finished arrow weight</div>
-              <div class="result-value">
-                <span id="totalArrowWeightResult">0.0</span> gr
-              </div>
-              <div class="small type-badge calc">Calc / from inputs</div>
-            </div>
+    document.getElementById('shaftBar').setAttribute('width', shaftW);
+    document.getElementById('pointBar').setAttribute('x', 50 + shaftW);
+    document.getElementById('pointBar').setAttribute('width', pointW);
+    document.getElementById('compBar').setAttribute('x', 50 + shaftW + pointW);
+    document.getElementById('compBar').setAttribute('width', compW);
 
-            <div class="result-pill">
-              <div class="result-label">Total system weight (arrow + string)</div>
-              <div class="result-value">
-                <span id="totalSystemWeightResult">0.0</span> gr
-              </div>
-              <div class="small type-badge calc">Calc</div>
-            </div>
+    document.getElementById('shaftLabel').textContent = `Shaft: ${((shaft/weight)*100).toFixed(0)}%`;
+    document.getElementById('pointLabel').textContent = `Point: ${((point/weight)*100).toFixed(0)}%`;
+    document.getElementById('compLabel').textContent = `Comp.: ${((comp/weight)*100).toFixed(0)}%`;
 
-            <div class="result-pill">
-              <div class="result-label">GPP (Grains Per Pound)</div>
-              <div class="result-value">
-                <span id="gppValue">0.0</span> gpp
-              </div>
-              <div id="gppTag" class="chip-tag small">
-                <span class="type-badge calc">Band</span>
-                <span id="gppBandLabel">(no data)</span>
-              </div>
-            </div>
+    // Game Effectiveness
+    const games = [["Small Game",25,0.30],["Deer",50,0.45],["Elk",65,0.60],["Moose",80,0.75]];
+    document.getElementById('effectivenessTable').innerHTML = games.map(g => `
+      <tr>
+        <td>${g[0]}</td>
+        <td>${g[1]}+ ft-lbs</td>
+        <td>${g[2].toFixed(2)}+ slug·ft/s</td>
+        <td style="color:${impactKE>=g[1] && impactMom>=g[2]?'var(--success)':'var(--danger)'}">
+          <strong>${impactKE.toFixed(0)} / ${impactMom.toFixed(3)}</strong>
+        </td>
+      </tr>
+    `).join('');
 
-            <div class="result-pill">
-              <div class="result-label">GPI (Grains Per Inch)</div>
-              <div class="result-value">
-                <span id="gpiValue">0.0</span> gpi
-              </div>
-              <div id="gpiTag" class="chip-tag small">
-                <span class="type-badge calc">Band</span>
-                <span id="gpiBandLabel">(no data)</span>
-              </div>
-            </div>
-
-            <div class="result-pill">
-              <div class="result-label">Momentum @ focus distance</div>
-              <div class="result-value">
-                <span id="momentumValue">0.000</span> slug·ft/s
-              </div>
-              <div class="small type-badge calc">Higher = deeper potential penetration</div>
-            </div>
-
-            <div class="result-pill">
-              <div class="result-label">
-                Launch KE (muzzle)
-              </div>
-              <div class="result-value">
-                <span id="keLaunchValueSummary">0.0</span> ft·lb
-              </div>
-              <div class="small type-badge calc">Based on Actual FPS &amp; arrow weight</div>
-            </div>
-
-            <div class="result-pill">
-              <div class="result-label">
-                Impact KE @ <span id="impactDistanceLabel">0</span> yd
-              </div>
-              <div class="result-value">
-                <span id="keImpactValue">0.0</span> ft·lb
-              </div>
-              <div class="small type-badge calc">Uses estimated velocity at focus distance</div>
-            </div>
-
-            <div class="result-pill">
-              <div class="result-label">
-                Estimated speed @ <span id="fpsImpactDistanceLabel">0</span> yd
-              </div>
-              <div class="result-value">
-                <span id="fpsImpactValue">0</span> fps
-              </div>
-              <div class="small type-badge calc">From velocity curve</div>
-            </div>
-          </div>
-        </article>
-
-        <!-- Data Table: Saved Builds Snapshot -->
-        <article class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="panel-title">Data Table (Saved Build Snapshots)</div>
-              <div class="panel-subtitle">
-                Each saved build adds a row here with bow, arrow, and key metrics for later comparison or CSV export.
-              </div>
-            </div>
-          </div>
-
-          <div class="data-table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>When</th>
-                  <th>Saved name</th>
-                  <th>Bow</th>
-                  <th>Arrow</th>
-                  <th>DW (lb)</th>
-                  <th>DL (in)</th>
-                  <th>Arrow (gr)</th>
-                  <th>FOC (%)</th>
-                  <th>GPP</th>
-                  <th>KE (ft·lb)</th>
-                  <th>Mom. (slug·ft/s)</th>
-                  <th class="small">Notes</th>
-                </tr>
-              </thead>
-              <tbody id="dataTableBody"></tbody>
-            </table>
-          </div>
-        </article>
-
-      </section> <!-- end RIGHT column -->
-    </main>
-  </div> <!-- end app-shell -->
-
-  <!-- Script comes next in Chunk 3 -->
-    <script>
-    /* ============================================================
-       Arrow Tune Calculator v1.0.10 (clean rebuild)
-       - Restores: trajectory arc, momentum & KE, theme toggle,
-                   saved builds, suggest name, data table, CSV export
-       - Adds: extra string weight folded into FPS/KE/momentum
-    ============================================================ */
-
-    const state = {
-      inputs: {},
-      computed: {},
-      savedBuilds: []
+    // Build Summary
+    const summary = {
+      "Build Name": document.getElementById('buildName').value || "Unnamed",
+      "Shooter": document.getElementById('shooterName').value || "-",
+      "Bow Model": document.getElementById('bowModel').value || "-",
+      "Draw Weight": dw + " lbs",
+      "IBO Speed": ibo + " FPS",
+      "Arrow Length": len.toFixed(2) + " in",
+      "Total Arrow Weight": weight.toFixed(1) + " gr",
+      "Point Weight": point.toFixed(0) + " gr",
+      "FOC": foc.toFixed(1) + "%",
+      "GPP": (weight/dw).toFixed(1),
+      "GPI": (weight/len).toFixed(1),
+      "Launch FPS": fps.toFixed(1),
+      "Launch KE": launchKE.toFixed(1) + " ft-lbs",
+      "Launch Momentum": launchMom.toFixed(3) + " slug·ft/s",
+      [`Impact @ ${distYards} yd`]: "",
+      "Impact Velocity": currentV.toFixed(0) + " FPS",
+      "Impact KE": impactKE.toFixed(1) + " ft-lbs",
+      "Impact Momentum": impactMom.toFixed(3) + " slug·ft/s",
+      "Time to Impact": time.toFixed(2) + " s"
     };
 
-    const THEME_KEY = "arrowTuneThemeV1";
-    const BUILDS_KEY = "arrowTuneBuildsV1";
+    document.getElementById('summaryTable').innerHTML = '<table>' + 
+      Object.entries(summary).map(([k,v]) => 
+        `<tr><td style="font-weight:600;padding:0.5rem;">${k}</td><td style="text-align:right;padding:0.5rem;">${v}</td></tr>`
+      ).join('') + '</table>';
+  }
 
-    let manualActualFps = false;
+  // Recalculate button
+  document.getElementById('recalcFPS').onclick = () => calculateEverything(true);
 
-    /* ----------------- Helpers ----------------- */
-    function $(id) {
-      return document.getElementById(id);
-    }
+  // Copy to clipboard
+  document.getElementById('copySummary').onclick = () => {
+    const text = `Arrow Tune Build - ${new Date().toLocaleDateString()}\n\n` +
+      `Build: ${document.getElementById('buildName').value||"Unnamed"}\n` +
+      `FPS: ${document.getElementById('actualFPS').value}\n` +
+      `Weight: ${getArrowWeight().toFixed(1)} gr\n` +
+      `FOC: ${document.getElementById('focValue').textContent}\n` +
+      `Launch KE: ${document.getElementById('keValue').textContent} ft-lbs\n` +
+      `Impact KE @ ${document.getElementById('distanceValue').textContent}yd: ${document.getElementById('impactKE').textContent} ft-lbs\n` +
+      `Time to Impact: ${document.getElementById('timeToImpact').textContent}s`;
+    navigator.clipboard.writeText(text).then(()=>alert('Copied to clipboard!'));
+  };
 
-    function getNum(id) {
-      const el = $(id);
-      if (!el) return 0;
-      const v = parseFloat(el.value);
-      return isNaN(v) ? 0 : v;
-    }
+  // Distance slider
+  document.getElementById('distanceSlider').oninput = e => { 
+    document.getElementById('distanceValue').textContent = e.target.value; 
+    calculateEverything(); 
+  };
 
-    function getStr(id) {
-      const el = $(id);
-      return el ? (el.value || "").trim() : "";
-    }
-
-    function setValue(id, val) {
-      const el = $(id);
-      if (el) el.value = val;
-    }
-
-    function setText(id, val) {
-      const el = $(id);
-      if (el) el.textContent = val;
-    }
-
-    function clamp(v, min, max) {
-      return Math.max(min, Math.min(max, v));
-    }
-
-    /* ----------------- Read Inputs ----------------- */
-    function readInputs() {
-      state.inputs = {
-        // Bow
-        bowModel: getStr("bowModel"),
-        shooterName: getStr("shooterName"),
-        drawWeight: getNum("drawWeight"),
-        drawLength: getNum("drawLength"),
-        letOffPct: getNum("letOffPct"),
-        iboRating: getNum("iboRating"),
-        stringWeightExtra: getNum("stringWeightExtra"),
-
-        // Arrow labels
-        arrowName: getStr("arrowName"),
-        arrowSpine: getNum("arrowSpine"),
-        straightness: getStr("straightness"),
-
-        // Core arrow geometry
-        arrowLength: getNum("arrowLength"),
-        totalArrowWeight: getNum("totalArrowWeight"),
-        balancePoint: getNum("balancePoint"),
-
-        // Advanced components
-        showComponents: $("showComponents")?.checked || false,
-        bareShaftWeight: getNum("bareShaftWeight"),
-        nockWeight: getNum("nockWeight"),
-        wrapWeight: getNum("wrapWeight"),
-        vaneCount: getNum("vaneCount"),
-        vaneWeight: getNum("vaneWeight"),
-        insertWeight: getNum("insertWeight"),
-        pointWeight: getNum("pointWeight"),
-        glueWeight: getNum("glueWeight"),
-
-        // Velocity & trajectory
-        velDistance: getNum("velDistance"),
-        arcRange: getNum("arcRange"),
-
-        // User override for FPS
-        actualFps: getNum("actualFps"),
-
-        // Notes (future use)
-        notes: getStr("notes")
-      };
-    }
-
-    /* ----------------- Total Arrow + System Weight ----------------- */
-    function calcTotalSystemWeight() {
-      const i = state.inputs;
-
-      let arrow = i.totalArrowWeight || 0;
-
-      // If advanced components are fully supplied, override with their sum.
-      if (i.showComponents) {
-        const required =
-          i.bareShaftWeight > 0 &&
-          i.pointWeight > 0 &&
-          i.vaneCount >= 0 &&
-          i.vaneWeight >= 0 &&
-          i.insertWeight >= 0 &&
-          i.nockWeight >= 0;
-
-        if (required) {
-          arrow =
-            i.bareShaftWeight +
-            i.nockWeight +
-            i.wrapWeight +
-            i.vaneCount * i.vaneWeight +
-            i.insertWeight +
-            i.pointWeight +
-            i.glueWeight;
-        }
-      }
-
-      const totalSystem = arrow + (i.stringWeightExtra || 0);
-
-      return { arrow, totalSystem };
-    }
-
-    /* ----------------- FOC ----------------- */
-    function calcFOC() {
-      const L = state.inputs.arrowLength;
-      const bp = state.inputs.balancePoint;
-
-      if (L <= 0 || bp <= 0) {
-        return { focPct: 0, band: "no data", bandClass: "bad" };
-      }
-
-      const center = L / 2;
-      const foc = ((bp - center) / L) * 100;
-
-      let band = "no data";
-      let bandClass = "bad";
-
-      if (foc < 8) {
-        band = "Low FOC";
-        bandClass = "warn";
-      } else if (foc <= 10) {
-        band = "Borderline hunting FOC";
-        bandClass = "good";
-      } else if (foc <= 18) {
-        band = "Typical hunting FOC";
-        bandClass = "good";
-      } else if (foc <= 25) {
-        band = "High FOC";
-        bandClass = "warn";
+  // All inputs trigger calculation (FPS stays safe)
+  document.querySelectorAll('input,select,textarea').forEach(el => {
+    el.addEventListener('input', () => {
+      if (document.activeElement.id === 'actualFPS') {
+        calculateEverything(false);
       } else {
-        band = "Extreme FOC";
-        bandClass = "warn";
+        calculateEverything();
       }
-
-      return { focPct: foc, band, bandClass };
-    }
-
-    /* ----------------- GPP / GPI ----------------- */
-    function calcGPP(weightGrains) {
-      const dw = state.inputs.drawWeight;
-      if (dw <= 0) return { gpp: 0, band: "no data", cls: "bad" };
-
-      const gpp = weightGrains / dw;
-      let band = "no data";
-      let cls = "bad";
-
-      if (gpp < 5.3) {
-        band = "Very light";
-        cls = "warn";
-      } else if (gpp <= 6.3) {
-        band = "Light hunting";
-        cls = "good";
-      } else if (gpp <= 8.0) {
-        band = "Typical hunting";
-        cls = "good";
-      } else {
-        band = "Heavy hunting";
-        cls = "warn";
-      }
-
-      return { gpp, band, cls };
-    }
-
-    function calcGPI(weightGrains) {
-      const L = state.inputs.arrowLength;
-      if (L <= 0) return { gpi: 0, band: "no data", cls: "bad" };
-
-      const gpi = weightGrains / L;
-      let band = "no data";
-      let cls = "bad";
-
-      if (gpi < 8) {
-        band = "Light";
-        cls = "warn";
-      } else if (gpi <= 10) {
-        band = "Typical hunting";
-        cls = "good";
-      } else {
-        band = "Heavy";
-        cls = "warn";
-      }
-
-      return { gpi, band, cls };
-    }
-
-    /* ----------------- FPS Estimate (IBO + rules) ----------------- */
-    function estimateActualFPS(totalSystemWeight) {
-      const i = state.inputs;
-
-      // Baseline: IBO or 280 as a fallback
-      let fps = i.iboRating || 280;
-
-      // Draw length: ~10 fps per inch from 30"
-      if (i.drawLength) {
-        fps += (i.drawLength - 30) * 10;
-      }
-
-      // Draw weight: ~1 fps per pound from 70#
-      if (i.drawWeight) {
-        fps += (i.drawWeight - 70) * 1;
-      }
-
-      // Arrow + string: -1 fps per 5 grains away from 350 gr system weight
-      const refWeight = 350;
-      const diff = totalSystemWeight - refWeight;
-      fps -= diff / 5;
-
-      // Extra penalty for string accessories
-      fps -= (state.inputs.stringWeightExtra || 0) / 5;
-
-      return clamp(fps, 140, 380);
-    }
-
-    function getEffectiveFPS(totalSystemWeight) {
-      const auto = estimateActualFPS(totalSystemWeight);
-      const user = state.inputs.actualFps;
-
-      if (!manualActualFps) {
-        // Keep the input live-updated unless user has manually overridden
-        setValue("actualFps", auto.toFixed(0));
-        return auto;
-      }
-
-      if (user > 0) return user;
-      return auto;
-    }
-
-    /* ----------------- Ballistics: Velocity, KE, Momentum ----------------- */
-    function fpsAtDistance(fps0, yards, lossPer10 = 5) {
-      const segments = yards / 10;
-      const lost = lossPer10 * segments;
-      return Math.max(0, fps0 - lost);
-    }
-
-    function calcMomentum(grains, fps) {
-      // Momentum (slug·ft/s) = (grains * fps) / 225400
-      return (grains * fps) / 225400;
-    }
-
-    function calcKE(grains, fps) {
-      // KE (ft·lb) = (grains / 450240) * fps^2
-      return (grains / 450240) * fps * fps;
-    }
-
-    /* ----------------- Visuals: FOC & Balance ----------------- */
-    function updateBalanceVisuals() {
-      const L = state.inputs.arrowLength;
-      const bp = state.inputs.balancePoint;
-      const marker = $("balanceMarker");
-      const label = $("balancePointOut");
-      const chip = $("balanceSummaryTag");
-
-      if (!marker || !label || !chip || L <= 0 || bp <= 0) {
-        if (label) setText("balancePointOut", "0.0");
-        return;
-      }
-
-      const pct = clamp((bp / L) * 100, 0, 100);
-      marker.style.left = `calc(${pct}% - 2px)`;
-      setText("balancePointOut", bp.toFixed(2));
-    }
-
-    function updateFOCVisuals(foc) {
-      const marker = $("focMarker");
-      const focValue = $("focValue");
-      const bandLabel = $("focBandLabel");
-      const focTag = $("focTag");
-
-      if (!marker || !focTag) return;
-
-      const pctRaw = foc.focPct;
-      const displayPct = isFinite(pctRaw) ? pctRaw : 0;
-      setText("focValue", displayPct.toFixed(1));
-      setText("focBandLabel", `(${foc.band})`);
-
-      focTag.classList.remove("good", "warn", "bad");
-      focTag.classList.add(foc.bandClass || "bad");
-
-      // Gauge runs from -10% to +30%
-      const min = -10;
-      const max = 30;
-      const pos = clamp(((pctRaw - min) / (max - min)) * 100, 0, 100);
-      marker.style.left = `calc(${pos}% - 1px)`;
-    }
-
-    /* ----------------- Visuals: Weight Composition ----------------- */
-    function updateWeightComposition(totalArrowWeight) {
-      const i = state.inputs;
-      const shaftEl = $("shaftSegment");
-      const pointEl = $("pointSegment");
-      const tailEl = $("tailSegment");
-      const legend = $("weightLegend");
-
-      if (!shaftEl || !pointEl || !tailEl || !legend) return;
-
-      let shaft = 0, pointSystem = 0, tail = 0;
-
-      // If advanced components look complete, use them.
-      if (i.showComponents && i.bareShaftWeight > 0) {
-        shaft = i.bareShaftWeight;
-        pointSystem = i.pointWeight + i.insertWeight + i.glueWeight;
-        tail = i.nockWeight + i.wrapWeight + i.vaneCount * i.vaneWeight;
-        const sum = shaft + pointSystem + tail;
-        if (sum > 0) totalArrowWeight = sum;
-      } else {
-        // Approximate: front vs tail vs shaft from finished arrow
-        pointSystem = i.pointWeight + i.insertWeight + i.glueWeight;
-        tail = i.nockWeight + i.wrapWeight + i.vaneCount * i.vaneWeight;
-        shaft = Math.max(0, totalArrowWeight - pointSystem - tail);
-      }
-
-      const total = totalArrowWeight || (shaft + pointSystem + tail) || 1;
-      const pctShaft = (shaft / total) * 100;
-      const pctPoint = (pointSystem / total) * 100;
-      const pctTail = (tail / total) * 100;
-
-      shaftEl.style.width = pctShaft.toFixed(1) + "%";
-      pointEl.style.width = pctPoint.toFixed(1) + "%";
-      tailEl.style.width = pctTail.toFixed(1) + "%";
-
-      legend.textContent =
-        `Shaft: ${shaft.toFixed(1)} gr (${pctShaft.toFixed(0)}%)  ` +
-        `Point system: ${pointSystem.toFixed(1)} gr (${pctPoint.toFixed(0)}%)  ` +
-        `Nock/wrap/vanes/glue: ${tail.toFixed(1)} gr (${pctTail.toFixed(0)}%)`;
-    }
-
-    /* ----------------- Visuals: Bow / Arrow Efficiency ----------------- */
-    function updateEfficiencyVisuals(keLaunch) {
-      const i = state.inputs;
-      const marker = $("efficiencyMarker");
-      const tag = $("efficiencyTag");
-      const valSpan = $("efficiencyValue");
-      const bandLabel = $("efficiencyBandLabel");
-
-      if (!marker || !tag) return;
-
-      // Very rough estimate of stored bow energy
-      // E_stored ≈ (Draw Weight * Draw Length (ft)) / 2
-      const drawLenFt = i.drawLength / 12;
-      const stored = i.drawWeight > 0 && drawLenFt > 0
-        ? (i.drawWeight * drawLenFt) / 2
-        : 0;
-
-      let effPct = 0;
-      if (stored > 0 && keLaunch > 0) {
-        effPct = (keLaunch / stored) * 100;
-      }
-
-      effPct = clamp(effPct, 0, 100);
-      setText("efficiencyValue", effPct.toFixed(0));
-
-      let band = "no data";
-      let cls = "bad";
-      if (effPct <= 0 || !isFinite(effPct)) {
-        band = "no data";
-        cls = "bad";
-      } else if (effPct < 65) {
-        band = "Low efficiency";
-        cls = "warn";
-      } else if (effPct <= 80) {
-        band = "Typical efficiency";
-        cls = "good";
-      } else if (effPct <= 90) {
-        band = "High efficiency";
-        cls = "good";
-      } else {
-        band = "Suspiciously high (check inputs)";
-        cls = "warn";
-      }
-
-      setText("efficiencyBandLabel", `(${band})`);
-      tag.classList.remove("good", "warn", "bad");
-      tag.classList.add(cls);
-
-      // Gauge runs from roughly 50–90%+; map 50–100% onto the bar
-      const min = 50;
-      const max = 100;
-      const pos = clamp(((effPct - min) / (max - min)) * 100, 0, 100);
-      marker.style.left = `calc(${pos}% - 1px)`;
-    }
-
-    /* ----------------- Velocity Curve SVG ----------------- */
-    function drawVelocityCurve(fps0, focusDist) {
-      const svg = $("velocitySvg");
-      if (!svg) return;
-
-      while (svg.firstChild) svg.removeChild(svg.firstChild);
-
-      if (fps0 <= 0) {
-        setText("velocitySummary", "No data yet — enter bow & arrow details.");
-        return;
-      }
-
-      const lossPer10 = 5;
-      const maxDist = Math.max(focusDist || 30, state.inputs.arcRange || 30);
-
-      const w = 320, h = 180;
-      const padL = 40, padR = 16, padT = 14, padB = 26;
-      const innerW = w - padL - padR;
-      const innerH = h - padT - padB;
-
-      function vAt(d) { return fpsAtDistance(fps0, d, lossPer10); }
-
-      const xs = [];
-      const ys = [];
-      let vMin = fps0;
-      let vMax = 0;
-
-      for (let i = 0; i <= 30; i++) {
-        const yd = (maxDist * i) / 30;
-        const vf = vAt(yd);
-        xs.push(yd);
-        ys.push(vf);
-        vMin = Math.min(vMin, vf);
-        vMax = Math.max(vMax, vf);
-      }
-
-      const ySpan = vMax - vMin || 1;
-
-      function xScale(yd) {
-        return padL + (yd / maxDist) * innerW;
-      }
-
-      function yScale(vv) {
-        return padT + innerH - ((vv - vMin) / ySpan) * innerH;
-      }
-
-      // Axes
-      const xAxis = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      xAxis.setAttribute("x1", padL);
-      xAxis.setAttribute("y1", padT + innerH);
-      xAxis.setAttribute("x2", padL + innerW);
-      xAxis.setAttribute("y2", padT + innerH);
-      xAxis.setAttribute("stroke", "#9ca3af");
-      xAxis.setAttribute("stroke-width", "1");
-      svg.appendChild(xAxis);
-
-      const yAxis = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      yAxis.setAttribute("x1", padL);
-      yAxis.setAttribute("y1", padT);
-      yAxis.setAttribute("x2", padL);
-      yAxis.setAttribute("y2", padT + innerH);
-      yAxis.setAttribute("stroke", "#9ca3af");
-      yAxis.setAttribute("stroke-width", "1");
-      svg.appendChild(yAxis);
-
-      // Simple grid ticks on X (distance)
-      const distTicks = [0, maxDist / 4, maxDist / 2, (3 * maxDist) / 4, maxDist];
-      distTicks.forEach(d => {
-        const x = xScale(d);
-        const tick = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        tick.setAttribute("x1", x);
-        tick.setAttribute("y1", padT + innerH);
-        tick.setAttribute("x2", x);
-        tick.setAttribute("y2", padT + innerH + 4);
-        tick.setAttribute("stroke", "#6b7280");
-        tick.setAttribute("stroke-width", "1");
-        svg.appendChild(tick);
-
-        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        label.setAttribute("x", x);
-        label.setAttribute("y", padT + innerH + 14);
-        label.setAttribute("font-size", "9");
-        label.setAttribute("text-anchor", "middle");
-        label.setAttribute("fill", "#9ca3af");
-        label.textContent = d.toFixed(0);
-        svg.appendChild(label);
-      });
-
-      // Y-axis tick labels (fps)
-      const fpsTicks = [vMin, (vMin + vMax) / 2, vMax];
-      fpsTicks.forEach(vv => {
-        const y = yScale(vv);
-        const tick = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        tick.setAttribute("x1", padL - 4);
-        tick.setAttribute("y1", y);
-        tick.setAttribute("x2", padL);
-        tick.setAttribute("y2", y);
-        tick.setAttribute("stroke", "#6b7280");
-        tick.setAttribute("stroke-width", "1");
-        svg.appendChild(tick);
-
-        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        label.setAttribute("x", padL - 6);
-        label.setAttribute("y", y + 3);
-        label.setAttribute("font-size", "9");
-        label.setAttribute("text-anchor", "end");
-        label.setAttribute("fill", "#9ca3af");
-        label.textContent = vv.toFixed(0);
-        svg.appendChild(label);
-      });
-
-      // Axis labels
-      const xLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      xLabel.setAttribute("x", padL + innerW / 2);
-      xLabel.setAttribute("y", h - 4);
-      xLabel.setAttribute("font-size", "9");
-      xLabel.setAttribute("text-anchor", "middle");
-      xLabel.setAttribute("fill", "#9ca3af");
-      xLabel.textContent = "Distance (yd)";
-      svg.appendChild(xLabel);
-
-      const yLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      yLabel.setAttribute("x", 10);
-      yLabel.setAttribute("y", padT + innerH / 2);
-      yLabel.setAttribute("font-size", "9");
-      yLabel.setAttribute("text-anchor", "middle");
-      yLabel.setAttribute("fill", "#9ca3af");
-      yLabel.setAttribute("transform", `rotate(-90 10 ${padT + innerH / 2})`);
-      yLabel.textContent = "Velocity (fps)";
-      svg.appendChild(yLabel);
-
-      // Curve path
-      let d = "";
-      for (let i = 0; i < xs.length; i++) {
-        const X = xScale(xs[i]);
-        const Y = yScale(ys[i]);
-        d += (i === 0 ? "M" : "L") + X + " " + Y + " ";
-      }
-
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      path.setAttribute("d", d.trim());
-      path.setAttribute("stroke", "#38bdf8");
-      path.setAttribute("fill", "none");
-      path.setAttribute("stroke-width", "2");
-      svg.appendChild(path);
-
-      // Focus marker
-      const vf = vAt(focusDist);
-      const fx = xScale(focusDist);
-      const fy = yScale(vf);
-      const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      dot.setAttribute("cx", fx);
-      dot.setAttribute("cy", fy);
-      dot.setAttribute("r", 3);
-      dot.setAttribute("fill", "#22c55e");
-      svg.appendChild(dot);
-
-      // Time-of-flight estimate
-      const avg = (fps0 + vf) / 2;
-      const tofSec = avg > 0 ? (focusDist * 3) / avg : 0;
-
-      const tofLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      tofLabel.setAttribute("x", fx + 6);
-      tofLabel.setAttribute("y", fy - 6);
-      tofLabel.setAttribute("font-size", "10");
-      tofLabel.setAttribute("fill", "#bef264");
-      tofLabel.textContent = `${focusDist.toFixed(0)} yd • ~${tofSec.toFixed(2)} s`;
-      svg.appendChild(tofLabel);
-
-      setText("velocitySummary",
-        `≈${vf.toFixed(0)} fps, ~${tofSec.toFixed(2)} s @ ${focusDist.toFixed(0)} yd`);
-      setText("fpsImpactDistanceLabel", focusDist.toFixed(0));
-      setText("fpsImpactValue", vf.toFixed(0));
-    }
-
-    /* ----------------- Trajectory Arc SVG ----------------- */
-    function drawTrajectory(fps0, focusDist) {
-      const svg = $("trajectorySvg");
-      if (!svg) return;
-
-      while (svg.firstChild) svg.removeChild(svg.firstChild);
-
-      const arcRange = Math.max(state.inputs.arcRange || 30, focusDist || 30);
-
-      const w = 320, h = 210;
-      const padL = 40, padR = 12, padT = 14, padB = 40;
-      const innerW = w - padL - padR;
-      const innerH = h - padT - padB;
-
-      const mid = arcRange / 2;
-      // Peak height scales a bit with distance
-      const peakFt = Math.min((arcRange / 60) * 4, 12);
-      const k = peakFt / (mid * mid); // for a simple inverted parabola
-
-      function xScale(yd) {
-        return padL + (yd / arcRange) * innerW;
-      }
-
-      function yScale(ft) {
-        return padT + innerH - (ft / (peakFt * 1.4)) * innerH;
-      }
-
-      // Ground line
-      const ground = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      ground.setAttribute("x1", padL);
-      ground.setAttribute("y1", padT + innerH);
-      ground.setAttribute("x2", padL + innerW);
-      ground.setAttribute("y2", padT + innerH);
-      ground.setAttribute("stroke", "#9ca3af");
-      ground.setAttribute("stroke-width", "1");
-      svg.appendChild(ground);
-
-      // Distance ticks on X
-      const distTicks = [0, arcRange / 4, arcRange / 2, (3 * arcRange) / 4, arcRange];
-      distTicks.forEach(d => {
-        const x = xScale(d);
-        const tick = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        tick.setAttribute("x1", x);
-        tick.setAttribute("y1", padT + innerH);
-        tick.setAttribute("x2", x);
-        tick.setAttribute("y2", padT + innerH + 4);
-        tick.setAttribute("stroke", "#6b7280");
-        tick.setAttribute("stroke-width", "1");
-        svg.appendChild(tick);
-
-        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        label.setAttribute("x", x);
-        label.setAttribute("y", padT + innerH + 14);
-        label.setAttribute("font-size", "9");
-        label.setAttribute("text-anchor", "middle");
-        label.setAttribute("fill", "#9ca3af");
-        label.textContent = d.toFixed(0);
-        svg.appendChild(label);
-      });
-
-      // Height labels (just peak for now)
-      const peakLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      peakLabel.setAttribute("x", padL + innerW / 2);
-      peakLabel.setAttribute("y", padT + 10);
-      peakLabel.setAttribute("font-size", "9");
-      peakLabel.setAttribute("text-anchor", "middle");
-      peakLabel.setAttribute("fill", "#9ca3af");
-      peakLabel.textContent = `Peak height ≈ ${peakFt.toFixed(1)} ft`;
-      svg.appendChild(peakLabel);
-
-      // Axis labels
-      const xLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      xLabel.setAttribute("x", padL + innerW / 2);
-      xLabel.setAttribute("y", h - 4);
-      xLabel.setAttribute("font-size", "9");
-      xLabel.setAttribute("text-anchor", "middle");
-      xLabel.setAttribute("fill", "#9ca3af");
-      xLabel.textContent = "Distance (yd)";
-      svg.appendChild(xLabel);
-
-      const yLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      yLabel.setAttribute("x", 10);
-      yLabel.setAttribute("y", padT + innerH / 2);
-      yLabel.setAttribute("font-size", "9");
-      yLabel.setAttribute("text-anchor", "middle");
-      yLabel.setAttribute("fill", "#9ca3af");
-      yLabel.setAttribute("transform", `rotate(-90 10 ${padT + innerH / 2})`);
-      yLabel.textContent = "Height (ft)";
-      svg.appendChild(yLabel);
-
-      // Arc path
-      let dPath = "";
-      for (let i = 0; i <= 40; i++) {
-        const yd = (arcRange * i) / 40;
-        const xShift = yd - mid;
-        const htFt = Math.max(0, peakFt - k * xShift * xShift);
-        const X = xScale(yd);
-        const Y = yScale(htFt);
-        dPath += (i === 0 ? "M" : "L") + X + " " + Y + " ";
-      }
-
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      path.setAttribute("d", dPath.trim());
-      path.setAttribute("stroke", "#22c55e");
-      path.setAttribute("fill", "none");
-      path.setAttribute("stroke-width", "2");
-      svg.appendChild(path);
-
-      // Focus marker on arc
-      const focus = focusDist || arcRange / 2;
-      const xShift = focus - mid;
-      const fHtFt = Math.max(0, peakFt - k * xShift * xShift);
-      const xf = xScale(focus);
-      const yf = yScale(fHtFt);
-
-      const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      dot.setAttribute("cx", xf);
-      dot.setAttribute("cy", yf);
-      dot.setAttribute("r", 3);
-      dot.setAttribute("fill", "#38bdf8");
-      svg.appendChild(dot);
-
-      setText(
-        "trajectorySummary",
-        `Horizontal axis ≈ 0–${arcRange.toFixed(0)} yd. Peak height ≈ ${peakFt.toFixed(1)} ft.`
-      );
-    }
-
-    /* ----------------- Core Recalc ----------------- */
-    function recalcAndRender() {
-      const i = state.inputs;
-
-      const { arrow, totalSystem } = calcTotalSystemWeight();
-      const foc = calcFOC();
-      const gpp = calcGPP(arrow);
-      const gpi = calcGPI(arrow);
-
-      const fps0 = getEffectiveFPS(totalSystem);
-      const focusDist = i.velDistance || i.arcRange || 30;
-      const fpsFocus = fpsAtDistance(fps0, focusDist);
-
-      const keLaunch = calcKE(arrow, fps0);
-      const keImpact = calcKE(arrow, fpsFocus);
-      const momImpact = calcMomentum(arrow, fpsFocus);
-
-      // Store computed for saving/CSV
-      state.computed = {
-        arrowWeightGr: arrow,
-        totalSystemWeightGr: totalSystem,
-        focPct: foc.focPct,
-        gpp: gpp.gpp,
-        gpi: gpi.gpi,
-        keLaunch,
-        keImpact,
-        momImpact,
-        fpsLaunch: fps0,
-        fpsImpact: fpsFocus,
-        focusDist
-      };
-
-      // --- Update metric text outputs ---
-      setText("totalArrowWeightResult", arrow.toFixed(1));
-      setText("totalSystemWeightResult", totalSystem.toFixed(1));
-
-      setText("gppValue", gpp.gpp.toFixed(2));
-      setText("gpiValue", gpi.gpi.toFixed(2));
-
-      const gppTag = $("gppTag");
-      const gpiTag = $("gpiTag");
-      if (gppTag) {
-        gppTag.classList.remove("good", "warn", "bad");
-        gppTag.classList.add(gpp.cls || "bad");
-        setText("gppBandLabel", `(${gpp.band})`);
-      }
-      if (gpiTag) {
-        gpiTag.classList.remove("good", "warn", "bad");
-        gpiTag.classList.add(gpi.cls || "bad");
-        setText("gpiBandLabel", `(${gpi.band})`);
-      }
-
-      setText("momentumValue", momImpact.toFixed(3));
-      setText("keLaunchValueSummary", keLaunch.toFixed(1));
-      setText("keImpactValue", keImpact.toFixed(1));
-      setText("impactDistanceLabel", focusDist.toFixed(0));
-
-      // --- Visuals ---
-      updateBalanceVisuals();
-      updateFOCVisuals(foc);
-      updateWeightComposition(arrow);
-      updateEfficiencyVisuals(keLaunch);
-
-      drawVelocityCurve(fps0, focusDist);
-      drawTrajectory(fps0, focusDist);
-    }
-
-    /* ----------------- Saved Builds & Data Table ----------------- */
-    function loadBuildsFromStorage() {
-      try {
-        const raw = localStorage.getItem(BUILDS_KEY);
-        if (!raw) {
-          state.savedBuilds = [];
-          return;
-        }
-        const arr = JSON.parse(raw);
-        if (Array.isArray(arr)) {
-          state.savedBuilds = arr;
-        } else {
-          state.savedBuilds = [];
-        }
-      } catch {
-        state.savedBuilds = [];
-      }
-    }
-
-    function saveBuildsToStorage() {
-      try {
-        localStorage.setItem(BUILDS_KEY, JSON.stringify(state.savedBuilds));
-      } catch {
-        // ignore quota errors
-      }
-    }
-
-    function refreshSavedBuildsUI() {
-      const select = $("savedBuildsSelect");
-      const tbody = $("dataTableBody");
-      if (select) {
-        // Rebuild dropdown
-        while (select.firstChild) select.removeChild(select.firstChild);
-        const optNone = document.createElement("option");
-        optNone.value = "";
-        optNone.textContent = "(none yet)";
-        select.appendChild(optNone);
-
-        state.savedBuilds.forEach((b, idx) => {
-          const opt = document.createElement("option");
-          opt.value = idx;
-          opt.textContent = b.name || `Build ${idx + 1}`;
-          select.appendChild(opt);
-        });
-      }
-
-      if (tbody) {
-        while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
-
-        state.savedBuilds.forEach(b => {
-          const tr = document.createElement("tr");
-
-          function td(text) {
-            const cell = document.createElement("td");
-            cell.textContent = text;
-            return cell;
-          }
-
-          tr.appendChild(td(b.timestamp || ""));
-          tr.appendChild(td(b.name || ""));
-          tr.appendChild(td(b.inputs.bowModel || ""));
-          tr.appendChild(td(b.inputs.arrowName || ""));
-          tr.appendChild(td(b.inputs.drawWeight?.toFixed?.(1) || b.inputs.drawWeight || ""));
-          tr.appendChild(td(b.inputs.drawLength?.toFixed?.(2) || b.inputs.drawLength || ""));
-          tr.appendChild(td(b.computed.arrowWeightGr?.toFixed?.(1) || b.computed.arrowWeightGr || ""));
-          tr.appendChild(td(b.computed.focPct?.toFixed?.(1) || ""));
-          tr.appendChild(td(b.computed.gpp?.toFixed?.(2) || ""));
-          tr.appendChild(td(b.computed.keLaunch?.toFixed?.(1) || ""));
-          tr.appendChild(td(b.computed.momImpact?.toFixed?.(3) || ""));
-          tr.appendChild(td(b.inputs.notes || ""));
-
-          tbody.appendChild(tr);
-        });
-      }
-    }
-
-    function suggestBuildName() {
-      const i = state.inputs;
-      const parts = [];
-
-      if (i.bowModel) parts.push(i.bowModel);
-      if (i.arrowName) parts.push(i.arrowName);
-
-      const wt = state.computed.arrowWeightGr || i.totalArrowWeight || 0;
-      if (wt > 0) parts.push(`${wt.toFixed(0)} gr`);
-
-      if (i.drawWeight > 0) parts.push(`${i.drawWeight.toFixed(0)} lb draw`);
-
-      const name = parts.join(" ") || "New Arrow Build";
-      setValue("savedBuildName", name);
-    }
-
-    function gatherInputsSnapshot() {
-      // Read inputs again to ensure we have latest
-      readInputs();
-      recalcAndRender(); // Ensure computed up to date
-
-      return {
-        bowModel: state.inputs.bowModel,
-        shooterName: state.inputs.shooterName,
-        drawWeight: state.inputs.drawWeight,
-        drawLength: state.inputs.drawLength,
-        letOffPct: state.inputs.letOffPct,
-        iboRating: state.inputs.iboRating,
-        stringWeightExtra: state.inputs.stringWeightExtra,
-        arrowName: state.inputs.arrowName,
-        arrowSpine: state.inputs.arrowSpine,
-        straightness: state.inputs.straightness,
-        arrowLength: state.inputs.arrowLength,
-        totalArrowWeight: state.inputs.totalArrowWeight,
-        balancePoint: state.inputs.balancePoint,
-        showComponents: state.inputs.showComponents,
-        bareShaftWeight: state.inputs.bareShaftWeight,
-        nockWeight: state.inputs.nockWeight,
-        wrapWeight: state.inputs.wrapWeight,
-        vaneCount: state.inputs.vaneCount,
-        vaneWeight: state.inputs.vaneWeight,
-        insertWeight: state.inputs.insertWeight,
-        pointWeight: state.inputs.pointWeight,
-        glueWeight: state.inputs.glueWeight,
-        velDistance: state.inputs.velDistance,
-        arcRange: state.inputs.arcRange,
-        actualFps: state.inputs.actualFps,
-        notes: state.inputs.notes
-      };
-    }
-
-    function onSaveBuild() {
-      const nameInput = $("savedBuildName");
-      if (!nameInput || !nameInput.value.trim()) {
-        suggestBuildName();
-      }
-
-      const name = $("savedBuildName")?.value.trim() || "New Arrow Build";
-      const timestamp = new Date().toLocaleString();
-
-      const build = {
-        name,
-        timestamp,
-        inputs: gatherInputsSnapshot(),
-        computed: { ...state.computed }
-      };
-
-      state.savedBuilds.push(build);
-      saveBuildsToStorage();
-      refreshSavedBuildsUI();
-    }
-
-    function onLoadBuild() {
-      const select = $("savedBuildsSelect");
-      if (!select) return;
-      const idx = parseInt(select.value, 10);
-      if (isNaN(idx) || idx < 0 || idx >= state.savedBuilds.length) return;
-
-      const b = state.savedBuilds[idx];
-      const i = b.inputs;
-
-      function setIfExists(id, val) {
-        const el = $(id);
-        if (el == null) return;
-        if (el.type === "checkbox") {
-          el.checked = !!val;
-        } else {
-          el.value = val != null ? val : "";
-        }
-      }
-
-      // Restore inputs
-      setIfExists("bowModel", i.bowModel);
-      setIfExists("shooterName", i.shooterName);
-      setIfExists("drawWeight", i.drawWeight);
-      setIfExists("drawLength", i.drawLength);
-      setIfExists("letOffPct", i.letOffPct);
-      setIfExists("iboRating", i.iboRating);
-      setIfExists("stringWeightExtra", i.stringWeightExtra);
-      setIfExists("arrowName", i.arrowName);
-      setIfExists("arrowSpine", i.arrowSpine);
-      setIfExists("straightness", i.straightness);
-      setIfExists("arrowLength", i.arrowLength);
-      setIfExists("totalArrowWeight", i.totalArrowWeight);
-      setIfExists("balancePoint", i.balancePoint);
-
-      setIfExists("showComponents", i.showComponents);
-      setIfExists("bareShaftWeight", i.bareShaftWeight);
-      setIfExists("nockWeight", i.nockWeight);
-      setIfExists("wrapWeight", i.wrapWeight);
-      setIfExists("vaneCount", i.vaneCount);
-      setIfExists("vaneWeight", i.vaneWeight);
-      setIfExists("insertWeight", i.insertWeight);
-      setIfExists("pointWeight", i.pointWeight);
-      setIfExists("glueWeight", i.glueWeight);
-
-      setIfExists("velDistance", i.velDistance);
-      setIfExists("arcRange", i.arcRange);
-      setIfExists("actualFps", i.actualFps);
-
-      // Components visibility
-      const compSection = $("componentsSection");
-      if (compSection) {
-        compSection.style.display = i.showComponents ? "block" : "none";
-      }
-
-      readInputs();
-      recalcAndRender();
-      suggestBuildName();
-    }
-
-    /* ----------------- CSV Export / Import ----------------- */
-    function onDownloadInputsCsv() {
-      if (!state.savedBuilds.length) {
-        // Export just current snapshot if nothing saved yet
-        const snapshot = {
-          name: $("savedBuildName")?.value || "Current build",
-          timestamp: new Date().toISOString(),
-          inputs: gatherInputsSnapshot(),
-          computed: { ...state.computed }
-        };
-        const csv = buildsToCsv([snapshot]);
-        triggerCsvDownload(csv, "arrow-tune-current.csv");
-        return;
-      }
-
-      const csv = buildsToCsv(state.savedBuilds);
-      triggerCsvDownload(csv, "arrow-tune-builds.csv");
-    }
-
-    function buildsToCsv(builds) {
-      const header = [
-        "name",
-        "timestamp",
-        "bowModel",
-        "arrowName",
-        "drawWeight",
-        "drawLength",
-        "letOffPct",
-        "iboRating",
-        "stringWeightExtra",
-        "arrowLength",
-        "totalArrowWeight",
-        "balancePoint",
-        "FOC_pct",
-        "GPP",
-        "GPI",
-        "KE_launch_ftlb",
-        "KE_impact_ftlb",
-        "Momentum_impact_slug_ft_s",
-        "FPS_launch",
-        "FPS_impact",
-        "focusDistanceYd",
-        "notes"
-      ];
-
-      const rows = [header.join(",")];
-
-      builds.forEach(b => {
-        const i = b.inputs;
-        const c = b.computed || {};
-        const row = [
-          escapeCsv(b.name || ""),
-          escapeCsv(b.timestamp || ""),
-          escapeCsv(i.bowModel || ""),
-          escapeCsv(i.arrowName || ""),
-          i.drawWeight ?? "",
-          i.drawLength ?? "",
-          i.letOffPct ?? "",
-          i.iboRating ?? "",
-          i.stringWeightExtra ?? "",
-          i.arrowLength ?? "",
-          i.totalArrowWeight ?? "",
-          i.balancePoint ?? "",
-          c.focPct != null ? c.focPct.toFixed(3) : "",
-          c.gpp != null ? c.gpp.toFixed(3) : "",
-          c.gpi != null ? c.gpi.toFixed(3) : "",
-          c.keLaunch != null ? c.keLaunch.toFixed(3) : "",
-          c.keImpact != null ? c.keImpact.toFixed(3) : "",
-          c.momImpact != null ? c.momImpact.toFixed(4) : "",
-          c.fpsLaunch != null ? c.fpsLaunch.toFixed(2) : "",
-          c.fpsImpact != null ? c.fpsImpact.toFixed(2) : "",
-          c.focusDist != null ? c.focusDist.toFixed(2) : "",
-          escapeCsv(i.notes || "")
-        ];
-        rows.push(row.join(","));
-      });
-
-      return rows.join("\n");
-    }
-
-    function escapeCsv(val) {
-      const s = String(val ?? "");
-      if (s.includes(",") || s.includes('"') || s.includes("\n")) {
-        return '"' + s.replace(/"/g, '""') + '"';
-      }
-      return s;
-    }
-
-    function triggerCsvDownload(csv, filename) {
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-
-    function onCsvUploadChange(e) {
-      const file = e.target.files?.[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const text = String(reader.result || "");
-          const lines = text.split(/\r?\n/).filter(Boolean);
-          if (lines.length < 2) return;
-
-          const header = lines[0].split(",");
-          const row = lines[1].split(",");
-          const map = {};
-          header.forEach((h, idx) => {
-            const key = h.replace(/(^"|"$)/g, "");
-            map[key] = row[idx]?.replace(/(^"|"$)/g, "") ?? "";
-          });
-
-          // Support only CSVs generated by this app
-          if (!("bowModel" in map) || !("arrowName" in map)) {
-            alert("CSV format not recognized. Use CSV exported from this tool.");
-            return;
-          }
-
-          function num(x) {
-            const v = parseFloat(map[x]);
-            return isNaN(v) ? 0 : v;
-          }
-
-          setValue("bowModel", map.bowModel || "");
-          setValue("shooterName", map.shooterName || "");
-          setValue("drawWeight", num("drawWeight"));
-          setValue("drawLength", num("drawLength"));
-          setValue("letOffPct", num("letOffPct"));
-          setValue("iboRating", num("iboRating"));
-          setValue("stringWeightExtra", num("stringWeightExtra"));
-
-          setValue("arrowName", map.arrowName || "");
-          setValue("arrowSpine", num("arrowSpine"));
-          setValue("straightness", map.straightness || "");
-          setValue("arrowLength", num("arrowLength"));
-          setValue("totalArrowWeight", num("totalArrowWeight"));
-          setValue("balancePoint", num("balancePoint"));
-
-          setValue("arcRange", num("focusDistanceYd") || 60);
-          setValue("actualFps", num("FPS_launch"));
-
-          readInputs();
-          recalcAndRender();
-          suggestBuildName();
-        } catch {
-          alert("Error reading CSV. Please ensure it was exported from this tool.");
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    /* ----------------- Theme ----------------- */
-    function applyTheme(theme) {
-      const body = document.body;
-      if (!body) return;
-      if (theme === "light") {
-        body.setAttribute("data-theme", "light");
-      } else {
-        body.setAttribute("data-theme", "dark");
-      }
-    }
-
-    function loadTheme() {
-      try {
-        const stored = localStorage.getItem(THEME_KEY);
-        if (stored === "light" || stored === "dark") {
-          applyTheme(stored);
-        } else {
-          applyTheme("dark");
-        }
-      } catch {
-        applyTheme("dark");
-      }
-    }
-
-    function onThemeToggle() {
-      const current = document.body.getAttribute("data-theme") || "dark";
-      const next = current === "dark" ? "light" : "dark";
-      applyTheme(next);
-      try {
-        localStorage.setItem(THEME_KEY, next);
-      } catch {
-        // ignore
-      }
-    }
-
-    /* ----------------- Info icon toggles ----------------- */
-    function wireInfoToggles() {
-      const icons = document.querySelectorAll(".info-icon[data-info-target]");
-      icons.forEach(icon => {
-        icon.addEventListener("click", () => {
-          const targetId = icon.getAttribute("data-info-target");
-          if (!targetId) return;
-          const el = $(targetId);
-          if (!el) return;
-          const hidden = el.hasAttribute("hidden");
-          if (hidden) {
-            el.removeAttribute("hidden");
-          } else {
-            el.setAttribute("hidden", "");
-          }
-        });
-      });
-    }
-
-    /* ----------------- Components toggle ----------------- */
-    function wireComponentsToggle() {
-      const cb = $("showComponents");
-      const section = $("componentsSection");
-      if (!cb || !section) return;
-
-      cb.addEventListener("change", () => {
-        section.style.display = cb.checked ? "block" : "none";
-        readInputs();
-        recalcAndRender();
-      });
-    }
-
-    /* ----------------- Global Input Listener ----------------- */
-    function wireInputs() {
-      document.addEventListener("input", e => {
-        const id = e.target.id;
-
-        if (id === "actualFps") {
-          manualActualFps = true;
-        }
-
-        if (id === "velDistance") {
-          setValue("velDistanceValue", `${e.target.value} yd`);
-        }
-
-        readInputs();
-        recalcAndRender();
-      });
-    }
-
-    /* ----------------- DOM Ready ----------------- */
-    document.addEventListener("DOMContentLoaded", () => {
-      loadTheme();
-
-      // Initialize distance readout to slider default
-      const velDistanceEl = $("velDistance");
-      if (velDistanceEl) {
-        setValue("velDistanceValue", `${velDistanceEl.value} yd`);
-      }
-
-      wireInfoToggles();
-      wireComponentsToggle();
-      wireInputs();
-
-      // Buttons
-      $("themeToggle")?.addEventListener("click", onThemeToggle);
-      $("saveBuildBtn")?.addEventListener("click", onSaveBuild);
-      $("downloadInputsCsvBtn")?.addEventListener("click", onDownloadInputsCsv);
-      $("refreshNameBtn")?.addEventListener("click", () => {
-        readInputs();
-        suggestBuildName();
-      });
-      $("loadBuildBtn")?.addEventListener("click", onLoadBuild);
-      $("csvUpload")?.addEventListener("change", onCsvUploadChange);
-
-      // Initial state
-      readInputs();
-      recalcAndRender();
-
-      // Load saved builds & render table/dropdown
-      loadBuildsFromStorage();
-      refreshSavedBuildsUI();
-      suggestBuildName();
     });
-  </script>
+  });
+
+  refreshBuilds();
+  calculateEverything();
+</script>
 </body>
-</html> 
+</html>
