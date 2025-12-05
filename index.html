@@ -60,7 +60,7 @@
       </div>
 
       <div class="card">
-        <div class="card-header"><h2>Manage Builds</h2><button class="info-btn" title="Save and load your setups">i</button></div>
+        <div class="card-header"><h2>Your Setups</h2><button class="info-btn" title="Save and load your setups">i</button></div>
         <label>Build Name</label>
         <div class="flex"><input type="text" id="buildName" placeholder="e.g. 2025-John-Hoyt70"><button class="btn-small" id="suggestName">Suggest</button></div>
         <div class="flex" style="margin-top:1rem;gap:0.5rem;flex-wrap:wrap;">
@@ -74,14 +74,13 @@
       <div class="card">
         <div class="card-header"><h2>Bow Setup</h2><button class="info-btn" title="Your bow specs">i</button></div>
         <label>Application</label><select id="application"><option>Target / 3D</option><option selected>Hunting</option><option>Other</option></select>
-        <label>Shooter Name</label><input type="text" id="shooterName">
         <label>Bow Model</label><input type="text" id="bowModel">
         <div class="grid-2">
           <div><label>Draw Weight (lbs)</label><input type="number" id="drawWeight" value="70" step="0.5"></div>
           <div><label>Draw Length (in)</label><input type="number" id="drawLength" value="29" step="0.25"></div>
         </div>
         <label>IBO Speed (FPS)</label><input type="number" id="iboRating" value="350">
-        <label>String Add-ons (grains)</label><input type="number" id="stringWeightSimple" value="25">
+        <label>String Add-ons (grains)</label><input type="number" id="stringWeightSimple" value="0">
         <div class="flex" style="margin-top:1rem;justify-content:space-between;">
           <label>Advanced String Components</label>
           <label class="toggle-switch"><input type="checkbox" id="toggleString"><span class="slider"></span></label>
@@ -283,7 +282,6 @@
   // Suggest Name
   document.getElementById('suggestName').onclick = () => {
     const d = new Date().toISOString().slice(0,10);
-    const s = document.getElementById('shooterName').value.trim() || 'Shooter';
     const b = document.getElementById('bowModel').value.trim() || 'Bow';
     const dw = document.getElementById('drawWeight').value || '70';
     const arrow = document.getElementById('arrowName').value.trim() || 'Arrow';
@@ -459,7 +457,6 @@
     // Build Summary
     const summary = {
       "Build Name": document.getElementById('buildName').value || "Unnamed",
-      "Shooter": document.getElementById('shooterName').value || "-",
       "Bow Model": document.getElementById('bowModel').value || "-",
       "Draw Weight": dw + " lbs",
       "IBO Speed": ibo + " FPS",
