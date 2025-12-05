@@ -9,34 +9,165 @@
   <style>
     :root { --bg:#f8fafc; --card:#ffffff; --text:#1e293b; --light:#64748b; --border:#e2e8f0; --primary:#0ea5e9; --success:#22c55e; --warning:#f59e0b; --danger:#ef4444; }
     .dark { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --light:#94a3b8; --border:#334155; }
+
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); padding:1rem; min-height:100vh; line-height:1.6; }
-    .container { max-width:1400px; margin:auto; display:grid; gap:1.5rem; }
-    @media (min-width:1024px) { .container { grid-template-columns:1fr 1fr; } }
-    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.5rem; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
-    .card-header { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:0.75rem; margin-bottom:1rem; font-size:1.3rem; font-weight:600; }
+
+    body {
+      font-family:'Inter',sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      padding:1rem;
+      min-height:100vh;
+      line-height:1.6;
+    }
+
+    .container {
+      max-width:1400px;
+      margin:auto;
+      display:grid;
+      gap:1.5rem;
+    }
+    @media (min-width:1024px) {
+      .container { grid-template-columns:1fr 1fr; }
+    }
+
+    .card {
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:1.5rem;
+      box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .subcard {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      padding: 1rem;
+    }
+
+    .card-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      border-bottom:1px solid var(--border);
+      padding-bottom:0.75rem;
+      margin-bottom:1rem;
+      font-size:1.3rem;
+      font-weight:600;
+    }
+
     h1,h2,h3,h4 { color:var(--text); }
-    label { display:block; margin:1rem 0 0.4rem; font-weight:600; font-size:0.95rem; }
-    input, select, textarea { width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:8px; background:var(--card); color:var(--text); font-size:1rem; }
-    input:focus, select:focus, textarea:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(14,165,233,0.2); }
-    button { padding:0.75rem 1.2rem; border:none; border-radius:8px; background:var(--primary); color:white; font-weight:600; cursor:pointer; }
+
+    label {
+      display:block;
+      margin:1rem 0 0.4rem;
+      font-weight:600;
+      font-size:0.95rem;
+    }
+
+    input, select, textarea {
+      width:100%;
+      padding:0.75rem;
+      border:1px solid var(--border);
+      border-radius:8px;
+      background:var(--card);
+      color:var(--text);
+      font-size:1rem;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline:none;
+      border-color:var(--primary);
+      box-shadow:0 0 0 3px rgba(14,165,233,0.2);
+    }
+
+    button {
+      padding:0.75rem 1.2rem;
+      border:none;
+      border-radius:8px;
+      background:var(--primary);
+      color:white;
+      font-weight:600;
+      cursor:pointer;
+    }
     .btn-small { padding:0.5rem 0.9rem; font-size:0.9rem; }
     .btn-refresh { background:var(--warning); }
+
     .flex { display:flex; gap:1rem; align-items:center; }
     .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
-    .toggle-switch { position:relative; display:inline-block; width:56px; height:30px; }
+
+    .toggle-switch {
+      position:relative;
+      display:inline-block;
+      width:56px;
+      height:30px;
+    }
     .toggle-switch input { opacity:0; width:0; height:0; }
-    .slider { position:absolute; cursor:pointer; inset:0; background:#cbd5e1; border-radius:34px; transition:.3s; }
-    .slider:before { position:absolute; content:""; height:24px; width:24px; left:3px; bottom:3px; background:white; border-radius:50%; transition:.3s; }
+    .slider {
+      position:absolute;
+      cursor:pointer;
+      inset:0;
+      background:#cbd5e1;
+      border-radius:34px;
+      transition:.3s;
+    }
+    .slider:before {
+      position:absolute;
+      content:"";
+      height:24px;
+      width:24px;
+      left:3px;
+      bottom:3px;
+      background:white;
+      border-radius:50%;
+      transition:.3s;
+    }
     input:checked + .slider { background:var(--primary); }
     input:checked + .slider:before { transform:translateX(26px); }
-    .info-btn { background:none; border:none; font-size:1.4rem; cursor:help; color:var(--light); }
+
+    .info-btn {
+      background:none;
+      border:none;
+      font-size:1.4rem;
+      cursor:help;
+      color:var(--light);
+    }
     .info-btn:hover { color:var(--primary); }
-    .advanced { display:none; margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border); }
-    table { width:100%; border-collapse:collapse; margin-top:0.5rem; font-size:0.95rem; }
-    th, td { padding:0.6rem; text-align:left; border-bottom:1px solid var(--border); }
+
+    .advanced {
+      display:none;
+      margin-top:1rem;
+      padding-top:1rem;
+      border-top:1px solid var(--border);
+    }
+
+    table {
+      width:100%;
+      border-collapse:collapse;
+      margin-top:0.5rem;
+      font-size:0.95rem;
+    }
+    th, td {
+      padding:0.6rem;
+      text-align:left;
+      border-bottom:1px solid var(--border);
+    }
     th { background:var(--bg); font-weight:600; }
-    .patreon-btn { display:block; margin:3rem auto; background:#ff424d; color:white; text-decoration:none; padding:1rem 2rem; border-radius:12px; font-weight:bold; text-align:center; max-width:300px; }
+
+    .patreon-btn {
+      display:block;
+      margin:3rem auto;
+      background:#ff424d;
+      color:white;
+      text-decoration:none;
+      padding:1rem 2rem;
+      border-radius:12px;
+      font-weight:bold;
+      text-align:center;
+      max-width:300px;
+    }
+
     .light-only { display: block; }
     .dark-only { display: none; }
     .dark .light-only { display: none; }
@@ -92,6 +223,93 @@
       transition: opacity 0.25s ease-out;
       z-index: 999;
     }
+
+    /* Compact FOC bar */
+    .foc-bar-wrapper { margin-top: 0.25rem; }
+
+    .foc-bar-track {
+      position: relative;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--bg);
+      overflow: hidden;
+    }
+
+    .foc-bar-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      border-radius: 999px;
+      background: var(--primary);
+      opacity: 0.25;
+      width: 0%;
+    }
+
+    .foc-ideal-range {
+      position: absolute;
+      top: 1px;
+      bottom: 1px;
+      border-radius: 999px;
+      background: var(--success);
+      opacity: 0.25;
+      left: 40%;
+      width: 20%;
+    }
+
+    .foc-marker {
+      position: absolute;
+      top: -4px;
+      width: 0;
+      height: 18px;
+      border-left: 2px solid var(--primary);
+    }
+
+    .foc-bar-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--light);
+      margin-top: 0.25rem;
+    }
+
+    /* Compact composition bar */
+    .comp-bar-track {
+      position: relative;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--bg);
+      overflow: hidden;
+      display: flex;
+    }
+
+    .comp-seg { height: 100%; }
+
+    .comp-seg-shaft { background: #94a3b8; }
+    .comp-seg-point { background: #0ea5e9; }
+    .comp-seg-other { background: #22c55e; }
+
+    .comp-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;   /* keep them close together */
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--light);
+    }
+
+    .comp-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      margin-right: 0.25rem;
+    }
+
+    .comp-dot-shaft { background: #94a3b8; }
+    .comp-dot-point { background: #0ea5e9; }
+    .comp-dot-other { background: #22c55e; }
   </style>
 </head>
 <body>
@@ -103,17 +321,23 @@
           <h1>Arrow Tune Calculator</h1>
           <div class="flex">
             <span style="color:var(--light);">Light</span>
-            <label class="toggle-switch"><input type="checkbox" id="darkModeToggle"><span class="slider"></span></label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="darkModeToggle"><span class="slider"></span>
+            </label>
             <span style="color:var(--light);">Dark</span>
           </div>
         </div>
-        <p style="color:var(--light);">Offline • Mobile-friendly • Live calculations<br>
-          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.5</span>
+        <p style="color:var(--light);">
+          Offline • Mobile-friendly • Live calculations<br>
+          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.6</span>
         </p>
       </div>
 
       <div class="card">
-        <div class="card-header"><h2>Your Setups</h2><button class="info-btn" title="Save and load your setups">i</button></div>
+        <div class="card-header">
+          <h2>Your Setups</h2>
+          <button class="info-btn" title="Save and load your setups">i</button>
+        </div>
         <label>Build Name</label>
         <div class="flex">
           <input type="text" id="buildName" placeholder="e.g. 2025 Hoyt RX-9 70lb 500gr">
@@ -128,13 +352,31 @@
 
       <!-- Bow Setup -->
       <div class="card">
-        <div class="card-header"><h2>Bow Setup</h2><button class="info-btn" title="Your bow specs">i</button></div>
+        <div class="card-header">
+          <h2>Bow Setup</h2>
+          <button class="info-btn" title="Your bow specs">i</button>
+        </div>
         <div class="grid-2">
-          <div><label>Bow Model</label><input type="text" id="bowModel" step="0.5"></div>
-          <div><label>IBO/ATA Speed (FPS)</label><input type="number" id="iboRating" value="0" step="0.5"></div>
-          <div><label>Draw Weight (lbs)</label><input type="number" id="drawWeight" value="70" step="0.5"></div>
-          <div><label>Draw Length (in)</label><input type="number" id="drawLength" value="29" step="0.5"></div>
-          <div><label>String Add-ons (grains)</label><input type="number" id="stringWeightSimple" value="0" step="0.5"></div>
+          <div>
+            <label>Bow Model</label>
+            <input type="text" id="bowModel" step="0.5">
+          </div>
+          <div>
+            <label>IBO/ATA Speed (FPS)</label>
+            <input type="number" id="iboRating" value="0" step="0.5">
+          </div>
+          <div>
+            <label>Draw Weight (lbs)</label>
+            <input type="number" id="drawWeight" value="70" step="0.5">
+          </div>
+          <div>
+            <label>Draw Length (in)</label>
+            <input type="number" id="drawLength" value="29" step="0.5">
+          </div>
+          <div>
+            <label>String Add-ons (grains)</label>
+            <input type="number" id="stringWeightSimple" value="0" step="0.5">
+          </div>
           <div>
             <label>Application</label>
             <select id="application">
@@ -147,7 +389,9 @@
 
         <div class="flex" style="margin-top:1rem;justify-content:space-between;">
           <label>Advanced String Components</label>
-          <label class="toggle-switch"><input type="checkbox" id="toggleString"><span class="slider"></span></label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleString"><span class="slider"></span>
+          </label>
         </div>
         <div id="stringAdvanced" class="advanced">
           <div class="grid-2">
@@ -156,29 +400,48 @@
             <div><label>Kisser</label><input type="number" id="kisserWeight" value="0" step="0.5"></div>
             <div><label>Silencers</label><input type="number" id="silencersWeight" value="0" step="0.5"></div>
           </div>
-          <p style="text-align:right;font-weight:600;">Total: <span id="stringTotal">0</span> grains</p>
+          <p style="text-align:right;font-weight:600;">
+            Total: <span id="stringTotal">0</span> grains
+          </p>
         </div>
       </div>
 
       <!-- Arrow Setup -->
       <div class="card">
-        <div class="card-header"><h2>Arrow Setup</h2><button class="info-btn" title="Measure from nock throat to end of shaft">i</button></div>
-        <label>Arrow Name</label><input type="text" id="arrowName">
+        <div class="card-header">
+          <h2>Arrow Setup</h2>
+          <button class="info-btn" title="Measure from nock throat to end of shaft">i</button>
+        </div>
+        <label>Arrow Name</label>
+        <input type="text" id="arrowName">
         <div class="grid-2">
-          <div><label>Arrow Length (in)</label><input type="number" id="arrowLength" value="28.5" step="0.5"></div>
+          <div>
+            <label>Arrow Length (in)</label>
+            <input type="number" id="arrowLength" value="28.5" step="0.5">
+          </div>
           <div>
             <label>Total Arrow Weight (grains)</label>
             <input type="number" id="totalArrowWeightSimple" value="450" step="0.5">
-            <small id="totalWeightHint" style="display:block;margin-top:0.25rem;font-size:0.85rem;color:var(--light);">
+            <small id="totalWeightHint"
+                   style="display:block;margin-top:0.25rem;font-size:0.85rem;color:var(--light);">
               When Advanced Components is off, this is the full arrow weight (shaft + point + components).
             </small>
           </div>
-          <div><label>Point Weight (grains)</label><input type="number" id="pointWeight" value="125" step="0.5"></div>
-          <div><label>Balance Point from Nock (in)</label><input type="number" id="balancePoint" value="18.5" step="0.05"></div>
+          <div>
+            <label>Point Weight (grains)</label>
+            <input type="number" id="pointWeight" value="125" step="0.5">
+          </div>
+          <div>
+            <label>Balance Point from Nock (in)</label>
+            <input type="number" id="balancePoint" value="18.5" step="0.05">
+          </div>
         </div>
+
         <div class="flex" style="margin-top:1rem;justify-content:space-between;">
           <label>Advanced Arrow Components</label>
-          <label class="toggle-switch"><input type="checkbox" id="toggleArrow"><span class="slider"></span></label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleArrow"><span class="slider"></span>
+          </label>
         </div>
         <div id="arrowAdvanced" class="advanced">
           <div class="grid-2">
@@ -190,7 +453,9 @@
             <div><label>Insert/Outsert</label><input type="number" id="insertWeight" value="0" step="0.5"></div>
             <div><label>Glue / Pin Nock</label><input type="number" id="glueWeight" value="0" step="0.5"></div>
           </div>
-          <p style="text-align:right;font-weight:600;">Total: <span id="arrowTotal">0.0</span> grains</p>
+          <p style="text-align:right;font-weight:600;">
+            Total: <span id="arrowTotal">0.0</span> grains
+          </p>
         </div>
       </div>
 
@@ -205,22 +470,30 @@
 
     <!-- RIGHT: OUTPUTS -->
     <div id="outputs-column">
-      <!-- Arrow Efficiency -->
+      <!-- Arrow Efficiency + FOC + Weight Composition -->
       <div class="card">
         <div class="card-header"><h2>Arrow Efficiency</h2></div>
-        <div class="grid-2" style="text-align:center;">
+
+        <!-- Primary efficiency outputs -->
+        <div class="grid-2" style="text-align:center; margin-bottom:1.5rem;">
           <div class="card">
             <h3 style="color:var(--primary);">Actual Launch FPS</h3>
-            <input type="number" id="actualFPS" step="0.1" style="font-size:2.5rem;text-align:center;border:3px solid var(--primary);border-radius:12px;padding:0.5rem;">
+            <input type="number" id="actualFPS" step="0.1"
+                   style="font-size:2.5rem;text-align:center;border:3px solid var(--primary);border-radius:12px;padding:0.5rem;">
             <button class="btn-small btn-refresh" id="recalcFPS">Recalculate</button>
-            <small id="fpsSource" style="display:block;margin-top:0.35rem;font-size:0.85rem;color:var(--light);">
-              Estimated from IBO, draw, arrow &amp; string weight
+            <small id="fpsSource"
+                   style="display:block;margin-top:0.35rem;font-size:0.8rem;color:var(--light);">
+              Estimated from IBO, draw, arrow & string weight
             </small>
           </div>
+
           <div class="card">
             <h3 style="color:var(--success);">GPP</h3>
             <div style="font-size:2.5rem;" id="gppValue">-</div>
-            <small id="gppHint" style="display:block;margin-top:0.25rem;font-size:0.85rem;color:var(--light);"></small>
+            <small id="gppHint"
+                   style="display:block;margin-top:0.35rem;font-size:0.8rem;color:var(--light);">
+              Grains per pound of draw weight.
+            </small>
           </div>
           <div class="card">
             <h3 style="color:var(--warning);">GPI</h3>
@@ -231,45 +504,70 @@
             <div style="font-size:2.5rem;" id="finalArrowWeight">-</div>
           </div>
         </div>
-      </div>
 
-      <!-- FOC -->
-      <div class="card">
-        <div class="card-header"><h2>Front of Center (FOC)</h2></div>
-        <div style="text-align:center;">
-          <div style="font-size:5rem;font-weight:bold;color:var(--primary);" id="focValue">-</div>
-          <svg width="100%" height="160" viewBox="0 0 500 160" style="max-width:500px;margin:1rem auto;border:2px solid var(--border);border-radius:12px;">
-            <rect x="50" y="70" width="400" height="20" fill="#e2e8f0" rx="10"/>
-            <circle cx="250" cy="80" r="16" fill="var(--warning)" stroke="white" stroke-width="4"/>
-            <circle id="balanceMarker" cx="250" cy="80" r="20" fill="var(--primary)" stroke="white" stroke-width="5"/>
-            <text id="balanceText" x="250" y="130" text-anchor="middle" fill="var(--primary)" font-weight="bold" font-size="20">-</text>
-            <rect x="320" y="60" width="130" height="40" fill="var(--success)" opacity="0.25" rx="15"/>
-            <text x="385" y="85" text-anchor="middle" fill="var(--success)" font-weight="bold" font-size="16">12-18% Ideal</text>
-          </svg>
+        <!-- FOC + Composition subcards -->
+        <div class="grid-2" style="gap:1rem;">
+          <!-- FOC SUBCARD -->
+          <div class="subcard">
+            <h3 style="margin-bottom:0.5rem;">Front of Center (FOC)</h3>
+            <div style="text-align:center;margin-bottom:0.5rem;">
+              <div id="focValue"
+                   style="font-size:2.4rem;font-weight:800;color:var(--primary);">-</div>
+              <div style="font-size:0.9rem;color:var(--light);">
+                Ideal Range: 12–18%
+              </div>
+            </div>
+
+            <div class="foc-bar-wrapper">
+              <div class="foc-bar-track">
+                <div id="focBarFill" class="foc-bar-fill"></div>
+                <div class="foc-ideal-range"></div>
+                <div id="focMarker" class="foc-marker"></div>
+              </div>
+              <div class="foc-bar-labels">
+                <span>0%</span><span>30%</span>
+              </div>
+            </div>
+
+            <small id="focHint"
+                   style="display:block;margin-top:0.5rem;font-size:0.85rem;color:var(--light);">
+              FOC helps with broadhead stability and penetration.
+            </small>
+          </div>
+
+          <!-- Arrow Weight Composition SUBCARD -->
+          <div class="subcard">
+            <h3 style="margin-bottom:0.5rem;">Arrow Weight Composition</h3>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.5rem;">
+              <span>Breakdown</span>
+              <span id="compTotalLabel" style="font-size:0.9rem;color:var(--light);">-</span>
+            </div>
+
+            <div class="comp-bar-track">
+              <div id="compShaftSeg" class="comp-seg comp-seg-shaft" style="width:0%;"></div>
+              <div id="compPointSeg" class="comp-seg comp-seg-point" style="width:0%;"></div>
+              <div id="compOtherSeg" class="comp-seg comp-seg-other" style="width:0%;"></div>
+            </div>
+
+            <div class="comp-legend">
+              <span style="white-space:nowrap;">
+                <span class="comp-dot comp-dot-shaft"></span>
+                <span id="shaftPctLabel">Shaft: 0%</span>
+              </span>
+              <span style="white-space:nowrap;">
+                <span class="comp-dot comp-dot-point"></span>
+                <span id="pointPctLabel">Point: 0%</span>
+              </span>
+              <span style="white-space:nowrap;">
+                <span class="comp-dot comp-dot-other"></span>
+                <span id="compPctLabel">Comp.: 0%</span>
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Arrow Weight Composition -->
-      <div class="card">
-        <div class="card-header"><h2>Arrow Weight Composition</h2></div>
-        <div style="text-align:center;">
-          <svg width="100%" height="200" viewBox="0 0 500 200" style="max-width:500px;margin:1.5rem auto;border:2px solid var(--border);border-radius:12px;">
-            <rect x="50" y="90" width="400" height="20" fill="#e2e8f0" rx="10"/>
-            <rect x="50" y="90" width="0" height="20" fill="#94a3b8" rx="10" id="shaftBar"/>
-            <rect x="50" y="90" width="0" height="20" fill="#0ea5e9" rx="10" id="pointBar"/>
-            <rect x="50" y="90" width="0" height="20" fill="#22c55e" rx="10" id="compBar"/>
-            <text x="250" y="65" text-anchor="middle" fill="var(--text)" font-size="16" font-weight="600">Arrow Weight Composition</text>
-            <text x="150" y="135" text-anchor="middle" fill="#1e293b" class="light-only" font-weight="bold" font-size="15" id="shaftLabel">Shaft: 0%</text>
-            <text x="250" y="135" text-anchor="middle" fill="#1e293b" class="light-only" font-weight="bold" font-size="15" id="pointLabel">Point: 0%</text>
-            <text x="350" y="135" text-anchor="middle" fill="#1e293b" class="light-only" font-weight="bold" font-size="15" id="compLabel">Components: 0%</text>
-            <text x="150" y="135" text-anchor="middle" fill="#e2e8f0" class="dark-only" font-weight="bold" font-size="15" id="shaftLabel-dark">Shaft: 0%</text>
-            <text x="250" y="135" text-anchor="middle" fill="#e2e8f0" class="dark-only" font-weight="bold" font-size="15" id="pointLabel-dark">Point: 0%</text>
-            <text x="350" y="135" text-anchor="middle" fill="#e2e8f0" class="dark-only" font-weight="bold" font-size="15" id="compLabel-dark">Components: 0%</text>
-          </svg>
-        </div>
-      </div>
-
-      <!-- Velocity, Trajectory & Impact (card-only version) -->
+      <!-- Velocity, Trajectory & Impact -->
       <div class="card">
         <div class="card-header">
           <h2>Velocity, Trajectory & Impact @ <span id="distanceValue">50</span> yards</h2>
@@ -287,7 +585,7 @@
           <option value="120" label="120"></option>
         </datalist>
 
-        <!-- NEW: simple metric cards for velocity & peak height -->
+        <!-- Simple metric cards for velocity & peak height -->
         <div class="grid-2" style="margin-top:1.25rem;">
           <div class="card text-center">
             <h3>Velocity @ <span id="velocityDistanceLabel">50</span> yd</h3>
@@ -297,14 +595,14 @@
           <div class="card text-center">
             <h3>Peak Height on Flight</h3>
             <div style="font-size:3rem;" id="peakHeightValue">-</div>
-              <small>
-                ft above line • highest point at
-                <span id="peakDistanceValue">-</span> yd before the target
-              </small>
+            <small>
+              highest point 
+              <span id="peakDistanceValue">-</span> yd to target
+            </small>
           </div>
         </div>
 
-        <!-- Existing KE / impact cards -->
+        <!-- KE / impact cards -->
         <div class="grid-2" style="margin-top:1rem;">
           <div class="card text-center">
             <h3 style="color:var(--success);">Launch KE</h3>
@@ -366,14 +664,20 @@
         </div>
       </div>
 
+      <!-- Build Summary -->
       <div class="card">
-        <div class="card-header"><h2>Build Summary</h2><button class="btn-small" id="copySummary">Copy</button></div>
+        <div class="card-header">
+          <h2>Build Summary</h2>
+          <button class="btn-small" id="copySummary">Copy</button>
+        </div>
         <div id="summaryTable" style="font-size:1rem;"></div>
       </div>
     </div>
   </div>
 
-  <a href="https://www.patreon.com/cw/ArrowTuneCalculator" target="_blank" class="patreon-btn">Support on Patreon</a>
+  <a href="https://www.patreon.com/cw/ArrowTuneCalculator" target="_blank" class="patreon-btn">
+    Support on Patreon
+  </a>
 
   <div id="toast"></div>
 
@@ -389,8 +693,12 @@
 
   // Dark mode
   const darkToggle = document.getElementById('darkModeToggle');
-  if (localStorage.getItem('dark')==='1' || (!localStorage.getItem('dark') && matchMedia('(prefers-color-scheme: dark)').matches)) {
-    document.body.classList.add('dark'); darkToggle.checked = true;
+  if (
+    localStorage.getItem('dark') === '1' ||
+    (!localStorage.getItem('dark') && matchMedia('(prefers-color-scheme: dark)').matches)
+  ) {
+    document.body.classList.add('dark');
+    darkToggle.checked = true;
   }
   darkToggle.addEventListener('change', () => {
     document.body.classList.toggle('dark', darkToggle.checked);
@@ -414,7 +722,10 @@
     }
 
     keys.forEach(n => {
-      const o = document.createElement('option'); o.value = n; o.textContent = n; loadSelect.appendChild(o);
+      const o = document.createElement('option');
+      o.value = n;
+      o.textContent = n;
+      loadSelect.appendChild(o);
     });
   }
 
@@ -428,11 +739,13 @@
     if (isAdv) {
       simpleTotal.readOnly = true;
       simpleTotal.style.opacity = 0.6;
-      hint.textContent = 'In Advanced mode, total arrow weight is calculated from shaft, vanes, insert, nock, wrap, glue, and point.';
+      hint.textContent =
+        'In Advanced mode, total arrow weight is calculated from shaft, vanes, insert, nock, wrap, glue, and point.';
     } else {
       simpleTotal.readOnly = false;
       simpleTotal.style.opacity = 1;
-      hint.textContent = 'When Advanced Components is off, this is the full arrow weight (shaft + point + components).';
+      hint.textContent =
+        'When Advanced Components is off, this is the full arrow weight (shaft + point + components).';
     }
   }
 
@@ -508,12 +821,32 @@
   };
 
   document.getElementById('deleteBuild').onclick = () => {
-    const n = loadSelect.value;
-    if (!n || !confirm('Delete this build?')) return;
+    let n = loadSelect.value;
+
+    // If nothing is selected, fall back to the typed build name
+    if (!n) {
+      const typed = document.getElementById('buildName').value.trim();
+      if (typed) n = typed;
+    }
+
+    if (!n) {
+      alert('Select a saved build or type its exact name to delete it.');
+      return;
+    }
+
     const all = JSON.parse(localStorage.getItem('atc') || '{}');
+
+    if (!all[n]) {
+      alert(`No saved build named "${n}" was found.`);
+      return;
+    }
+
+    if (!confirm(`Delete build "${n}"?`)) return;
+
     delete all[n];
     localStorage.setItem('atc', JSON.stringify(all));
     refreshBuilds();
+    loadSelect.value = '';
     showToast('Build deleted');
   };
 
@@ -532,11 +865,15 @@
   const fpsSource = document.getElementById('fpsSource');
 
   function markFpsEstimated() {
-    fpsSource.textContent = 'Estimated from IBO, draw, arrow & string weight';
+    if (fpsSource) {
+      fpsSource.textContent = 'Estimated from IBO, draw, arrow & string weight';
+    }
   }
 
   function markFpsChrono() {
-    fpsSource.textContent = 'Using manual FPS (chronograph)';
+    if (fpsSource) {
+      fpsSource.textContent = 'Using manual FPS (chronograph)';
+    }
   }
 
   // Arrow weight helper
@@ -553,7 +890,6 @@
       const glue   = parseFloat(document.getElementById('glueWeight').value)       || 0;
 
       const advTotal = bare + nock + wrap + vanes + insert + glue;
-
       document.getElementById('arrowTotal').textContent = advTotal.toFixed(1);
 
       return advTotal + pointWeight;
@@ -568,15 +904,18 @@
     const balance = parseFloat(document.getElementById('balancePoint').value) || 18.5;
     const ibo = parseFloat(document.getElementById('iboRating').value) || 350;
     const dw = parseFloat(document.getElementById('drawWeight').value) || 70;
-    const stringW = document.getElementById('toggleString').checked ?
-      ['peepWeight','dloopWeight','kisserWeight','silencersWeight'].reduce((a,id)=>a+(parseFloat(document.getElementById(id).value)||0),0) :
-      parseFloat(document.getElementById('stringWeightSimple').value) || 25;
+    const stringW = document.getElementById('toggleString').checked
+      ? ['peepWeight','dloopWeight','kisserWeight','silencersWeight']
+          .reduce((a,id)=>a+(parseFloat(document.getElementById(id).value)||0),0)
+      : (parseFloat(document.getElementById('stringWeightSimple').value) || 25);
 
     if (document.getElementById('toggleString').checked) {
-      const total = ['peepWeight','dloopWeight','kisserWeight','silencersWeight'].reduce((a,id)=>a+(parseFloat(document.getElementById(id).value)||0),0);
+      const total = ['peepWeight','dloopWeight','kisserWeight','silencersWeight']
+        .reduce((a,id)=>a+(parseFloat(document.getElementById(id).value)||0),0);
       document.getElementById('stringTotal').textContent = total;
     }
 
+    // FPS
     let fps = parseFloat(fpsInput.value);
     if (recalcFPS || isNaN(fps) || fps <= 0) {
       const base = ibo * Math.sqrt((450 + stringW) / (450 + weight + stringW));
@@ -585,22 +924,47 @@
       markFpsEstimated();
     }
 
+    // FOC
     const foc = ((balance - len/2) / len) * 100;
-    document.getElementById('focValue').textContent = foc.toFixed(1) + '%';
-    document.getElementById('balanceMarker').setAttribute('cx', 50 + (balance/len)*400);
-    document.getElementById('balanceText').textContent = balance.toFixed(2) + '"';
+    const focValEl   = document.getElementById('focValue');
+    const focMarker  = document.getElementById('focMarker');
+    const focBarFill = document.getElementById('focBarFill');
+    const focHint    = document.getElementById('focHint');
 
+    focValEl.textContent = foc.toFixed(1) + '%';
+
+    const focClamped = Math.max(0, Math.min(30, isFinite(foc) ? foc : 0));
+    const markerLeft = (focClamped / 30) * 100;
+    if (focMarker)  focMarker.style.left  = markerLeft + '%';
+    if (focBarFill) focBarFill.style.width = markerLeft + '%';
+
+    if (!isFinite(foc)) {
+      focHint.textContent = 'Enter arrow length, balance point, and weight to compute FOC.';
+      focHint.style.color = 'var(--light)';
+    } else if (foc >= 12 && foc <= 18) {
+      focHint.textContent = 'In the common ideal range for hunting (12–18%).';
+      focHint.style.color = 'var(--success)';
+    } else if (foc < 10) {
+      focHint.textContent = 'Very low FOC – may be less stable with broadheads.';
+      focHint.style.color = 'var(--danger)';
+    } else if (foc > 20) {
+      focHint.textContent = 'Very high FOC – heavy front can reduce speed but increase penetration focus.';
+      focHint.style.color = 'var(--warning)';
+    } else {
+      focHint.textContent = 'Within a workable range; many setups run 10–20%.';
+      focHint.style.color = 'var(--light)';
+    }
+
+    // GPP / GPI / final weight
     const gpp = weight / dw;
     const gpi = weight / len;
     document.getElementById('gppValue').textContent = gpp.toFixed(1);
     document.getElementById('gpiValue').textContent = gpi.toFixed(1);
     document.getElementById('finalArrowWeight').textContent = weight.toFixed(1) + ' gr';
 
-    // GPP hint
     const gppHint = document.getElementById('gppHint');
     let gppText = '';
     let gppColor = 'var(--light)';
-
     if (gpp < 5) {
       gppText = 'Very light – often not recommended for most hunting bows.';
       gppColor = 'var(--danger)';
@@ -612,9 +976,12 @@
     } else {
       gppText = 'Heavy arrow – penetration-focused setups.';
     }
-    gppHint.textContent = gppText;
-    gppHint.style.color = gppColor;
+    if (gppHint) {
+      gppHint.textContent = gppText;
+      gppHint.style.color = gppColor;
+    }
 
+    // KE and momentum
     const launchKE = (weight * fps * fps) / 450240;
     const launchMom = (weight * fps) / 225400;
     document.getElementById('keValue').textContent = launchKE.toFixed(1);
@@ -635,36 +1002,23 @@
     document.getElementById('velocityDistanceLabel').textContent = distYards;
     document.getElementById('velocityAtDistance').textContent = currentV.toFixed(0);
 
-    // --- New: closed-form projectile peak height ---
-    // Use feet for distance and ft/s for speed
+    // Closed-form projectile peak height (in feet, symmetric trajectory)
     const g = 32.174;              // ft/s^2
     const v0 = fps;                // ft/s
     const R_ft = distYards * 3;    // yards -> feet
 
     let peakHeightFt = 0;
     let peakYard = 0;
-
     if (v0 > 0 && R_ft > 0) {
-      // Range equation: R = v0^2 * sin(2θ) / g
-      // => sin(2θ) = R * g / v0^2
       let sin2theta = (R_ft * g) / (v0 * v0);
-
       if (sin2theta > 0) {
-        // Clamp to [0,1] in case of tiny numeric overshoot
         sin2theta = Math.min(1, Math.max(0, sin2theta));
-
-        const theta = 0.5 * Math.asin(sin2theta); // radians
+        const theta = 0.5 * Math.asin(sin2theta);
         const sinTheta = Math.sin(theta);
-
-        // H_max = v0^2 * sin^2(θ) / (2g)
         peakHeightFt = (v0 * v0 * sinTheta * sinTheta) / (2 * g);
-
-        // For a symmetric trajectory (start & end at same height),
-        // the apex is halfway to the target.
         peakYard = distYards / 2;
       }
     }
-
     document.getElementById('peakHeightValue').textContent = peakHeightFt.toFixed(1);
     document.getElementById('peakDistanceValue').textContent = peakYard.toFixed(0);
 
@@ -673,41 +1027,58 @@
     document.getElementById('gameKE').textContent = impactKE.toFixed(1);
     document.getElementById('gameMom').textContent = impactMom.toFixed(3);
 
-    // Arrow Weight Composition
+    // Arrow Weight Composition – percentages & bar
     const isAdv = document.getElementById('toggleArrow').checked;
     let shaft = 0, point = 0, comp = 0;
     if (isAdv) {
       shaft = parseFloat(document.getElementById('bareShaft').value) || 0;
-      const nock = parseFloat(document.getElementById('nockWeight').value) || 0;
-      const wrap = parseFloat(document.getElementById('wrapWeight').value) || 0;
-      const vanes = (parseFloat(document.getElementById('vaneWeightEach').value) || 0) *
-                    (parseFloat(document.getElementById('vaneCount').value) || 0);
+      const nock   = parseFloat(document.getElementById('nockWeight').value) || 0;
+      const wrap   = parseFloat(document.getElementById('wrapWeight').value) || 0;
+      const vanes  = (parseFloat(document.getElementById('vaneWeightEach').value) || 0) *
+                     (parseFloat(document.getElementById('vaneCount').value) || 0);
       const insert = parseFloat(document.getElementById('insertWeight').value) || 0;
-      const glue = parseFloat(document.getElementById('glueWeight').value) || 0;
-      comp = nock + wrap + vanes + insert + glue;
+      const glue   = parseFloat(document.getElementById('glueWeight').value) || 0;
+      comp  = nock + wrap + vanes + insert + glue;
       point = parseFloat(document.getElementById('pointWeight').value) || 125;
     } else {
       point = parseFloat(document.getElementById('pointWeight').value) || 125;
-      shaft = weight - point;
-      comp = 0;
+      shaft = Math.max(0, weight - point);
+      comp  = 0;
     }
 
-    const totalW = 400;
-    const shaftW = (shaft / weight) * totalW;
-    const pointW = (point / weight) * totalW;
-    const compW = (comp / weight) * totalW;
+    let shaftPct = 0, pointPct = 0, compPct = 0;
+    if (weight > 0) {
+      shaftPct = (shaft / weight) * 100;
+      pointPct = (point / weight) * 100;
+      compPct  = (comp  / weight) * 100;
+    }
 
-    document.getElementById('shaftBar').setAttribute('width', shaftW);
-    document.getElementById('pointBar').setAttribute('x', 50 + shaftW);
-    document.getElementById('pointBar').setAttribute('width', pointW);
-    document.getElementById('compBar').setAttribute('x', 50 + shaftW + pointW);
-    document.getElementById('compBar').setAttribute('width', compW);
+    const totalPct = shaftPct + pointPct + compPct;
+    if (totalPct > 0 && Math.abs(totalPct - 100) > 0.5) {
+      shaftPct = (shaftPct / totalPct) * 100;
+      pointPct = (pointPct / totalPct) * 100;
+      compPct  = (compPct  / totalPct) * 100;
+    }
 
-    document.getElementById('shaftLabel').textContent = `Shaft: ${((shaft/weight)*100).toFixed(0)}%`;
-    document.getElementById('pointLabel').textContent = `Point: ${((point/weight)*100).toFixed(0)}%`;
-    document.getElementById('compLabel').textContent = `Comp.: ${((comp/weight)*100).toFixed(0)}%`;
+    const segShaft = document.getElementById('compShaftSeg');
+    const segPoint = document.getElementById('compPointSeg');
+    const segOther = document.getElementById('compOtherSeg');
 
-    // Game Effectiveness
+    if (segShaft) segShaft.style.width = shaftPct.toFixed(1) + '%';
+    if (segPoint) segPoint.style.width = pointPct.toFixed(1) + '%';
+    if (segOther) segOther.style.width = compPct.toFixed(1) + '%';
+
+    const labelTotal = document.getElementById('compTotalLabel');
+    const labelShaft = document.getElementById('shaftPctLabel');
+    const labelPoint = document.getElementById('pointPctLabel');
+    const labelComp  = document.getElementById('compPctLabel');
+
+    if (labelTotal) labelTotal.textContent = weight > 0 ? `${weight.toFixed(1)} gr total` : '-';
+    if (labelShaft) labelShaft.textContent = `Shaft: ${shaftPct.toFixed(0)}%`;
+    if (labelPoint) labelPoint.textContent = `Point: ${pointPct.toFixed(0)}%`;
+    if (labelComp)  labelComp.textContent  = `Comp.: ${compPct.toFixed(0)}%`;
+
+    // Game Effectiveness statuses
     const games = [
       { ke: 25, mom: 0.30, id: "smallGameStatus" },
       { ke: 50, mom: 0.45, id: "deerStatus" },
@@ -722,7 +1093,7 @@
       el.style.color = ok ? "var(--success)" : "var(--danger)";
     });
 
-    // Build Summary
+    // Build Summary table
     const summary = {
       "Build Name": document.getElementById('buildName').value || "Unnamed",
       "Bow Model": document.getElementById('bowModel').value || "-",
@@ -744,26 +1115,49 @@
       "Time to Impact": time.toFixed(2) + " s"
     };
 
-    document.getElementById('summaryTable').innerHTML = '<table>' +
+    document.getElementById('summaryTable').innerHTML =
+      '<table>' +
       Object.entries(summary).map(([k,v]) =>
         `<tr><td style="font-weight:600;padding:0.5rem;">${k}</td><td style="text-align:right;padding:0.5rem;">${v}</td></tr>`
-      ).join('') + '</table>';
+      ).join('') +
+      '</table>';
+
+    // Store latest summary for copy button
+    window.latestSummary = summary; 
   }
+
 
   // Recalculate button
   document.getElementById('recalcFPS').onclick = () => calculateEverything(true);
 
-  // Copy to clipboard
+  // Copy summary button
   document.getElementById('copySummary').onclick = () => {
-    const text = `Arrow Tune Build - ${new Date().toLocaleDateString()}\n\n` +
-      `Build: ${document.getElementById('buildName').value||"Unnamed"}\n` +
-      `FPS: ${document.getElementById('actualFPS').value}\n` +
-      `Weight: ${getArrowWeight().toFixed(1)} gr\n` +
-      `FOC: ${document.getElementById('focValue').textContent}\n` +
-      `Launch KE: ${document.getElementById('keValue').textContent} ft-lbs\n` +
-      `Impact KE @ ${document.getElementById('distanceValue').textContent}yd: ${document.getElementById('impactKE').textContent} ft-lbs\n` +
-      `Time to Impact: ${document.getElementById('timeToImpact').textContent}s`;
-    navigator.clipboard.writeText(text).then(()=>showToast('Summary copied'));
+    const summary = window.latestSummary;
+    let text;
+
+    if (summary) {
+      const lines = [
+        `Arrow Tune Build - ${new Date().toLocaleDateString()}`,
+        ''
+      ];
+
+      Object.entries(summary).forEach(([k, v]) => {
+        // Skip empty header row like "Impact @ 41 yd": ""
+        if (v === '') return;
+        lines.push(`${k}: ${v}`);
+      });
+
+      text = lines.join('\n');
+    } else {
+      // Fallback (should rarely happen)
+      text =
+        `Arrow Tune Build - ${new Date().toLocaleDateString()}\n\n` +
+        `Build Name: ${document.getElementById('buildName').value || "Unnamed"}\n` +
+        `Launch FPS: ${document.getElementById('actualFPS').value}\n` +
+        `Total Arrow Weight: ${getArrowWeight().toFixed(1)} gr\n`;
+    }
+
+    navigator.clipboard.writeText(text).then(() => showToast('Summary copied'));
   };
 
   // Distance slider
