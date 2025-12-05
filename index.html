@@ -41,6 +41,48 @@
     .dark-only { display: none; }
     .dark .light-only { display: none; }
     .dark .dark-only { display: block; }
+    #outputs-column,
+    #outputs-column * {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-weight: 600 !important;
+      letter-spacing: -0.02em;
+    }
+
+    /* Titles inside output cards */
+    #outputs-column h3 {
+      font-size: 1.15rem !important;
+      margin: 0 0 0.4rem 0;
+      font-weight: 700 !important;
+    }
+
+    /* Big numbers (GPP, GPI, Total Weight, Launch KE, etc.) */
+    #outputs-column div[style*="font-size:2.5rem"],
+    #outputs-column div[style*="font-size:3rem"] {
+      font-size: 2.6rem !important;
+      line-height: 1.1;
+    }
+
+    /* FOC % — now perfectly sized */
+    #focValue {
+      font-size: 4.2rem !important;
+      line-height: 1;
+    }
+
+    /* Game Effectiveness "Send it" / "Don’t" — now perfectly sized */
+    #smallGameStatus,
+    #deerStatus,
+    #elkStatus,
+    #mooseStatus {
+      font-size: 2.4rem !important;
+      font-weight: 800 !important;
+    }
+
+    /* Small text (ft-lbs, seconds, etc.) */
+    #outputs-column small {
+      font-weight: 500 !important;
+      font-size: 0.9rem;
+      opacity: 0.85;
+    }
   </style>
 </head>
 <body>
@@ -57,7 +99,7 @@
           </div>
         </div>
         <p style="color:var(--light);">Offline • Mobile-friendly • Live calculations<br>
-          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.3</span>
+          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.4</span>
         </p>
       </div>
 
@@ -220,29 +262,29 @@
           
           <!-- Small Game -->
           <div class="card">
-            <h3 style="color:var(--success); margin:0;">Small Game</h3>
+            <h3 style="color:var(--success); margin:0;">Small / Thin-skinned</h3>
             <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 25 ft-lbs • 0.30 slug·ft/s</div>
             <div style="font-size:2.8rem; font-weight:bold; color:var(--success);" id="smallGameStatus">Send it</div>
           </div>
 
           <!-- Whitetail Deer -->
           <div class="card">
-            <h3 style="color:var(--primary); margin:0;">Whitetail Deer</h3>
-            <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 55 ft-lbs • 0.50 slug·ft/s</div>
+            <h3 style="color:var(--primary); margin:0;">Medium Game</h3>
+            <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 50 ft-lbs • 0.45 slug·ft/s</div>
             <div style="font-size:2.8rem; font-weight:bold; color:var(--primary);" id="deerStatus">Send it</div>
           </div>
 
           <!-- Elk -->
           <div class="card">
-            <h3 style="color:var(--warning); margin:0;">Elk</h3>
-            <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 70 ft-lbs • 0.60 slug·ft/s</div>
+            <h3 style="color:var(--warning); margin:0;">Large / Tough Game</h3>
+            <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 65 ft-lbs • 0.60 slug·ft/s</div>
             <div style="font-size:2.8rem; font-weight:bold; color:var(--warning);" id="elkStatus">Send it</div>
           </div>
 
           <!-- Moose / Bear -->
           <div class="card">
-            <h3 style="color:var(--danger); margin:0;">Moose / Bear</h3>
-            <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 90 ft-lbs • 0.80 slug·ft/s</div>
+            <h3 style="color:var(--danger); margin:0;">Dangerous / Extreme</h3>
+            <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 85 ft-lbs • 0.75 slug·ft/s</div>
             <div style="font-size:2.8rem; font-weight:bold; color:var(--danger);" id="mooseStatus">Send it</div>
           </div>
 
@@ -480,10 +522,10 @@
     // Game Effectiveness
     // Game Effectiveness — NEW CARD STYLE
     const games = [
-      { name: "Small Game",     ke: 25, mom: 0.30, id: "smallGameStatus" },
-      { name: "Whitetail Deer", ke: 55, mom: 0.50, id: "deerStatus" },
-      { name: "Elk",            ke: 70, mom: 0.60, id: "elkStatus" },
-      { name: "Moose / Bear",   ke: 90, mom: 0.80, id: "mooseStatus" }
+      { name: "Class 1: Small / Thin-skinned",     ke: 25, mom: 0.30, id: "smallGameStatus" },
+      { name: "Class 2: Medium Game", ke: 50, mom: 0.45, id: "deerStatus" },
+      { name: "Class 3: Large / Tough Game",            ke: 65, mom: 0.60, id: "elkStatus" },
+      { name: "Class 4: Dangerous / Extreme",   ke: 85, mom: 0.75, id: "mooseStatus" }
     ];
 
     games.forEach(g => {
