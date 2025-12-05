@@ -129,9 +129,15 @@
     .info-btn {
       background:none;
       border:none;
-      font-size:1.4rem;
+      font-size:1.1rem;
       cursor:help;
       color:var(--light);
+      padding:0;
+      width:1.4rem;
+      height:1.4rem;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
     }
     .info-btn:hover { color:var(--primary); }
 
@@ -293,7 +299,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
-      justify-content: center;   /* keep them close together */
+      justify-content: center;
       margin-top: 0.5rem;
       font-size: 0.85rem;
       color: var(--light);
@@ -310,6 +316,52 @@
     .comp-dot-shaft { background: #94a3b8; }
     .comp-dot-point { background: #0ea5e9; }
     .comp-dot-other { background: #22c55e; }
+
+    /* Info overlay */
+    .info-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 998;
+    }
+    .info-overlay.open {
+      display: flex;
+    }
+    .info-panel {
+      background: var(--card);
+      color: var(--text);
+      border-radius: 12px;
+      max-width: 420px;
+      width: 90%;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 20px 40px rgba(15,23,42,0.35);
+      position: relative;
+    }
+    .info-panel h2 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.2rem;
+    }
+    .info-panel p {
+      font-size: 0.95rem;
+      margin: 0.35rem 0;
+      color: var(--light);
+    }
+    .info-close {
+      position:absolute;
+      top:0.6rem;
+      right:0.75rem;
+      border:none;
+      background:transparent;
+      font-size:1.4rem;
+      cursor:pointer;
+      color: var(--light);
+    }
+    .info-close:hover {
+      color: var(--primary);
+    }
   </style>
 </head>
 <body>
@@ -336,9 +388,11 @@
       <div class="card">
         <div class="card-header">
           <h2>Your Setups</h2>
-          <button class="info-btn" title="Save and load your setups">i</button>
         </div>
-        <label>Build Name</label>
+        <label>
+          Build Name
+          <button class="info-btn" type="button" data-info="buildName">i</button>
+        </label>
         <div class="flex">
           <input type="text" id="buildName" placeholder="e.g. 2025 Hoyt RX-9 70lb 500gr">
           <button class="btn-small" id="suggestName">Suggest</button>
@@ -354,31 +408,48 @@
       <div class="card">
         <div class="card-header">
           <h2>Bow Setup</h2>
-          <button class="info-btn" title="Your bow specs">i</button>
         </div>
         <div class="grid-2">
           <div>
-            <label>Bow Model</label>
+            <label>
+              Bow Model
+              <button class="info-btn" type="button" data-info="bowModel">i</button>
+            </label>
             <input type="text" id="bowModel" step="0.5">
           </div>
           <div>
-            <label>IBO/ATA Speed (FPS)</label>
+            <label>
+              IBO/ATA Speed (FPS)
+              <button class="info-btn" type="button" data-info="iboRating">i</button>
+            </label>
             <input type="number" id="iboRating" value="0" step="0.5">
           </div>
           <div>
-            <label>Draw Weight (lbs)</label>
+            <label>
+              Draw Weight (lbs)
+              <button class="info-btn" type="button" data-info="drawWeight">i</button>
+            </label>
             <input type="number" id="drawWeight" value="70" step="0.5">
           </div>
           <div>
-            <label>Draw Length (in)</label>
+            <label>
+              Draw Length (in)
+              <button class="info-btn" type="button" data-info="drawLength">i</button>
+            </label>
             <input type="number" id="drawLength" value="29" step="0.5">
           </div>
           <div>
-            <label>String Add-ons (grains)</label>
+            <label>
+              String Add-ons (grains)
+              <button class="info-btn" type="button" data-info="stringWeightSimple">i</button>
+            </label>
             <input type="number" id="stringWeightSimple" value="0" step="0.5">
           </div>
           <div>
-            <label>Application</label>
+            <label>
+              Application
+              <button class="info-btn" type="button" data-info="application">i</button>
+            </label>
             <select id="application">
               <option>Target / 3D</option>
               <option selected>Hunting</option>
@@ -388,17 +459,44 @@
         </div>
 
         <div class="flex" style="margin-top:1rem;justify-content:space-between;">
-          <label>Advanced String Components</label>
+          <label>
+            Advanced String Components
+            <button class="info-btn" type="button" data-info="toggleString">i</button>
+          </label>
           <label class="toggle-switch">
             <input type="checkbox" id="toggleString"><span class="slider"></span>
           </label>
         </div>
         <div id="stringAdvanced" class="advanced">
           <div class="grid-2">
-            <div><label>Peep</label><input type="number" id="peepWeight" value="0" step="0.5"></div>
-            <div><label>D-Loop</label><input type="number" id="dloopWeight" value="0" step="0.5"></div>
-            <div><label>Kisser</label><input type="number" id="kisserWeight" value="0" step="0.5"></div>
-            <div><label>Silencers</label><input type="number" id="silencersWeight" value="0" step="0.5"></div>
+            <div>
+              <label>
+                Peep
+                <button class="info-btn" type="button" data-info="peepWeight">i</button>
+              </label>
+              <input type="number" id="peepWeight" value="0" step="0.5">
+            </div>
+            <div>
+              <label>
+                D-Loop
+                <button class="info-btn" type="button" data-info="dloopWeight">i</button>
+              </label>
+              <input type="number" id="dloopWeight" value="0" step="0.5">
+            </div>
+            <div>
+              <label>
+                Kisser
+                <button class="info-btn" type="button" data-info="kisserWeight">i</button>
+              </label>
+              <input type="number" id="kisserWeight" value="0" step="0.5">
+            </div>
+            <div>
+              <label>
+                Silencers
+                <button class="info-btn" type="button" data-info="silencersWeight">i</button>
+              </label>
+              <input type="number" id="silencersWeight" value="0" step="0.5">
+            </div>
           </div>
           <p style="text-align:right;font-weight:600;">
             Total: <span id="stringTotal">0</span> grains
@@ -410,17 +508,25 @@
       <div class="card">
         <div class="card-header">
           <h2>Arrow Setup</h2>
-          <button class="info-btn" title="Measure from nock throat to end of shaft">i</button>
         </div>
-        <label>Arrow Name</label>
+        <label>
+          Arrow Name
+          <button class="info-btn" type="button" data-info="arrowName">i</button>
+        </label>
         <input type="text" id="arrowName">
         <div class="grid-2">
           <div>
-            <label>Arrow Length (in)</label>
+            <label>
+              Arrow Length (in)
+              <button class="info-btn" type="button" data-info="arrowLength">i</button>
+            </label>
             <input type="number" id="arrowLength" value="28.5" step="0.5">
           </div>
           <div>
-            <label>Total Arrow Weight (grains)</label>
+            <label>
+              Total Arrow Weight (grains)
+              <button class="info-btn" type="button" data-info="totalArrowWeightSimple">i</button>
+            </label>
             <input type="number" id="totalArrowWeightSimple" value="450" step="0.5">
             <small id="totalWeightHint"
                    style="display:block;margin-top:0.25rem;font-size:0.85rem;color:var(--light);">
@@ -428,30 +534,81 @@
             </small>
           </div>
           <div>
-            <label>Point Weight (grains)</label>
+            <label>
+              Point Weight (grains)
+              <button class="info-btn" type="button" data-info="pointWeight">i</button>
+            </label>
             <input type="number" id="pointWeight" value="125" step="0.5">
           </div>
           <div>
-            <label>Balance Point from Nock (in)</label>
+            <label>
+              Balance Point from Nock (in)
+              <button class="info-btn" type="button" data-info="balancePoint">i</button>
+            </label>
             <input type="number" id="balancePoint" value="18.5" step="0.05">
           </div>
         </div>
 
         <div class="flex" style="margin-top:1rem;justify-content:space-between;">
-          <label>Advanced Arrow Components</label>
+          <label>
+            Advanced Arrow Components
+            <button class="info-btn" type="button" data-info="toggleArrow">i</button>
+          </label>
           <label class="toggle-switch">
             <input type="checkbox" id="toggleArrow"><span class="slider"></span>
           </label>
         </div>
         <div id="arrowAdvanced" class="advanced">
           <div class="grid-2">
-            <div><label>Bare Shaft</label><input type="number" id="bareShaft" value="0" step="0.1"></div>
-            <div><label>Nock System</label><input type="number" id="nockWeight" value="0" step="0.1"></div>
-            <div><label>Wrap</label><input type="number" id="wrapWeight" value="0" step="0.1"></div>
-            <div><label>Vane Weight (each)</label><input type="number" id="vaneWeightEach" value="0" step="0.1"></div>
-            <div><label>Vane Count</label><input type="number" id="vaneCount" value="0" step="1"></div>
-            <div><label>Insert/Outsert</label><input type="number" id="insertWeight" value="0" step="0.5"></div>
-            <div><label>Glue / Pin Nock</label><input type="number" id="glueWeight" value="0" step="0.5"></div>
+            <div>
+              <label>
+                Bare Shaft
+                <button class="info-btn" type="button" data-info="bareShaft">i</button>
+              </label>
+              <input type="number" id="bareShaft" value="0" step="0.1">
+            </div>
+            <div>
+              <label>
+                Nock System
+                <button class="info-btn" type="button" data-info="nockWeight">i</button>
+              </label>
+              <input type="number" id="nockWeight" value="0" step="0.1">
+            </div>
+            <div>
+              <label>
+                Wrap
+                <button class="info-btn" type="button" data-info="wrapWeight">i</button>
+              </label>
+              <input type="number" id="wrapWeight" value="0" step="0.1">
+            </div>
+            <div>
+              <label>
+                Vane Weight (each)
+                <button class="info-btn" type="button" data-info="vaneWeightEach">i</button>
+              </label>
+              <input type="number" id="vaneWeightEach" value="0" step="0.1">
+            </div>
+            <div>
+              <label>
+                Vane Count
+                <button class="info-btn" type="button" data-info="vaneCount">i</button>
+              </label>
+              <input type="number" id="vaneCount" value="0" step="1">
+            </div>
+            <div>
+              <label>
+                Insert/Outsert
+                <button class="info-btn" type="button" data-info="insertWeight">i</button>
+              </label>
+              <input type="number" id="insertWeight" value="0" step="0.5">
+            </div>
+            <div>
+              <label>
+                Glue / Pin Nock
+                <button class="info-btn" type="button" data-info="glueWeight">i</button>
+              </label>
+              <input type="number" id="glueWeight" value="0" step="0.5">
+            </div>
           </div>
           <p style="text-align:right;font-weight:600;">
             Total: <span id="arrowTotal">0.0</span> grains
@@ -460,7 +617,10 @@
       </div>
 
       <div class="card">
-        <div class="card-header"><h2>Notes</h2></div>
+        <div class="card-header">
+          <h2>Notes</h2>
+          <button class="info-btn" type="button" data-info="notes">i</button>
+        </div>
         <textarea id="notes" rows="4" placeholder="Tuning notes, chronograph data..."></textarea>
         <small style="display:block;margin-top:0.35rem;font-size:0.85rem;color:var(--light);">
           Notes are saved with your build.
@@ -472,12 +632,18 @@
     <div id="outputs-column">
       <!-- Arrow Efficiency + FOC + Weight Composition -->
       <div class="card">
-        <div class="card-header"><h2>Arrow Efficiency</h2></div>
+        <div class="card-header">
+          <h2>Arrow Efficiency</h2>
+          <button class="info-btn" type="button" data-info="arrowEfficiency">i</button>
+        </div>
 
         <!-- Primary efficiency outputs -->
         <div class="grid-2" style="text-align:center; margin-bottom:1.5rem;">
           <div class="card">
-            <h3 style="color:var(--primary);">Actual Launch FPS</h3>
+            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
+              <h3 style="color:var(--primary);margin:0;">Actual Launch FPS</h3>
+              <button class="info-btn" type="button" data-info="actualFPS">i</button>
+            </div>
             <input type="number" id="actualFPS" step="0.1"
                    style="font-size:2.5rem;text-align:center;border:3px solid var(--primary);border-radius:12px;padding:0.5rem;">
             <button class="btn-small btn-refresh" id="recalcFPS">Recalculate</button>
@@ -488,7 +654,10 @@
           </div>
 
           <div class="card">
-            <h3 style="color:var(--success);">GPP</h3>
+            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
+              <h3 style="color:var(--success);margin:0;">GPP</h3>
+              <button class="info-btn" type="button" data-info="gpp">i</button>
+            </div>
             <div style="font-size:2.5rem;" id="gppValue">-</div>
             <small id="gppHint"
                    style="display:block;margin-top:0.35rem;font-size:0.8rem;color:var(--light);">
@@ -496,11 +665,17 @@
             </small>
           </div>
           <div class="card">
-            <h3 style="color:var(--warning);">GPI</h3>
+            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
+              <h3 style="color:var(--warning);margin:0;">GPI</h3>
+              <button class="info-btn" type="button" data-info="gpi">i</button>
+            </div>
             <div style="font-size:2.5rem;" id="gpiValue">-</div>
           </div>
           <div class="card">
-            <h3>Total Weight</h3>
+            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
+              <h3 style="margin:0;">Total Weight</h3>
+              <button class="info-btn" type="button" data-info="finalArrowWeight">i</button>
+            </div>
             <div style="font-size:2.5rem;" id="finalArrowWeight">-</div>
           </div>
         </div>
@@ -509,7 +684,10 @@
         <div class="grid-2" style="gap:1rem;">
           <!-- FOC SUBCARD -->
           <div class="subcard">
-            <h3 style="margin-bottom:0.5rem;">Front of Center (FOC)</h3>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+              <h3 style="margin:0;">Front of Center (FOC)</h3>
+              <button class="info-btn" type="button" data-info="foc">i</button>
+            </div>
             <div style="text-align:center;margin-bottom:0.5rem;">
               <div id="focValue"
                    style="font-size:2.4rem;font-weight:800;color:var(--primary);">-</div>
@@ -537,7 +715,10 @@
 
           <!-- Arrow Weight Composition SUBCARD -->
           <div class="subcard">
-            <h3 style="margin-bottom:0.5rem;">Arrow Weight Composition</h3>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+              <h3 style="margin:0;">Arrow Weight Composition</h3>
+              <button class="info-btn" type="button" data-info="composition">i</button>
+            </div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.5rem;">
               <span>Breakdown</span>
               <span id="compTotalLabel" style="font-size:0.9rem;color:var(--light);">-</span>
@@ -571,6 +752,7 @@
       <div class="card">
         <div class="card-header">
           <h2>Velocity, Trajectory & Impact @ <span id="distanceValue">50</span> yards</h2>
+          <button class="info-btn" type="button" data-info="velocitySection">i</button>
         </div>
 
         <!-- Distance slider -->
@@ -588,12 +770,18 @@
         <!-- Simple metric cards for velocity & peak height -->
         <div class="grid-2" style="margin-top:1.25rem;">
           <div class="card text-center">
-            <h3>Velocity @ <span id="velocityDistanceLabel">50</span> yd</h3>
+            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
+              <h3 style="margin:0;">Velocity @ <span id="velocityDistanceLabel">50</span> yd</h3>
+              <button class="info-btn" type="button" data-info="velocityAtDistance">i</button>
+            </div>
             <div style="font-size:3rem;" id="velocityAtDistance">-</div>
             <small>FPS (estimated at target)</small>
           </div>
           <div class="card text-center">
-            <h3>Peak Height on Flight</h3>
+            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
+              <h3 style="margin:0;">Peak Height on Flight</h3>
+              <button class="info-btn" type="button" data-info="peakHeight">i</button>
+            </div>
             <div style="font-size:3rem;" id="peakHeightValue">-</div>
             <small>
               highest point 
@@ -605,22 +793,34 @@
         <!-- KE / impact cards -->
         <div class="grid-2" style="margin-top:1rem;">
           <div class="card text-center">
-            <h3 style="color:var(--success);">Launch KE</h3>
+            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
+              <h3 style="color:var(--success);margin:0;">Launch KE</h3>
+              <button class="info-btn" type="button" data-info="launchKE">i</button>
+            </div>
             <div style="font-size:3rem;" id="keValue">-</div>
             <small>ft-lbs</small>
           </div>
           <div class="card text-center">
-            <h3 style="color:var(--warning);">Time to Impact</h3>
+            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
+              <h3 style="color:var(--warning);margin:0;">Time to Impact</h3>
+              <button class="info-btn" type="button" data-info="timeToImpact">i</button>
+            </div>
             <div style="font-size:3rem;" id="timeToImpact">-</div>
             <small>seconds</small>
           </div>
           <div class="card text-center">
-            <h3 style="color:var(--primary);">Impact KE</h3>
+            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
+              <h3 style="color:var(--primary);margin:0;">Impact KE</h3>
+              <button class="info-btn" type="button" data-info="impactKE">i</button>
+            </div>
             <div style="font-size:3rem;" id="impactKE">-</div>
             <small>ft-lbs</small>
           </div>
           <div class="card text-center">
-            <h3 style="color:var(--danger);">Impact Momentum</h3>
+            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
+              <h3 style="color:var(--danger);margin:0;">Impact Momentum</h3>
+              <button class="info-btn" type="button" data-info="impactMom">i</button>
+            </div>
             <div style="font-size:3rem;" id="impactMom">-</div>
             <small>slug·ft/s</small>
           </div>
@@ -629,7 +829,10 @@
 
       <!-- Game Effectiveness -->
       <div class="card">
-        <div class="card-header"><h2>Game Effectiveness</h2></div>
+        <div class="card-header">
+          <h2>Game Effectiveness</h2>
+          <button class="info-btn" type="button" data-info="gameEffectiveness">i</button>
+        </div>
 
         <div style="margin-bottom:0.75rem;font-size:0.95rem;color:var(--light);">
           Impact @ <span id="gameDistanceDisplay">50</span> yd:
@@ -668,7 +871,10 @@
       <div class="card">
         <div class="card-header">
           <h2>Build Summary</h2>
-          <button class="btn-small" id="copySummary">Copy</button>
+          <div class="flex" style="gap:0.5rem;">
+            <button class="info-btn" type="button" data-info="buildSummary">i</button>
+            <button class="btn-small" id="copySummary">Copy</button>
+          </div>
         </div>
         <div id="summaryTable" style="font-size:1rem;"></div>
       </div>
@@ -681,7 +887,484 @@
 
   <div id="toast"></div>
 
+  <!-- Info overlay -->
+  <div id="infoOverlay" class="info-overlay">
+    <div class="info-panel">
+      <button class="info-close" type="button" aria-label="Close info">&times;</button>
+      <div id="infoContent"></div>
+    </div>
+  </div>
+
 <script>
+  // --- Info panel content ---
+  const INFO_CONTENT = {
+    // Setups
+    buildName: `
+      <h2>Build Name</h2>
+      <p>
+        A human-friendly label for this bow + arrow setup. It’s used as the name
+        when you save, load, and compare builds.
+      </p>
+      <p>
+        The <strong>Suggest</strong> button auto-builds a name using date, bow model,
+        draw weight, arrow name, and total arrow weight so your builds stay organized.
+      </p>
+    `,
+
+    // Bow setup
+    bowModel: `
+      <h2>Bow Model</h2>
+      <p>
+        The make and model of your bow (e.g., "2025 Hoyt RX-9").
+        This is saved with the build and used in the suggested build name.
+      </p>
+      <p>
+        It doesn’t change the math directly, but it makes it easier to track which
+        numbers go with which bow.
+      </p>
+    `,
+    iboRating: `
+      <h2>IBO / ATA Speed Rating</h2>
+      <p>
+        The manufacturer’s advertised max speed in feet per second (FPS), usually at
+        70 lb draw, 30&quot; draw length, and a 350 gr arrow.
+      </p>
+      <p>
+        This app uses that rating to <strong>estimate your real-world launch FPS</strong>
+        based on your actual draw weight, arrow weight, and string weight until you
+        replace it with chronograph data.
+      </p>
+    `,
+    drawWeight: `
+      <h2>Draw Weight (lbs)</h2>
+      <p>
+        How many pounds you pull at full draw. It controls how much energy the bow can
+        put into the arrow.
+      </p>
+      <p>
+        In this calculator, draw weight is used with total arrow weight to compute
+        <strong>GPP (grains per pound)</strong>, which helps classify your arrow as
+        light, all-around, or heavy for hunting and penetration.
+      </p>
+    `,
+    drawLength: `
+      <h2>Draw Length (inches)</h2>
+      <p>
+        How far you pull the string at full draw (your personal power stroke).
+        Factory IBO speeds assume 30&quot; draw; shorter draws usually shoot slower.
+      </p>
+      <p>
+        This value is saved with your build so your FPS, KE, and trajectory can be
+        interpreted in the context of <em>your</em> form, not just factory specs.
+      </p>
+    `,
+    stringWeightSimple: `
+      <h2>String Add-ons (grains)</h2>
+      <p>
+        The combined weight of everything on your string (peep, loop, kisser, silencers),
+        entered as a single number.
+      </p>
+      <p>
+        This is used in the launch FPS estimate. Heavier strings generally reduce
+        real-world FPS slightly compared to the IBO rating.
+      </p>
+      <p>
+        Turn on <strong>Advanced String Components</strong> if you want to enter each
+        piece separately.
+      </p>
+    `,
+    application: `
+      <h2>Application</h2>
+      <p>
+        High-level use for this setup: Target/3D, Hunting, or Other. This is saved in your
+        build and may be used in future presets and recommendations.
+      </p>
+      <p>
+        It does not change today’s calculations but helps keep your builds organized.
+      </p>
+    `,
+    toggleString: `
+      <h2>Advanced String Components</h2>
+      <p>
+        Turn this on if you want to enter the weights of your peep, D-loop, kisser, and
+        silencers separately.
+      </p>
+      <p>
+        When enabled, the app <strong>sums the detailed values</strong> and uses that
+        total in the FPS estimate instead of the single String Add-ons field.
+      </p>
+    `,
+    peepWeight: `
+      <h2>Peep Weight</h2>
+      <p>
+        Weight of your peep sight in grains. Included in total string weight and the
+        launch FPS estimate when Advanced String Components are enabled.
+      </p>
+    `,
+    dloopWeight: `
+      <h2>D-Loop Weight</h2>
+      <p>
+        Total weight of your D-loop in grains. Included in total string weight and the
+        launch FPS estimate in Advanced mode.
+      </p>
+    `,
+    kisserWeight: `
+      <h2>Kisser Button Weight</h2>
+      <p>
+        Weight of your kisser button in grains. Included in total string weight and FPS
+        estimation when using Advanced String Components.
+      </p>
+    `,
+    silencersWeight: `
+      <h2>Silencers Weight</h2>
+      <p>
+        Combined weight of all string silencers in grains. Included in total string
+        weight and launch FPS estimation in Advanced mode.
+      </p>
+    `,
+
+    // Arrow setup
+    arrowName: `
+      <h2>Arrow Name</h2>
+      <p>
+        A label for the arrow itself (e.g., "Easton Axis 5mm 300 spine").
+        Used in the suggested build name and saved with the build.
+      </p>
+      <p>
+        It doesn’t change calculations, but makes it much easier to track which shaft
+        you’re tuning.
+      </p>
+    `,
+    arrowLength: `
+      <h2>Arrow Length</h2>
+      <p>
+        Measured from the throat of the nock to the <strong>end of the shaft</strong>
+        (not including the point).
+      </p>
+      <p>
+        This is used for <strong>GPI (grains per inch)</strong> and for the
+        <strong>FOC calculation</strong> so the app knows the total shaft length
+        your balance point is measured over.
+      </p>
+    `,
+    totalArrowWeightSimple: `
+      <h2>Total Arrow Weight (Simple Mode)</h2>
+      <p>
+        The full arrow weight in grains (shaft + insert/outsert + vanes + wrap + nock + point),
+        entered as a single number.
+      </p>
+      <p>
+        When Advanced Arrow Components is <strong>off</strong>, this value drives all
+        weight-based metrics: GPP, KE, momentum, impact energy, and Build Summary.
+      </p>
+      <p>
+        Turn on Advanced mode if you want the app to calculate total weight from individual components.
+      </p>
+    `,
+    pointWeight: `
+      <h2>Point Weight</h2>
+      <p>
+        Weight of your field point or broadhead in grains.
+      </p>
+      <p>
+        Used in the <strong>FOC calculation</strong>, the
+        <strong>Arrow Weight Composition</strong> bar, and total arrow weight
+        when Advanced mode is enabled.
+      </p>
+    `,
+    balancePoint: `
+      <h2>Balance Point from Nock</h2>
+      <p>
+        Measure from the nock throat (string contact point) to the point where the
+        arrow balances perfectly on a finger or edge.
+      </p>
+      <p>
+        This value, together with arrow length, is used to compute
+        <strong>FOC (Front of Center)</strong>.
+      </p>
+    `,
+    toggleArrow: `
+      <h2>Advanced Arrow Components</h2>
+      <p>
+        Enable this if you want to enter the weights of the shaft, vanes, wrap, insert,
+        nock, and glue separately.
+      </p>
+      <p>
+        In Advanced mode, the app <strong>adds up all components plus point weight</strong>
+        to get total arrow weight instead of using the single Total Arrow Weight field.
+      </p>
+    `,
+    bareShaft: `
+      <h2>Bare Shaft Weight</h2>
+      <p>
+        Weight of the cut shaft only (no insert, vanes, wrap, nock, or point).
+      </p>
+      <p>
+        Used in the total arrow weight and the shaft portion of the
+        <strong>Arrow Weight Composition</strong> bar.
+      </p>
+    `,
+    nockWeight: `
+      <h2>Nock System Weight</h2>
+      <p>
+        Weight of your nock or pin-nock system in grains.
+      </p>
+      <p>
+        Included in total arrow weight and counted as part of “Components” in the
+        Arrow Weight Composition bar.
+      </p>
+    `,
+    wrapWeight: `
+      <h2>Wrap Weight</h2>
+      <p>
+        Total weight of any arrow wrap or cap wrap in grains.
+      </p>
+      <p>
+        Included in total arrow weight and treated as “Components” in the composition bar.
+      </p>
+    `,
+    vaneWeightEach: `
+      <h2>Vane Weight (each)</h2>
+      <p>
+        Weight of a single vane or feather in grains.
+      </p>
+      <p>
+        The app multiplies this by <strong>Vane Count</strong>, then adds it to total arrow
+        weight as part of “Components”.
+      </p>
+    `,
+    vaneCount: `
+      <h2>Vane Count</h2>
+      <p>
+        How many vanes or feathers are on the arrow (3-fletch, 4-fletch, etc.).
+      </p>
+      <p>
+        Used with Vane Weight (each) to compute total fletching weight for the
+        arrow weight and composition breakdown.
+      </p>
+    `,
+    insertWeight: `
+      <h2>Insert / Outsert Weight</h2>
+      <p>
+        Weight of your insert or outsert system in grains.
+      </p>
+      <p>
+        Included in total arrow weight and treated as “Components” in the
+        Arrow Weight Composition bar.
+      </p>
+    `,
+    glueWeight: `
+      <h2>Glue / Pin Nock Weight</h2>
+      <p>
+        An estimate of the combined weight of glue, pin bushings, and any small
+        hardware at the nock or insert end.
+      </p>
+      <p>
+        Included in total arrow weight and the “Components” portion of the composition bar.
+      </p>
+    `,
+
+    // Notes
+    notes: `
+      <h2>Notes</h2>
+      <p>
+        Free-form notes saved with this build — great for recording paper tune results,
+        broadhead groups, chrono strings, or field observations.
+      </p>
+      <p>
+        Notes are stored in your saved build so you can revisit why a setup worked
+        (or didn’t) later.
+      </p>
+    `,
+
+    // Outputs – Arrow Efficiency
+    arrowEfficiency: `
+      <h2>Arrow Efficiency</h2>
+      <p>
+        A quick overview of how your bow’s energy, arrow weight, and balance are working together.
+      </p>
+      <p>
+        This section summarizes your main tuning metrics: launch speed, GPP, GPI, total arrow weight,
+        FOC, and component breakdown.
+      </p>
+    `,
+    actualFPS: `
+      <h2>Actual Launch FPS</h2>
+      <p>
+        The speed the arrow leaves the bow, in feet per second.
+      </p>
+      <p>
+        The app first <strong>estimates</strong> this value from your IBO rating, draw weight,
+        arrow weight, and string weight, but you can overwrite it with chronograph data for
+        more accurate KE, momentum, and impact predictions.
+      </p>
+    `,
+    gpp: `
+      <h2>GPP (Grains per Pound)</h2>
+      <p>
+        Total arrow weight divided by draw weight (grains per pound of draw).
+      </p>
+      <p>
+        It’s a simple way to see if your arrow is light, all-around, or heavy for your bow.
+        The app uses this to give guidance on where your setup sits in that spectrum.
+      </p>
+    `,
+    gpi: `
+      <h2>GPI (Grains per Inch)</h2>
+      <p>
+        Average grains per inch of length based on your total arrow weight and arrow length.
+      </p>
+      <p>
+        Useful for comparing shafts and seeing how heavy your finished arrow is per inch,
+        especially when switching between cut lengths.
+      </p>
+    `,
+    finalArrowWeight: `
+      <h2>Total Arrow Weight</h2>
+      <p>
+        The final arrow weight in grains (shaft + components + point).
+      </p>
+      <p>
+        This drives nearly every other output: GPP, KE, momentum, impact, and the composition bar.
+        Getting this number accurate is critical for realistic results.
+      </p>
+    `,
+    foc: `
+      <h2>Front of Center (FOC)</h2>
+      <p>
+        FOC shows how far forward the balance point is, expressed as a percentage of arrow length.
+        More weight toward the front usually helps broadhead stability and penetration.
+      </p>
+      <p>
+        The bar shows your value on a 0–30% scale, with a highlighted band for
+        <strong>12–18%</strong>, a common sweet spot for many hunting setups.
+      </p>
+    `,
+    composition: `
+      <h2>Arrow Weight Composition</h2>
+      <p>
+        A visual breakdown of how your arrow’s total weight is split between
+        <strong>shaft</strong>, <strong>point</strong>, and other components.
+      </p>
+      <p>
+        This is helpful for understanding where your mass is concentrated, and how changing
+        inserts, vanes, or point weight affects overall build and FOC.
+      </p>
+    `,
+
+    // Velocity / trajectory / impact
+    velocitySection: `
+      <h2>Velocity, Trajectory & Impact</h2>
+      <p>
+        Use the slider to set a target distance. The app then estimates:
+        arrow speed at that distance, peak height of the arc, time of flight,
+        and impact energy/momentum.
+      </p>
+      <p>
+        Great for visualizing how your arrow behaves at different ranges and 
+        how much it slows down over distance.
+      </p>
+    `,
+    velocityAtDistance: `
+      <h2>Velocity at Distance</h2>
+      <p>
+        Estimated arrow speed at the selected yardage based on your launch FPS and
+        a simple decay model.
+      </p>
+      <p>
+        This feeds the impact KE and momentum calculations and gives you a sense of
+        how much speed you’re giving up at longer shots.
+      </p>
+    `,
+    peakHeight: `
+      <h2>Peak Height on Flight</h2>
+      <p>
+        The approximate maximum height of the arrow’s flight path above a flat line
+        from you to the target, in feet.
+      </p>
+      <p>
+        For a level shot, the peak typically occurs about halfway to the target.
+        This is useful for understanding <strong>clearance through trees, brush,
+        or shooting windows</strong>.
+      </p>
+    `,
+    launchKE: `
+      <h2>Launch Kinetic Energy</h2>
+      <p>
+        The arrow’s kinetic energy at the bow (in ft-lbs), based on total arrow weight
+        and launch FPS.
+      </p>
+      <p>
+        This is a common metric for comparing setups and is often used as a baseline for
+        game recommendations.
+      </p>
+    `,
+    timeToImpact: `
+      <h2>Time to Impact</h2>
+      <p>
+        Estimated time (in seconds) for the arrow to reach the target at the current
+        distance slider setting.
+      </p>
+      <p>
+        This gives a feel for how “snappy” or “loopy” your setup is, and is useful when
+        thinking about animal movement and string jump.
+      </p>
+    `,
+    impactKE: `
+      <h2>Impact Kinetic Energy</h2>
+      <p>
+        The arrow’s kinetic energy at the target distance in ft-lbs, using the
+        estimated velocity at that distance.
+      </p>
+      <p>
+        This value is compared against common minimums in the <strong>Game Effectiveness</strong>
+        section to give a rough “Send it / Don’t” suggestion.
+      </p>
+    `,
+    impactMom: `
+      <h2>Impact Momentum</h2>
+      <p>
+        The arrow’s momentum at impact in slug·ft/s.
+      </p>
+      <p>
+        Momentum favors heavier arrows and is another way to evaluate penetration potential,
+        especially at longer distances.
+      </p>
+    `,
+
+    // Game effectiveness
+    gameEffectiveness: `
+      <h2>Game Effectiveness</h2>
+      <p>
+        Uses your <strong>impact KE</strong> and <strong>impact momentum</strong> at the
+        selected distance and compares them to common minimums for different game sizes.
+      </p>
+      <p>
+        Each card shows a recommended minimum and a simple result:
+        <strong>"Send it"</strong> if both KE and momentum thresholds are met,
+        or <strong>"Don’t"</strong> if you’re below that class’s guideline.
+      </p>
+      <p>
+        These are <em>guidelines</em>, not hard rules — shot placement, broadhead choice,
+        and animal angle still matter a lot.
+      </p>
+    `,
+
+    // Build summary
+    buildSummary: `
+      <h2>Build Summary</h2>
+      <p>
+        A snapshot of all the key inputs and outputs for your current setup:
+        bow specs, arrow specs, FOC, GPP/GPI, launch speed, energy, momentum,
+        and impact numbers at the selected distance.
+      </p>
+      <p>
+        The <strong>Copy</strong> button copies this table as text so you can paste it
+        into notes, messages, forums, or spreadsheets.
+      </p>
+    `
+  };
+
   let toastTimer;
   function showToast(msg) {
     const toast = document.getElementById('toast');
@@ -1123,40 +1806,29 @@
       '</table>';
 
     // Store latest summary for copy button
-    window.latestSummary = summary; 
+    window.latestSummary = summary;
   }
-
 
   // Recalculate button
   document.getElementById('recalcFPS').onclick = () => calculateEverything(true);
 
   // Copy summary button
   document.getElementById('copySummary').onclick = () => {
-    const summary = window.latestSummary;
-    let text;
-
-    if (summary) {
-      const lines = [
-        `Arrow Tune Build - ${new Date().toLocaleDateString()}`,
-        ''
-      ];
-
-      Object.entries(summary).forEach(([k, v]) => {
-        // Skip empty header row like "Impact @ 41 yd": ""
-        if (v === '') return;
-        lines.push(`${k}: ${v}`);
-      });
-
-      text = lines.join('\n');
-    } else {
-      // Fallback (should rarely happen)
-      text =
-        `Arrow Tune Build - ${new Date().toLocaleDateString()}\n\n` +
-        `Build Name: ${document.getElementById('buildName').value || "Unnamed"}\n` +
-        `Launch FPS: ${document.getElementById('actualFPS').value}\n` +
-        `Total Arrow Weight: ${getArrowWeight().toFixed(1)} gr\n`;
+    if (!window.latestSummary) {
+      calculateEverything(false);
     }
+    const summary = window.latestSummary || {};
+    const lines = [
+      `Arrow Tune Build - ${new Date().toLocaleDateString()}`,
+      ''
+    ];
 
+    Object.entries(summary).forEach(([k, v]) => {
+      if (v === '') return; // Skip empty header row like "Impact @ 41 yd": ""
+      lines.push(`${k}: ${v}`);
+    });
+
+    const text = lines.join('\n');
     navigator.clipboard.writeText(text).then(() => showToast('Summary copied'));
   };
 
@@ -1175,6 +1847,38 @@
       } else {
         calculateEverything();
       }
+    });
+  });
+
+  // Info overlay wiring
+  const infoOverlay = document.getElementById('infoOverlay');
+  const infoContent = document.getElementById('infoContent');
+  const infoClose = document.querySelector('.info-close');
+
+  function openInfo(key) {
+    if (!infoOverlay || !infoContent) return;
+    infoContent.innerHTML = INFO_CONTENT[key] || `
+      <h2>Info</h2>
+      <p>More details coming soon.</p>
+    `;
+    infoOverlay.classList.add('open');
+  }
+
+  if (infoClose) {
+    infoClose.addEventListener('click', () => infoOverlay.classList.remove('open'));
+  }
+
+  if (infoOverlay) {
+    infoOverlay.addEventListener('click', (e) => {
+      if (e.target === infoOverlay) infoOverlay.classList.remove('open');
+    });
+  }
+
+  document.querySelectorAll('.info-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const key = btn.dataset.info;
+      if (key) openInfo(key);
     });
   });
 
