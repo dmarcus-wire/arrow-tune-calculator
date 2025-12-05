@@ -97,6 +97,9 @@
     .flex { display:flex; gap:1rem; align-items:center; }
     .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
 
+    /* NEW: helper to center everything in Performance cards */
+    .text-center { text-align:center; }
+
     .toggle-switch {
       position:relative;
       display:inline-block;
@@ -195,10 +198,8 @@
       font-size: 2.6rem !important;
       line-height: 1.1;
     }
-    #focValue {
-      font-size: 4.2rem !important;
-      line-height: 1;
-    }
+    /* Removed special #focValue override so it matches other card values */
+
     #smallGameStatus,
     #deerStatus,
     #elkStatus,
@@ -381,7 +382,7 @@
         </div>
         <p style="color:var(--light);">
           Offline • Mobile-friendly • Live calculations<br>
-          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.5</span>
+          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.8</span>
         </p>
       </div>
 
@@ -440,7 +441,7 @@
           </div>
           <div>
             <label>
-              String Add-ons (grains)
+              String Add-ons (gr)
               <button class="info-btn" type="button" data-info="stringWeightSimple">i</button>
             </label>
             <input type="number" id="stringWeightSimple" value="0" step="0.5">
@@ -524,25 +525,24 @@
           </div>
           <div>
             <label>
-              Total Arrow Weight (grains)
+              Total Arrow Weight (gr)
               <button class="info-btn" type="button" data-info="totalArrowWeightSimple">i</button>
             </label>
             <input type="number" id="totalArrowWeightSimple" value="450" step="0.5">
             <small id="totalWeightHint"
                    style="display:block;margin-top:0.25rem;font-size:0.85rem;color:var(--light);">
-              When Advanced Components is off, this is the full arrow weight (shaft + point + components).
             </small>
           </div>
           <div>
             <label>
-              Point Weight (grains)
+              Point Weight (gr)
               <button class="info-btn" type="button" data-info="pointWeight">i</button>
             </label>
             <input type="number" id="pointWeight" value="125" step="0.5">
           </div>
           <div>
             <label>
-              Balance Point from Nock (in)
+              Balance Point (in)
               <button class="info-btn" type="button" data-info="balancePoint">i</button>
             </label>
             <input type="number" id="balancePoint" value="18.5" step="0.05">
@@ -649,7 +649,6 @@
             <button class="btn-small btn-refresh" id="recalcFPS">Recalculate</button>
             <small id="fpsSource"
                    style="display:block;margin-top:0.35rem;font-size:0.8rem;color:var(--light);">
-              Estimated from IBO, draw, arrow & string weight
             </small>
           </div>
 
@@ -689,8 +688,9 @@
               <button class="info-btn" type="button" data-info="foc">i</button>
             </div>
             <div style="text-align:center;margin-bottom:0.5rem;">
+              <!-- Updated FOC value style to match other cards: same size, default color -->
               <div id="focValue"
-                   style="font-size:2.4rem;font-weight:800;color:var(--primary);">-</div>
+                   style="font-size:2.5rem;font-weight:800;">-</div>
               <div style="font-size:0.9rem;color:var(--light);">
                 Ideal Range: 12–18%
               </div>
@@ -720,7 +720,6 @@
               <button class="info-btn" type="button" data-info="composition">i</button>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.5rem;">
-              <span>Breakdown</span>
               <span id="compTotalLabel" style="font-size:0.9rem;color:var(--light);">-</span>
             </div>
 
@@ -1645,7 +1644,7 @@
     const gpi = weight / len;
     document.getElementById('gppValue').textContent = gpp.toFixed(1);
     document.getElementById('gpiValue').textContent = gpi.toFixed(1);
-    document.getElementById('finalArrowWeight').textContent = weight.toFixed(1) + ' gr';
+    document.getElementById('finalArrowWeight').textContent = weight.toFixed(1);
 
     const gppHint = document.getElementById('gppHint');
     let gppText = '';
