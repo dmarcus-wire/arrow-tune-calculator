@@ -4,13 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Arrow Tune Calculator</title>
-  <meta name="description" content="Offline arrow tuning calculator – FOC, velocity, impact KE, composition, and more." />
+  
+  <!-- Version Display -->
+  <div class="version-tag">Version 2.0.1</div>
+
+  <meta name="description" content="The most accurate, mobile-friendly arrow tuning calculator with real-world hunting advice." />
   <link href="https://rsms.me/inter/inter.css" rel="stylesheet">
   <style>
     :root { --bg:#f8fafc; --card:#ffffff; --text:#1e293b; --light:#64748b; --border:#e2e8f0; --primary:#0ea5e9; --success:#22c55e; --warning:#f59e0b; --danger:#ef4444; }
     .dark { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --light:#94a3b8; --border:#334155; }
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); padding:1rem; min-height:100vh; line-height:1.6; }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); padding:1rem; min-height:100vh; line-height:1.6; -webkit-tap-highlight-color:transparent; }
     .container { max-width:1400px; margin:auto; display:grid; gap:1.5rem; }
     @media (min-width:1024px) { .container { grid-template-columns:1fr 1fr; } }
     .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.5rem; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
@@ -19,10 +23,10 @@
     label { display:block; margin:1rem 0 0.4rem; font-weight:600; font-size:0.95rem; }
     input, select, textarea { width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:8px; background:var(--card); color:var(--text); font-size:1rem; }
     input:focus, select:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(14,165,233,0.2); }
-    button { padding:0.75rem 1.2rem; border:none; border-radius:8px; background:var(--primary); color:white; font-weight:600; cursor:pointer; }
+    button, .btn { padding:0.75rem 1.2rem; border:none; border-radius:8px; background:var(--primary); color:white; font-weight:600; cursor:pointer; touch-action:manipulation; }
     .btn-small { padding:0.5rem 0.9rem; font-size:0.9rem; }
     .btn-refresh { background:var(--warning); }
-    .flex { display:flex; gap:1rem; align-items:center; }
+    .flex { display:flex; gap:1rem; align-items:center; flex-wrap:wrap; }
     .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
     .toggle-switch { position:relative; display:inline-block; width:56px; height:30px; }
     .toggle-switch input { opacity:0; width:0; height:0; }
@@ -30,12 +34,10 @@
     .slider:before { position:absolute; content:""; height:24px; width:24px; left:3px; bottom:3px; background:white; border-radius:50%; transition:.3s; }
     input:checked + .slider { background:var(--primary); }
     input:checked + .slider:before { transform:translateX(26px); }
-    .info-btn { background:none; border:none; font-size:1.4rem; cursor:help; color:var(--light); }
-    .info-btn:hover { color:var(--primary); }
-    .advanced { display:none; margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border); }
-    table { width:100%; border-collapse:collapse; margin-top:0.5rem; font-size:0.95rem; }
-    th, td { padding:0.6rem; text-align:left; border-bottom:1px solid var(--border); }
-    th { background:var(--bg); font-weight:600; }
+    .info-btn { background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--light); padding:0.5rem; border-radius:50%; transition:0.2s; }
+    .info-btn:hover, .info-btn:active { color:var(--primary); transform:scale(1.2); }
+    .takeaway { display:none; margin-top:0.8rem; padding:0.8rem; background:rgba(14,165,233,0.08); border-radius:8px; font-size:0.9rem; color:var(--text); line-height:1.5; }
+    .takeaway.show { display:block; }
     .patreon-btn { display:block; margin:3rem auto; background:#ff424d; color:white; text-decoration:none; padding:1rem 2rem; border-radius:12px; font-weight:bold; text-align:center; max-width:300px; }
     .light-only { display: block; }
     .dark-only { display: none; }
@@ -60,7 +62,7 @@
       </div>
 
       <div class="card">
-        <div class="card-header"><h2>Manage Builds</h2><button class="info-btn" title="Save and load your setups">i</button></div>
+        <div class="card-header"><h2>Manage Builds</h2></div>
         <label>Build Name</label>
         <div class="flex"><input type="text" id="buildName" placeholder="e.g. 2025-John-Hoyt70"><button class="btn-small" id="suggestName">Suggest</button></div>
         <div class="flex" style="margin-top:1rem;gap:0.5rem;flex-wrap:wrap;">
@@ -69,10 +71,11 @@
           <button style="background:var(--danger);" id="deleteBuild">Delete</button>
         </div>
       </div>
+      </div>
 
       <!-- Bow Setup -->
       <div class="card">
-        <div class="card-header"><h2>Bow Setup</h2><button class="info-btn" title="Your bow specs">i</button></div>
+        <div class="card-header"><h2>Bow Setup</h2></div>
         <label>Application</label><select id="application"><option>Target / 3D</option><option selected>Hunting</option><option>Other</option></select>
         <label>Shooter Name</label><input type="text" id="shooterName">
         <label>Bow Model</label><input type="text" id="bowModel">
@@ -99,7 +102,7 @@
 
       <!-- Arrow Setup -->
       <div class="card">
-        <div class="card-header"><h2>Arrow Setup</h2><button class="info-btn" title="Measure from nock throat to end of shaft">i</button></div>
+        <div class="card-header"><h2>Arrow Setup</h2></div>
         <label>Arrow Name</label><input type="text" id="arrowName">
         <label>Arrow Length (in)</label><input type="number" id="arrowLength" value="28.5" step="0.01">
         <label>Total Arrow Weight (grains)</label><input type="number" id="totalArrowWeightSimple" value="450" step="0.1">
@@ -136,13 +139,58 @@
         <div class="card-header"><h2>Arrow Efficiency</h2></div>
         <div class="grid-2" style="text-align:center;">
           <div class="card">
-            <h3 style="color:var(--primary);">Actual Launch FPS</h3>
+            <div style="display:flex;align-items:center;justify-content:center;gap:0.5rem;">
+              <h3 style="color:var(--primary);margin:0;">Actual Launch FPS</h3>
+              <button class="info-btn" data-target="fpsInfo">i</button>
+            </div>
             <input type="number" id="actualFPS" step="0.1" style="font-size:2.5rem;text-align:center;border:3px solid var(--primary);border-radius:12px;padding:0.5rem;">
             <button class="btn-small btn-refresh" id="recalcFPS">Recalculate</button>
+            <div id="fpsInfo" class="takeaway">
+              Higher = flatter trajectory, easier aiming<br>
+              Lower = quieter bow, more forgiving on marginal shots<br>
+              280–320 FPS = sweet spot for most hunters
+            </div>
           </div>
-          <div class="card"><h3 style="color:var(--success);">GPP</h3><div style="font-size:2.5rem;" id="gppValue">-</div></div>
-          <div class="card"><h3 style="color:var(--warning);">GPI</h3><div style="font-size:2.5rem;" id="gpiValue">-</div></div>
-          <div class="card"><h3>Total Weight</h3><div style="font-size:2.5rem;" id="finalArrowWeight">-</div></div>
+
+          <div class="card">
+            <div style="display:flex;align-items:center;justify-content:center;gap:0.5rem;">
+              <h3 style="color:var(--success);margin:0;">GPP</h3>
+              <button class="info-btn" data-target="gppInfo">i</button>
+            </div>
+            <div style="font-size:2.5rem;" id="gppValue">-</div>
+            <div id="gppInfo" class="takeaway">
+              Grains Per Pound of draw weight<br>
+              6.0–8.0 = perfect hunting balance<br>
+              Below 6 = too light (loud, weak penetration)<br>
+              Above 9 = very heavy (quiet, deep penetration)
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="display:flex;align-items:center;justify-content:center;gap:0.5rem;">
+              <h3 style="color:var(--warning);margin:0;">GPI</h3>
+              <button class="info-btn" data-target="gpiInfo">i</button>
+            </div>
+            <div style="font-size:2.5rem;" id="gpiValue">-</div>
+            <div id="gpiInfo" class="takeaway">
+              Grains Per Inch of arrow length<br>
+              10–18 GPI = modern hunting sweet spot<br>
+              Higher GPI = better momentum & penetration
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="display:flex;align-items:center;justify-content:center;gap:0.5rem;">
+              <h3 style="margin:0;">Total Weight</h3>
+              <button class="info-btn" data-target="weightInfo">i</button>
+            </div>
+            <div style="font-size:2.5rem;" id="finalArrowWeight">-</div>
+            <div id="weightInfo" class="takeaway">
+              400–550 gr = most popular hunting range<br>
+              550+ gr = maximum penetration setup<br>
+              350–400 gr = speed setup (3D/target)
+            </div>
+          </div>
         </div>
       </div>
 
@@ -159,6 +207,16 @@
             <rect x="320" y="60" width="130" height="40" fill="var(--success)" opacity="0.25" rx="15"/>
             <text x="385" y="85" text-anchor="middle" fill="var(--success)" font-weight="bold" font-size="16">12-18% Ideal</text>
           </svg>
+          <div style="margin-top:1rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;">
+            <strong>FOC Explanation</strong>
+            <button class="info-btn" data-target="focInfo">i</button>
+          </div>
+          <div id="focInfo" class="takeaway">
+            <strong>12–18% = Perfect hunting FOC</strong><br>
+            10–12% = OK for target/3D<br>
+            18–25% = Extreme FOC (maximum penetration on big game)<br>
+            Higher FOC = arrow flies point-first longer = better penetration
+          </div>
         </div>
       </div>
 
@@ -179,6 +237,15 @@
             <text x="250" y="135" text-anchor="middle" fill="#e2e8f0" class="dark-only" font-weight="bold" font-size="15" id="pointLabel-dark">Point: 0%</text>
             <text x="350" y="135" text-anchor="middle" fill="#e2e8f0" class="dark-only" font-weight="bold" font-size="15" id="compLabel-dark">Components: 0%</text>
           </svg>
+          <div style="margin-top:1rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;">
+            <strong>Why this matters</strong>
+            <button class="info-btn" data-target="compInfo">i</button>
+          </div>
+          <div id="compInfo" class="takeaway">
+            Ideal hunting setup: 25–40% in the point<br>
+            More point weight = higher FOC = better penetration<br>
+            Components (nock, vanes, wrap, insert) add weight behind center = lower FOC
+          </div>
         </div>
       </div>
 
@@ -202,16 +269,28 @@
         </div>
 
         <div class="grid-2" style="margin-top:1rem;">
-          <div class="card text-center"><h3 style="color:var(--success);">Launch KE</h3><div style="font-size:3rem;" id="keValue">-</div><small>ft-lbs</small></div>
-          <div class="card text-center"><h3 style="color:var(--warning);">Time to Impact</h3><div style="font-size:3rem;" id="timeToImpact">-</div><small>seconds</small></div>
-          <div class="card text-center"><h3 style="color:var(--primary);">Impact KE</h3><div style="font-size:3rem;" id="impactKE">-</div><small>ft-lbs</small></div>
-          <div class="card text-center"><h3 style="color:var(--danger);">Impact Momentum</h3><div style="font-size:3rem;" id="impactMom">-</div><small>slug·ft/s</small></div>
+          <div class="card text-center"><h3 style="color:var(--success);">Launch KE</h3><div style="font-size:3rem;" id="keValue">-</div><small>ft-lbs</small>
+            <div class="takeaway">Energy when arrow leaves the bow</div>
+          </div>
+          <div class="card text-center"><h3 style="color:var(--warning);">Time to Impact</h3><div style="font-size:3rem;" id="timeToImpact">-</div><small>seconds</small>
+            <div class="takeaway">How long arrow is in flight<br>Under 0.35s = very fast<br>Above 0.50s = animal may jump string</div>
+          </div>
+          <div class="card text-center"><h3 style="color:var(--primary);">Impact KE</h3><div style="font-size:3rem;" id="impactKE">-</div><small>ft-lbs</small>
+            <div class="takeaway">Energy when arrow hits animal — this is what matters</div>
+          </div>
+          <div class="card text-center"><h3 style="color:var(--danger);">Impact Momentum</h3><div style="font-size:3rem;" id="impactMom">-</div><small>slug·ft/s</small>
+            <div class="takeaway">Best predictor of penetration<br>0.50+ = deer killer<br>0.60+ = elk capable<br>0.80+ = moose/bear capable</div>
+          </div>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-header"><h2>Game Effectiveness</h2></div>
+        <div class="card-header"><h2>Game Effectiveness (Ashby/Reality-Based)</h2></div>
         <table><thead><tr><th>Game</th><th>Min KE</th><th>Min Momentum</th><th>Status</th></tr></thead><tbody id="effectivenessTable"></tbody></table>
+        <div class="takeaway" style="margin-top:1rem;">
+          <strong>Green = Reliable pass-through expected</strong><br>
+          <strong>Red = Marginal — may work, may not</strong>
+        </div>
       </div>
 
       <div class="card">
@@ -444,7 +523,7 @@
     document.getElementById('compLabel').textContent = `Comp.: ${((comp/weight)*100).toFixed(0)}%`;
 
     // Game Effectiveness
-    const games = [["Small Game",25,0.30],["Deer",50,0.45],["Elk",65,0.60],["Moose",80,0.75]];
+    const games = [["Small Game",25,0.30],["Whitetail Deer",55,0.50],["Elk",70,0.60],["Moose / Bear",90,0.80]];
     document.getElementById('effectivenessTable').innerHTML = games.map(g => `
       <tr>
         <td>${g[0]}</td>
@@ -476,7 +555,8 @@
       "Impact Velocity": currentV.toFixed(0) + " FPS",
       "Impact KE": impactKE.toFixed(1) + " ft-lbs",
       "Impact Momentum": impactMom.toFixed(3) + " slug·ft/s",
-      "Time to Impact": time.toFixed(2) + " s"
+      "Time to Impact": time.toFixed(2) + " s",
+      "Peak Height": peak.toFixed(1) + " ft @ " + peakYard + " yd"
     };
 
     document.getElementById('summaryTable').innerHTML = '<table>' + 
@@ -497,6 +577,7 @@
       `FOC: ${document.getElementById('focValue').textContent}\n` +
       `Launch KE: ${document.getElementById('keValue').textContent} ft-lbs\n` +
       `Impact KE @ ${document.getElementById('distanceValue').textContent}yd: ${document.getElementById('impactKE').textContent} ft-lbs\n` +
+      `Peak Height: ${document.getElementById('peakLabel').textContent}\n` +
       `Time to Impact: ${document.getElementById('timeToImpact').textContent}s`;
     navigator.clipboard.writeText(text).then(()=>alert('Copied to clipboard!'));
   };
@@ -516,6 +597,24 @@
         calculateEverything();
       }
     });
+  });
+
+  // Info button toggle functionality (mobile + desktop)
+  document.querySelectorAll('.info-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const target = document.getElementById(btn.dataset.target);
+      if (target) {
+        target.classList.toggle('show');
+      }
+    });
+  });
+
+  // Close takeways when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.info-btn')) {
+      document.querySelectorAll('.takeaway').forEach(el => el.classList.remove('show'));
+    }
   });
 
   refreshBuilds();
