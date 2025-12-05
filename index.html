@@ -73,14 +73,15 @@
       <!-- Bow Setup -->
       <div class="card">
         <div class="card-header"><h2>Bow Setup</h2><button class="info-btn" title="Your bow specs">i</button></div>
-        <label>Application</label><select id="application"><option>Target / 3D</option><option selected>Hunting</option><option>Other</option></select>
-        <label>Bow Model</label><input type="text" id="bowModel">
         <div class="grid-2">
+          <div><label>Bow Model</label><input type="text" id="bowModel" step="0.5"></div>
+          <div><label>IBO/ATA Speed (FPS)</label><input type="number" id="iboRating" value="0" step="0.5"></div>
           <div><label>Draw Weight (lbs)</label><input type="number" id="drawWeight" value="70" step="0.5"></div>
-          <div><label>Draw Length (in)</label><input type="number" id="drawLength" value="29" step="0.25"></div>
+          <div><label>Draw Length (in)</label><input type="number" id="drawLength" value="29" step="0.5"></div>
+          <div><label>String Add-ons (grains)</label><input type="number" id="stringWeightSimple" value="0" step="0.5"></div>
+          <div><label>Application</label><select id="application" step="0.5"><option>Target / 3D</option><option selected>Hunting</option><option>Other</option></select></div>
         </div>
-        <label>IBO Speed (FPS)</label><input type="number" id="iboRating" value="350">
-        <label>String Add-ons (grains)</label><input type="number" id="stringWeightSimple" value="0">
+
         <div class="flex" style="margin-top:1rem;justify-content:space-between;">
           <label>Advanced String Components</label>
           <label class="toggle-switch"><input type="checkbox" id="toggleString"><span class="slider"></span></label>
@@ -100,10 +101,12 @@
       <div class="card">
         <div class="card-header"><h2>Arrow Setup</h2><button class="info-btn" title="Measure from nock throat to end of shaft">i</button></div>
         <label>Arrow Name</label><input type="text" id="arrowName">
-        <label>Arrow Length (in)</label><input type="number" id="arrowLength" value="28.5" step="0.01">
-        <label>Total Arrow Weight (grains)</label><input type="number" id="totalArrowWeightSimple" value="450" step="0.1">
-        <label>Point Weight (grains)</label><input type="number" id="pointWeight" value="125">
-        <label>Balance Point from Nock (in)</label><input type="number" id="balancePoint" value="18.5" step="0.01">
+        <div class="grid-2">
+          <div><label>Arrow Length (in)</label><input type="number" id="arrowLength" value="28.5" step="0.5"></div>
+          <div><label>Total Arrow Weight (grains)</label><input type="number" id="totalArrowWeightSimple" value="450" step="0.5"></div>
+          <div><label>Point Weight (grains)</label><input type="number" id="pointWeight" value="125" step="0.5"></div>
+          <div><label>Balance Point from Nock (in)</label><input type="number" id="balancePoint" value="18.5" step="0.05"></div>
+        </div>
         <div class="flex" style="margin-top:1rem;justify-content:space-between;">
           <label>Advanced Arrow Components</label>
           <label class="toggle-switch"><input type="checkbox" id="toggleArrow"><span class="slider"></span></label>
