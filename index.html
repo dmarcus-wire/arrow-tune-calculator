@@ -381,7 +381,7 @@
         </div>
         <p style="color:var(--light);">
           Offline • Mobile-friendly • Live calculations<br>
-          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.6</span>
+          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.5</span>
         </p>
       </div>
 
@@ -641,7 +641,7 @@
         <div class="grid-2" style="text-align:center; margin-bottom:1.5rem;">
           <div class="card">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
-              <h3 style="color:var(--primary);margin:0;">Actual Launch FPS</h3>
+              <h3 style="color:var(--primary);margin:0;text-align:center;">FPS</h3>
               <button class="info-btn" type="button" data-info="actualFPS">i</button>
             </div>
             <input type="number" id="actualFPS" step="0.1"
@@ -655,7 +655,7 @@
 
           <div class="card">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
-              <h3 style="color:var(--success);margin:0;">GPP</h3>
+              <h3 style="color:var(--primary);margin:0;text-align:center;">GPP</h3>
               <button class="info-btn" type="button" data-info="gpp">i</button>
             </div>
             <div style="font-size:2.5rem;" id="gppValue">-</div>
@@ -666,14 +666,14 @@
           </div>
           <div class="card">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
-              <h3 style="color:var(--warning);margin:0;">GPI</h3>
+              <h3 style="color:var(--primary);margin:0;text-align:center;">GPI</h3>
               <button class="info-btn" type="button" data-info="gpi">i</button>
             </div>
             <div style="font-size:2.5rem;" id="gpiValue">-</div>
           </div>
           <div class="card">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
-              <h3 style="margin:0;">Total Weight</h3>
+              <h3 style="color:var(--primary);margin:0;text-align:center;">TW</h3>
               <button class="info-btn" type="button" data-info="finalArrowWeight">i</button>
             </div>
             <div style="font-size:2.5rem;" id="finalArrowWeight">-</div>
@@ -684,8 +684,8 @@
         <div class="grid-2" style="gap:1rem;">
           <!-- FOC SUBCARD -->
           <div class="subcard">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
-              <h3 style="margin:0;">Front of Center (FOC)</h3>
+            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;margin-bottom:0.5rem;">
+              <h3 style="margin:0;color:var(--primary);text-align:center;">FOC</h3>
               <button class="info-btn" type="button" data-info="foc">i</button>
             </div>
             <div style="text-align:center;margin-bottom:0.5rem;">
@@ -715,8 +715,8 @@
 
           <!-- Arrow Weight Composition SUBCARD -->
           <div class="subcard">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
-              <h3 style="margin:0;">Arrow Weight Composition</h3>
+            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;margin-bottom:0.5rem;">
+              <h3 style="margin:0;color:var(--primary);text-align:center;">AWC</h3>
               <button class="info-btn" type="button" data-info="composition">i</button>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.5rem;">
@@ -748,10 +748,10 @@
         </div>
       </div>
 
-      <!-- Velocity, Trajectory & Impact -->
+      <!-- Velocity, Trajectory & Impact -> Performance -->
       <div class="card">
         <div class="card-header">
-          <h2>Velocity, Trajectory & Impact @ <span id="distanceValue">50</span> yards</h2>
+          <h2>Performance @ <span id="distanceValue">50</span> yards</h2>
           <button class="info-btn" type="button" data-info="velocitySection">i</button>
         </div>
 
@@ -771,15 +771,17 @@
         <div class="grid-2" style="margin-top:1.25rem;">
           <div class="card text-center">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
-              <h3 style="margin:0;">Velocity @ <span id="velocityDistanceLabel">50</span> yd</h3>
+              <h3 style="margin:0;color:var(--success);text-align:center;">Velocity</h3>
               <button class="info-btn" type="button" data-info="velocityAtDistance">i</button>
             </div>
             <div style="font-size:3rem;" id="velocityAtDistance">-</div>
-            <small>FPS (estimated at target)</small>
+            <small>
+              FPS at <span id="velocityDistanceLabel">50</span> yd (estimated at target)
+            </small>
           </div>
           <div class="card text-center">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
-              <h3 style="margin:0;">Peak Height on Flight</h3>
+              <h3 style="margin:0;color:var(--success);text-align:center;">Peak Height</h3>
               <button class="info-btn" type="button" data-info="peakHeight">i</button>
             </div>
             <div style="font-size:3rem;" id="peakHeightValue">-</div>
@@ -794,7 +796,7 @@
         <div class="grid-2" style="margin-top:1rem;">
           <div class="card text-center">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
-              <h3 style="color:var(--success);margin:0;">Launch KE</h3>
+              <h3 style="color:var(--success);margin:0;text-align:center;">Launch KE</h3>
               <button class="info-btn" type="button" data-info="launchKE">i</button>
             </div>
             <div style="font-size:3rem;" id="keValue">-</div>
@@ -802,7 +804,7 @@
           </div>
           <div class="card text-center">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
-              <h3 style="color:var(--warning);margin:0;">Time to Impact</h3>
+              <h3 style="color:var(--success);margin:0;text-align:center;">Time to Impact</h3>
               <button class="info-btn" type="button" data-info="timeToImpact">i</button>
             </div>
             <div style="font-size:3rem;" id="timeToImpact">-</div>
@@ -810,7 +812,7 @@
           </div>
           <div class="card text-center">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
-              <h3 style="color:var(--primary);margin:0;">Impact KE</h3>
+              <h3 style="color:var(--success);margin:0;text-align:center;">Impact KE</h3>
               <button class="info-btn" type="button" data-info="impactKE">i</button>
             </div>
             <div style="font-size:3rem;" id="impactKE">-</div>
@@ -818,7 +820,7 @@
           </div>
           <div class="card text-center">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
-              <h3 style="color:var(--danger);margin:0;">Impact Momentum</h3>
+              <h3 style="color:var(--success);margin:0;text-align:center;">Impact Momentum</h3>
               <button class="info-btn" type="button" data-info="impactMom">i</button>
             </div>
             <div style="font-size:3rem;" id="impactMom">-</div>
@@ -842,25 +844,25 @@
 
         <div class="grid-2" style="text-align:center; gap:1rem;">
           <div class="card">
-            <h3 style="color:var(--success); margin:0;">Small / Thin-skinned</h3>
+            <h3 style="margin:0;">Small / Thin-skinned</h3>
             <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 25 ft-lbs • 0.30 slug·ft/s</div>
             <div style="font-size:2.8rem; font-weight:bold;" id="smallGameStatus">Send it</div>
           </div>
 
           <div class="card">
-            <h3 style="color:var(--primary); margin:0;">Medium Game</h3>
+            <h3 style="margin:0;">Medium Game</h3>
             <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 50 ft-lbs • 0.45 slug·ft/s</div>
             <div style="font-size:2.8rem; font-weight:bold;" id="deerStatus">Send it</div>
           </div>
 
           <div class="card">
-            <h3 style="color:var(--warning); margin:0;">Large / Tough Game</h3>
+            <h3 style="margin:0;">Large / Tough Game</h3>
             <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 65 ft-lbs • 0.60 slug·ft/s</div>
             <div style="font-size:2.8rem; font-weight:bold;" id="elkStatus">Send it</div>
           </div>
 
           <div class="card">
-            <h3 style="color:var(--danger); margin:0;">Dangerous / Extreme</h3>
+            <h3 style="margin:0;">Dangerous / Extreme</h3>
             <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 85 ft-lbs • 0.75 slug·ft/s</div>
             <div style="font-size:2.8rem; font-weight:bold;" id="mooseStatus">Send it</div>
           </div>
@@ -1189,7 +1191,7 @@
       </p>
     `,
     actualFPS: `
-      <h2>Actual Launch FPS</h2>
+      <h2>FPS</h2>
       <p>
         The speed the arrow leaves the bow, in feet per second.
       </p>
@@ -1220,7 +1222,7 @@
       </p>
     `,
     finalArrowWeight: `
-      <h2>Total Arrow Weight</h2>
+      <h2>TW (Total Weight)</h2>
       <p>
         The final arrow weight in grains (shaft + components + point).
       </p>
@@ -1230,7 +1232,7 @@
       </p>
     `,
     foc: `
-      <h2>Front of Center (FOC)</h2>
+      <h2>FOC (Front of Center)</h2>
       <p>
         FOC shows how far forward the balance point is, expressed as a percentage of arrow length.
         More weight toward the front usually helps broadhead stability and penetration.
@@ -1241,7 +1243,7 @@
       </p>
     `,
     composition: `
-      <h2>Arrow Weight Composition</h2>
+      <h2>AWC (Arrow Weight Composition)</h2>
       <p>
         A visual breakdown of how your arrow’s total weight is split between
         <strong>shaft</strong>, <strong>point</strong>, and other components.
@@ -1254,7 +1256,7 @@
 
     // Velocity / trajectory / impact
     velocitySection: `
-      <h2>Velocity, Trajectory & Impact</h2>
+      <h2>Performance @ Distance</h2>
       <p>
         Use the slider to set a target distance. The app then estimates:
         arrow speed at that distance, peak height of the arc, time of flight,
@@ -1266,7 +1268,7 @@
       </p>
     `,
     velocityAtDistance: `
-      <h2>Velocity at Distance</h2>
+      <h2>Velocity</h2>
       <p>
         Estimated arrow speed at the selected yardage based on your launch FPS and
         a simple decay model.
@@ -1277,7 +1279,7 @@
       </p>
     `,
     peakHeight: `
-      <h2>Peak Height on Flight</h2>
+      <h2>Peak Height</h2>
       <p>
         The approximate maximum height of the arrow’s flight path above a flat line
         from you to the target, in feet.
@@ -1761,7 +1763,7 @@
     if (labelPoint) labelPoint.textContent = `Point: ${pointPct.toFixed(0)}%`;
     if (labelComp)  labelComp.textContent  = `Comp.: ${compPct.toFixed(0)}%`;
 
-    // Game Effectiveness statuses
+    // Game Effectiveness statuses (green if Send it, red if Don't)
     const games = [
       { ke: 25, mom: 0.30, id: "smallGameStatus" },
       { ke: 50, mom: 0.45, id: "deerStatus" },
@@ -1769,9 +1771,9 @@
       { ke: 85, mom: 0.75, id: "mooseStatus" }
     ];
 
-    games.forEach(g => {
-      const ok = impactKE >= g.ke && impactMom >= g.mom;
-      const el = document.getElementById(g.id);
+    games.forEach(gm => {
+      const ok = impactKE >= gm.ke && impactMom >= gm.mom;
+      const el = document.getElementById(gm.id);
       el.textContent = ok ? "Send it" : "Don’t";
       el.style.color = ok ? "var(--success)" : "var(--danger)";
     });
