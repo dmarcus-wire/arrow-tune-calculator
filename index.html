@@ -382,9 +382,9 @@
         </p>
       </div>
 
-      <div class="card">
+      <div class="subcard" style="margin-top:1rem;">
         <div class="card-header">
-          <h2>Your Setups</h2>
+          <h3>Your Setups</h3>
         </div>
         <label>
           Build Name
@@ -402,9 +402,10 @@
       </div>
 
       <!-- Bow Setup -->
-      <div class="card">
+      <div class="subcard" style="margin-top:1rem;">
         <div class="card-header">
-          <h2>Bow Setup</h2>
+          <h3>Bow Setup</h3>
+          <button class="info-btn" type="button" data-info="bowModel">ⓘ</button>
         </div>
         <div class="grid-2">
           <div>
@@ -502,9 +503,10 @@
       </div>
 
       <!-- Arrow Setup -->
-      <div class="card">
+      <div class="subcard" style="margin-top:1rem;">
         <div class="card-header">
-          <h2>Arrow Setup</h2>
+          <h3>Arrow Setup</h3>
+          <button class="info-btn" type="button" data-info="arrowName">ⓘ</button>
         </div>
         <label>
           Arrow Name
@@ -612,15 +614,13 @@
         </div>
       </div>
 
-      <div class="card">
+      <div class="subcard" style="margin-top:1rem;">
         <div class="card-header">
-          <h2>Notes</h2>
+          <h3>Notes</h3>
           <button class="info-btn" type="button" data-info="notes">ⓘ</button>
         </div>
-        <textarea id="notes" rows="4" placeholder="Tuning notes, chronograph data..."></textarea>
-        <small style="display:block;margin-top:0.35rem;font-size:0.85rem;color:var(--light);">
-          Notes are saved with your build.
-        </small>
+
+        <textarea id="notes" rows="4" placeholder="Tuning notes..."></textarea>
       </div>
     </div>
 
