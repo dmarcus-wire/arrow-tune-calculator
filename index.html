@@ -130,10 +130,10 @@
     input:checked + .slider:before { transform:translateX(26px); }
 
     .info-btn {
-      font-size: 1.8rem;       /* bigger, stands out */
-      color: var(--primary);   /* bright blue */
-      font-weight: 900;        /* bold */
-      opacity: 0.9;
+      font-size: 1.0rem;
+      color: var(--primary);
+      background: none;
+      border: none;
     }
     .info-btn:hover {
       opacity: 1;
@@ -378,7 +378,7 @@
         </div>
         <p style="color:var(--light);">
           Offline • Mobile-friendly • Live calculations<br>
-          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.8</span>
+          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.9</span>
         </p>
       </div>
 
@@ -388,7 +388,7 @@
         </div>
         <label>
           Build Name
-          <button class="info-btn" type="button" data-info="buildName">i</button>
+          <button class="info-btn" type="button" data-info="buildName">ⓘ</button>
         </label>
         <div class="flex">
           <input type="text" id="buildName" placeholder="e.g. 2025 Hoyt RX-9 70lb 500gr">
@@ -410,42 +410,42 @@
           <div>
             <label>
               Bow Model
-              <button class="info-btn" type="button" data-info="bowModel">i</button>
+              <button class="info-btn" type="button" data-info="bowModel">ⓘ</button>
             </label>
             <input type="text" id="bowModel" step="0.5">
           </div>
           <div>
             <label>
               IBO/ATA Speed (FPS)
-              <button class="info-btn" type="button" data-info="iboRating">i</button>
+              <button class="info-btn" type="button" data-info="iboRating">ⓘ</button>
             </label>
             <input type="number" id="iboRating" value="0" step="0.5">
           </div>
           <div>
             <label>
               Draw Weight (lbs)
-              <button class="info-btn" type="button" data-info="drawWeight">i</button>
+              <button class="info-btn" type="button" data-info="drawWeight">ⓘ</button>
             </label>
             <input type="number" id="drawWeight" value="70" step="0.5">
           </div>
           <div>
             <label>
               Draw Length (in)
-              <button class="info-btn" type="button" data-info="drawLength">i</button>
+              <button class="info-btn" type="button" data-info="drawLength">ⓘ</button>
             </label>
             <input type="number" id="drawLength" value="29" step="0.5">
           </div>
           <div>
             <label>
               String Add-ons (gr)
-              <button class="info-btn" type="button" data-info="stringWeightSimple">i</button>
+              <button class="info-btn" type="button" data-info="stringWeightSimple">ⓘ</button>
             </label>
             <input type="number" id="stringWeightSimple" value="0" step="0.5">
           </div>
           <div>
             <label>
               Application
-              <button class="info-btn" type="button" data-info="application">i</button>
+              <button class="info-btn" type="button" data-info="application">ⓘ</button>
             </label>
             <select id="application">
               <option>Target / 3D</option>
@@ -458,7 +458,7 @@
         <div class="flex" style="margin-top:1rem;justify-content:space-between;">
           <label>
             Advanced String Components
-            <button class="info-btn" type="button" data-info="toggleString">i</button>
+            <button class="info-btn" type="button" data-info="toggleString">ⓘ</button>
           </label>
           <label class="toggle-switch">
             <input type="checkbox" id="toggleString"><span class="slider"></span>
@@ -469,28 +469,28 @@
             <div>
               <label>
                 Peep
-                <button class="info-btn" type="button" data-info="peepWeight">i</button>
+                <button class="info-btn" type="button" data-info="peepWeight">ⓘ</button>
               </label>
               <input type="number" id="peepWeight" value="0" step="0.5">
             </div>
             <div>
               <label>
                 D-Loop
-                <button class="info-btn" type="button" data-info="dloopWeight">i</button>
+                <button class="info-btn" type="button" data-info="dloopWeight">ⓘ</button>
               </label>
               <input type="number" id="dloopWeight" value="0" step="0.5">
             </div>
             <div>
               <label>
                 Kisser
-                <button class="info-btn" type="button" data-info="kisserWeight">i</button>
+                <button class="info-btn" type="button" data-info="kisserWeight">ⓘ</button>
               </label>
               <input type="number" id="kisserWeight" value="0" step="0.5">
             </div>
             <div>
               <label>
                 Silencers
-                <button class="info-btn" type="button" data-info="silencersWeight">i</button>
+                <button class="info-btn" type="button" data-info="silencersWeight">ⓘ</button>
               </label>
               <input type="number" id="silencersWeight" value="0" step="0.5">
             </div>
@@ -508,21 +508,21 @@
         </div>
         <label>
           Arrow Name
-          <button class="info-btn" type="button" data-info="arrowName">i</button>
+          <button class="info-btn" type="button" data-info="arrowName">ⓘ</button>
         </label>
         <input type="text" id="arrowName">
         <div class="grid-2">
           <div>
             <label>
               Arrow Length (in)
-              <button class="info-btn" type="button" data-info="arrowLength">i</button>
+              <button class="info-btn" type="button" data-info="arrowLength">ⓘ</button>
             </label>
             <input type="number" id="arrowLength" value="28.5" step="0.5">
           </div>
           <div>
             <label>
               Total Arrow Weight (gr)
-              <button class="info-btn" type="button" data-info="totalArrowWeightSimple">i</button>
+              <button class="info-btn" type="button" data-info="totalArrowWeightSimple">ⓘ</button>
             </label>
             <input type="number" id="totalArrowWeightSimple" value="450" step="0.5">
             <small id="totalWeightHint"
@@ -532,14 +532,14 @@
           <div>
             <label>
               Point Weight (gr)
-              <button class="info-btn" type="button" data-info="pointWeight">i</button>
+              <button class="info-btn" type="button" data-info="pointWeight">ⓘ</button>
             </label>
             <input type="number" id="pointWeight" value="125" step="0.5">
           </div>
           <div>
             <label>
               Balance Point (in)
-              <button class="info-btn" type="button" data-info="balancePoint">i</button>
+              <button class="info-btn" type="button" data-info="balancePoint">ⓘ</button>
             </label>
             <input type="number" id="balancePoint" value="18.5" step="0.05">
           </div>
@@ -548,7 +548,7 @@
         <div class="flex" style="margin-top:1rem;justify-content:space-between;">
           <label>
             Advanced Arrow Components
-            <button class="info-btn" type="button" data-info="toggleArrow">i</button>
+            <button class="info-btn" type="button" data-info="toggleArrow">ⓘ</button>
           </label>
           <label class="toggle-switch">
             <input type="checkbox" id="toggleArrow"><span class="slider"></span>
@@ -559,49 +559,49 @@
             <div>
               <label>
                 Bare Shaft
-                <button class="info-btn" type="button" data-info="bareShaft">i</button>
+                <button class="info-btn" type="button" data-info="bareShaft">ⓘ</button>
               </label>
               <input type="number" id="bareShaft" value="0" step="0.1">
             </div>
             <div>
               <label>
                 Nock System
-                <button class="info-btn" type="button" data-info="nockWeight">i</button>
+                <button class="info-btn" type="button" data-info="nockWeight">ⓘ</button>
               </label>
               <input type="number" id="nockWeight" value="0" step="0.1">
             </div>
             <div>
               <label>
                 Wrap
-                <button class="info-btn" type="button" data-info="wrapWeight">i</button>
+                <button class="info-btn" type="button" data-info="wrapWeight">ⓘ</button>
               </label>
               <input type="number" id="wrapWeight" value="0" step="0.1">
             </div>
             <div>
               <label>
                 Vane Weight (each)
-                <button class="info-btn" type="button" data-info="vaneWeightEach">i</button>
+                <button class="info-btn" type="button" data-info="vaneWeightEach">ⓘ</button>
               </label>
               <input type="number" id="vaneWeightEach" value="0" step="0.1">
             </div>
             <div>
               <label>
                 Vane Count
-                <button class="info-btn" type="button" data-info="vaneCount">i</button>
+                <button class="info-btn" type="button" data-info="vaneCount">ⓘ</button>
               </label>
               <input type="number" id="vaneCount" value="0" step="1">
             </div>
             <div>
               <label>
                 Insert/Outsert
-                <button class="info-btn" type="button" data-info="insertWeight">i</button>
+                <button class="info-btn" type="button" data-info="insertWeight">ⓘ</button>
               </label>
               <input type="number" id="insertWeight" value="0" step="0.5">
             </div>
             <div>
               <label>
                 Glue / Pin Nock
-                <button class="info-btn" type="button" data-info="glueWeight">i</button>
+                <button class="info-btn" type="button" data-info="glueWeight">ⓘ</button>
               </label>
               <input type="number" id="glueWeight" value="0" step="0.5">
             </div>
@@ -615,7 +615,7 @@
       <div class="card">
         <div class="card-header">
           <h2>Notes</h2>
-          <button class="info-btn" type="button" data-info="notes">i</button>
+          <button class="info-btn" type="button" data-info="notes">ⓘ</button>
         </div>
         <textarea id="notes" rows="4" placeholder="Tuning notes, chronograph data..."></textarea>
         <small style="display:block;margin-top:0.35rem;font-size:0.85rem;color:var(--light);">
@@ -630,7 +630,7 @@
       <div class="card">
         <div class="card-header">
           <h2>Arrow Efficiency</h2>
-          <button class="info-btn" type="button" data-info="arrowEfficiency">i</button>
+          <button class="info-btn" type="button" data-info="arrowEfficiency">ⓘ</button>
         </div>
 
         <!-- Primary efficiency outputs -->
@@ -638,7 +638,7 @@
           <div class="card">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
               <h3 style="color:var(--primary);margin:0;text-align:center;">FPS</h3>
-              <button class="info-btn" type="button" data-info="actualFPS">i</button>
+              <button class="info-btn" type="button" data-info="actualFPS">ⓘ</button>
             </div>
             <input type="number" id="actualFPS" step="0.1"
                    style="font-size:2.5rem;text-align:center;border:3px solid var(--primary);border-radius:12px;padding:0.5rem;">
@@ -651,7 +651,7 @@
           <div class="card">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
               <h3 style="color:var(--primary);margin:0;text-align:center;">GPP</h3>
-              <button class="info-btn" type="button" data-info="gpp">i</button>
+              <button class="info-btn" type="button" data-info="gpp">ⓘ</button>
             </div>
             <div style="font-size:2.5rem;" id="gppValue">-</div>
             <small id="gppHint"
@@ -662,14 +662,14 @@
           <div class="card">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
               <h3 style="color:var(--primary);margin:0;text-align:center;">GPI</h3>
-              <button class="info-btn" type="button" data-info="gpi">i</button>
+              <button class="info-btn" type="button" data-info="gpi">ⓘ</button>
             </div>
             <div style="font-size:2.5rem;" id="gpiValue">-</div>
           </div>
           <div class="card">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
               <h3 style="color:var(--primary);margin:0;text-align:center;">TW</h3>
-              <button class="info-btn" type="button" data-info="finalArrowWeight">i</button>
+              <button class="info-btn" type="button" data-info="finalArrowWeight">ⓘ</button>
             </div>
             <div style="font-size:2.5rem;" id="finalArrowWeight">-</div>
           </div>
@@ -681,7 +681,7 @@
           <div class="subcard">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;margin-bottom:0.5rem;">
               <h3 style="margin:0;color:var(--primary);text-align:center;">FOC</h3>
-              <button class="info-btn" type="button" data-info="foc">i</button>
+              <button class="info-btn" type="button" data-info="foc">ⓘ</button>
             </div>
             <div style="text-align:center;margin-bottom:0.5rem;">
               <!-- Updated FOC value style to match other cards: same size, default color -->
@@ -713,7 +713,7 @@
           <div class="subcard">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;margin-bottom:0.5rem;">
               <h3 style="margin:0;color:var(--primary);text-align:center;">AWC</h3>
-              <button class="info-btn" type="button" data-info="composition">i</button>
+              <button class="info-btn" type="button" data-info="composition">ⓘ</button>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.5rem;">
               <span id="compTotalLabel" style="font-size:0.9rem;color:var(--light);">-</span>
@@ -747,7 +747,7 @@
       <div class="card">
         <div class="card-header">
           <h2>Performance @ <span id="distanceValue">50</span> yards</h2>
-          <button class="info-btn" type="button" data-info="velocitySection">i</button>
+          <button class="info-btn" type="button" data-info="velocitySection">ⓘ</button>
         </div>
 
         <!-- Distance slider -->
@@ -767,7 +767,7 @@
           <div class="card text-center">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
               <h3 style="margin:0;color:var(--success);text-align:center;">Velocity</h3>
-              <button class="info-btn" type="button" data-info="velocityAtDistance">i</button>
+              <button class="info-btn" type="button" data-info="velocityAtDistance">ⓘ</button>
             </div>
             <div style="font-size:3rem;" id="velocityAtDistance">-</div>
             <small>
@@ -777,7 +777,7 @@
           <div class="card text-center">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
               <h3 style="margin:0;color:var(--success);text-align:center;">Peak Height</h3>
-              <button class="info-btn" type="button" data-info="peakHeight">i</button>
+              <button class="info-btn" type="button" data-info="peakHeight">ⓘ</button>
             </div>
             <div style="font-size:3rem;" id="peakHeightValue">-</div>
             <small>
@@ -792,7 +792,7 @@
           <div class="card text-center">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
               <h3 style="color:var(--success);margin:0;text-align:center;">Launch KE</h3>
-              <button class="info-btn" type="button" data-info="launchKE">i</button>
+              <button class="info-btn" type="button" data-info="launchKE">ⓘ</button>
             </div>
             <div style="font-size:3rem;" id="keValue">-</div>
             <small>ft-lbs</small>
@@ -800,7 +800,7 @@
           <div class="card text-center">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
               <h3 style="color:var(--success);margin:0;text-align:center;">Time to Impact</h3>
-              <button class="info-btn" type="button" data-info="timeToImpact">i</button>
+              <button class="info-btn" type="button" data-info="timeToImpact">ⓘ</button>
             </div>
             <div style="font-size:3rem;" id="timeToImpact">-</div>
             <small>seconds</small>
@@ -808,7 +808,7 @@
           <div class="card text-center">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
               <h3 style="color:var(--success);margin:0;text-align:center;">Impact KE</h3>
-              <button class="info-btn" type="button" data-info="impactKE">i</button>
+              <button class="info-btn" type="button" data-info="impactKE">ⓘ</button>
             </div>
             <div style="font-size:3rem;" id="impactKE">-</div>
             <small>ft-lbs</small>
@@ -816,7 +816,7 @@
           <div class="card text-center">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
               <h3 style="color:var(--success);margin:0;text-align:center;">Impact Momentum</h3>
-              <button class="info-btn" type="button" data-info="impactMom">i</button>
+              <button class="info-btn" type="button" data-info="impactMom">ⓘ</button>
             </div>
             <div style="font-size:3rem;" id="impactMom">-</div>
             <small>slug·ft/s</small>
@@ -828,7 +828,7 @@
       <div class="card">
         <div class="card-header">
           <h2>Game Effectiveness</h2>
-          <button class="info-btn" type="button" data-info="gameEffectiveness">i</button>
+          <button class="info-btn" type="button" data-info="gameEffectiveness">ⓘ</button>
         </div>
 
         <div style="margin-bottom:0.75rem;font-size:0.95rem;color:var(--light);">
@@ -869,7 +869,7 @@
         <div class="card-header">
           <h2>Build Summary</h2>
           <div class="flex" style="gap:0.5rem;">
-            <button class="info-btn" type="button" data-info="buildSummary">i</button>
+            <button class="info-btn" type="button" data-info="buildSummary">ⓘ</button>
             <button class="btn-small" id="copySummary">Copy</button>
           </div>
         </div>
