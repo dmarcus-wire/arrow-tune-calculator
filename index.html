@@ -97,7 +97,6 @@
     .flex { display:flex; gap:1rem; align-items:center; }
     .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
 
-    /* NEW: helper to center everything in Performance cards */
     .text-center { text-align:center; }
 
     .toggle-switch {
@@ -134,10 +133,24 @@
       color: var(--primary);
       background: none;
       border: none;
+      cursor:pointer;
     }
     .info-btn:hover {
       opacity: 1;
-      transform: scale(1.2);   /* nice hover pop */
+      transform: scale(1.2);
+    }
+
+    .math-btn {
+      font-size: 0.9rem;
+      color: var(--primary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      opacity: 0.9;
+    }
+    .math-btn:hover {
+      opacity: 1;
+      transform: scale(1.1);
     }
 
     .advanced {
@@ -194,7 +207,6 @@
       font-size: 2.6rem !important;
       line-height: 1.1;
     }
-    /* Removed special #focValue override so it matches other card values */
 
     #smallGameStatus,
     #deerStatus,
@@ -209,7 +221,6 @@
       opacity: 0.85;
     }
 
-    /* Toast */
     #toast {
       position: fixed;
       bottom: 1.5rem;
@@ -227,7 +238,6 @@
       z-index: 999;
     }
 
-    /* Compact FOC bar */
     .foc-bar-wrapper { margin-top: 0.25rem; }
 
     .foc-bar-track {
@@ -276,7 +286,6 @@
       margin-top: 0.25rem;
     }
 
-    /* Compact composition bar */
     .comp-bar-track {
       position: relative;
       height: 10px;
@@ -287,7 +296,6 @@
     }
 
     .comp-seg { height: 100%; }
-
     .comp-seg-shaft { background: #94a3b8; }
     .comp-seg-point { background: #0ea5e9; }
     .comp-seg-other { background: #22c55e; }
@@ -314,7 +322,6 @@
     .comp-dot-point { background: #0ea5e9; }
     .comp-dot-other { background: #22c55e; }
 
-    /* Info overlay */
     .info-overlay {
       position: fixed;
       inset: 0;
@@ -365,6 +372,7 @@
   <div class="container">
     <!-- LEFT: INPUTS -->
     <div id="inputs-column">
+      <!-- Arrow Tune Calculator card FIRST -->
       <div class="card">
         <div class="card-header">
           <h1>Arrow Tune Calculator</h1>
@@ -382,9 +390,10 @@
         </p>
       </div>
 
-      <div class="subcard" style="margin-top:1rem;">
+      <!-- Your Setups -->
+      <div class="card" style="margin-top:1rem;">
         <div class="card-header">
-          <h3>Your Setups</h3>
+          <h2>Your Setups</h2>
         </div>
         <label>
           Build Name
@@ -402,7 +411,7 @@
       </div>
 
       <!-- Bow Setup -->
-      <div class="subcard" style="margin-top:1rem;">
+      <div class="card" style="margin-top:1rem;">
         <div class="card-header">
           <h3>Bow Setup</h3>
           <button class="info-btn" type="button" data-info="bowModel">ⓘ</button>
@@ -503,7 +512,7 @@
       </div>
 
       <!-- Arrow Setup -->
-      <div class="subcard" style="margin-top:1rem;">
+      <div class="card" style="margin-top:1rem;">
         <div class="card-header">
           <h3>Arrow Setup</h3>
           <button class="info-btn" type="button" data-info="arrowName">ⓘ</button>
@@ -614,12 +623,12 @@
         </div>
       </div>
 
-      <div class="subcard" style="margin-top:1rem;">
+      <!-- Notes -->
+      <div class="card" style="margin-top:1rem;">
         <div class="card-header">
           <h3>Notes</h3>
           <button class="info-btn" type="button" data-info="notes">ⓘ</button>
         </div>
-
         <textarea id="notes" rows="4" placeholder="Tuning notes..."></textarea>
       </div>
     </div>
@@ -633,12 +642,12 @@
           <button class="info-btn" type="button" data-info="arrowEfficiency">ⓘ</button>
         </div>
 
-        <!-- Primary efficiency outputs -->
         <div class="grid-2" style="text-align:center; margin-bottom:1.5rem;">
           <div class="card">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
               <h3 style="color:var(--primary);margin:0;text-align:center;">FPS</h3>
               <button class="info-btn" type="button" data-info="actualFPS">ⓘ</button>
+              <button class="math-btn" type="button" data-math="fps">∑</button>
             </div>
             <input type="number" id="actualFPS" step="0.1"
                    style="font-size:2.5rem;text-align:center;border:3px solid var(--primary);border-radius:12px;padding:0.5rem;">
@@ -652,6 +661,7 @@
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
               <h3 style="color:var(--primary);margin:0;text-align:center;">GPP</h3>
               <button class="info-btn" type="button" data-info="gpp">ⓘ</button>
+              <button class="math-btn" type="button" data-math="gpp">∑</button>
             </div>
             <div style="font-size:2.5rem;" id="gppValue">-</div>
             <small id="gppHint"
@@ -663,6 +673,7 @@
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
               <h3 style="color:var(--primary);margin:0;text-align:center;">GPI</h3>
               <button class="info-btn" type="button" data-info="gpi">ⓘ</button>
+              <button class="math-btn" type="button" data-math="gpi">∑</button>
             </div>
             <div style="font-size:2.5rem;" id="gpiValue">-</div>
           </div>
@@ -670,21 +681,20 @@
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
               <h3 style="color:var(--primary);margin:0;text-align:center;">TW</h3>
               <button class="info-btn" type="button" data-info="finalArrowWeight">ⓘ</button>
+              <button class="math-btn" type="button" data-math="tw">∑</button>
             </div>
             <div style="font-size:2.5rem;" id="finalArrowWeight">-</div>
           </div>
         </div>
 
-        <!-- FOC + Composition subcards -->
         <div class="grid-2" style="gap:1rem;">
-          <!-- FOC SUBCARD -->
           <div class="subcard">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;margin-bottom:0.5rem;">
               <h3 style="margin:0;color:var(--primary);text-align:center;">FOC</h3>
               <button class="info-btn" type="button" data-info="foc">ⓘ</button>
+              <button class="math-btn" type="button" data-math="foc">∑</button>
             </div>
             <div style="text-align:center;margin-bottom:0.5rem;">
-              <!-- Updated FOC value style to match other cards: same size, default color -->
               <div id="focValue"
                    style="font-size:2.5rem;font-weight:800;">-</div>
               <div style="font-size:0.9rem;color:var(--light);">
@@ -709,11 +719,11 @@
             </small>
           </div>
 
-          <!-- Arrow Weight Composition SUBCARD -->
           <div class="subcard">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;margin-bottom:0.5rem;">
               <h3 style="margin:0;color:var(--primary);text-align:center;">AWC</h3>
               <button class="info-btn" type="button" data-info="composition">ⓘ</button>
+              <button class="math-btn" type="button" data-math="awc">∑</button>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.5rem;">
               <span id="compTotalLabel" style="font-size:0.9rem;color:var(--light);">-</span>
@@ -743,14 +753,13 @@
         </div>
       </div>
 
-      <!-- Velocity, Trajectory & Impact -> Performance -->
+      <!-- Performance -->
       <div class="card">
         <div class="card-header">
           <h2>Performance @ <span id="distanceValue">50</span> yards</h2>
           <button class="info-btn" type="button" data-info="velocitySection">ⓘ</button>
         </div>
 
-        <!-- Distance slider -->
         <input type="range" id="distanceSlider" min="0" max="120" value="50" list="distanceTicks" style="width:100%;">
         <datalist id="distanceTicks">
           <option value="0" label="0"></option>
@@ -762,12 +771,12 @@
           <option value="120" label="120"></option>
         </datalist>
 
-        <!-- Simple metric cards for velocity & peak height -->
         <div class="grid-2" style="margin-top:1.25rem;">
           <div class="card text-center">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
               <h3 style="margin:0;color:var(--success);text-align:center;">Velocity</h3>
               <button class="info-btn" type="button" data-info="velocityAtDistance">ⓘ</button>
+              <button class="math-btn" type="button" data-math="velocity">∑</button>
             </div>
             <div style="font-size:3rem;" id="velocityAtDistance">-</div>
             <small>
@@ -778,6 +787,7 @@
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
               <h3 style="margin:0;color:var(--success);text-align:center;">Peak Height</h3>
               <button class="info-btn" type="button" data-info="peakHeight">ⓘ</button>
+              <button class="math-btn" type="button" data-math="peakHeight">∑</button>
             </div>
             <div style="font-size:3rem;" id="peakHeightValue">-</div>
             <small>
@@ -787,12 +797,12 @@
           </div>
         </div>
 
-        <!-- KE / impact cards -->
         <div class="grid-2" style="margin-top:1rem;">
           <div class="card text-center">
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
               <h3 style="color:var(--success);margin:0;text-align:center;">Launch KE</h3>
               <button class="info-btn" type="button" data-info="launchKE">ⓘ</button>
+              <button class="math-btn" type="button" data-math="keLaunch">∑</button>
             </div>
             <div style="font-size:3rem;" id="keValue">-</div>
             <small>ft-lbs</small>
@@ -801,6 +811,7 @@
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
               <h3 style="color:var(--success);margin:0;text-align:center;">Time to Impact</h3>
               <button class="info-btn" type="button" data-info="timeToImpact">ⓘ</button>
+              <button class="math-btn" type="button" data-math="timeToImpact">∑</button>
             </div>
             <div style="font-size:3rem;" id="timeToImpact">-</div>
             <small>seconds</small>
@@ -809,6 +820,7 @@
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
               <h3 style="color:var(--success);margin:0;text-align:center;">Impact KE</h3>
               <button class="info-btn" type="button" data-info="impactKE">ⓘ</button>
+              <button class="math-btn" type="button" data-math="impactKE">∑</button>
             </div>
             <div style="font-size:3rem;" id="impactKE">-</div>
             <small>ft-lbs</small>
@@ -817,6 +829,7 @@
             <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
               <h3 style="color:var(--success);margin:0;text-align:center;">Impact Momentum</h3>
               <button class="info-btn" type="button" data-info="impactMom">ⓘ</button>
+              <button class="math-btn" type="button" data-math="impactMom">∑</button>
             </div>
             <div style="font-size:3rem;" id="impactMom">-</div>
             <small>slug·ft/s</small>
@@ -828,7 +841,10 @@
       <div class="card">
         <div class="card-header">
           <h2>Game Effectiveness</h2>
-          <button class="info-btn" type="button" data-info="gameEffectiveness">ⓘ</button>
+          <div class="flex" style="gap:0.5rem;">
+            <button class="info-btn" type="button" data-info="gameEffectiveness">ⓘ</button>
+            <button class="math-btn" type="button" data-math="game">∑</button>
+          </div>
         </div>
 
         <div style="margin-bottom:0.75rem;font-size:0.95rem;color:var(--light);">
@@ -884,7 +900,6 @@
 
   <div id="toast"></div>
 
-  <!-- Info overlay -->
   <div id="infoOverlay" class="info-overlay">
     <div class="info-panel">
       <button class="info-close" type="button" aria-label="Close info">&times;</button>
@@ -893,9 +908,7 @@
   </div>
 
 <script>
-  // --- Info panel content ---
   const INFO_CONTENT = {
-    // Setups
     buildName: `
       <h2>Build Name</h2>
       <p>
@@ -907,8 +920,6 @@
         draw weight, arrow name, and total arrow weight so your builds stay organized.
       </p>
     `,
-
-    // Bow setup
     bowModel: `
       <h2>Bow Model</h2>
       <p>
@@ -1019,8 +1030,6 @@
         weight and launch FPS estimation in Advanced mode.
       </p>
     `,
-
-    // Arrow setup
     arrowName: `
       <h2>Arrow Name</h2>
       <p>
@@ -1160,8 +1169,6 @@
         Included in total arrow weight and the “Components” portion of the composition bar.
       </p>
     `,
-
-    // Notes
     notes: `
       <h2>Notes</h2>
       <p>
@@ -1173,8 +1180,6 @@
         (or didn’t) later.
       </p>
     `,
-
-    // Outputs – Arrow Efficiency
     arrowEfficiency: `
       <h2>Arrow Efficiency</h2>
       <p>
@@ -1248,8 +1253,6 @@
         inserts, vanes, or point weight affects overall build and FOC.
       </p>
     `,
-
-    // Velocity / trajectory / impact
     velocitySection: `
       <h2>Performance @ Distance</h2>
       <p>
@@ -1328,26 +1331,30 @@
         especially at longer distances.
       </p>
     `,
-
-    // Game effectiveness
     gameEffectiveness: `
       <h2>Game Effectiveness</h2>
       <p>
-        Uses your <strong>impact KE</strong> and <strong>impact momentum</strong> at the
-        selected distance and compares them to common minimums for different game sizes.
+        This compares your impact <strong>kinetic energy</strong> and
+        <strong>momentum</strong> at the chosen distance against
+        conservative thresholds for four game classes:
+      </p>
+      <ul>
+        <li>Small / thin-skinned</li>
+        <li>Medium game / deer</li>
+        <li>Large / tough game (elk, bear)</li>
+        <li>Dangerous / extreme (moose, big bear, bison)</li>
+      </ul>
+      <p>
+        The thresholds are intentionally conservative and loosely inspired by
+        Easton-style bowhunting charts, ATA discussions, Ashby-style penetration work,
+        and common outfitter guidance.
       </p>
       <p>
-        Each card shows a recommended minimum and a simple result:
-        <strong>"Send it"</strong> if both KE and momentum thresholds are met,
-        or <strong>"Don’t"</strong> if you’re below that class’s guideline.
-      </p>
-      <p>
-        These are <em>guidelines</em>, not hard rules — shot placement, broadhead choice,
-        and animal angle still matter a lot.
+        Think of the result as a <strong>sanity check and conversation starter</strong>,
+        not a guarantee. Broadhead design, shot angle, flight quality, and shot placement
+        still matter more than any single number.
       </p>
     `,
-
-    // Build summary
     buildSummary: `
       <h2>Build Summary</h2>
       <p>
@@ -1371,7 +1378,6 @@
     toastTimer = setTimeout(() => { toast.style.opacity = '0'; }, 2000);
   }
 
-  // Dark mode
   const darkToggle = document.getElementById('darkModeToggle');
   if (
     localStorage.getItem('dark') === '1' ||
@@ -1385,7 +1391,6 @@
     localStorage.setItem('dark', darkToggle.checked ? '1' : '0');
   });
 
-  // Build system
   const loadSelect = document.getElementById('loadBuildSelect');
   function refreshBuilds() {
     loadSelect.innerHTML = '<option value="">– Load Build –</option>';
@@ -1409,7 +1414,6 @@
     });
   }
 
-  // Arrow weight mode UI
   function updateArrowWeightMode() {
     const toggle = document.getElementById('toggleArrow');
     const simpleTotal = document.getElementById('totalArrowWeightSimple');
@@ -1424,10 +1428,10 @@
     } else {
       simpleTotal.readOnly = false;
       simpleTotal.style.opacity = 1;
+      hint.textContent = '';
     }
   }
 
-  // Show/hide advanced sections + recalc
   document.getElementById('toggleString').onchange = e => {
     document.getElementById('stringAdvanced').style.display = e.target.checked ? 'block' : 'none';
     calculateEverything();
@@ -1439,7 +1443,6 @@
     calculateEverything();
   };
 
-  // Save build (with checkbox support & overwrite confirmation)
   document.getElementById('saveBuild').onclick = () => {
     const n = document.getElementById('buildName').value.trim();
     if (!n) return alert('Name required');
@@ -1465,7 +1468,6 @@
     refreshBuilds();
   };
 
-  // Load build (handles new structured format + legacy simple values)
   loadSelect.onchange = () => {
     const n = loadSelect.value;
     if (!n) return;
@@ -1501,7 +1503,6 @@
   document.getElementById('deleteBuild').onclick = () => {
     let n = loadSelect.value;
 
-    // If nothing is selected, fall back to the typed build name
     if (!n) {
       const typed = document.getElementById('buildName').value.trim();
       if (typed) n = typed;
@@ -1528,7 +1529,6 @@
     showToast('Build deleted');
   };
 
-  // Suggest Name
   document.getElementById('suggestName').onclick = () => {
     const d = new Date().toISOString().slice(0,10);
     const b = document.getElementById('bowModel').value.trim() || 'Bow';
@@ -1538,7 +1538,6 @@
     document.getElementById('buildName').value = `${d} ${b} ${dw}lb ${arrow} ${weight}gr`;
   };
 
-  // FPS source indicators
   const fpsInput = document.getElementById('actualFPS');
   const fpsSource = document.getElementById('fpsSource');
 
@@ -1546,15 +1545,16 @@
     if (fpsSource) {
       fpsSource.textContent = 'Estimated from IBO, draw, arrow & string weight';
     }
+    window.fpsSource = 'estimated';
   }
 
   function markFpsChrono() {
     if (fpsSource) {
       fpsSource.textContent = 'Using manual FPS (chronograph)';
     }
+    window.fpsSource = 'chrono';
   }
 
-  // Arrow weight helper
   function getArrowWeight() {
     const pointWeight = parseFloat(document.getElementById('pointWeight').value) || 125;
 
@@ -1593,7 +1593,6 @@
       document.getElementById('stringTotal').textContent = total;
     }
 
-    // FPS
     let fps = parseFloat(fpsInput.value);
     if (recalcFPS || isNaN(fps) || fps <= 0) {
       const base = ibo * Math.sqrt((450 + stringW) / (450 + weight + stringW));
@@ -1602,7 +1601,6 @@
       markFpsEstimated();
     }
 
-    // FOC
     const foc = ((balance - len/2) / len) * 100;
     const focValEl   = document.getElementById('focValue');
     const focMarker  = document.getElementById('focMarker');
@@ -1633,7 +1631,6 @@
       focHint.style.color = 'var(--light)';
     }
 
-    // GPP / GPI / final weight
     const gpp = weight / dw;
     const gpi = weight / len;
     document.getElementById('gppValue').textContent = gpp.toFixed(1);
@@ -1659,7 +1656,6 @@
       gppHint.style.color = gppColor;
     }
 
-    // KE and momentum
     const launchKE = (weight * fps * fps) / 450240;
     const launchMom = (weight * fps) / 225400;
     document.getElementById('keValue').textContent = launchKE.toFixed(1);
@@ -1676,14 +1672,12 @@
     document.getElementById('impactMom').textContent = impactMom.toFixed(3);
     document.getElementById('timeToImpact').textContent = time.toFixed(2);
 
-    // Velocity card
     document.getElementById('velocityDistanceLabel').textContent = distYards;
     document.getElementById('velocityAtDistance').textContent = currentV.toFixed(0);
 
-    // Closed-form projectile peak height (in feet, symmetric trajectory)
-    const g = 32.174;              // ft/s^2
-    const v0 = fps;                // ft/s
-    const R_ft = distYards * 3;    // yards -> feet
+    const g = 32.174;
+    const v0 = fps;
+    const R_ft = distYards * 3;
 
     let peakHeightFt = 0;
     let peakYard = 0;
@@ -1700,12 +1694,10 @@
     document.getElementById('peakHeightValue').textContent = peakHeightFt.toFixed(1);
     document.getElementById('peakDistanceValue').textContent = peakYard.toFixed(0);
 
-    // Game effectiveness header
     document.getElementById('gameDistanceDisplay').textContent = distYards;
     document.getElementById('gameKE').textContent = impactKE.toFixed(1);
     document.getElementById('gameMom').textContent = impactMom.toFixed(3);
 
-    // Arrow Weight Composition – percentages & bar
     const isAdv = document.getElementById('toggleArrow').checked;
     let shaft = 0, point = 0, comp = 0;
     if (isAdv) {
@@ -1756,22 +1748,21 @@
     if (labelPoint) labelPoint.textContent = `Point: ${pointPct.toFixed(0)}%`;
     if (labelComp)  labelComp.textContent  = `Comp.: ${compPct.toFixed(0)}%`;
 
-    // Game Effectiveness statuses (green if Send it, red if Don't)
     const games = [
-      { ke: 25, mom: 0.30, id: "smallGameStatus" },
-      { ke: 50, mom: 0.45, id: "deerStatus" },
-      { ke: 55, mom: 0.50, id: "elkStatus" },
-      { ke: 70, mom: 0.6, id: "mooseStatus" }
+      { ke: 25, mom: 0.30, id: "smallGameStatus", label: "Small / Thin-skinned" },
+      { ke: 50, mom: 0.45, id: "deerStatus", label: "Medium Game / Deer" },
+      { ke: 65, mom: 0.60, id: "elkStatus", label: "Large / Tough Game" },
+      { ke: 85, mom: 0.75, id: "mooseStatus", label: "Dangerous / Extreme" }
     ];
 
     games.forEach(gm => {
       const ok = impactKE >= gm.ke && impactMom >= gm.mom;
+      gm.ok = ok;
       const el = document.getElementById(gm.id);
       el.textContent = ok ? "Send it" : "Don’t";
       el.style.color = ok ? "var(--success)" : "var(--danger)";
     });
 
-    // Build Summary table
     const summary = {
       "Build Name": document.getElementById('buildName').value || "Unnamed",
       "Bow Model": document.getElementById('bowModel').value || "-",
@@ -1800,14 +1791,78 @@
       ).join('') +
       '</table>';
 
-    // Store latest summary for copy button
     window.latestSummary = summary;
+
+    const baseFps = ibo * Math.sqrt((450 + stringW) / (450 + weight + stringW || 1));
+    const estimatedFps = baseFps * 0.94;
+
+    window.math = {
+      foc: { len, balance, mid: len / 2, value: foc },
+      gpp: { weight, dw, value: gpp },
+      gpi: { weight, len, value: gpi },
+      tw:  { weight },
+      fps: {
+        ibo,
+        stringW,
+        weight,
+        baseFps,
+        estimatedFps,
+        usedFps: fps,
+        source: window.fpsSource || 'estimated'
+      },
+      keLaunch: {
+        weight,
+        fps,
+        value: launchKE
+      },
+      velocity: {
+        launchFps: fps,
+        distYards,
+        value: currentV
+      },
+      peakHeight: {
+        launchFps: fps,
+        distYards,
+        peakHeightFt,
+        peakYard
+      },
+      impactKE: {
+        weight,
+        distYards,
+        impactV: currentV,
+        value: impactKE
+      },
+      impactMom: {
+        weight,
+        distYards,
+        impactV: currentV,
+        value: impactMom
+      },
+      timeToImpact: {
+        distYards,
+        value: time,
+        launchFps: fps
+      },
+      game: {
+        distYards,
+        impactKE,
+        impactMom,
+        bands: games
+      },
+      awc: {
+        weight,
+        shaft,
+        point,
+        comp,
+        shaftPct,
+        pointPct,
+        compPct
+      }
+    };
   }
 
-  // Recalculate button
   document.getElementById('recalcFPS').onclick = () => calculateEverything(true);
 
-  // Copy summary button
   document.getElementById('copySummary').onclick = () => {
     if (!window.latestSummary) {
       calculateEverything(false);
@@ -1819,7 +1874,7 @@
     ];
 
     Object.entries(summary).forEach(([k, v]) => {
-      if (v === '') return; // Skip empty header row like "Impact @ 41 yd": ""
+      if (v === '') return;
       lines.push(`${k}: ${v}`);
     });
 
@@ -1827,13 +1882,11 @@
     navigator.clipboard.writeText(text).then(() => showToast('Summary copied'));
   };
 
-  // Distance slider
   document.getElementById('distanceSlider').oninput = e => {
     document.getElementById('distanceValue').textContent = e.target.value;
     calculateEverything();
   };
 
-  // All inputs trigger calculation (FPS stays manual if you're actively editing it)
   document.querySelectorAll('input,select,textarea').forEach(el => {
     el.addEventListener('input', () => {
       if (document.activeElement.id === 'actualFPS') {
@@ -1845,7 +1898,6 @@
     });
   });
 
-  // Info overlay wiring
   const infoOverlay = document.getElementById('infoOverlay');
   const infoContent = document.getElementById('infoContent');
   const infoClose = document.querySelector('.info-close');
@@ -1856,6 +1908,201 @@
       <h2>Info</h2>
       <p>More details coming soon.</p>
     `;
+    infoOverlay.classList.add('open');
+  }
+
+  function openMath(key) {
+    if (!infoOverlay || !infoContent) return;
+    if (!window.math) {
+      calculateEverything(false);
+    }
+    const m = window.math || {};
+    let html = '';
+
+    if (key === 'foc' && m.foc) {
+      const f = m.foc;
+      html = `
+        <h2>FOC Math</h2>
+        <p><strong>Formula:</strong> FOC = ((Balance Point − (Arrow Length ÷ 2)) ÷ Arrow Length) × 100</p>
+        <p>Arrow Length = ${f.len.toFixed(2)} in</p>
+        <p>Midpoint = ${f.mid.toFixed(2)} in</p>
+        <p>Balance Point = ${f.balance.toFixed(2)} in</p>
+        <p>FOC = ((${f.balance.toFixed(2)} − ${f.mid.toFixed(2)}) ÷ ${f.len.toFixed(2)}) × 100
+           = <strong>${f.value.toFixed(1)}%</strong></p>
+      `;
+    } else if (key === 'gpp' && m.gpp) {
+      const g = m.gpp;
+      html = `
+        <h2>GPP Math</h2>
+        <p><strong>Formula:</strong> GPP = Total Arrow Weight ÷ Draw Weight</p>
+        <p>Total Arrow Weight = ${g.weight.toFixed(1)} gr</p>
+        <p>Draw Weight = ${g.dw.toFixed(1)} lb</p>
+        <p>GPP = ${g.weight.toFixed(1)} ÷ ${g.dw.toFixed(1)} = <strong>${g.value.toFixed(1)}</strong></p>
+      `;
+    } else if (key === 'gpi' && m.gpi) {
+      const g = m.gpi;
+      html = `
+        <h2>GPI Math</h2>
+        <p><strong>Formula:</strong> GPI = Total Arrow Weight ÷ Arrow Length</p>
+        <p>Total Arrow Weight = ${g.weight.toFixed(1)} gr</p>
+        <p>Arrow Length = ${g.len.toFixed(2)} in</p>
+        <p>GPI = ${g.weight.toFixed(1)} ÷ ${g.len.toFixed(2)} = <strong>${g.value.toFixed(1)}</strong></p>
+      `;
+    } else if (key === 'tw' && m.tw) {
+      const t = m.tw;
+      html = `
+        <h2>Total Arrow Weight</h2>
+        <p>This is the finished arrow weight used for all other calculations.</p>
+        <p>Total Arrow Weight = <strong>${t.weight.toFixed(1)} grains</strong></p>
+      `;
+    } else if (key === 'fps' && m.fps) {
+      const f = m.fps;
+      if (f.source === 'chrono') {
+        html = `
+          <h2>FPS Math</h2>
+          <p>You’ve entered <strong>manual FPS</strong> (likely from a chronograph), so the app uses that value directly.</p>
+          <p>Launch FPS = <strong>${f.usedFps.toFixed(1)} FPS</strong></p>
+          <p>The IBO-based estimate is still available as a reference:</p>
+          <p>Estimated FPS ≈ ${f.estimatedFps.toFixed(1)} FPS (see below).</p>
+          <hr />
+        `;
+      } else {
+        html = `<h2>FPS Estimate Math</h2>`;
+      }
+      html += `
+        <p><strong>Base formula (IBO-style):</strong></p>
+        <p>v<sub>base</sub> = IBO × √((450 + String Weight) ÷ (450 + Arrow Weight + String Weight))</p>
+        <p>Then we apply a small factor (0.94) to account for real-world losses:</p>
+        <p>v<sub>est</sub> = v<sub>base</sub> × 0.94</p>
+        <p>IBO = ${f.ibo.toFixed(1)} FPS</p>
+        <p>String Weight = ${f.stringW.toFixed(1)} gr</p>
+        <p>Arrow Weight = ${f.weight.toFixed(1)} gr</p>
+        <p>v<sub>base</sub> = ${f.ibo.toFixed(1)} × √((450 + ${f.stringW.toFixed(1)}) ÷ (450 + ${f.weight.toFixed(1)} + ${f.stringW.toFixed(1)}))</p>
+        <p>v<sub>base</sub> ≈ ${f.baseFps.toFixed(1)} FPS</p>
+        <p>v<sub>est</sub> = ${f.baseFps.toFixed(1)} × 0.94 ≈ <strong>${f.estimatedFps.toFixed(1)} FPS</strong></p>
+        <p><strong>FPS used in calculations:</strong> ${f.usedFps.toFixed(1)} FPS (${f.source === 'chrono' ? 'manual' : 'estimated'})</p>
+      `;
+    } else if (key === 'keLaunch' && m.keLaunch) {
+      const k = m.keLaunch;
+      html = `
+        <h2>Launch Kinetic Energy</h2>
+        <p><strong>Formula:</strong> KE = (Arrow Weight × Velocity²) ÷ 450240</p>
+        <p>Arrow Weight = ${k.weight.toFixed(1)} gr</p>
+        <p>Launch Velocity = ${k.fps.toFixed(1)} FPS</p>
+        <p>KE = (${k.weight.toFixed(1)} × ${k.fps.toFixed(1)}²) ÷ 450240
+           = <strong>${k.value.toFixed(1)} ft-lbs</strong></p>
+        <p>The constant <strong>450240</strong> is a unit-conversion factor that turns grains and feet-per-second into foot-pounds. It bundles together gravity, the “½” from ½mv², and the 7000 grains-per-pound conversion.</p>
+      `;
+    } else if (key === 'velocity' && m.velocity) {
+      const v = m.velocity;
+      const exponent = -v.distYards / 300;
+      const decay = Math.exp(exponent);
+      html = `
+        <h2>Velocity at Distance</h2>
+        <p><strong>Model:</strong> v(d) = v₀ × e^(−d / 300)</p>
+        <p>Launch Velocity v₀ = ${v.launchFps.toFixed(1)} FPS</p>
+        <p>Distance d = ${v.distYards.toFixed(0)} yd</p>
+        <p><strong>Step 1:</strong> exponent = −d/300 = −${v.distYards.toFixed(0)}/300 ≈ ${exponent.toFixed(3)}</p>
+        <p><strong>Step 2:</strong> e^(exponent) ≈ ${decay.toFixed(3)}</p>
+        <p><strong>Step 3:</strong> v(d) = ${v.launchFps.toFixed(1)} × ${decay.toFixed(3)}
+           ≈ <strong>${v.value.toFixed(0)} FPS</strong></p>
+      `;
+    } else if (key === 'peakHeight' && m.peakHeight) {
+      const p = m.peakHeight;
+      const g = 32.174;
+      const Rft = p.distYards * 3;
+      const sin2theta = (Rft * g) / (p.launchFps * p.launchFps);
+      html = `
+        <h2>Peak Height of Arc</h2>
+        <p>For a level shot, we approximate a symmetric ballistic trajectory.</p>
+        <p><strong>Step 1:</strong> Solve for launch angle θ so that the range matches your distance:</p>
+        <p>sin(2θ) = (Range × g) ÷ v₀²</p>
+        <p>Range = ${p.distYards.toFixed(0)} yd = ${Rft.toFixed(0)} ft</p>
+        <p>v₀ = ${p.launchFps.toFixed(1)} FPS, g ≈ 32.174 ft/s²</p>
+        <p>sin(2θ) ≈ ${sin2theta.toFixed(3)}</p>
+        <p><strong>Step 2:</strong> Peak height formula:</p>
+        <p>H = (v₀² × sin²θ) ÷ (2g)</p>
+        <p>Plugging in your numbers (after solving for θ) gives:</p>
+        <p>H ≈ <strong>${p.peakHeightFt.toFixed(1)} ft</strong> above a flat line to the target,</p>
+        <p>with the peak roughly at <strong>${p.peakYard.toFixed(0)} yd</strong> from the shooter.</p>
+      `;
+    } else if (key === 'impactKE' && m.impactKE) {
+      const k = m.impactKE;
+      html = `
+        <h2>Impact Kinetic Energy</h2>
+        <p><strong>Formula:</strong> KE = (Arrow Weight × Impact Velocity²) ÷ 450240</p>
+        <p>Arrow Weight = ${k.weight.toFixed(1)} gr</p>
+        <p>Impact Velocity at ${k.distYards.toFixed(0)} yd = ${k.impactV.toFixed(1)} FPS</p>
+        <p>KE = (${k.weight.toFixed(1)} × ${k.impactV.toFixed(1)}²) ÷ 450240
+           = <strong>${k.value.toFixed(1)} ft-lbs</strong></p>
+        <p>The constant <strong>450240</strong> is the same grains-to-foot-pounds conversion used at launch, so you can compare KE at the bow and at impact on the same scale.</p>
+      `;
+    } else if (key === 'impactMom' && m.impactMom) {
+      const mom = m.impactMom;
+      html = `
+        <h2>Impact Momentum</h2>
+        <p><strong>Formula:</strong> Momentum = (Arrow Weight × Impact Velocity) ÷ 225400</p>
+        <p>Arrow Weight = ${mom.weight.toFixed(1)} gr</p>
+        <p>Impact Velocity at ${mom.distYards.toFixed(0)} yd = ${mom.impactV.toFixed(1)} FPS</p>
+        <p>Momentum = (${mom.weight.toFixed(1)} × ${mom.impactV.toFixed(1)}) ÷ 225400
+           = <strong>${mom.value.toFixed(3)} slug·ft/s</strong></p>
+        <p>The constant <strong>225400</strong> is a unit-conversion factor that turns grains and feet-per-second into slug·ft/s. It essentially wraps together gravity and the 7000 grains-per-pound factor so the result is on a meaningful momentum scale.</p>
+      `;
+    } else if (key === 'timeToImpact' && m.timeToImpact) {
+      const t = m.timeToImpact;
+      const feet = t.distYards * 3;
+      const avgSpeed = t.launchFps * 0.8;
+      html = `
+        <h2>Time to Impact</h2>
+        <p>We approximate travel time using an average speed over the shot.</p>
+        <p><strong>Step 1:</strong> Convert distance</p>
+        <p>d = ${t.distYards.toFixed(0)} yd = ${feet.toFixed(0)} ft</p>
+        <p><strong>Step 2:</strong> Approximate average speed</p>
+        <p>v₍avg₎ ≈ 0.8 × v₀ = 0.8 × ${t.launchFps.toFixed(1)} ≈ ${avgSpeed.toFixed(1)} ft/s</p>
+        <p><strong>Step 3:</strong> Time ≈ distance ÷ average speed</p>
+        <p>Time ≈ ${feet.toFixed(0)} ÷ ${avgSpeed.toFixed(1)}
+           ≈ <strong>${t.value.toFixed(2)} s</strong></p>
+      `;
+    } else if (key === 'game' && m.game) {
+      const g = m.game;
+      const bandList = (g.bands || []).map(b => {
+        const status = b.ok ? 'Send it' : 'Don\u2019t';
+        return `<li><strong>${b.label}</strong> – min ${b.ke} ft-lbs &amp; ${b.mom.toFixed(2)} slug·ft/s → <strong>${status}</strong></li>`;
+      }).join('');
+      html = `
+        <h2>Game Effectiveness Math</h2>
+        <p>At ${g.distYards.toFixed(0)} yd, this setup has:</p>
+        <p>Impact KE = <strong>${g.impactKE.toFixed(1)} ft-lbs</strong></p>
+        <p>Impact Momentum = <strong>${g.impactMom.toFixed(3)} slug·ft/s</strong></p>
+        <p>We compare those values against conservative guideline bands:</p>
+        <div style="margin-left:1.25rem;">
+          <ul>${bandList}</ul>
+        </div>
+        <p>Both KE and momentum must meet a band for the app to show "Send it" for that game class.</p>
+      `;
+    } else if (key === 'awc' && m.awc) {
+      const a = m.awc;
+      html = `
+        <h2>Arrow Weight Composition Math</h2>
+        <p>Total Arrow Weight = <strong>${a.weight.toFixed(1)} gr</strong></p>
+        <p>Breakdown by part:</p>
+        <ul>
+          <li><strong>Shaft:</strong> ${a.shaft.toFixed(1)} gr (${a.shaftPct.toFixed(0)}%)</li>
+          <li><strong>Point:</strong> ${a.point.toFixed(1)} gr (${a.pointPct.toFixed(0)}%)</li>
+          <li><strong>Components (nock, vanes, wrap, insert, glue):</strong> ${a.comp.toFixed(1)} gr (${a.compPct.toFixed(0)}%)</li>
+        </ul>
+        <p>Percentages are computed as (part ÷ total) × 100 and then normalized so they sum to about 100% for the bar display.</p>
+      `;
+    }
+
+    if (!html) {
+      html = `
+        <h2>Math</h2>
+        <p>Math details are not available for this section yet.</p>
+      `;
+    }
+
+    infoContent.innerHTML = html;
     infoOverlay.classList.add('open');
   }
 
@@ -1877,7 +2124,14 @@
     });
   });
 
-  // Init
+  document.querySelectorAll('.math-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const key = btn.dataset.math;
+      if (key) openMath(key);
+    });
+  });
+
   refreshBuilds();
   updateArrowWeightMode();
   calculateEverything(true);
