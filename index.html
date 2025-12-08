@@ -39,6 +39,12 @@
       box-shadow:0 4px 12px rgba(0,0,0,0.1);
     }
 
+    /* Make vertical spacing between stacked top-level cards consistent in both columns */
+    #inputs-column > .card + .card,
+    #outputs-column > .card + .card {
+      margin-top:1rem;
+    }
+
     .subcard {
       background: var(--card);
       border: 1px solid var(--border);
@@ -95,7 +101,72 @@
     .btn-refresh { background:var(--warning); }
 
     .flex { display:flex; gap:1rem; align-items:center; }
-    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    .grid-2 { 
+      display:grid; 
+      grid-template-columns:1fr 1fr; 
+      gap:1rem; 
+    }
+
+    /* Equal-height metric grids (FPS/GPP, Velocity/Peak, KE/Momentum, Game cards) */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      align-items: stretch;
+    }
+
+    /* Remove any stray margins on inner metric cards so rows align perfectly */
+    .metric-grid .card.metric-tile {
+      margin: 0 !important;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .metric-tile-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:0.25rem;
+    }
+
+    .metric-tile-main {
+      flex:1;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+    }
+
+    .metric-tile-footer {
+      margin-top:0.35rem;
+      text-align:center;
+      font-size:0.8rem;
+      color:var(--light);
+    }
+
+    .metric-value {
+      font-size:2.5rem;
+      line-height:1.1;
+    }
+
+    /* Metric header alignment: title left, icons right */
+    .metric-row {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:0.25rem;
+      width:100%;
+    }
+    .metric-row h3 {
+      margin:0;
+      text-align:left;
+    }
+    .metric-icons {
+      display:flex;
+      align-items:center;
+      gap:0.25rem;
+    }
 
     .text-center { text-align:center; }
 
@@ -366,6 +437,29 @@
     .info-close:hover {
       color: var(--primary);
     }
+
+    /* Mobile layout tweaks */
+    @media (max-width:768px) {
+      body {
+        padding:0.75rem;
+      }
+
+      .container {
+        gap:1rem;
+      }
+
+      .card {
+        padding:1.25rem;
+      }
+
+      .grid-2 {
+        grid-template-columns:1fr;
+      }
+
+      .flex {
+        flex-wrap:wrap;
+      }
+    }
   </style>
 </head>
 <body>
@@ -391,7 +485,7 @@
       </div>
 
       <!-- Your Setups -->
-      <div class="card" style="margin-top:1rem;">
+      <div class="card">
         <div class="card-header">
           <h2>Your Setups</h2>
         </div>
@@ -411,7 +505,7 @@
       </div>
 
       <!-- Bow Setup -->
-      <div class="card" style="margin-top:1rem;">
+      <div class="card">
         <div class="card-header">
           <h3>Bow Setup</h3>
           <button class="info-btn" type="button" data-info="bowModel">ⓘ</button>
@@ -512,7 +606,7 @@
       </div>
 
       <!-- Arrow Setup -->
-      <div class="card" style="margin-top:1rem;">
+      <div class="card">
         <div class="card-header">
           <h3>Arrow Setup</h3>
           <button class="info-btn" type="button" data-info="arrowName">ⓘ</button>
@@ -624,7 +718,7 @@
       </div>
 
       <!-- Notes -->
-      <div class="card" style="margin-top:1rem;">
+      <div class="card">
         <div class="card-header">
           <h3>Notes</h3>
           <button class="info-btn" type="button" data-info="notes">ⓘ</button>
@@ -642,57 +736,105 @@
           <button class="info-btn" type="button" data-info="arrowEfficiency">ⓘ</button>
         </div>
 
-        <div class="grid-2" style="text-align:center; margin-bottom:1.5rem;">
-          <div class="card">
-            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
-              <h3 style="color:var(--primary);margin:0;text-align:center;">FPS</h3>
-              <button class="info-btn" type="button" data-info="actualFPS">ⓘ</button>
-              <button class="math-btn" type="button" data-math="fps">∑</button>
+        <div class="grid-2 metric-grid" style="text-align:center; margin-bottom:1.5rem;">
+
+          <!-- FPS -->
+          <div class="card metric-tile">
+            <div class="metric-tile-header">
+              <div class="metric-row">
+                <h3 style="color:var(--primary);">FPS</h3>
+              </div>
+              <div class="metric-icons">
+                <button class="info-btn" type="button" data-info="actualFPS">ⓘ</button>
+                <button class="math-btn" type="button" data-math="fps">∑</button>
+              </div>
             </div>
-            <input type="number" id="actualFPS" step="0.1"
-                   style="font-size:2.5rem;text-align:center;border:3px solid var(--primary);border-radius:12px;padding:0.5rem;">
-            <button class="btn-small btn-refresh" id="recalcFPS">Recalculate</button>
-            <small id="fpsSource"
-                   style="display:block;margin-top:0.35rem;font-size:0.8rem;color:var(--light);">
-            </small>
+            <div class="metric-tile-main">
+              <input
+                type="number"
+                id="actualFPS"
+                step="0.1"
+                style="font-size:2.5rem;text-align:center;border:3px solid var(--primary);border-radius:12px;padding:0.5rem;max-width:100%;"
+              >
+            </div>
+            <div class="metric-tile-footer">
+              <button class="btn-small btn-refresh" id="recalcFPS">Recalculate</button>
+              <div>
+                <small id="fpsSource"></small>
+              </div>
+            </div>
           </div>
 
-          <div class="card">
-            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
-              <h3 style="color:var(--primary);margin:0;text-align:center;">GPP</h3>
-              <button class="info-btn" type="button" data-info="gpp">ⓘ</button>
-              <button class="math-btn" type="button" data-math="gpp">∑</button>
+          <!-- GPP -->
+          <div class="card metric-tile">
+            <div class="metric-tile-header">
+              <div class="metric-row">
+                <h3 style="color:var(--primary);">GPP</h3>
+              </div>
+              <div class="metric-icons">
+                <button class="info-btn" type="button" data-info="gpp">ⓘ</button>
+                <button class="math-btn" type="button" data-math="gpp">∑</button>
+              </div>
             </div>
-            <div style="font-size:2.5rem;" id="gppValue">-</div>
-            <small id="gppHint"
-                   style="display:block;margin-top:0.35rem;font-size:0.8rem;color:var(--light);">
-              Grains per pound of draw weight.
-            </small>
+            <div class="metric-tile-main">
+              <div class="metric-value" id="gppValue">-</div>
+            </div>
+            <div class="metric-tile-footer">
+              <small id="gppHint">
+                Grains per pound of draw weight.
+              </small>
+            </div>
           </div>
-          <div class="card">
-            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
-              <h3 style="color:var(--primary);margin:0;text-align:center;">GPI</h3>
-              <button class="info-btn" type="button" data-info="gpi">ⓘ</button>
-              <button class="math-btn" type="button" data-math="gpi">∑</button>
+
+          <!-- GPI -->
+          <div class="card metric-tile">
+            <div class="metric-tile-header">
+              <div class="metric-row">
+                <h3 style="color:var(--primary);">GPI</h3>
+              </div>
+              <div class="metric-icons">
+                <button class="info-btn" type="button" data-info="gpi">ⓘ</button>
+                <button class="math-btn" type="button" data-math="gpi">∑</button>
+              </div>
             </div>
-            <div style="font-size:2.5rem;" id="gpiValue">-</div>
+            <div class="metric-tile-main">
+              <div class="metric-value" id="gpiValue">-</div>
+            </div>
+            <div class="metric-tile-footer">
+              <small>
+                Grains per inch based on finished arrow.
+              </small>
+            </div>
           </div>
-          <div class="card">
-            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
-              <h3 style="color:var(--primary);margin:0;text-align:center;">TW</h3>
-              <button class="info-btn" type="button" data-info="finalArrowWeight">ⓘ</button>
-              <button class="math-btn" type="button" data-math="tw">∑</button>
+
+          <!-- TW -->
+          <div class="card metric-tile">
+            <div class="metric-tile-header">
+              <div class="metric-row">
+                <h3 style="color:var(--primary);">TW</h3>
+              </div>
+              <div class="metric-icons">
+                <button class="info-btn" type="button" data-info="finalArrowWeight">ⓘ</button>
+                <button class="math-btn" type="button" data-math="tw">∑</button>
+              </div>
             </div>
-            <div style="font-size:2.5rem;" id="finalArrowWeight">-</div>
+            <div class="metric-tile-main">
+              <div class="metric-value" id="finalArrowWeight">-</div>
+            </div>
+            <div class="metric-tile-footer">
+              <small>Total finished arrow weight (gr).</small>
+            </div>
           </div>
         </div>
 
         <div class="grid-2" style="gap:1rem;">
           <div class="subcard">
-            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;margin-bottom:0.5rem;">
-              <h3 style="margin:0;color:var(--primary);text-align:center;">FOC</h3>
-              <button class="info-btn" type="button" data-info="foc">ⓘ</button>
-              <button class="math-btn" type="button" data-math="foc">∑</button>
+            <div class="metric-row" style="margin-bottom:0.5rem;">
+              <h3 style="color:var(--primary);">FOC</h3>
+              <div class="metric-icons">
+                <button class="info-btn" type="button" data-info="foc">ⓘ</button>
+                <button class="math-btn" type="button" data-math="foc">∑</button>
+              </div>
             </div>
             <div style="text-align:center;margin-bottom:0.5rem;">
               <div id="focValue"
@@ -720,10 +862,12 @@
           </div>
 
           <div class="subcard">
-            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;margin-bottom:0.5rem;">
-              <h3 style="margin:0;color:var(--primary);text-align:center;">AWC</h3>
-              <button class="info-btn" type="button" data-info="composition">ⓘ</button>
-              <button class="math-btn" type="button" data-math="awc">∑</button>
+            <div class="metric-row" style="margin-bottom:0.5rem;">
+              <h3 style="color:var(--primary);">AWC</h3>
+              <div class="metric-icons">
+                <button class="info-btn" type="button" data-info="composition">ⓘ</button>
+                <button class="math-btn" type="button" data-math="awc">∑</button>
+              </div>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.5rem;">
               <span id="compTotalLabel" style="font-size:0.9rem;color:var(--light);">-</span>
@@ -771,68 +915,125 @@
           <option value="120" label="120"></option>
         </datalist>
 
-        <div class="grid-2" style="margin-top:1.25rem;">
-          <div class="card text-center">
-            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
-              <h3 style="margin:0;color:var(--success);text-align:center;">Velocity</h3>
-              <button class="info-btn" type="button" data-info="velocityAtDistance">ⓘ</button>
-              <button class="math-btn" type="button" data-math="velocity">∑</button>
+        <!-- Velocity & Peak Height -->
+        <div class="grid-2 metric-grid" style="text-align:center; margin-bottom:1.5rem;">
+
+          <!-- Velocity -->
+          <div class="card metric-tile text-center">
+            <div class="metric-tile-header">
+              <div class="metric-row">
+                <h3 style="margin:0;color:var(--success);">Velocity</h3>
+              </div>
+              <div class="metric-icons">
+                <button class="info-btn" type="button" data-info="velocityAtDistance">ⓘ</button>
+                <button class="math-btn" type="button" data-math="velocity">∑</button>
+              </div>
             </div>
-            <div style="font-size:3rem;" id="velocityAtDistance">-</div>
-            <small>
+            <div class="metric-tile-main">
+              <div class="metric-value" id="velocityAtDistance">-</div>
+            </div>
+            <div class="metric-tile-footer">
               FPS at <span id="velocityDistanceLabel">50</span> yd (estimated at target)
-            </small>
-          </div>
-          <div class="card text-center">
-            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
-              <h3 style="margin:0;color:var(--success);text-align:center;">Peak Height</h3>
-              <button class="info-btn" type="button" data-info="peakHeight">ⓘ</button>
-              <button class="math-btn" type="button" data-math="peakHeight">∑</button>
             </div>
-            <div style="font-size:3rem;" id="peakHeightValue">-</div>
-            <small>
-              highest point 
-              <span id="peakDistanceValue">-</span> yd to target
-            </small>
+          </div>
+
+          <!-- Peak Height -->
+          <div class="card metric-tile text-center">
+            <div class="metric-tile-header">
+              <div class="metric-row">
+                <h3 style="margin:0;color:var(--success);">Peak Height</h3>
+              </div>
+              <div class="metric-icons">
+                <button class="info-btn" type="button" data-info="peakHeight">ⓘ</button>
+                <button class="math-btn" type="button" data-math="peakHeight">∑</button>
+              </div>
+            </div>
+            <div class="metric-tile-main">
+              <div class="metric-value" id="peakHeightValue">-</div>
+            </div>
+            <div class="metric-tile-footer">
+              ft | highest point ~ <span id="peakDistanceValue">-</span> yd to target
+            </div>
           </div>
         </div>
 
-        <div class="grid-2" style="margin-top:1rem;">
-          <div class="card text-center">
-            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
-              <h3 style="color:var(--success);margin:0;text-align:center;">Launch KE</h3>
-              <button class="info-btn" type="button" data-info="launchKE">ⓘ</button>
-              <button class="math-btn" type="button" data-math="keLaunch">∑</button>
+        <!-- KE / Time / Impact KE / Momentum -->
+        <div class="grid-2 metric-grid" style="margin-top:1rem;">
+
+          <!-- Launch KE -->
+          <div class="card metric-tile text-center">
+            <div class="metric-tile-header">
+              <div class="metric-row">
+                <h3 style="color:var(--success);margin:0;">Launch KE</h3>
+              </div>
+              <div class="metric-icons">
+                <button class="info-btn" type="button" data-info="launchKE">ⓘ</button>
+                <button class="math-btn" type="button" data-math="keLaunch">∑</button>
+              </div>
             </div>
-            <div style="font-size:3rem;" id="keValue">-</div>
-            <small>ft-lbs</small>
+            <div class="metric-tile-main">
+              <div class="metric-value" id="keValue" style="font-size:3rem;">-</div>
+            </div>
+            <div class="metric-tile-footer">
+              ft-lbs at the bow
+            </div>
           </div>
-          <div class="card text-center">
-            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
-              <h3 style="color:var(--success);margin:0;text-align:center;">Time to Impact</h3>
-              <button class="info-btn" type="button" data-info="timeToImpact">ⓘ</button>
-              <button class="math-btn" type="button" data-math="timeToImpact">∑</button>
+
+          <!-- Time to Impact -->
+          <div class="card metric-tile text-center">
+            <div class="metric-tile-header">
+              <div class="metric-row">
+                <h3 style="color:var(--success);margin:0;">Time to Impact</h3>
+              </div>
+              <div class="metric-icons">
+                <button class="info-btn" type="button" data-info="timeToImpact">ⓘ</button>
+                <button class="math-btn" type="button" data-math="timeToImpact">∑</button>
+              </div>
             </div>
-            <div style="font-size:3rem;" id="timeToImpact">-</div>
-            <small>seconds</small>
+            <div class="metric-tile-main">
+              <div class="metric-value" id="timeToImpact" style="font-size:3rem;">-</div>
+            </div>
+            <div class="metric-tile-footer">
+              seconds to target
+            </div>
           </div>
-          <div class="card text-center">
-            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
-              <h3 style="color:var(--success);margin:0;text-align:center;">Impact KE</h3>
-              <button class="info-btn" type="button" data-info="impactKE">ⓘ</button>
-              <button class="math-btn" type="button" data-math="impactKE">∑</button>
+
+          <!-- Impact KE -->
+          <div class="card metric-tile text-center">
+            <div class="metric-tile-header">
+              <div class="metric-row">
+                <h3 style="color:var(--success);margin:0;">Impact KE</h3>
+              </div>
+              <div class="metric-icons">
+                <button class="info-btn" type="button" data-info="impactKE">ⓘ</button>
+                <button class="math-btn" type="button" data-math="impactKE">∑</button>
+              </div>
             </div>
-            <div style="font-size:3rem;" id="impactKE">-</div>
-            <small>ft-lbs</small>
+            <div class="metric-tile-main">
+              <div class="metric-value" id="impactKE" style="font-size:3rem;">-</div>
+            </div>
+            <div class="metric-tile-footer">
+              ft-lbs at selected distance
+            </div>
           </div>
-          <div class="card text-center">
-            <div style="display:flex;justify-content:center;align-items:center;gap:0.25rem;">
-              <h3 style="color:var(--success);margin:0;text-align:center;">Impact Momentum</h3>
-              <button class="info-btn" type="button" data-info="impactMom">ⓘ</button>
-              <button class="math-btn" type="button" data-math="impactMom">∑</button>
+
+          <!-- Impact Momentum -->
+          <div class="card metric-tile text-center">
+            <div class="metric-tile-header">
+              <div class="metric-row">
+                <h3 style="color:var(--success);margin:0;">Impact Momentum</h3>
+              </div>
+              <div class="metric-icons">
+                <button class="info-btn" type="button" data-info="impactMom">ⓘ</button>
+                <button class="math-btn" type="button" data-math="impactMom">∑</button>
+              </div>
             </div>
-            <div style="font-size:3rem;" id="impactMom">-</div>
-            <small>slug·ft/s</small>
+            <div class="metric-tile-main">
+              <div class="metric-value" id="impactMom" style="font-size:3rem;">-</div>
+            </div>
+            <div class="metric-tile-footer">
+              slug·ft/s at selected distance
+            </div>
           </div>
         </div>
       </div>
@@ -853,29 +1054,70 @@
           <span id="gameMom">–</span> slug·ft/s
         </div>
 
-        <div class="grid-2" style="text-align:center; gap:1rem;">
-          <div class="card">
-            <h3 style="margin:0;">Small / Thin-skinned</h3>
-            <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 25 ft-lbs • 0.30 slug·ft/s</div>
-            <div style="font-size:2.8rem; font-weight:bold;" id="smallGameStatus">Send it</div>
+        <div class="grid-2 metric-grid" style="text-align:center; gap:1rem;">
+
+          <!-- Small / Thin-skinned -->
+          <div class="card metric-tile">
+            <div class="metric-tile-header">
+              <h3 style="margin:0;">Small / Thin-skinned</h3>
+            </div>
+            <div class="metric-tile-main" style="flex-direction:column;">
+              <div style="font-size:1.1rem; margin-bottom:0.3rem;">
+                Min: 25 ft-lbs • 0.30 slug·ft/s
+              </div>
+              <div id="smallGameStatus" style="font-size:2.8rem; font-weight:bold;">Send it</div>
+            </div>
+            <div class="metric-tile-footer">
+              Squirrels, rabbits, small predators
+            </div>
           </div>
 
-          <div class="card">
-            <h3 style="margin:0;">Medium Game</h3>
-            <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 50 ft-lbs • 0.45 slug·ft/s</div>
-            <div style="font-size:2.8rem; font-weight:bold;" id="deerStatus">Send it</div>
+          <!-- Medium Game -->
+          <div class="card metric-tile">
+            <div class="metric-tile-header">
+              <h3 style="margin:0;">Medium Game</h3>
+            </div>
+            <div class="metric-tile-main" style="flex-direction:column;">
+              <div style="font-size:1.1rem; margin-bottom:0.3rem;">
+                Min: 50 ft-lbs • 0.45 slug·ft/s
+              </div>
+              <div id="deerStatus" style="font-size:2.8rem; font-weight:bold;">Send it</div>
+            </div>
+            <div class="metric-tile-footer">
+              Whitetail, mule deer, similar
+            </div>
           </div>
 
-          <div class="card">
-            <h3 style="margin:0;">Large / Tough Game</h3>
-            <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 65 ft-lbs • 0.60 slug·ft/s</div>
-            <div style="font-size:2.8rem; font-weight:bold;" id="elkStatus">Send it</div>
+          <!-- Large / Tough Game -->
+          <div class="card metric-tile">
+            <div class="metric-tile-header">
+              <h3 style="margin:0;">Large / Tough Game</h3>
+            </div>
+            <div class="metric-tile-main" style="flex-direction:column;">
+              <div style="font-size:1.1rem; margin-bottom:0.3rem;">
+                Min: 65 ft-lbs • 0.60 slug·ft/s
+              </div>
+              <div id="elkStatus" style="font-size:2.8rem; font-weight:bold;">Send it</div>
+            </div>
+            <div class="metric-tile-footer">
+              Elk, large hogs, black bear
+            </div>
           </div>
 
-          <div class="card">
-            <h3 style="margin:0;">Dangerous / Extreme</h3>
-            <div style="font-size:1.1rem; margin:0.5rem 0;">Min: 85 ft-lbs • 0.75 slug·ft/s</div>
-            <div style="font-size:2.8rem; font-weight:bold;" id="mooseStatus">Send it</div>
+          <!-- Dangerous / Extreme -->
+          <div class="card metric-tile">
+            <div class="metric-tile-header">
+              <h3 style="margin:0;">Dangerous / Extreme</h3>
+            </div>
+            <div class="metric-tile-main" style="flex-direction:column;">
+              <div style="font-size:1.1rem; margin-bottom:0.3rem;">
+                Min: 85 ft-lbs • 0.75 slug·ft/s
+              </div>
+              <div id="mooseStatus" style="font-size:2.8rem; font-weight:bold;">Send it</div>
+            </div>
+            <div class="metric-tile-footer">
+              Moose, big bear, bison (guideline only)
+            </div>
           </div>
         </div>
       </div>
@@ -1423,8 +1665,6 @@
     if (isAdv) {
       simpleTotal.readOnly = true;
       simpleTotal.style.opacity = 0.6;
-      hint.textContent =
-        'In Advanced mode, total arrow weight is calculated from shaft, vanes, insert, nock, wrap, glue, and point.';
     } else {
       simpleTotal.readOnly = false;
       simpleTotal.style.opacity = 1;
@@ -1543,14 +1783,14 @@
 
   function markFpsEstimated() {
     if (fpsSource) {
-      fpsSource.textContent = 'Estimated from IBO, draw, arrow & string weight';
+      fpsSource.textContent = 'Estimated';
     }
     window.fpsSource = 'estimated';
   }
 
   function markFpsChrono() {
     if (fpsSource) {
-      fpsSource.textContent = 'Using manual FPS (chronograph)';
+      fpsSource.textContent = 'Manual Entry';
     }
     window.fpsSource = 'chrono';
   }
