@@ -39,10 +39,14 @@
       box-shadow:0 4px 12px rgba(0,0,0,0.1);
     }
 
-    /* Make vertical spacing between stacked top-level cards consistent in both columns */
+    /* Consistent vertical spacing between stacked cards (top-level only) */
     #inputs-column > .card + .card,
     #outputs-column > .card + .card {
       margin-top:1rem;
+    }
+
+    #outputs-column > .card:last-of-type {
+      margin-top: 1.25rem;
     }
 
     .subcard {
@@ -107,20 +111,19 @@
       gap:1rem; 
     }
 
-    /* Equal-height metric grids (FPS/GPP, Velocity/Peak, KE/Momentum, Game cards) */
+    /* Equal-height metric grids (FPS/GPP, Velocity/Peak, KE/Momentum, Game tiles) */
     .metric-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 1rem;
-      align-items: stretch;
     }
 
-    /* Remove any stray margins on inner metric cards so rows align perfectly */
-    .metric-grid .card.metric-tile {
-      margin: 0 !important;
+    /* Every metric tile becomes a flex column and stretches to fill its grid cell */
+    .metric-tile {
       display: flex;
       flex-direction: column;
       height: 100%;
+      padding: 1rem;          /* local padding for tiles */
     }
 
     .metric-tile-header {
@@ -148,6 +151,12 @@
     .metric-value {
       font-size:2.5rem;
       line-height:1.1;
+    }
+
+    /* Remove extra vertical spacing for values and the FPS input box */
+    .metric-tile-main .metric-value,
+    .metric-tile-main input {
+      margin: 0 !important;
     }
 
     /* Metric header alignment: title left, icons right */
@@ -243,6 +252,32 @@
       border-bottom:1px solid var(--border);
     }
     th { background:var(--bg); font-weight:600; }
+
+    /* Build Summary table spacing */
+    #summaryTable {
+      margin-top: 0.25rem;
+      font-size: 1rem;
+    }
+
+    #summaryTable table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 0.4rem; /* vertical gap between rows */
+    }
+
+    #summaryTable td {
+      border-bottom: none;       /* avoid borders fighting the row gap */
+      padding: 0.25rem 0;        /* light vertical padding */
+    }
+
+    #summaryTable td:first-child {
+      padding-right: 1.8rem;     /* space between label and value */
+      font-weight: 600;
+    }
+
+    #summaryTable td:last-child {
+      text-align: right;
+    }
 
     .patreon-btn {
       display:block;
@@ -460,6 +495,11 @@
         flex-wrap:wrap;
       }
     }
+
+    /* Ensure spacing before the Build Summary card */
+    #outputs-column .build-summary-card {
+      margin-top: 1.25rem;
+    }
   </style>
 </head>
 <body>
@@ -480,7 +520,7 @@
         </div>
         <p style="color:var(--light);">
           Offline • Mobile-friendly • Live calculations<br>
-          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.9</span>
+          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.10</span>
         </p>
       </div>
 
@@ -1038,23 +1078,27 @@
         </div>
       </div>
 
-      <!-- Game Effectiveness -->
+      <!-- Game / Target Effectiveness -->
       <div class="card">
         <div class="card-header">
-          <h2>Game Effectiveness</h2>
+          <h2 id="gameCardTitle">Game Effectiveness</h2>
           <div class="flex" style="gap:0.5rem;">
             <button class="info-btn" type="button" data-info="gameEffectiveness">ⓘ</button>
             <button class="math-btn" type="button" data-math="game">∑</button>
           </div>
         </div>
 
+        <!-- Shared header line (used mainly in Hunting mode) -->
         <div style="margin-bottom:0.75rem;font-size:0.95rem;color:var(--light);">
-          Impact @ <span id="gameDistanceDisplay">50</span> yd:
-          <span id="gameKE">–</span> ft-lbs,
-          <span id="gameMom">–</span> slug·ft/s
+          <span id="gameHeaderText">
+            Impact @ <span id="gameDistanceDisplay">50</span> yd:
+            <span id="gameKE">–</span> ft-lbs,
+            <span id="gameMom">–</span> slug·ft/s
+          </span>
         </div>
 
-        <div class="grid-2 metric-grid" style="text-align:center; gap:1rem;">
+        <!-- HUNTING PANEL (original 4 cards) -->
+        <div id="huntingPanel" class="grid-2 metric-grid" style="text-align:center; gap:1rem;">
 
           <!-- Small / Thin-skinned -->
           <div class="card metric-tile">
@@ -1120,10 +1164,92 @@
             </div>
           </div>
         </div>
-      </div>
+
+        <!-- TARGET PANEL (shown when Application != Hunting) -->
+        <div id="targetPanel" style="display:none; margin-top:0.5rem;">
+
+          <!-- Row 1: Group Stability + Flatness Score -->
+          <div class="grid-2 metric-grid" style="text-align:center; gap:1rem;">
+
+            <!-- Group Stability Badge -->
+            <div class="card metric-tile">
+              <div class="metric-tile-header">
+                <div class="metric-row">
+                  <h3 style="margin:0;">Group Stability</h3>
+                  <div class="metric-icons">
+                    <button class="info-btn" type="button" data-info="groupStability">ⓘ</button>
+                    <button class="math-btn" type="button" data-math="groupStability">∑</button>
+                  </div>
+                </div>
+              </div>
+              <div class="metric-tile-main" style="flex-direction:column;">
+                <div id="groupBadge" style="font-size:2.8rem; font-weight:800;">–</div>
+              </div>
+              <div class="metric-tile-footer">
+                <small id="groupBadgeHint">
+                  Based on FPS, FOC, and GPI.
+                </small>
+              </div>
+            </div>
+
+            <!-- Flatness Score -->
+            <div class="card metric-tile">
+              <div class="metric-tile-header">
+                <div class="metric-row">
+                  <h3 style="margin:0;">Flatness Score</h3>
+                  <div class="metric-icons">
+                    <button class="info-btn" type="button" data-info="flatnessScore">ⓘ</button>
+                    <button class="math-btn" type="button" data-math="flatnessScore">∑</button>
+                  </div>
+                </div>
+              </div>
+              <div class="metric-tile-main" style="flex-direction:column;">
+                <div id="flatnessBadge" style="font-size:2.8rem; font-weight:800;">–</div>
+              </div>
+              <div class="metric-tile-footer">
+                Peak arc @60 yd ≈ <span id="flatnessPeakHeight">–</span> ft
+              </div>
+            </div>
+
+          </div> <!-- end Row 1 grid -->
+
+          <!-- Row 2: Downrange Arrow Drop Simulator -->
+          <div class="card metric-tile" style="margin-top:1rem;">
+            <div class="metric-tile-header">
+              <div class="metric-row">
+                <h3 style="margin:0;">Downrange Arrow Drop Simulator</h3>
+                <div class="metric-icons">
+                  <button class="info-btn" type="button" data-info="sightMarks">ⓘ</button>
+                  <button class="math-btn" type="button" data-math="sightMarks">∑</button>
+                </div>
+              </div>
+            </div>
+            <div class="metric-tile-main" style="flex-direction:column;align-items:stretch;">
+              <div style="overflow-x:auto; width:100%;">
+                <table style="font-size:0.9rem;margin-top:0;">
+                  <thead>
+                    <tr>
+                      <th>Distance (yd)</th>
+                      <th>Drop from 20 yd zero (in)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sightTableBody">
+                    <tr><td>20</td><td>0.0</td></tr>
+                    <tr><td>30</td><td>–</td></tr>
+                    <tr><td>40</td><td>–</td></tr>
+                    <tr><td>50</td><td>–</td></tr>
+                    <tr><td>60</td><td>–</td></tr>
+                    <tr><td>70</td><td>–</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div> <!-- end #targetPanel -->
 
       <!-- Build Summary -->
-      <div class="card">
+      <div class="card build-summary-card">
         <div class="card-header">
           <h2>Build Summary</h2>
           <div class="flex" style="gap:0.5rem;">
@@ -1149,7 +1275,7 @@
     </div>
   </div>
 
-<script>
+  <script>
   const INFO_CONTENT = {
     buildName: `
       <h2>Build Name</h2>
@@ -1227,10 +1353,12 @@
       <h2>Application</h2>
       <p>
         High-level use for this setup: Target/3D, Hunting, or Other. This is saved in your
-        build and may be used in future presets and recommendations.
+        build and is used to switch between <strong>Game Effectiveness</strong> (Hunting)
+        and <strong>Target Insights</strong> (Target / Other).
       </p>
       <p>
-        It does not change today’s calculations but helps keep your builds organized.
+        It does not change the underlying physics, but it changes how the results are
+        summarized for you.
       </p>
     `,
     toggleString: `
@@ -1574,27 +1702,106 @@
       </p>
     `,
     gameEffectiveness: `
-      <h2>Game Effectiveness</h2>
+      <h2>Game Effectiveness / Target Insights</h2>
       <p>
-        This compares your impact <strong>kinetic energy</strong> and
-        <strong>momentum</strong> at the chosen distance against
-        conservative thresholds for four game classes:
+        In <strong>Hunting</strong> mode, this compares your impact <strong>kinetic energy</strong> and
+        <strong>momentum</strong> at the chosen distance against conservative thresholds
+        for four game classes.
       </p>
-      <ul>
-        <li>Small / thin-skinned</li>
-        <li>Medium game / deer</li>
-        <li>Large / tough game (elk, bear)</li>
-        <li>Dangerous / extreme (moose, big bear, bison)</li>
+      <p>
+        In <strong>Target / 3D / Other</strong> modes, this panel switches to 
+        <strong>Target Insights</strong>:
+      </p>
+      <ul  style="margin-left:1.25rem;">
+        <li>Group Stability badge (Tight / Average) based on FPS, FOC, and GPI.</li>
+        <li>Flatness score using a simple 60 yd arc approximation.</li>
+        <li>Downrange Arrow Drop simulator: relative drop from a 20 yd zero at 30–70 yd.</li>
       </ul>
       <p>
-        The thresholds are intentionally conservative and loosely inspired by
-        Easton-style bowhunting charts, ATA discussions, Ashby-style penetration work,
-        and common outfitter guidance.
+        Think of both views as <strong>sanity checks and tuning helpers</strong>, not guarantees.
+        Broadhead design, shot angle, flight quality, and shot placement still matter more
+        than any single number.
+      </p>
+    `,
+        groupStability: `
+      <h2>Group Stability</h2>
+      <p>
+        This badge is a <strong>sanity check</strong> for how forgiving your setup 
+        should be on paper. It looks at three things together:
+      </p>
+      <ul style="margin-left:1.25rem;">
+        <li><strong>FPS</strong> – overall speed of the arrow.</li>
+        <li><strong>FOC</strong> – how far forward the balance point is.</li>
+        <li><strong>GPI</strong> – finished grains-per-inch of arrow length.</li>
+      </ul>
+      <p>
+        A <strong>Tight</strong> badge means your FPS, FOC, and GPI combination
+        lines up with a setup that should feel stable and repeatable when tuned
+        well and shot with good form.
       </p>
       <p>
-        Think of the result as a <strong>sanity check and conversation starter</strong>,
-        not a guarantee. Broadhead design, shot angle, flight quality, and shot placement
-        still matter more than any single number.
+        An <strong>Average</strong> badge doesn’t mean “bad” — only that the
+        numbers are more middle-of-the-road, and the setup may be a bit more
+        sensitive to tune or form compared to a really optimized rig.
+      </p>
+      <p>
+        This is not a scoring system, just a quick indicator to help you think
+        about stability when you’re comparing different arrow builds.
+      </p>
+    `,
+    flatnessScore: `
+      <h2>Flatness Score (60 yd)</h2>
+      <p>
+        Flatness looks at <strong>how tall your trajectory arc gets</strong> by 
+        <strong>60 yards</strong> using a simple ballistic model.
+      </p>
+      <p>
+        The calculator estimates how high the arrow must rise above a flat line
+        from you to a 60 yd target, starting from your launch FPS. That peak
+        height is then turned into a simple label:
+      </p>
+      <ul style="margin-left:1.25rem;">
+        <li><strong>Very Flat</strong> – low peak height at 60 yd.</li>
+        <li><strong>Flat</strong> – moderate arc at 60 yd.</li>
+        <li><strong>Curved</strong> – taller, “loopier” arc by 60 yd.</li>
+      </ul>
+      <p>
+        <strong>Why 60 yd?</strong> It’s a practical long-range reference:
+        far enough to reveal differences between setups, but still a common
+        distance for 3D and practice. Using one yardage makes it easy to 
+        compare different arrows and speeds.
+      </p>
+      <p>
+        The exact numbers are an approximation, not a sight tape. Use this
+        score as a <strong>relative comparison</strong> tool when you’re
+        deciding between “flatter” and “more arced” arrow builds.
+      </p>
+    `,
+    sightMarks: `
+      <h2>Downrange Arrow Drop Simulator</h2>
+      <p>
+        This table shows the <strong>relative drop</strong> (in inches) between a
+        <strong>20 yd zero</strong> and longer distances (30–70 yd), using the same
+        simple ballistic model as the trajectory and time-of-flight estimates.
+      </p>
+      <p>
+        The idea is: if you are sighted in at 20 yd, how much more the arrow has to
+        drop at 30, 40, 50, 60, and 70 yd. Bigger numbers mean more sight gap and
+        more “pin spacing” between marks.
+      </p>
+      <p>
+        Behind the scenes, the app:
+      </p>
+      <ul style="margin-left:1.25rem;">
+        <li>Uses your launch FPS.</li>
+        <li>Computes an approximate gravity drop at 20 yd.</li>
+        <li>Computes the same drop at each distance.</li>
+        <li>Subtracts the 20 yd drop so 20 = 0.0 in by definition.</li>
+      </ul>
+      <p>
+        These values are <strong>approximate</strong>, not exact sight tape data,
+        but they’re great for comparing how different arrows and speeds change your
+        Downrange Arrow Drop.
       </p>
     `,
     buildSummary: `
@@ -1743,10 +1950,8 @@
   document.getElementById('deleteBuild').onclick = () => {
     let n = loadSelect.value;
 
-    if (!n) {
-      const typed = document.getElementById('buildName').value.trim();
-      if (typed) n = typed;
-    }
+    const typed = document.getElementById('buildName').value.trim();
+    if (!n && typed) n = typed;
 
     if (!n) {
       alert('Select a saved build or type its exact name to delete it.');
@@ -1775,7 +1980,12 @@
     const dw = document.getElementById('drawWeight').value || '70';
     const arrow = document.getElementById('arrowName').value.trim() || 'Arrow';
     const weight = getArrowWeight().toFixed(0);
-    document.getElementById('buildName').value = `${d} ${b} ${dw}lb ${arrow} ${weight}gr`;
+
+    // NEW — include the Application (Target, Hunting, 3D, Other)
+    const app = document.getElementById('application').value || '';
+
+    document.getElementById('buildName').value =
+      `${d} ${b} ${dw}lb ${arrow} ${weight}gr (${app})`;
   };
 
   const fpsInput = document.getElementById('actualFPS');
@@ -1814,6 +2024,20 @@
     }
 
     return parseFloat(document.getElementById('totalArrowWeightSimple').value) || 0;
+  }
+
+  // Helper: get numeric value from element (input or text content)
+  function getNumeric(id) {
+    const el = document.getElementById(id);
+    if (!el) return NaN;
+
+    const raw =
+      el.tagName === 'INPUT'
+        ? el.value
+        : (el.textContent || el.innerText || '');
+
+    const num = parseFloat(String(raw).replace(/[^\d.-]/g, ''));
+    return Number.isFinite(num) ? num : NaN;
   }
 
   function calculateEverything(recalcFPS = false) {
@@ -1999,6 +2223,7 @@
       const ok = impactKE >= gm.ke && impactMom >= gm.mom;
       gm.ok = ok;
       const el = document.getElementById(gm.id);
+      if (!el) return;
       el.textContent = ok ? "Send it" : "Don’t";
       el.style.color = ok ? "var(--success)" : "var(--danger)";
     });
@@ -2026,8 +2251,8 @@
 
     document.getElementById('summaryTable').innerHTML =
       '<table>' +
-      Object.entries(summary).map(([k,v]) =>
-        `<tr><td style="font-weight:600;padding:0.5rem;">${k}</td><td style="text-align:right;padding:0.5rem;">${v}</td></tr>`
+      Object.entries(summary).map(([k, v]) =>
+        `<tr><td>${k}</td><td>${v}</td></tr>`
       ).join('') +
       '</table>';
 
@@ -2099,6 +2324,162 @@
         compPct
       }
     };
+
+    // After all metrics are updated, toggle the Game/Target panel
+    updateApplicationPanels();
+  }
+
+  // Simple ballistic model using a 20 yd zero.
+  // Returns positive drop in inches (down from the sight line).
+  function computeDropInches(distanceYards, fps, zeroYards = 20) {
+    if (!Number.isFinite(fps) || fps <= 0) return NaN;
+
+    const gFt = 32.174;      // gravity in ft/s^2
+    const v0  = fps;
+    const RzFt = zeroYards * 3;
+
+    // Solve launch angle so arrow crosses the sight line again at the zero distance.
+    let sin2theta = (RzFt * gFt) / (v0 * v0);
+    if (sin2theta <= 0) return NaN;
+    sin2theta = Math.min(1, Math.max(0, sin2theta));
+    const theta = 0.5 * Math.asin(sin2theta);
+
+    const cosTheta = Math.cos(theta);
+    const sinTheta = Math.sin(theta);
+    if (cosTheta <= 1e-6) return NaN;
+
+    const dFt = distanceYards * 3;
+    const t   = dFt / (v0 * cosTheta);
+
+    // Vertical position relative to a flat sight line (y=0 at launch and at zero distance)
+    const yFt = v0 * sinTheta * t - 0.5 * gFt * t * t;
+
+    // Positive = drop below sight line
+    const dropIn = -yFt * 12;
+    return dropIn;
+  }
+
+  function updateTargetPanelMetrics() {
+    const appSel = document.getElementById('application');
+    if (!appSel) return;
+
+    const mode = appSel.value;
+    const huntingMode = (mode === 'Hunting');
+    if (huntingMode) return; // Only in Target / Other
+
+    const groupBadgeEl = document.getElementById('groupBadge');
+    const groupHintEl  = document.getElementById('groupBadgeHint');
+    const flatBadgeEl  = document.getElementById('flatnessBadge');
+    const flatPeakEl   = document.getElementById('flatnessPeakHeight');
+    const tableBody    = document.getElementById('sightTableBody');
+
+    if (!groupBadgeEl || !flatBadgeEl || !tableBody) return;
+
+    const fps = getNumeric('actualFPS');     // input
+    const foc = getNumeric('focValue');      // "16.2%"
+    const gpi = getNumeric('gpiValue');      // numeric
+
+    // --- Group Stability Badge ---
+    if (Number.isFinite(fps) && Number.isFinite(foc) && Number.isFinite(gpi)) {
+      const isTight = (fps > 300 && foc > 15 && gpi < 8);
+      groupBadgeEl.textContent = isTight ? 'Tight' : 'Average';
+      if (groupHintEl) {
+        groupHintEl.textContent = isTight
+          ? 'FPS > 300, FOC > 15%, GPI < 8 — very stable setup.'
+          : 'Stability based on FPS, FOC, and GPI. Tweak for tighter groups.';
+      }
+    } else {
+      groupBadgeEl.textContent = '–';
+      if (groupHintEl) {
+        groupHintEl.textContent = 'Enter FPS, FOC, and arrow details to estimate group tightness.';
+      }
+    }
+
+    // --- Flatness Score using approximate arc at 60 yd ---
+    let flatBadge = '–';
+    let peakFtText = '–';
+
+    if (Number.isFinite(fps) && fps > 0) {
+      const baseDrop20 = computeDropInches(20, fps);
+      const drop60 = computeDropInches(60, fps);
+      const extraDrop = drop60 - baseDrop20;
+      if (Number.isFinite(extraDrop)) {
+        const peakFt = Math.max(0, extraDrop / 12); // inches -> feet
+        peakFtText = peakFt.toFixed(1);
+
+        if (peakFt < 3) {
+          flatBadge = 'Very Flat';
+        } else if (peakFt < 4.5) {
+          flatBadge = 'Flat';
+        } else {
+          flatBadge = 'Curved';
+        }
+      }
+    }
+
+    flatBadgeEl.textContent = flatBadge;
+    if (flatPeakEl) {
+      flatPeakEl.textContent = peakFtText;
+    }
+
+    // --- Downrange Arrow Drop Table (relative drop vs 20 yd zero) ---
+    const distances = [20, 30, 40, 50, 60, 70];
+    tableBody.innerHTML = '';
+
+    distances.forEach(d => {
+      const tr = document.createElement('tr');
+      const tdDist = document.createElement('td');
+      const tdDrop = document.createElement('td');
+
+      tdDist.textContent = d.toString();
+
+      if (!Number.isFinite(fps) || fps <= 0) {
+        tdDrop.textContent = d === 20 ? '0.0' : '–';
+      } else {
+        let drop = computeDropInches(d, fps);
+        if (!Number.isFinite(drop)) {
+          tdDrop.textContent = d === 20 ? '0.0' : '–';
+        } else {
+          // by definition, the zero distance should show zero drop
+          if (d === 20) drop = 0;
+          tdDrop.textContent = drop.toFixed(1);
+        }
+      }
+
+      tr.appendChild(tdDist);
+      tr.appendChild(tdDrop);
+      tableBody.appendChild(tr);
+    });
+  }
+
+  function updateApplicationPanels() {
+    const appSel = document.getElementById('application');
+    if (!appSel) return;
+
+    const mode = appSel.value;
+    const huntingMode = (mode === 'Hunting');
+
+    const huntingPanel = document.getElementById('huntingPanel');
+    const targetPanel  = document.getElementById('targetPanel');
+    const titleEl      = document.getElementById('gameCardTitle');
+    const headerText   = document.getElementById('gameHeaderText');
+
+    if (huntingPanel && targetPanel) {
+      huntingPanel.style.display = huntingMode ? '' : 'none';
+      targetPanel.style.display  = huntingMode ? 'none' : '';
+    }
+
+    if (titleEl) {
+      titleEl.textContent = huntingMode ? 'Game Effectiveness' : 'Target Insights';
+    }
+
+    if (headerText) {
+      headerText.style.display = huntingMode ? '' : 'none';
+    }
+
+    if (!huntingMode) {
+      updateTargetPanelMetrics();
+    }
   }
 
   document.getElementById('recalcFPS').onclick = () => calculateEverything(true);
@@ -2170,6 +2551,68 @@
         <p>FOC = ((${f.balance.toFixed(2)} − ${f.mid.toFixed(2)}) ÷ ${f.len.toFixed(2)}) × 100
            = <strong>${f.value.toFixed(1)}%</strong></p>
       `;
+    } else if (key === 'sightMarks') {
+  const fps = getNumeric('actualFPS');
+
+  if (!Number.isFinite(fps) || fps <= 0) {
+    html = `
+      <h2>Downrange Arrow Drop Math</h2>
+      <p>
+        Enter a valid launch FPS so the app can estimate drop and sight mark
+        spacing from a <strong>20 yd zero</strong>.
+      </p>
+    `;
+  } else {
+    const distances = [20, 30, 40, 50, 60, 70];
+
+    const base20 = computeDropInches(20, fps);
+    const rows = distances.map(d => {
+      const drop = computeDropInches(d, fps);
+      let rel = drop - base20;
+      if (d === 20) rel = 0;
+      const relStr = Number.isFinite(rel) ? rel.toFixed(1) : '–';
+      return `<tr><td>${d}</td><td>${relStr}</td></tr>`;
+    }).join('');
+
+    html = `
+      <h2>Downrange Arrow Drop Math</h2>
+      <p>
+        We use the same simple flat-launch gravity model as the trajectory
+        estimates. For each distance <em>d</em> (in yards):
+      </p>
+      <p><strong>1.</strong> Convert yards to feet:</p>
+      <p>d<sub>ft</sub> = d × 3</p>
+      <p><strong>2.</strong> Approximate time of flight assuming constant speed:</p>
+      <p>t ≈ d<sub>ft</sub> ÷ FPS</p>
+      <p><strong>3.</strong> Compute vertical drop (inches):</p>
+      <p>drop(d) ≈ ½ × 386 × t²</p>
+      <p>(386 in/s² is gravity in inches per second².)</p>
+      <p><strong>4.</strong> Use 20 yd as the zero:</p>
+      <p>relativeDrop(d) = drop(d) − drop(20 yd)</p>
+      <p>So 20 yd is always <strong>0.0 in</strong>, and everything else is
+         “how much lower” that distance hits compared to your 20 yd mark.</p>
+      <p>With your current launch speed of <strong>${fps.toFixed(1)} FPS</strong>,
+         the approximate relative drops are:</p>
+      <div style="overflow-x:auto;margin-top:0.5rem;">
+        <table style="font-size:0.9rem;margin-top:0;">
+          <thead>
+            <tr>
+              <th>Distance (yd)</th>
+              <th>Drop vs 20 yd (in)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:0.75rem;">
+        Use these values as a <strong>relative guide</strong> for pin spacing
+        and sight marks when comparing different arrow builds and speeds —
+        not as a replacement for a real sight tape.
+      </p>
+    `;
+    }
     } else if (key === 'gpp' && m.gpp) {
       const g = m.gpp;
       html = `
@@ -2197,19 +2640,22 @@
       `;
     } else if (key === 'fps' && m.fps) {
       const f = m.fps;
-      if (f.source === 'chrono') {
-        html = `
-          <h2>FPS Math</h2>
-          <p>You’ve entered <strong>manual FPS</strong> (likely from a chronograph), so the app uses that value directly.</p>
-          <p>Launch FPS = <strong>${f.usedFps.toFixed(1)} FPS</strong></p>
-          <p>The IBO-based estimate is still available as a reference:</p>
-          <p>Estimated FPS ≈ ${f.estimatedFps.toFixed(1)} FPS (see below).</p>
-          <hr />
-        `;
-      } else {
-        html = `<h2>FPS Estimate Math</h2>`;
-      }
-      html += `
+
+      const header =
+        f.source === 'chrono'
+          ? `
+        <h2>FPS Math</h2>
+        <p>You’ve entered <strong>manual FPS</strong> (likely from a chronograph), so the app uses that value directly.</p>
+        <p>Launch FPS = <strong>${f.usedFps.toFixed(1)} FPS</strong></p>
+        <p>The IBO-based estimate is still available as a reference:</p>
+      `
+          : `
+        <h2>FPS Estimate Math</h2>
+        <p>The app estimates launch FPS from your IBO rating, arrow weight, and string weight.</p>
+      `;
+
+      html = header + `
+        <hr />
         <p><strong>Base formula (IBO-style):</strong></p>
         <p>v<sub>base</sub> = IBO × √((450 + String Weight) ÷ (450 + Arrow Weight + String Weight))</p>
         <p>Then we apply a small factor (0.94) to account for real-world losses:</p>
@@ -2222,6 +2668,124 @@
         <p>v<sub>est</sub> = ${f.baseFps.toFixed(1)} × 0.94 ≈ <strong>${f.estimatedFps.toFixed(1)} FPS</strong></p>
         <p><strong>FPS used in calculations:</strong> ${f.usedFps.toFixed(1)} FPS (${f.source === 'chrono' ? 'manual' : 'estimated'})</p>
       `;
+    } else if (key === 'groupStability') {
+      const fps = getNumeric('actualFPS');
+      const foc = getNumeric('focValue');
+      const gpi = getNumeric('gpiValue');
+
+      if (!Number.isFinite(fps) || !Number.isFinite(foc) || !Number.isFinite(gpi)) {
+        html = `
+          <h2>Group Stability Math</h2>
+          <p>
+            Enter launch FPS, FOC, and arrow details so the app can estimate 
+            group stability.
+          </p>
+          <p>
+            Until all three are valid numbers, this badge will stay in a 
+            neutral state.
+          </p>
+        `;
+      } else {
+        const isTight = (fps > 300 && foc > 15 && gpi < 8);
+        const label = isTight ? 'Tight' : 'Average';
+
+        html = `
+          <h2>Group Stability Math</h2>
+          <p>
+            The badge is based on a simple rule-of-thumb combination of
+            <strong>FPS</strong>, <strong>FOC</strong>, and <strong>GPI</strong>.
+          </p>
+          <p>Current values:</p>
+          <ul  style="margin-left:1.25rem;">
+            <li>FPS = <strong>${fps.toFixed(1)}</strong></li>
+            <li>FOC = <strong>${foc.toFixed(1)}%</strong></li>
+            <li>GPI = <strong>${gpi.toFixed(1)}</strong></li>
+          </ul>
+          <p>One example threshold for a <strong>Tight</strong> setup is:</p>
+          <ul style="margin-left:1.25rem;">
+            <li>FPS &gt; 300</li>
+            <li>FOC &gt; 15%</li>
+            <li>GPI &lt; 8</li>
+          </ul>
+          <p>
+            Your setup currently evaluates to: 
+            <strong>${label}</strong>.
+          </p>
+          <p>
+            This logic is intentionally simple and conservative — it’s meant 
+            as a quick “how forgiving does this look?” check, not a formal 
+            scoring system.
+          </p>
+        `;
+      }
+    } else if (key === 'flatnessScore') {
+      const fps = getNumeric('actualFPS');
+
+      if (!Number.isFinite(fps) || fps <= 0) {
+        html = `
+          <h2>Flatness Score Math</h2>
+          <p>
+            Enter a valid launch FPS so the app can estimate the arc at 
+            <strong>60 yards</strong>.
+          </p>
+        `;
+      } else {
+        const baseDrop20 = computeDropInches(20, fps);
+        const drop60 = computeDropInches(60, fps);
+        let peakFt = NaN;
+
+        if (Number.isFinite(baseDrop20) && Number.isFinite(drop60)) {
+          const extraDrop = drop60 - baseDrop20;
+          peakFt = Math.max(0, extraDrop / 12); // inches -> ft
+        }
+
+        let badge = '–';
+        if (Number.isFinite(peakFt)) {
+          if (peakFt < 3) badge = 'Very Flat';
+          else if (peakFt < 4.5) badge = 'Flat';
+          else badge = 'Curved';
+        }
+
+        html = `
+          <h2>Flatness Score Math</h2>
+          <p>
+            We use a simple flat-launch model to approximate arc height 
+            between a 20 yd zero and a <strong>60 yd</strong> shot.
+          </p>
+          <p>
+            First, we estimate <strong>drop at 20 yd</strong> and 
+            <strong>drop at 60 yd</strong> using your launch speed:
+          </p>
+          <ul  style="margin-left:1.25rem;">
+            <li>Launch FPS = <strong>${fps.toFixed(1)}</strong></li>
+            <li>Drop at 20 yd ≈ <strong>${Number.isFinite(baseDrop20) ? baseDrop20.toFixed(1) : '–'} in</strong></li>
+            <li>Drop at 60 yd ≈ <strong>${Number.isFinite(drop60) ? drop60.toFixed(1) : '–'} in</strong></li>
+          </ul>
+          <p>
+            The extra drop between 20 and 60 yd is turned into an approximate 
+            peak arc height:
+          </p>
+          <p>
+            Peak height ≈ max(0, (drop₆₀ − drop₂₀) ÷ 12) 
+            ${Number.isFinite(peakFt) ? `≈ <strong>${peakFt.toFixed(1)} ft</strong>` : ''}
+          </p>
+          <p>
+            That peak height then maps to a label:
+          </p>
+          <ul  style="margin-left:1.25rem;">
+            <li>Very Flat: peak &lt; 3 ft</li>
+            <li>Flat: 3–4.5 ft</li>
+            <li>Curved: &gt; 4.5 ft</li>
+          </ul>
+          <p>
+            Your current setup evaluates to: <strong>${badge}</strong>.
+          </p>
+          <p>
+            This is intended as a <strong>relative comparison tool</strong> between
+            builds, not an exact sight tape or full physics simulation.
+          </p>
+        `;
+      }
     } else if (key === 'keLaunch' && m.keLaunch) {
       const k = m.keLaunch;
       html = `
@@ -2310,7 +2874,7 @@
         return `<li><strong>${b.label}</strong> – min ${b.ke} ft-lbs &amp; ${b.mom.toFixed(2)} slug·ft/s → <strong>${status}</strong></li>`;
       }).join('');
       html = `
-        <h2>Game Effectiveness Math</h2>
+        <h2>Game Effectiveness Bands</h2>
         <p>At ${g.distYards.toFixed(0)} yd, this setup has:</p>
         <p>Impact KE = <strong>${g.impactKE.toFixed(1)} ft-lbs</strong></p>
         <p>Impact Momentum = <strong>${g.impactMom.toFixed(3)} slug·ft/s</strong></p>
