@@ -726,7 +726,7 @@
         </div>
         <p style="color:var(--light);">
           Offline • Mobile-friendly • Live calculations<br>
-          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.14</span>
+          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.15</span>
         </p>
       </div>
 
@@ -1025,11 +1025,11 @@
                     placeholder="Estimate or chrono"
                   />
                   <button id="recalcFPS" type="button" class="secondary-btn small">
-                    Recalc from IBO
+                    Calculate
                   </button>
                 </div>
                 <p class="perf-hint">
-                  Type your real chrono speed, or tap <strong>Recalc from IBO</strong> to use the estimate.
+                  Type your real chrono speed, or tap <strong>Calc from Inputs</strong> to estimate.
                 </p>
               </div>
 
@@ -1597,6 +1597,7 @@ const timeToImpactEl = $("timeToImpact");
 const impactKEEl = $("impactKE");
 const impactMomEl = $("impactMom");
 const windDriftValueEl = $("windDriftValue");
+const distanceValueEl = $("distanceValue");
 
 // Spine + Game + Target Outputs
 const stiffnessBadgeEl = $("stiffnessBadge");
@@ -1960,6 +1961,56 @@ const INFO_CONTENT = {
     <p>
       Think of this group as your <strong>primary tuning controls</strong>: adjust them to see 
       how your build behaves in real-world shooting conditions.
+    </p>
+  `,
+    velocitySection: `
+    <h2>Performance @ Distance</h2>
+    <p>
+      This card shows how your arrow behaves at the <strong>current distance</strong>
+      you’ve set (with the slider or by typing a yardage).
+    </p>
+    <p>It pulls everything together from your build:</p>
+    <ul style="margin-left:1.25rem;">
+      <li><strong>Velocity</strong> – estimated arrow speed at that yardage.</li>
+      <li><strong>Peak Height</strong> – how high the arrow arcs above a
+          level launch line before dropping back toward the target.</li>
+      <li><strong>Time to Impact</strong> – how long the arrow is in the air.</li>
+      <li><strong>Impact KE & Momentum</strong> – energy and momentum carried into the target.</li>
+      <li><strong>Wind Drift</strong> – side drift from a full-value crosswind you set in mph.</li>
+    </ul>
+    <p>
+      Use this as your <strong>“real-world feel” panel</strong>:
+      slide (or type) the distance, tweak launch FPS or arrow weight, and watch how
+      the arc, impact numbers, and drift change together.
+    </p>
+    <p>
+      The math behind each tile is available with the small 
+      <strong>Math</strong> buttons, so you can see the exact formulas and
+      how your numbers plug into them.
+    </p>
+  `,
+    performance: `
+    <h2>Performance @ Distance</h2>
+    <p>
+      Same as the <strong>Performance @ Distance</strong> card: it shows
+      velocity, arc height, time-of-flight, impact KE/momentum, and wind drift
+      at the distance you’ve set.
+    </p>
+    <p>
+      Adjust the yardage, launch FPS, or arrow build and watch how the
+      numbers change. Use it as a quick, visual way to compare setups.
+    </p>
+  `,
+  performanceCalculations: `
+    <h2>Performance Calculations</h2>
+    <p>
+      These are the physics-based estimates for how your arrow flies and hits
+      at the distance you’ve chosen. They pull directly from your launch FPS,
+      arrow weight, and the simple ballistic models described in each Math popup.
+    </p>
+    <p>
+      Treat them as <strong>sanity checks and comparison tools</strong>, not
+      replacements for real shooting and sight tape work.
     </p>
   `,
   actualFPS: `
@@ -3096,6 +3147,103 @@ distanceSliderEl.oninput = e => {
   $("distanceValue").textContent = e.target.value;
   calculateEverything();
 };
+
+// Let the user edit the distance (yd) by clicking the printed value
+const distanceDisplayEl = $("distanceValue");
+
+function setDistanceFromInput(rawVal) {
+  let d = parseFloat(rawVal);
+  if (!Number.isFinite(d)) return;
+
+  const min = parseFloat(distanceSliderEl.min || "10");
+  const max = parseFloat(distanceSliderEl.max || "100");
+  d = clamp(d, min, max);
+
+  distanceSliderEl.value = d;
+  distanceDisplayEl.textContent = d.toFixed(0);
+  calculateEverything();
+}
+
+if (distanceDisplayEl) {
+  // Make it tabbable for keyboard users
+  distanceDisplayEl.setAttribute("tabindex", "0");
+
+  distanceDisplayEl.addEventListener("click", () => {
+    const current = distanceSliderEl.value || "50";
+
+    // Create a temporary number input inside the label
+    const input = document.createElement("input");
+    input.type = "number";
+    input.value = current;
+    input.min = distanceSliderEl.min || "10";
+    input.max = distanceSliderEl.max || "100";
+    input.step = distanceSliderEl.step || "1";
+    input.style.width = "4rem";
+    input.style.textAlign = "center";
+    input.style.background = "transparent";
+    input.style.border = "1px solid var(--border)";
+    input.style.borderRadius = "4px";
+    input.style.color = "inherit";
+    input.style.font = "inherit";
+
+    distanceDisplayEl.textContent = "";
+    distanceDisplayEl.appendChild(input);
+    input.focus();
+    input.select();
+
+    function commit() {
+      setDistanceFromInput(input.value);
+    }
+
+    function cancel() {
+      distanceDisplayEl.textContent = current;
+    }
+
+    input.addEventListener("blur", commit);
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        commit();
+      } else if (e.key === "Escape") {
+        cancel();
+        input.blur();
+      }
+    });
+  });
+
+  // Optional: allow Enter from keyboard focus (without mouse click)
+  distanceDisplayEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      distanceDisplayEl.click();
+    }
+  });
+}
+
+/* Click the printed distance to type a value (keyboard entry) */
+if (distanceValueEl && distanceSliderEl) {
+  distanceValueEl.style.cursor = 'pointer';
+  distanceValueEl.title = 'Click to type a distance in yards';
+
+  distanceValueEl.addEventListener('click', () => {
+    const current = parseFloat(distanceSliderEl.value) || 50;
+    const min = parseFloat(distanceSliderEl.min) || 5;
+    const max = parseFloat(distanceSliderEl.max) || 100;
+    const input = prompt(`Enter target distance in yards (${min}–${max}):`, current);
+
+    if (input === null) return;
+    const val = parseFloat(input);
+    if (!Number.isFinite(val)) {
+      alert('Please enter a valid number for distance.');
+      return;
+    }
+
+    const clamped = clamp(val, min, max);
+    distanceSliderEl.value = clamped;
+    distanceValueEl.textContent = clamped;
+    calculateEverything();
+  });
+}
 
 document.querySelectorAll('input,select,textarea').forEach(el => {
   el.addEventListener('input', () => {
