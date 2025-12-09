@@ -3415,11 +3415,41 @@ function openMath(key) {
     const k = m.keLaunch;
     html = `
       <h2>Launch Kinetic Energy</h2>
-      <p><strong>Formula:</strong> KE = (Arrow Weight × Velocity²) ÷ 450240</p>
-      <p>Arrow Weight = ${k.weight.toFixed(1)} gr</p>
-      <p>Launch Velocity = ${k.fps.toFixed(1)} FPS</p>
-      <p>KE = (${k.weight.toFixed(1)} × ${k.fps.toFixed(1)}²) ÷ 450240
-         = <strong>${k.value.toFixed(1)} ft-lbs</strong></p>
+      <p>
+        Kinetic energy (KE) is a measure of how much <strong>work</strong> your arrow can do on impact.
+        It depends on both arrow <strong>mass</strong> and <strong>speed</strong>, and is one of the
+        classic ways bowhunters compare setups.
+      </p>
+      <p><strong>Formula (archery units):</strong></p>
+      <p>
+        KE (ft-lbs) = (Arrow Weight (grains) × Velocity (fps)²) ÷ 450240
+      </p>
+      <p>
+        The constant <strong>450240</strong> packs in all the unit conversions to go from
+        grains and feet-per-second to foot-pounds of energy:
+      </p>
+      <ul style="margin-left:1.25rem;">
+        <li>7000 grains = 1 pound of mass</li>
+        <li>g ≈ 32.174 ft/s² (acceleration due to gravity)</li>
+        <li>KE = ½ × m × v², with m in slugs → all rolled into 450240</li>
+      </ul>
+      <p><strong>Your numbers at launch:</strong></p>
+      <ul style="margin-left:1.25rem;">
+        <li>Arrow Weight = <strong>${k.weight.toFixed(1)} gr</strong></li>
+        <li>Launch Velocity = <strong>${k.fps.toFixed(1)} fps</strong></li>
+      </ul>
+      <p>Step-by-step:</p>
+      <p>
+        KE = (${k.weight.toFixed(1)} × ${k.fps.toFixed(1)}²) ÷ 450240
+      </p>
+      <p>
+        KE ≈ <strong>${k.value.toFixed(1)} ft-lbs</strong> at the bow.
+      </p>
+      <p style="margin-top:0.5rem;">
+        Downrange, the calculator repeats this same formula using your
+        <strong>estimated velocity at distance</strong> to show how much energy is left
+        at the target for the Game Effectiveness panel.
+      </p>
     `;
   } else if (key === 'velocity' && m.velocity) {
     const v = m.velocity;
