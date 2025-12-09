@@ -6,494 +6,707 @@
   <title>Arrow Tune Calculator</title>
   <meta name="description" content="Offline arrow tuning calculator – FOC, velocity, impact KE, composition, and more." />
   <link href="https://rsms.me/inter/inter.css" rel="stylesheet">
-  <style>
-    :root { --bg:#f8fafc; --card:#ffffff; --text:#1e293b; --light:#64748b; --border:#e2e8f0; --primary:#0ea5e9; --success:#22c55e; --warning:#f59e0b; --danger:#ef4444; }
-    .dark { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --light:#94a3b8; --border:#334155; }
+<style>
+  :root {
+    --bg:#f8fafc;
+    --card:#ffffff;
+    --text:#1e293b;
+    --light:#64748b;
+    --border:#e2e8f0;
+    --primary:#0ea5e9;
+    --success:#22c55e;
+    --warning:#f59e0b;
+    --danger:#ef4444;
 
-    * { margin:0; padding:0; box-sizing:border-box; }
+    /* extra surfaces for tiles */
+    --surface-muted:#f1f5f9;
+    --surface-strong-shadow:rgba(15,23,42,0.22);
+    --tile-shadow:rgba(15,23,42,0.16);
+  }
+  .dark {
+    --bg:#0f172a;
+    --card:#020617;
+    --text:#e2e8f0;
+    --light:#94a3b8;
+    --border:#1e293b;
+    --surface-muted:#020617;
+    --surface-strong-shadow:rgba(0,0,0,0.6);
+    --tile-shadow:rgba(0,0,0,0.5);
+  }
 
+  * {
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+  }
+
+  body {
+    font-family:'Inter',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding:1rem;
+    min-height:100vh;
+    line-height:1.6;
+  }
+
+  .container {
+    max-width:1400px;
+    margin:auto;
+    display:grid;
+    gap:1.5rem;
+  }
+  @media (min-width:1024px) {
+    .container { grid-template-columns:1fr 1fr; }
+  }
+
+  /* Top-level cards (big sections) */
+  .card {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:1.5rem;
+    box-shadow:0 18px 45px var(--surface-strong-shadow);
+    position:relative;
+  }
+
+  /* Slight spacing between stacked cards in each column */
+  #inputs-column > .card + .card,
+  #outputs-column > .card + .card,
+  .outputs-column > .card + .card {
+    margin-top:1rem;
+  }
+
+  /* Inner subcards (like the game panel inside Performance) */
+  .subcard {
+    background:var(--surface-muted);
+    border:1px solid rgba(148,163,184,0.35);
+    border-radius:12px;
+    box-shadow:0 10px 28px var(--tile-shadow);
+    padding:1rem;
+  }
+
+  .card-header {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:1px solid var(--border);
+    padding-bottom:0.75rem;
+    margin-bottom:0.9rem;
+    font-size:1.2rem;
+    font-weight:600;
+  }
+  .card-header.compact {
+    padding-bottom:0.5rem;
+    margin-bottom:0.5rem;
+    border-bottom:none;
+  }
+
+  .card-subtitle {
+    font-size:0.9rem;
+    color:var(--light);
+    margin-bottom:0.9rem;
+  }
+
+  h1,h2,h3,h4 { color:var(--text); }
+
+  label {
+    display:block;
+    margin:1rem 0 0.4rem;
+    font-weight:600;
+    font-size:0.95rem;
+  }
+
+  input, select, textarea {
+    width:100%;
+    padding:0.75rem;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:var(--card);
+    color:var(--text);
+    font-size:1rem;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline:none;
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(14,165,233,0.25);
+  }
+
+  button {
+    padding:0.75rem 1.2rem;
+    border:none;
+    border-radius:999px;
+    background:var(--primary);
+    color:white;
+    font-weight:600;
+    cursor:pointer;
+    font-size:0.95rem;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:0.25rem;
+  }
+  button:hover {
+    filter:brightness(1.05);
+  }
+
+  .btn-small {
+    padding:0.45rem 0.9rem;
+    font-size:0.85rem;
+    border-radius:999px;
+  }
+
+  .secondary-btn {
+    background:transparent;
+    color:var(--primary);
+    border:1px solid rgba(14,165,233,0.5);
+  }
+  .secondary-btn.small {
+    padding:0.3rem 0.7rem;
+    font-size:0.8rem;
+  }
+
+  .btn-refresh { background:var(--warning); }
+
+  .flex {
+    display:flex;
+    gap:1rem;
+    align-items:center;
+  }
+
+  .grid-2 {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1rem;
+  }
+
+  /* Metric grid: 2 columns of tiles */
+  .metric-grid {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:1rem;
+    margin-top:0.5rem;
+  }
+
+  /* Tile = little card inside a card */
+  .metric-tile {
+    display:flex;
+    flex-direction:column;
+    height:100%;
+    padding:0.9rem 1rem;
+    border-radius:12px;
+    background:var(--surface-muted);
+    border:1px solid rgba(148,163,184,0.4);
+    box-shadow:0 10px 26px var(--tile-shadow);
+  }
+
+  .metric-header-row {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:0.35rem;
+  }
+
+  .metric-title {
+    display:flex;
+    align-items:center;
+    gap:0.35rem;
+    font-size:0.9rem;
+    font-weight:600;
+    color:var(--light);
+  }
+
+  .metric-main-value {
+    display:flex;
+    align-items:flex-end;
+    gap:0.3rem;
+    justify-content:flex-start;
+    margin:0.25rem 0 0.15rem;
+  }
+
+  .metric-main-value span,
+  .metric-main-value input {
+    margin:0 !important;
+  }
+
+  .metric-value,
+  .metric-main-value span:first-child {
+    font-size:2.1rem;
+    line-height:1.05;
+    font-weight:700;
+  }
+
+  .metric-unit {
+    font-size:0.9rem;
+    color:var(--light);
+    font-weight:500;
+    margin-bottom:0.2rem;
+  }
+
+  .metric-note {
+    margin-top:0.25rem;
+    font-size:0.8rem;
+    color:var(--light);
+  }
+
+  /* Make AWC tile span both metric-grid columns */
+  .metric-grid .awc-wide {
+    grid-column: span 2;
+  }
+
+  .text-center { text-align:center; }
+
+  .toggle-switch {
+    position:relative;
+    display:inline-block;
+    width:56px;
+    height:30px;
+  }
+  .toggle-switch input { opacity:0; width:0; height:0; }
+  .slider {
+    position:absolute;
+    cursor:pointer;
+    inset:0;
+    background:#cbd5e1;
+    border-radius:34px;
+    transition:.3s;
+  }
+  .slider:before {
+    position:absolute;
+    content:"";
+    height:24px;
+    width:24px;
+    left:3px;
+    bottom:3px;
+    background:white;
+    border-radius:50%;
+    transition:.3s;
+  }
+  input:checked + .slider { background:var(--primary); }
+  input:checked + .slider:before { transform:translateX(26px); }
+
+  .info-btn {
+    font-size:1.0rem;
+    color:var(--primary);
+    background:none;
+    border:none;
+    cursor:pointer;
+    padding:0;
+  }
+  .info-btn.small {
+    font-size:0.85rem;
+  }
+  .info-btn:hover {
+    transform:scale(1.1);
+  }
+
+  .math-btn {
+    font-size:0.85rem;
+    color:var(--primary);
+    background:none;
+    border:none;
+    cursor:pointer;
+    opacity:0.9;
+    padding:0;
+  }
+  .math-btn:hover {
+    opacity:1;
+    transform:scale(1.1);
+  }
+
+  .advanced {
+    display:none;
+    margin-top:1rem;
+    padding-top:1rem;
+    border-top:1px solid var(--border);
+  }
+
+  table {
+    width:100%;
+    border-collapse:collapse;
+    margin-top:0.5rem;
+    font-size:0.95rem;
+  }
+  th, td {
+    padding:0.6rem;
+    text-align:left;
+    border-bottom:1px solid var(--border);
+  }
+  th {
+    background:var(--bg);
+    font-weight:600;
+  }
+
+  .data-table {
+    margin-top:0.3rem;
+  }
+
+  /* Build Summary table spacing */
+  #summaryTable {
+    margin-top:0.25rem;
+    font-size:1rem;
+  }
+  #summaryTable table {
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0 0.4rem;
+  }
+  #summaryTable td {
+    border-bottom:none;
+    padding:0.25rem 0;
+  }
+  #summaryTable td:first-child {
+    padding-right:1.8rem;
+    font-weight:600;
+  }
+  #summaryTable td:last-child {
+    text-align:right;
+  }
+
+  .build-summary {
+    margin-top:0.5rem;
+  }
+
+  .build-summary button {
+    margin-top:0.75rem;
+  }
+
+  .patreon-btn,
+  .patreon-link {
+    display:block;
+    margin:2.25rem auto 0;
+    background:#ff424d;
+    color:white;
+    text-decoration:none;
+    padding:0.9rem 2rem;
+    border-radius:999px;
+    font-weight:bold;
+    text-align:center;
+    max-width:320px;
+    box-shadow:0 18px 40px rgba(248,113,113,0.5);
+  }
+
+  .light-only { display:block; }
+  .dark-only { display:none; }
+  .dark .light-only { display:none; }
+  .dark .dark-only { display:block; }
+
+  /* Make the whole right column look consistent */
+  .outputs-column {
+    display:flex;
+    flex-direction:column;
+    gap:1rem;
+  }
+
+  #outputs-column,
+  #outputs-column * {
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif !important;
+    letter-spacing:-0.02em;
+  }
+  #outputs-column h3 {
+    font-size:1.05rem !important;
+    margin:0 0 0.4rem 0;
+    font-weight:700 !important;
+  }
+
+  #smallGameStatus,
+  #deerStatus,
+  #elkStatus,
+  #mooseStatus {
+    font-size:2rem !important;
+    font-weight:800 !important;
+  }
+
+  #outputs-column small {
+    font-weight:500 !important;
+    font-size:0.9rem;
+    opacity:0.85;
+  }
+
+  #toast {
+    position:fixed;
+    bottom:1.5rem;
+    right:1.5rem;
+    background:var(--card);
+    color:var(--text);
+    border:1px solid var(--border);
+    padding:0.6rem 1.1rem;
+    border-radius:999px;
+    box-shadow:0 6px 18px rgba(15,23,42,0.25);
+    font-size:0.9rem;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.25s ease-out;
+    z-index:999;
+  }
+
+  /* FOC bar */
+  .foc-scale {
+    display:flex;
+    align-items:center;
+    gap:0.5rem;
+    margin-top:0.35rem;
+    font-size:0.8rem;
+    color:var(--light);
+  }
+  .foc-bar {
+    position:relative;
+    flex:1;
+    height:10px;
+    border-radius:999px;
+    background:var(--bg);
+    overflow:hidden;
+  }
+  .foc-ideal {
+    position:absolute;
+    left:40%;
+    width:20%;
+    top:1px;
+    bottom:1px;
+    border-radius:999px;
+    background:var(--success);
+    opacity:0.25;
+  }
+  .foc-marker {
+    position:absolute;
+    top:-4px;
+    width:0;
+    height:18px;
+    border-left:2px solid var(--primary);
+  }
+
+  /* Composition bar */
+  .composition-bar {
+    position:relative;
+    height:10px;
+    border-radius:999px;
+    background:var(--bg);
+    overflow:hidden;
+    display:flex;
+    margin-top:0.4rem;
+  }
+  .comp-segment {
+    height:100%;
+  }
+  .comp-segment.shaft { background:#94a3b8; }
+  .comp-segment.point { background:#0ea5e9; }
+  .comp-segment.comps { background:#22c55e; }
+
+  /* Performance controls (distance slider + wind) */
+  .performance-controls {
+    display:flex;
+    flex-direction:column;
+    gap:0.4rem;
+  }
+  .field-label {
+    font-size:0.85rem;
+    font-weight:600;
+    color:var(--light);
+  }
+  .field-row {
+    display:flex;
+    flex-direction:column;
+    gap:0.35rem;
+  }
+  .number-input.small {
+    max-width:140px;
+  }
+  .distance-ticks {
+    display:flex;
+    justify-content:space-between;
+    font-size:0.7rem;
+    color:var(--light);
+    margin-top:0.15rem;
+  }
+
+  .drop-table {
+    margin-top:0.9rem;
+  }
+
+  /* Overlay panels */
+  .info-overlay {
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,0.55);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:998;
+  }
+  .info-overlay.open {
+    display:flex;
+  }
+  .info-panel {
+    background:var(--card);
+    color:var(--text);
+    border-radius:12px;
+    max-width:420px;
+    width:90%;
+    max-height:80vh;
+    padding:1.25rem 1.5rem;
+    box-shadow:0 20px 40px rgba(15,23,42,0.35);
+    position:relative;
+    overflow-y:auto;
+  }
+  .info-panel h2 {
+    margin:0 0 0.5rem 0;
+    font-size:1.2rem;
+  }
+  .info-panel p {
+    font-size:0.95rem;
+    margin:0.35rem 0;
+    color:var(--light);
+  }
+  .info-close {
+    position:absolute;
+    top:0.6rem;
+    right:0.75rem;
+    border:none;
+    background:transparent;
+    font-size:1.4rem;
+    cursor:pointer;
+    color:var(--light);
+  }
+  .info-close:hover {
+    color:var(--primary);
+  }
+
+  @media (max-width:768px) {
     body {
-      font-family:'Inter',sans-serif;
-      background:var(--bg);
-      color:var(--text);
-      padding:1rem;
-      min-height:100vh;
-      line-height:1.6;
-    }
-
-    .container {
-      max-width:1400px;
-      margin:auto;
-      display:grid;
-      gap:1.5rem;
-    }
-    @media (min-width:1024px) {
-      .container { grid-template-columns:1fr 1fr; }
-    }
-
-    .card {
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:1.5rem;
-      box-shadow:0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    /* Consistent vertical spacing between stacked cards (top-level only) */
-    #inputs-column > .card + .card,
-    #outputs-column > .card + .card {
-      margin-top:1rem;
-    }
-
-    #outputs-column > .card:last-of-type {
-      margin-top: 1.25rem;
-    }
-
-    .subcard {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-      padding: 1rem;
-    }
-
-    .card-header {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      border-bottom:1px solid var(--border);
-      padding-bottom:0.75rem;
-      margin-bottom:1rem;
-      font-size:1.3rem;
-      font-weight:600;
-    }
-
-    h1,h2,h3,h4 { color:var(--text); }
-
-    label {
-      display:block;
-      margin:1rem 0 0.4rem;
-      font-weight:600;
-      font-size:0.95rem;
-    }
-
-    input, select, textarea {
-      width:100%;
       padding:0.75rem;
-      border:1px solid var(--border);
-      border-radius:8px;
-      background:var(--card);
-      color:var(--text);
-      font-size:1rem;
     }
-    input:focus, select:focus, textarea:focus {
-      outline:none;
-      border-color:var(--primary);
-      box-shadow:0 0 0 3px rgba(14,165,233,0.2);
+    .container {
+      gap:1rem;
+      grid-template-columns:1fr;
     }
-
-    button {
-      padding:0.75rem 1.2rem;
-      border:none;
-      border-radius:8px;
-      background:var(--primary);
-      color:white;
-      font-weight:600;
-      cursor:pointer;
+    .card {
+      padding:1.25rem;
     }
-    .btn-small { padding:0.5rem 0.9rem; font-size:0.9rem; }
-    .btn-refresh { background:var(--warning); }
-
-    .flex { display:flex; gap:1rem; align-items:center; }
-    .grid-2 { 
-      display:grid; 
-      grid-template-columns:1fr 1fr; 
-      gap:1rem; 
+    .grid-2 {
+      grid-template-columns:1fr;
     }
-
-    /* Equal-height metric grids (FPS/GPP, Velocity/Peak, KE/Momentum, Game tiles, etc.) */
+    .flex {
+      flex-wrap:wrap;
+    }
     .metric-grid {
+      grid-template-columns:1fr;
+    }
+  }
+
+  /* Performance control strip: FPS / Wind / Distance */
+    .perf-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: auto auto;
+      gap: 0.75rem;
+    }
+
+    .perf-top {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 1rem;
     }
 
-    .metric-tile {
+    .perf-box {
+      background: var(--surface-muted);
+      border: 1px solid rgba(148,163,184,0.45);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      box-shadow: 0 10px 24px var(--tile-shadow);
+    }
+
+    .perf-label-row {
       display: flex;
-      flex-direction: column;
-      height: 100%;
-      padding: 1rem;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.35rem;
     }
 
-    .metric-tile-header {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:0.25rem;
+    .perf-label-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;  /* space between ⓘ, ∑, editable */
     }
 
-    .metric-tile-main {
-      flex:1;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      text-align:center;
+    .perf-slider-left {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;  /* space between "Distance", ⓘ, ∑ */
     }
 
-    .metric-tile-footer {
-      margin-top:0.35rem;
-      text-align:center;
-      font-size:0.8rem;
-      color:var(--light);
+    .perf-label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--light);
     }
 
-    .metric-value {
-      font-size:2.5rem;
-      line-height:1.1;
+    .perf-edit-pill {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.7);
+      color: var(--light);
+      background: rgba(15,23,42,0.02);
     }
 
-    .metric-tile-main .metric-value,
-    .metric-tile-main input {
-      margin: 0 !important;
+    .perf-input-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
-    .metric-row {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:0.25rem;
-      width:100%;
-    }
-    .metric-row h3 {
-      margin:0;
-      text-align:left;
-    }
-    .metric-icons {
-      display:flex;
-      align-items:center;
-      gap:0.25rem;
-    }
-
-    .text-center { text-align:center; }
-
-    .toggle-switch {
-      position:relative;
-      display:inline-block;
-      width:56px;
-      height:30px;
-    }
-    .toggle-switch input { opacity:0; width:0; height:0; }
-    .slider {
-      position:absolute;
-      cursor:pointer;
-      inset:0;
-      background:#cbd5e1;
-      border-radius:34px;
-      transition:.3s;
-    }
-    .slider:before {
-      position:absolute;
-      content:"";
-      height:24px;
-      width:24px;
-      left:3px;
-      bottom:3px;
-      background:white;
-      border-radius:50%;
-      transition:.3s;
-    }
-    input:checked + .slider { background:var(--primary); }
-    input:checked + .slider:before { transform:translateX(26px); }
-
-    .info-btn {
-      font-size: 1.0rem;
-      color: var(--primary);
-      background: none;
-      border: none;
-      cursor:pointer;
-    }
-    .info-btn:hover {
-      opacity: 1;
-      transform: scale(1.2);
-    }
-
-    .math-btn {
-      font-size: 0.9rem;
-      color: var(--primary);
-      background: none;
-      border: none;
-      cursor: pointer;
-      opacity: 0.9;
-    }
-    .math-btn:hover {
-      opacity: 1;
-      transform: scale(1.1);
-    }
-
-    .advanced {
-      display:none;
-      margin-top:1rem;
-      padding-top:1rem;
-      border-top:1px solid var(--border);
-    }
-
-    table {
-      width:100%;
-      border-collapse:collapse;
-      margin-top:0.5rem;
-      font-size:0.95rem;
-    }
-    th, td {
-      padding:0.6rem;
-      text-align:left;
-      border-bottom:1px solid var(--border);
-    }
-    th { background:var(--bg); font-weight:600; }
-
-    /* Build Summary table spacing */
-    #summaryTable {
-      margin-top: 0.25rem;
-      font-size: 1rem;
-    }
-
-    #summaryTable table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0 0.4rem;
-    }
-
-    #summaryTable td {
-      border-bottom: none;
-      padding: 0.25rem 0;
-    }
-
-    #summaryTable td:first-child {
-      padding-right: 1.8rem;
+    .perf-input-row input {
+      max-width: 120px;
+      border-radius: 999px;
+      padding: 0.55rem 0.9rem;
       font-weight: 600;
     }
 
-    #summaryTable td:last-child {
-      text-align: right;
-    }
-
-    .patreon-btn {
-      display:block;
-      margin:3rem auto;
-      background:#ff424d;
-      color:white;
-      text-decoration:none;
-      padding:1rem 2rem;
-      border-radius:12px;
-      font-weight:bold;
-      text-align:center;
-      max-width:300px;
-    }
-
-    .light-only { display: block; }
-    .dark-only { display: none; }
-    .dark .light-only { display: none; }
-    .dark .dark-only { display: block; }
-
-    #outputs-column,
-    #outputs-column * {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-      font-weight: 600 !important;
-      letter-spacing: -0.02em;
-    }
-    #outputs-column h3 {
-      font-size: 1.15rem !important;
-      margin: 0 0 0.4rem 0;
-      font-weight: 700 !important;
-    }
-    #outputs-column div[style*="font-size:2.5rem"],
-    #outputs-column div[style*="font-size:3rem"] {
-      font-size: 2.6rem !important;
-      line-height: 1.1;
-    }
-
-    #smallGameStatus,
-    #deerStatus,
-    #elkStatus,
-    #mooseStatus {
-      font-size: 2.4rem !important;
-      font-weight: 800 !important;
-    }
-    #outputs-column small {
-      font-weight: 500 !important;
-      font-size: 0.9rem;
-      opacity: 0.85;
-    }
-
-    #toast {
-      position: fixed;
-      bottom: 1.5rem;
-      right: 1.5rem;
-      background: var(--card);
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 0.6rem 1.1rem;
-      border-radius: 999px;
-      box-shadow: 0 6px 18px rgba(15,23,42,0.25);
-      font-size: 0.9rem;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease-out;
-      z-index: 999;
-    }
-
-    .foc-bar-wrapper { margin-top: 0.25rem; }
-
-    .foc-bar-track {
-      position: relative;
-      height: 10px;
-      border-radius: 999px;
-      background: var(--bg);
-      overflow: hidden;
-    }
-
-    .foc-bar-fill {
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      border-radius: 999px;
-      background: var(--primary);
-      opacity: 0.25;
-      width: 0%;
-    }
-
-    .foc-ideal-range {
-      position: absolute;
-      top: 1px;
-      bottom: 1px;
-      border-radius: 999px;
-      background: var(--success);
-      opacity: 0.25;
-      left: 40%;
-      width: 20%;
-    }
-
-    .foc-marker {
-      position: absolute;
-      top: -4px;
-      width: 0;
-      height: 18px;
-      border-left: 2px solid var(--primary);
-    }
-
-    .foc-bar-labels {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.8rem;
-      color: var(--light);
-      margin-top: 0.25rem;
-    }
-
-    .comp-bar-track {
-      position: relative;
-      height: 10px;
-      border-radius: 999px;
-      background: var(--bg);
-      overflow: hidden;
-      display: flex;
-    }
-
-    .comp-seg { height: 100%; }
-    .comp-seg-shaft { background: #94a3b8; }
-    .comp-seg-point { background: #0ea5e9; }
-    .comp-seg-other { background: #22c55e; }
-
-    .comp-legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      justify-content: center;
-      margin-top: 0.5rem;
+    .perf-unit {
       font-size: 0.85rem;
       color: var(--light);
     }
 
-    .comp-dot {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      margin-right: 0.25rem;
+    .perf-hint {
+      font-size: 0.75rem;
+      color: var(--light);
+      margin-top: 0.3rem;
     }
 
-    .comp-dot-shaft { background: #94a3b8; }
-    .comp-dot-point { background: #0ea5e9; }
-    .comp-dot-other { background: #22c55e; }
-
-    .info-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15,23,42,0.55);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 998;
-    }
-    .info-overlay.open {
-      display: flex;
-    }
-    .info-panel {
-      background: var(--card);
-      color: var(--text);
+    /* Slider row under both */
+    .perf-slider-box {
+      background: var(--surface-muted);
       border-radius: 12px;
-      max-width: 420px;
-      width: 90%;
-      max-height: 80vh;
-      padding: 1.25rem 1.5rem;
-      box-shadow: 0 20px 40px rgba(15,23,42,0.35);
-      position: relative;
-      overflow-y: auto;
+      border: 1px solid rgba(148,163,184,0.45);
+      padding: 0.85rem 1rem 1rem;
+      box-shadow: 0 10px 24px var(--tile-shadow);
     }
-    .info-panel h2 {
-      margin: 0 0 0.5rem 0;
-      font-size: 1.2rem;
+
+    .perf-slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.35rem;
     }
-    .info-panel p {
-      font-size: 0.95rem;
-      margin: 0.35rem 0;
+
+    .perf-slider-label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
       color: var(--light);
     }
-    .info-close {
-      position:absolute;
-      top:0.6rem;
-      right:0.75rem;
-      border:none;
-      background:transparent;
-      font-size:1.4rem;
-      cursor:pointer;
-      color: var(--light);
-    }
-    .info-close:hover {
+
+    .perf-distance-value {
+      font-size: 0.9rem;
+      font-weight: 600;
       color: var(--primary);
     }
 
-    @media (max-width:768px) {
-      body {
-        padding:0.75rem;
-      }
-      .container {
-        gap:1rem;
-      }
-      .card {
-        padding:1.25rem;
-      }
-      .grid-2 {
-        grid-template-columns:1fr;
-      }
-      .flex {
-        flex-wrap:wrap;
-      }
+    .perf-slider-box input[type="range"] {
+      width: 100%;
     }
 
-    #outputs-column .build-summary-card {
-      margin-top: 1.25rem;
-    }
-  </style>
+    /* keep your existing distance-ticks styling if you have it */
+</style>
 </head>
 <body>
   <div class="container">
@@ -513,7 +726,7 @@
         </div>
         <p style="color:var(--light);">
           Offline • Mobile-friendly • Live calculations<br>
-          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.12</span>
+          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.13</span>
         </p>
       </div>
 
@@ -570,7 +783,7 @@
               Draw Length (in)
               <button class="info-btn" type="button" data-info="drawLength">ⓘ</button>
             </label>
-            <input type="number" id="drawLength" value="29" step="0.5">
+            <input type="number" id="drawLength" value="30" step="0.5">
           </div>
           <div>
             <label>
@@ -774,550 +987,538 @@
       </div>
     </div>
 
-    <!-- RIGHT: OUTPUTS -->
-    <div id="outputs-column">
-      <!-- Arrow Efficiency + FOC + Weight Composition -->
-      <div class="card">
-        <div class="card-header">
-          <h2>Arrow Efficiency</h2>
-          <button class="info-btn" type="button" data-info="arrowEfficiency">ⓘ</button>
-        </div>
+       <!-- RIGHT: OUTPUTS & ANALYSIS -->
+      <div id="outputs-column">
 
-        <div class="grid-2 metric-grid" style="text-align:center; margin-bottom:1.5rem;">
-
-          <!-- FPS -->
-          <div class="card metric-tile">
-            <div class="metric-tile-header">
-              <div class="metric-row">
-                <h3 style="color:var(--primary);">FPS</h3>
-              </div>
-              <div class="metric-icons">
-                <button class="info-btn" type="button" data-info="actualFPS">ⓘ</button>
-                <button class="math-btn" type="button" data-math="fps">∑</button>
-              </div>
-            </div>
-            <div class="metric-tile-main">
-              <input
-                type="number"
-                id="actualFPS"
-                step="0.1"
-                style="font-size:2.5rem;text-align:center;border:3px solid var(--primary);border-radius:12px;padding:0.5rem;max-width:100%;"
-              >
-            </div>
-            <div class="metric-tile-footer">
-              <button class="btn-small btn-refresh" id="recalcFPS">Recalculate</button>
-              <div>
-                <small id="fpsSource"></small>
-              </div>
-            </div>
+        <!-- YOUR SETTINGS: Actual FPS + Crosswind + Distance -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Your Settings</h2>
+            <button class="info-btn" type="button" data-info="velocitySection">ⓘ</button>
           </div>
-
-          <!-- GPP -->
-          <div class="card metric-tile">
-            <div class="metric-tile-header">
-              <div class="metric-row">
-                <h3 style="color:var(--primary);">GPP</h3>
-              </div>
-              <div class="metric-icons">
-                <button class="info-btn" type="button" data-info="gpp">ⓘ</button>
-                <button class="math-btn" type="button" data-math="gpp">∑</button>
-              </div>
-            </div>
-            <div class="metric-tile-main">
-              <div class="metric-value" id="gppValue">-</div>
-            </div>
-            <div class="metric-tile-footer">
-              <small id="gppHint">
-                Grains per pound of draw weight.
-              </small>
-            </div>
-          </div>
-
-          <!-- GPI -->
-          <div class="card metric-tile">
-            <div class="metric-tile-header">
-              <div class="metric-row">
-                <h3 style="color:var(--primary);">GPI</h3>
-              </div>
-              <div class="metric-icons">
-                <button class="info-btn" type="button" data-info="gpi">ⓘ</button>
-                <button class="math-btn" type="button" data-math="gpi">∑</button>
-              </div>
-            </div>
-            <div class="metric-tile-main">
-              <div class="metric-value" id="gpiValue">-</div>
-            </div>
-            <div class="metric-tile-footer">
-              <small>
-                Grains per inch based on finished arrow.
-              </small>
-            </div>
-          </div>
-
-          <!-- TW -->
-          <div class="card metric-tile">
-            <div class="metric-tile-header">
-              <div class="metric-row">
-                <h3 style="color:var(--primary);">TW</h3>
-              </div>
-              <div class="metric-icons">
-                <button class="info-btn" type="button" data-info="finalArrowWeight">ⓘ</button>
-                <button class="math-btn" type="button" data-math="tw">∑</button>
-              </div>
-            </div>
-            <div class="metric-tile-main">
-              <div class="metric-value" id="finalArrowWeight">-</div>
-            </div>
-            <div class="metric-tile-footer">
-              <small>Total finished arrow weight (gr).</small>
-            </div>
-          </div>
-        </div>
-
-        <div class="grid-2" style="gap:1rem;">
-          <div class="subcard">
-            <div class="metric-row" style="margin-bottom:0.5rem;">
-              <h3 style="color:var(--primary);">FOC</h3>
-              <div class="metric-icons">
-                <button class="info-btn" type="button" data-info="foc">ⓘ</button>
-                <button class="math-btn" type="button" data-math="foc">∑</button>
-              </div>
-            </div>
-            <div style="text-align:center;margin-bottom:0.5rem;">
-              <div id="focValue"
-                   style="font-size:2.5rem;font-weight:800;">-</div>
-              <div style="font-size:0.9rem;color:var(--light);">
-                Ideal Range: 12–18%
-              </div>
-            </div>
-
-            <div class="foc-bar-wrapper">
-              <div class="foc-bar-track">
-                <div id="focBarFill" class="foc-bar-fill"></div>
-                <div class="foc-ideal-range"></div>
-                <div id="focMarker" class="foc-marker"></div>
-              </div>
-              <div class="foc-bar-labels">
-                <span>0%</span><span>30%</span>
-              </div>
-            </div>
-
-            <small id="focHint"
-                   style="display:block;margin-top:0.5rem;font-size:0.85rem;color:var(--light);">
-              FOC helps with broadhead stability and penetration.
-            </small>
-          </div>
-
-          <div class="subcard">
-            <div class="metric-row" style="margin-bottom:0.5rem;">
-              <h3 style="color:var(--primary);">AWC</h3>
-              <div class="metric-icons">
-                <button class="info-btn" type="button" data-info="composition">ⓘ</button>
-                <button class="math-btn" type="button" data-math="awc">∑</button>
-              </div>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.5rem;">
-              <span id="compTotalLabel" style="font-size:0.9rem;color:var(--light);">-</span>
-            </div>
-
-            <div class="comp-bar-track">
-              <div id="compShaftSeg" class="comp-seg comp-seg-shaft" style="width:0%;"></div>
-              <div id="compPointSeg" class="comp-seg comp-seg-point" style="width:0%;"></div>
-              <div id="compOtherSeg" class="comp-seg comp-seg-other" style="width:0%;"></div>
-            </div>
-
-            <div class="comp-legend">
-              <span style="white-space:nowrap;">
-                <span class="comp-dot comp-dot-shaft"></span>
-                <span id="shaftPctLabel">Shaft: 0%</span>
-              </span>
-              <span style="white-space:nowrap;">
-                <span class="comp-dot comp-dot-point"></span>
-                <span id="pointPctLabel">Point: 0%</span>
-              </span>
-              <span style="white-space:nowrap;">
-                <span class="comp-dot comp-dot-other"></span>
-                <span id="compPctLabel">Comp.: 0%</span>
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Performance -->
-      <div class="card">
-        <div class="card-header">
-          <h2>Performance @ <span id="distanceValue">50</span> yards</h2>
-          <button class="info-btn" type="button" data-info="velocitySection">ⓘ</button>
-        </div>
-
-        <input type="range" id="distanceSlider" min="0" max="120" value="50" list="distanceTicks" style="width:100%;">
-        <datalist id="distanceTicks">
-          <option value="0" label="0"></option>
-          <option value="20" label="20"></option>
-          <option value="40" label="40"></option>
-          <option value="60" label="60"></option>
-          <option value="80" label="80"></option>
-          <option value="100" label="100"></option>
-          <option value="120" label="120"></option>
-        </datalist>
-
-        <!-- Wind input + quick note -->
-        <div class="flex" style="margin:0.75rem 0 1.25rem;justify-content:space-between;align-items:center;flex-wrap:wrap;">
-          <div style="font-size:0.9rem;color:var(--light);">
+          <p class="card-subtitle" style="font-size:0.9rem;color:var(--light);margin-bottom:0.75rem;">
             Simple level-shot model for trajectory, time, and wind — a tuning guide, not a full ballistic solver.
-          </div>
-          <div class="flex" style="gap:0.5rem;">
-            <label style="font-size:0.9rem;color:var(--light);">
-              Crosswind (mph)
-              <button class="info-btn" type="button" data-info="windDrift">ⓘ</button>
-            </label>
-            <input type="number" id="windMph" value="10" step="1"
-                   style="width:80px;padding:0.4rem 0.5rem;font-size:0.9rem;">
-          </div>
-        </div>
-
-        <!-- Velocity & Peak Height -->
-        <div class="grid-2 metric-grid" style="text-align:center; margin-bottom:1.5rem;">
-          <!-- Velocity -->
-          <div class="card metric-tile text-center">
-            <div class="metric-tile-header">
-              <div class="metric-row">
-                <h3 style="margin:0;color:var(--success);">Velocity</h3>
-              </div>
-              <div class="metric-icons">
-                <button class="info-btn" type="button" data-info="velocityAtDistance">ⓘ</button>
-                <button class="math-btn" type="button" data-math="velocity">∑</button>
-              </div>
-            </div>
-            <div class="metric-tile-main">
-              <div class="metric-value" id="velocityAtDistance">-</div>
-            </div>
-            <div class="metric-tile-footer">
-              FPS at <span id="velocityDistanceLabel">50</span> yd (estimated at target)
-            </div>
-          </div>
-
-          <!-- Peak Height -->
-          <div class="card metric-tile text-center">
-            <div class="metric-tile-header">
-              <div class="metric-row">
-                <h3 style="margin:0;color:var(--success);">Peak Height</h3>
-              </div>
-              <div class="metric-icons">
-                <button class="info-btn" type="button" data-info="peakHeight">ⓘ</button>
-                <button class="math-btn" type="button" data-math="peakHeight">∑</button>
-              </div>
-            </div>
-            <div class="metric-tile-main">
-              <div class="metric-value" id="peakHeightValue">-</div>
-            </div>
-            <div class="metric-tile-footer">
-              ft | highest point ~ <span id="peakDistanceValue">-</span> yd to target
-            </div>
-          </div>
-        </div>
-
-        <!-- KE / Time / Impact KE / Momentum -->
-        <div class="grid-2 metric-grid" style="margin-top:1rem;">
-
-          <!-- Launch KE -->
-          <div class="card metric-tile text-center">
-            <div class="metric-tile-header">
-              <div class="metric-row">
-                <h3 style="color:var(--success);margin:0;">Launch KE</h3>
-              </div>
-              <div class="metric-icons">
-                <button class="info-btn" type="button" data-info="launchKE">ⓘ</button>
-                <button class="math-btn" type="button" data-math="keLaunch">∑</button>
-              </div>
-            </div>
-            <div class="metric-tile-main">
-              <div class="metric-value" id="keValue" style="font-size:3rem;">-</div>
-            </div>
-            <div class="metric-tile-footer">
-              ft-lbs at the bow
-            </div>
-          </div>
-
-          <!-- Time to Impact -->
-          <div class="card metric-tile text-center">
-            <div class="metric-tile-header">
-              <div class="metric-row">
-                <h3 style="color:var(--success);margin:0;">Time to Impact</h3>
-              </div>
-              <div class="metric-icons">
-                <button class="info-btn" type="button" data-info="timeToImpact">ⓘ</button>
-                <button class="math-btn" type="button" data-math="timeToImpact">∑</button>
-              </div>
-            </div>
-            <div class="metric-tile-main">
-              <div class="metric-value" id="timeToImpact" style="font-size:3rem;">-</div>
-            </div>
-            <div class="metric-tile-footer">
-              seconds to target
-            </div>
-          </div>
-
-          <!-- Impact KE -->
-          <div class="card metric-tile text-center">
-            <div class="metric-tile-header">
-              <div class="metric-row">
-                <h3 style="color:var(--success);margin:0;">Impact KE</h3>
-              </div>
-              <div class="metric-icons">
-                <button class="info-btn" type="button" data-info="impactKE">ⓘ</button>
-                <button class="math-btn" type="button" data-math="impactKE">∑</button>
-              </div>
-            </div>
-            <div class="metric-tile-main">
-              <div class="metric-value" id="impactKE" style="font-size:3rem;">-</div>
-            </div>
-            <div class="metric-tile-footer">
-              ft-lbs at selected distance
-            </div>
-          </div>
-
-          <!-- Impact Momentum -->
-          <div class="card metric-tile text-center">
-            <div class="metric-tile-header">
-              <div class="metric-row">
-                <h3 style="color:var(--success);margin:0;">Impact Momentum</h3>
-              </div>
-              <div class="metric-icons">
-                <button class="info-btn" type="button" data-info="impactMom">ⓘ</button>
-                <button class="math-btn" type="button" data-math="impactMom">∑</button>
-              </div>
-            </div>
-            <div class="metric-tile-main">
-              <div class="metric-value" id="impactMom" style="font-size:3rem;">-</div>
-            </div>
-            <div class="metric-tile-footer">
-              slug·ft/s at selected distance
-            </div>
-          </div>
-        </div>
-
-        <!-- Stiffness / Wind Drift -->
-        <div class="grid-2 metric-grid" style="margin-top:1rem;">
-          <!-- Spine Match / Forgiveness -->
-          <div class="card metric-tile text-center">
-            <div class="metric-tile-header">
-              <div class="metric-row">
-                <h3 style="color:var(--success);margin:0;">Stiffness / Forgiveness</h3>
-              </div>
-              <div class="metric-icons">
-                <button class="info-btn" type="button" data-info="stiffness">ⓘ</button>
-                <button class="math-btn" type="button" data-math="stiffness">∑</button>
-              </div>
-            </div>
-            <div class="metric-tile-main" style="flex-direction:column;">
-              <div id="stiffnessBadge" class="metric-value">–</div>
-            </div>
-            <div class="metric-tile-footer">
-              <small id="stiffnessHint">
-                Chart-style spine match based on bow weight, arrow length, and front weight.
-              </small>
-            </div>
-          </div>
-
-          <!-- Wind Drift -->
-          <div class="card metric-tile text-center">
-            <div class="metric-tile-header">
-              <div class="metric-row">
-                <h3 style="color:var(--success);margin:0;">Wind Drift</h3>
-              </div>
-              <div class="metric-icons">
-                <button class="info-btn" type="button" data-info="windDrift">ⓘ</button>
-                <button class="math-btn" type="button" data-math="windDrift">∑</button>
-              </div>
-            </div>
-            <div class="metric-tile-main" style="flex-direction:column;">
-              <div class="metric-value" id="windDriftValue">-</div>
-            </div>
-            <div class="metric-tile-footer">
-              <small>
-                Estimated drift (in) at <span id="windDistanceLabel">50</span> yd in a crosswind.
-              </small>
-            </div>
-          </div>
-        </div>
-      </div>
-            <!-- Game Effectiveness OR Target Insights -->
-      <div class="card" id="gameCard">
-        <div class="card-header">
-          <h2 id="gameCardTitle">Game Effectiveness</h2>
-          <button class="info-btn" type="button" data-info="gameEffectiveness">ⓘ</button>
-        </div>
-
-        <!-- Hunting mode -->
-        <div id="huntingMode">
-          <div class="metric-grid">
-            <!-- Small Game -->
-            <div class="card metric-tile text-center" style="border-color:#94a3b8;">
-              <div class="metric-tile-header">
-                <h3 style="color:#64748b;">Small Game</h3>
-              </div>
-              <div class="metric-tile-main">
-                <div id="smallGameStatus" class="metric-value">–</div>
-              </div>
-              <div class="metric-tile-footer">
-                <small>~12+ ft-lbs KE</small>
-              </div>
-            </div>
-
-            <!-- Deer -->
-            <div class="card metric-tile text-center" style="border-color:#22c55e;">
-              <div class="metric-tile-header">
-                <h3 style="color:#22c55e;">Deer / Antelope</h3>
-              </div>
-              <div class="metric-tile-main">
-                <div id="deerStatus" class="metric-value">–</div>
-              </div>
-              <div class="metric-tile-footer">
-                <small>~25+ ft-lbs KE / ~0.30 slug·ft/s</small>
-              </div>
-            </div>
-
-            <!-- Elk -->
-            <div class="card metric-tile text-center" style="border-color:#f59e0b;">
-              <div class="metric-tile-header">
-                <h3 style="color:#f59e0b;">Elk / Large Game</h3>
-              </div>
-              <div class="metric-tile-main">
-                <div id="elkStatus" class="metric-value">–</div>
-              </div>
-              <div class="metric-tile-footer">
-                <small>42–65 ft-lbs KE • 0.44–0.65 slug·ft/s</small>
-              </div>
-            </div>
-
-            <!-- Tough Game (Bear, Moose, etc.) -->
-            <div class="card metric-tile text-center" style="border-color:#ef4444;">
-              <div class="metric-tile-header">
-                <h3 style="color:#ef4444;">Tough Game</h3>
-              </div>
-              <div class="metric-tile-main">
-                <div id="mooseStatus" class="metric-value">–</div>
-              </div>
-              <div class="metric-tile-footer">
-                <small>65+ ft-lbs KE • 0.65+ slug·ft/s</small>
-              </div>
-            </div>
-          </div>
-
-          <p id="gameMessage" style="margin-top:1rem;color:var(--light);text-align:center;font-size:0.95rem;">
-            —
           </p>
-        </div>
 
-        <!-- Target mode -->
-        <div id="targetMode" style="display:none;">
-          <!-- Top row: Group Stability + Flatness Score side-by-side -->
-          <div class="metric-grid" style="margin-bottom:1rem;">
-            <!-- Group Stability -->
-            <div class="card metric-tile text-center">
-              <div class="metric-tile-header">
-                <div class="metric-row">
-                  <h3 style="margin:0;color:var(--success);">Group Stability</h3>
+          <!-- FPS + Windage + Distance controls -->
+          <div class="perf-grid">
+            <!-- Row 1: FPS + Windage -->
+            <div class="perf-top">
+              <!-- FPS editable box -->
+              <div class="perf-box">
+                <div class="perf-label-row">
+                  <div class="metric-title">
+                    <span class="perf-label">Launch FPS</span>
+                    <button class="info-btn small" type="button" data-info="actualFPS">ⓘ</button>
+                    <button class="math-btn" type="button" data-math="fps">∑</button>
+                  </div>
+                  <span class="perf-edit-pill">editable</span>
                 </div>
-                <div class="metric-icons">
-                  <button class="info-btn" type="button" data-info="groupStability">ⓘ</button>
-                  <button class="math-btn" type="button" data-math="groupStability">∑</button>
+                <div class="perf-input-row">
+                  <input
+                    id="actualFPS"
+                    type="number"
+                    inputmode="decimal"
+                    step="0.5"
+                    min="100"
+                    max="400"
+                    placeholder="Estimate or chrono"
+                  />
+                  <button id="recalcFPS" type="button" class="secondary-btn small">
+                    Recalc from IBO
+                  </button>
                 </div>
+                <p class="perf-hint">
+                  Type your real chrono speed, or tap <strong>Recalc from IBO</strong> to use the estimate.
+                </p>
               </div>
-              <div class="metric-tile-main">
-                <div class="metric-value" id="groupStabilityBadge" style="font-size:2rem;">–</div>
-              </div>
-              <div class="metric-tile-footer">
-                <small id="groupStabilityHint">
-                  Uses FPS, FOC, and GPI to estimate how forgiving this setup should feel.
-                </small>
+
+              <!-- Windage editable box -->
+              <div class="perf-box">
+                <div class="perf-label-row">
+                  <div class="metric-title">
+                    <span class="perf-label">Crosswind</span>
+                    <button class="info-btn small" type="button" data-info="windDrift">ⓘ</button>
+                    <button class="math-btn" type="button" data-math="windDrift">∑</button>
+                  </div>
+                  <span class="perf-edit-pill">editable</span>
+                </div>
+                <div class="perf-input-row">
+                  <input
+                    id="windMph"
+                    type="number"
+                    inputmode="decimal"
+                    step="0.5"
+                    min="0"
+                    value="0"
+                  />
+                  <span class="perf-unit">mph</span>
+                </div>
+                <p class="perf-hint">
+                  Full-value side wind used for the drift estimate.
+                </p>
               </div>
             </div>
 
-            <!-- Flatness Score -->
-            <div class="card metric-tile text-center">
-              <div class="metric-tile-header">
-                <div class="metric-row">
-                  <h3 style="margin:0;color:var(--success);">Flatness Score</h3>
+            <!-- Row 2: Distance slider under both -->
+            <div class="perf-slider-box">
+              <div class="perf-slider-header">
+                <div class="metric-title">
+                  <span class="perf-slider-label">Distance</span>
+                  <span class="perf-distance-value">
+                    <span id="distanceValue">50</span> yd
+                  </span>
                 </div>
-                <div class="metric-icons">
-                  <button class="info-btn" type="button" data-info="flatnessScore">ⓘ</button>
-                  <button class="math-btn" type="button" data-math="flatnessScore">∑</button>
+                <span class="perf-edit-pill">adjust</span>
+              </div>
+              <input
+                id="distanceSlider"
+                type="range"
+                min="10"
+                max="80"
+                step="1"
+                value="50"
+              />
+              <div class="distance-ticks" id="distanceTicks">
+                <span>10</span><span>20</span><span>30</span><span>40</span>
+                <span>50</span><span>60</span><span>70</span><span>80</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PERFORMANCE CALCULATIONS -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Performance Calculations</h2>
+            <button class="info-btn" type="button" data-info="performanceCalculations">ⓘ</button>
+          </div>
+
+          <!-- GAME EFFECTIVENESS / TARGET INSIGHTS FIRST -->
+          <div class="subcard" id="gameCard" style="margin-top:0.25rem;">
+            <div class="card-header compact" style="border-bottom:none;padding-bottom:0.25rem;margin-bottom:0.5rem;">
+              <h3 id="gameCardTitle" style="margin:0;">Game Effectiveness</h3>
+              <button class="info-btn" type="button" data-info="gameEffectiveness">ⓘ</button>
+            </div>
+
+            <!-- Hunting mode panel -->
+            <div id="huntingMode">
+              <div class="metric-grid">
+                <div class="metric-tile">
+                  <div class="metric-title">Small Game</div>
+                  <div class="metric-main-value" style="font-size:2.2rem;">
+                    <span id="smallGameStatus">–</span>
+                  </div>
+                  <p class="metric-note" style="font-size:0.8rem;color:var(--light);">
+                    ~12+ ft-lbs KE (baseline).
+                  </p>
+                </div>
+
+                <div class="metric-tile">
+                  <div class="metric-title">Deer / Antelope</div>
+                  <div class="metric-main-value" style="font-size:2.2rem;">
+                    <span id="deerStatus">–</span>
+                  </div>
+                  <p class="metric-note" style="font-size:0.8rem;color:var(--light);">
+                    ~25+ ft-lbs KE • ~0.30 slug·ft/s.
+                  </p>
+                </div>
+
+                <div class="metric-tile">
+                  <div class="metric-title">Elk / Large Game</div>
+                  <div class="metric-main-value" style="font-size:2.2rem;">
+                    <span id="elkStatus">–</span>
+                  </div>
+                  <p class="metric-note" style="font-size:0.8rem;color:var(--light);">
+                    42–65 ft-lbs • 0.44–0.65 slug·ft/s.
+                  </p>
+                </div>
+
+                <div class="metric-tile">
+                  <div class="metric-title">Tough Game</div>
+                  <div class="metric-main-value" style="font-size:2.2rem;">
+                    <span id="mooseStatus">–</span>
+                  </div>
+                  <p class="metric-note" style="font-size:0.8rem;color:var(--light);">
+                    65+ ft-lbs • 0.65+ slug·ft/s.
+                  </p>
                 </div>
               </div>
-              <div class="metric-tile-main">
-                <div class="metric-value" id="flatnessScoreValue" style="font-size:2rem;">–</div>
+
+              <p id="gameMessage" class="metric-note" style="font-size:0.85rem;color:var(--light);margin-top:0.5rem;">
+                Impact values are compared at the selected distance — a conservative “send it / adjust” helper, not a guarantee.
+              </p>
+            </div>
+
+            <!-- Target / 3D mode panel -->
+            <div id="targetMode" style="display:none; margin-top:0.75rem;">
+              <div class="metric-grid">
+                <div class="metric-tile">
+                  <div class="metric-header-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">
+                    <div class="metric-title">
+                      <span>Group Stability</span>
+                      <button class="info-btn small" type="button" data-info="groupStability">ⓘ</button>
+                      <button class="math-btn" type="button" data-math="groupStability">∑</button>
+                    </div>
+                  </div>
+                  <div class="metric-main-value" style="font-size:2.2rem;">
+                    <span id="groupStabilityBadge">–</span>
+                  </div>
+                  <p class="metric-note" style="font-size:0.85rem;color:var(--light);margin-top:0.35rem;">
+                    Uses FPS, FOC, and GPI to approximate how forgiving this build should feel.
+                  </p>
+                </div>
+
+                <div class="metric-tile">
+                  <div class="metric-header-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">
+                    <div class="metric-title">
+                      <span>Flatness Score</span>
+                      <button class="info-btn small" type="button" data-info="flatnessScore">ⓘ</button>
+                      <button class="math-btn" type="button" data-math="flatnessScore">∑</button>
+                    </div>
+                  </div>
+                  <div class="metric-main-value" style="font-size:2.2rem;">
+                    <span id="flatnessScoreValue">–</span>
+                  </div>
+                  <p class="metric-note" style="font-size:0.85rem;color:var(--light);margin-top:0.35rem;">
+                    Based on extra drop from 20 → 60 yd (Very Flat / Flat / Curved).
+                  </p>
+                </div>
               </div>
-              <div class="metric-tile-footer">
-                <small>
-                  Based on additional drop from 20 → 60 yd (Very Flat / Flat / Curved).
-                </small>
+
+              <div class="drop-table" style="margin-top:0.75rem;">
+                <div class="metric-header-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">
+                  <div class="metric-title">
+                    <span>Downrange Arrow Drop</span>
+                    <button class="info-btn small" type="button" data-info="sightMarks">ⓘ</button>
+                  </div>
+                </div>
+                <table class="data-table" id="dropTable">
+                  <thead>
+                    <tr>
+                      <th>Distance</th>
+                      <th>Drop (inches)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- filled by script -->
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
 
-          <!-- Full-width: Downrange Arrow Drop table -->
-          <div class="subcard">
-            <div class="metric-row" style="margin-bottom:0.5rem;">
-              <h3>Downrange Arrow Drop</h3>
-              <div class="metric-icons">
-                <button class="info-btn" type="button" data-info="sightMarks">ⓘ</button>
+          <!-- Velocity + Peak Height row -->
+          <div class="metric-grid" style="margin-top:1.25rem;">
+            <div class="metric-tile">
+              <div class="metric-header-row">
+                <div class="metric-title">
+                  <span>Velocity @ <span id="velocityDistanceLabel">50</span> yd</span>
+                  <button class="info-btn small" type="button" data-info="velocityAtDistance">ⓘ</button>
+                  <button class="math-btn" type="button" data-math="velocity">∑</button>
+                </div>
               </div>
+              <div class="metric-main-value" style="font-size:2rem;display:flex;align-items:baseline;gap:0.25rem;">
+                <span id="velocityAtDistance">-</span>
+                <span class="metric-unit" style="font-size:0.9rem;color:var(--light);">FPS</span>
+              </div>
+              <p class="metric-note" style="font-size:0.85rem;color:var(--light);margin-top:0.35rem;">
+                Estimated speed at selected distance.
+              </p>
             </div>
 
-            <table id="dropTable">
-              <thead>
-                <tr><th>Distance</th><th>Drop (inches)</th></tr>
-              </thead>
-              <tbody></tbody>
-            </table>
+            <div class="metric-tile">
+              <div class="metric-header-row">
+                <div class="metric-title">
+                  <span>Peak Height</span>
+                  <button class="info-btn small" type="button" data-info="peakHeight">ⓘ</button>
+                  <button class="math-btn" type="button" data-math="peakHeight">∑</button>
+                </div>
+              </div>
+              <div class="metric-main-value" style="font-size:2rem;display:flex;align-items:baseline;gap:0.25rem;">
+                <span id="peakHeightValue">-</span>
+                <span class="metric-unit" style="font-size:0.9rem;color:var(--light);">ft</span>
+              </div>
+              <p class="metric-note" style="font-size:0.85rem;color:var(--light);margin-top:0.35rem;">
+                Apex around <span id="peakDistanceValue">25</span> yd above a flat launch line.
+              </p>
+            </div>
           </div>
-        </div>
 
-      <!-- Build Summary -->
-      <div class="card build-summary-card">
-        <div class="card-header">
-          <h2>Build Summary</h2>
-          <button class="info-btn" type="button" data-info="buildSummary">ⓘ</button>
-        </div>
-        <div id="summaryTable"></div>
-        <div style="text-align:center;margin-top:1rem;">
-          <button id="copySummary" class="btn-small">Copy</button>
-        </div>
+          <!-- KE / Time / Impact metrics -->
+          <div class="metric-grid">
+            <div class="metric-tile">
+              <div class="metric-header-row">
+                <div class="metric-title">
+                  <span>Launch KE</span>
+                  <button class="info-btn small" type="button" data-info="launchKE">ⓘ</button>
+                  <button class="math-btn" type="button" data-math="keLaunch">∑</button>
+                </div>
+              </div>
+              <div class="metric-main-value" style="font-size:2rem;display:flex;align-items:baseline;gap:0.25rem;">
+                <span id="keValue">-</span>
+                <span class="metric-unit" style="font-size:0.9rem;color:var(--light);">ft-lbs</span>
+              </div>
+              <p class="metric-note" style="font-size:0.85rem;color:var(--light);margin-top:0.35rem;">
+                Energy at the bow.
+              </p>
+            </div>
+
+            <div class="metric-tile">
+              <div class="metric-header-row">
+                <div class="metric-title">
+                  <span>Time to Impact</span>
+                  <button class="info-btn small" type="button" data-info="timeToImpact">ⓘ</button>
+                  <button class="math-btn" type="button" data-math="timeToImpact">∑</button>
+                </div>
+              </div>
+              <div class="metric-main-value" style="font-size:2rem;display:flex;align-items:baseline;gap:0.25rem;">
+                <span id="timeToImpact">-</span>
+                <span class="metric-unit" style="font-size:0.9rem;color:var(--light);">sec</span>
+              </div>
+              <p class="metric-note" style="font-size:0.85rem;color:var(--light);margin-top:0.35rem;">
+                How long the arrow is in the air.
+              </p>
+            </div>
+
+            <div class="metric-tile">
+              <div class="metric-header-row">
+                <div class="metric-title">
+                  <span>Impact KE</span>
+                  <button class="info-btn small" type="button" data-info="impactKE">ⓘ</button>
+                  <button class="math-btn" type="button" data-math="impactKE">∑</button>
+                </div>
+              </div>
+              <div class="metric-main-value" style="font-size:2rem;display:flex;align-items:baseline;gap:0.25rem;">
+                <span id="impactKE">-</span>
+                <span class="metric-unit" style="font-size:0.9rem;color:var(--light);">ft-lbs</span>
+              </div>
+              <p class="metric-note" style="font-size:0.85rem;color:var(--light);margin-top:0.35rem;">
+                Energy at the selected distance.
+              </p>
+            </div>
+
+            <div class="metric-tile">
+              <div class="metric-header-row">
+                <div class="metric-title">
+                  <span>Impact Momentum</span>
+                  <button class="info-btn small" type="button" data-info="impactMom">ⓘ</button>
+                  <button class="math-btn" type="button" data-math="impactMom">∑</button>
+                </div>
+              </div>
+              <div class="metric-main-value" style="font-size:2rem;display:flex;align-items:baseline;gap:0.25rem;">
+                <span id="impactMom">-</span>
+                <span class="metric-unit" style="font-size:0.9rem;color:var(--light);">slug·ft/s</span>
+              </div>
+              <p class="metric-note" style="font-size:0.85rem;color:var(--light);margin-top:0.35rem;">
+                Momentum at the selected distance.
+              </p>
+            </div>
+          </div>
+
+          <!-- Stiffness / Wind drift row -->
+          <div class="metric-grid">
+            <div class="metric-tile">
+              <div class="metric-header-row">
+                <div class="metric-title">
+                  <span>Stiffness / Forgiveness</span>
+                  <button class="info-btn small" type="button" data-info="stiffness">ⓘ</button>
+                  <button class="math-btn" type="button" data-math="stiffness">∑</button>
+                </div>
+              </div>
+              <div class="metric-main-value" style="font-size:2rem;display:flex;align-items:baseline;gap:0.25rem;">
+                <span id="stiffnessBadge">–</span>
+              </div>
+              <p id="stiffnessHint" class="metric-note" style="font-size:0.85rem;color:var(--light);margin-top:0.35rem;">
+                Enter draw, length, spine, and point weight to see a chart-style match.
+              </p>
+            </div>
+
+            <div class="metric-tile">
+              <div class="metric-header-row">
+                <div class="metric-title">
+                  <span>Wind Drift</span>
+                  <button class="info-btn small" type="button" data-info="windDrift">ⓘ</button>
+                  <button class="math-btn" type="button" data-math="windDrift">∑</button>
+                </div>
+              </div>
+              <div class="metric-main-value" style="font-size:2rem;display:flex;align-items:baseline;gap:0.25rem;">
+                <span id="windDriftValue">-</span>
+                <span class="metric-unit" style="font-size:0.9rem;color:var(--light);">in</span>
+              </div>
+              <p class="metric-note" style="font-size:0.85rem;color:var(--light);margin-top:0.35rem;">
+                Approximate side drift at the selected distance & wind.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ARROW EFFICIENCY BETWEEN PERFORMANCE & BUILD SUMMARY -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Arrow Efficiency</h2>
+            <button class="info-btn" type="button" data-info="arrowEfficiency">ⓘ</button>
+          </div>
+
+          <div class="metric-grid">
+            <!-- GPP -->
+            <div class="metric-tile">
+              <div class="metric-header-row">
+                <div class="metric-title">
+                  <span>GPP</span>
+                  <button class="info-btn small" type="button" data-info="gpp">ⓘ</button>
+                  <button class="math-btn" type="button" data-math="gpp">∑</button>
+                </div>
+              </div>
+              <div class="metric-main-value">
+                <span id="gppValue">-</span>
+                <span class="metric-unit">gr/lb</span>
+              </div>
+              <p id="gppHint" class="metric-note">
+                <!-- script fills: light / all-around / heavy -->
+              </p>
+            </div>
+
+            <!-- GPI -->
+            <div class="metric-tile">
+              <div class="metric-header-row">
+                <div class="metric-title">
+                  <span>GPI</span>
+                  <button class="info-btn small" type="button" data-info="gpi">ⓘ</button>
+                  <button class="math-btn" type="button" data-math="gpi">∑</button>
+                </div>
+              </div>
+              <div class="metric-main-value">
+                <span id="gpiValue">-</span>
+                <span class="metric-unit">gr/in</span>
+              </div>
+              <p class="metric-note">
+                Grains per inch based on finished arrow.
+              </p>
+            </div>
+
+            <!-- Total Weight (TW) -->
+            <div class="metric-tile">
+              <div class="metric-header-row">
+                <div class="metric-title">
+                  <span>TW</span>
+                  <button class="info-btn small" type="button" data-info="finalArrowWeight">ⓘ</button>
+                  <button class="math-btn" type="button" data-math="tw">∑</button>
+                </div>
+              </div>
+              <div class="metric-main-value">
+                <span id="finalArrowWeight">-</span>
+                <span class="metric-unit">gr</span>
+              </div>
+              <p class="metric-note">
+                Total finished arrow weight.
+              </p>
+            </div>
+
+            <!-- FOC -->
+            <div class="metric-tile">
+              <div class="metric-header-row">
+                <div class="metric-title">
+                  <span>FOC</span>
+                  <button class="info-btn small" type="button" data-info="foc">ⓘ</button>
+                  <button class="math-btn" type="button" data-math="foc">∑</button>
+                </div>
+              </div>
+              <div class="metric-main-value">
+                <span id="focValue">-</span>
+                <span class="metric-unit">%</span>
+              </div>
+              <div class="foc-bar-wrapper" style="margin-top:0.25rem;">
+                <div class="foc-bar-track" style="position:relative;height:10px;border-radius:999px;background:var(--bg);overflow:hidden;">
+                  <div class="foc-bar-fill" id="focBarFill" style="position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:var(--primary);opacity:0.25;width:0%;"></div>
+                  <div class="foc-ideal-range" style="position:absolute;top:1px;bottom:1px;border-radius:999px;background:var(--success);opacity:0.25;left:40%;width:20%;"></div>
+                  <div class="foc-marker" id="focMarker" style="position:absolute;top:-4px;width:0;height:18px;border-left:2px solid var(--primary);"></div>
+                </div>
+                <div class="foc-bar-labels" style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--light);margin-top:0.25rem;">
+                  <span>0%</span>
+                  <span>30%</span>
+                </div>
+              </div>
+              <p id="focHint" class="metric-note">
+                <!-- script sets guidance -->
+              </p>
+            </div>
+
+            <!-- Arrow Weight Composition (AWC) spans both columns -->
+            <div class="metric-tile awc-wide">
+              <div class="metric-header-row">
+                <div class="metric-title">
+                  <span>AWC</span>
+                  <button class="info-btn small" type="button" data-info="composition">ⓘ</button>
+                  <button class="math-btn" type="button" data-math="awc">∑</button>
+                </div>
+              </div>
+              <div class="comp-bar-track" style="position:relative;height:10px;border-radius:999px;background:var(--bg);overflow:hidden;display:flex;">
+                <div class="comp-seg comp-seg-shaft" id="compShaftSeg" style="height:100%;"></div>
+                <div class="comp-seg comp-seg-point" id="compPointSeg" style="height:100%;"></div>
+                <div class="comp-seg comp-seg-other" id="compOtherSeg" style="height:100%;"></div>
+              </div>
+              <p id="compTotalLabel" class="metric-note" style="margin-top:0.35rem;">
+                Shaft: 0% • Point: 0% • Components: 0%
+              </p>
+              <div class="comp-legend">
+                <span><span class="comp-dot comp-dot-shaft"></span><span id="shaftPctLabel">Shaft: 0%</span></span>
+                <span><span class="comp-dot comp-dot-point"></span><span id="pointPctLabel">Point: 0%</span></span>
+                <span><span class="comp-dot comp-dot-other"></span><span id="compPctLabel">Comp.: 0%</span></span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- BUILD SUMMARY LAST -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Build Summary</h2>
+            <button class="info-btn" type="button" data-info="buildSummary">ⓘ</button>
+          </div>
+
+          <div class="build-summary" id="summaryTable">
+            <!-- script injects <table>...</table> -->
+          </div>
+          <button id="copySummary" type="button" class="btn-small" style="margin-top:0.75rem;">
+            Copy
+          </button>
+        </section>
+
+        <!-- Patreon / Support link -->
+        <a
+          class="patreon-btn"
+          href="https://patreon.com/ArrowTuneCalculator?utm_medium=unknown&utm_source=join_link&utm_campaign=creatorshare_creator&utm_content=copyLink"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Support the project on Patreon ❤️
+        </a>
+      </div> <!-- end outputs-column -->
+    </div> <!-- end container -->
+
+    <!-- Math Popup -->
+    <div class="info-overlay" id="mathOverlay">
+      <div class="info-panel" id="mathPanel">
+        <button class="info-close" id="mathClose">&times;</button>
+        <h2>Math Details</h2>
+        <div id="mathContent"></div>
       </div>
-
-      <!-- Patreon -->
-      <a href="https://patreon.com/ArrowTuneCalculator"
-         class="patreon-btn"
-         target="_blank">Support the project on Patreon ❤️</a>
-
-    </div> <!-- end outputs-column -->
-  </div> <!-- end container -->
-
-  <!-- Math Popup -->
-  <div class="info-overlay" id="mathOverlay">
-    <div class="info-panel" id="mathPanel">
-      <button class="info-close" id="mathClose">&times;</button>
-      <h2>Math Details</h2>
-      <div id="mathContent"></div>
     </div>
-  </div>
 
-  <!-- Info Popup -->
-  <div class="info-overlay" id="infoOverlay">
-    <div class="info-panel" id="infoPanel">
-      <button class="info-close" id="infoClose">&times;</button>
-      <h2 id="infoTitle"></h2>
-      <div id="infoBody"></div>
+    <!-- Info Popup -->
+    <div class="info-overlay" id="infoOverlay">
+      <div class="info-panel" id="infoPanel">
+        <button class="info-close" id="infoClose">&times;</button>
+        <h2 id="infoTitle"></h2>
+        <div id="infoBody"></div>
+      </div>
     </div>
-  </div>
 
-  <!-- Toast -->
-  <div id="toast"></div>
+    <!-- Toast -->
+    <div id="toast"></div>
 
-  <!-- SCRIPT SECTION BEGIN -->
+    <!-- SCRIPT SECTION BEGIN -->
 <script>
 /* ============================================================
    VARIABLES + UTILITIES
@@ -1418,7 +1619,6 @@ const dropTableEl = $("dropTable").querySelector("tbody");
 const summaryTableEl = $("summaryTable");
 const copySummaryBtn = $("copySummary");
 
-// OVERLAYS
 const infoOverlay = $("infoOverlay");
 const infoPanel = $("infoPanel");
 const infoTitle = $("infoTitle");
@@ -1575,7 +1775,7 @@ const INFO_CONTENT = {
   arrowSpine: `
     <h2>Arrow Spine Stiffness</h2>
     <p>
-      The <strong>static spine rating</strong> printed on your shaft (e.g., 250, 300, 340).
+      The <strong>static spine rating</strong> printed on your shaft (e.g., 250, 300, etc).
     </p>
     <p>
       The Stiffness / Forgiveness card compares this value to a chart-style
@@ -1737,6 +1937,25 @@ const INFO_CONTENT = {
     <p>
       This section summarizes your main tuning metrics: launch speed, GPP, GPI, total arrow weight,
       FOC, and component breakdown.
+    </p>
+  `,
+  <!--START OF THE OUTPUT INFORMATION AND MATH-->
+  yourSettings: `
+    <h2>Your Settings</h2>
+    <p>
+      This section contains the <strong>inputs you can directly adjust</strong> to shape 
+      the rest of the performance calculations.
+    </p>
+
+    <p><strong>Launch FPS</strong> – Enter your chronographed speed or let the app estimate it from IBO, arrow weight, and string weight. This value drives all trajectory, KE, and momentum predictions.</p>
+
+    <p><strong>Crosswind (mph)</strong> – A full-value side wind used for the Wind Drift estimate. Changing this helps visualize how stable your arrow is downrange.</p>
+
+    <p><strong>Distance Slider</strong> – Sets the target yardage for all calculations below, including velocity at distance, peak height, time of flight, energy, momentum, and effectiveness.</p>
+
+    <p>
+      Think of this group as your <strong>primary tuning controls</strong>: adjust them to see 
+      how your build behaves in real-world shooting conditions.
     </p>
   `,
   actualFPS: `
@@ -2654,7 +2873,7 @@ function calculateEverything(recalcFPS = false) {
     "Launch FPS": fps.toFixed(1),
     "Launch KE": launchKE.toFixed(1) + " ft-lbs",
     "Launch Momentum": launchMom.toFixed(3) + " slug·ft/s",
-    [`Impact @ ${distYards} yd`]: "",
+    "Impact @ distance": `${distYards} yd`,
     "Impact Velocity": currentV.toFixed(0) + " FPS",
     "Impact KE": impactKE.toFixed(1) + " ft-lbs",
     "Impact Momentum": impactMom.toFixed(3) + " slug·ft/s",
