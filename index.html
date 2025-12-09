@@ -997,7 +997,7 @@
             <button class="info-btn" type="button" data-info="velocitySection">ⓘ</button>
           </div>
           <p class="card-subtitle" style="font-size:0.9rem;color:var(--light);margin-bottom:0.75rem;">
-            Simple level-shot model for trajectory, time, and wind — a tuning guide, not a full ballistic solver.
+            Adjust these values to drive the calculations to optimize your next shot.
           </p>
 
           <!-- FPS + Windage + Distance controls -->
@@ -1012,7 +1012,7 @@
                     <button class="info-btn small" type="button" data-info="actualFPS">ⓘ</button>
                     <button class="math-btn" type="button" data-math="fps">∑</button>
                   </div>
-                  <span class="perf-edit-pill">editable</span>
+                  <!-- <span class="perf-edit-pill">editable</span> -->
                 </div>
                 <div class="perf-input-row">
                   <input
@@ -1041,7 +1041,7 @@
                     <button class="info-btn small" type="button" data-info="windDrift">ⓘ</button>
                     <button class="math-btn" type="button" data-math="windDrift">∑</button>
                   </div>
-                  <span class="perf-edit-pill">editable</span>
+                  <!-- <span class="perf-edit-pill">editable</span> -->
                 </div>
                 <div class="perf-input-row">
                   <input
@@ -1075,13 +1075,15 @@
                 id="distanceSlider"
                 type="range"
                 min="10"
-                max="80"
+                max="150"
                 step="1"
                 value="50"
               />
               <div class="distance-ticks" id="distanceTicks">
                 <span>10</span><span>20</span><span>30</span><span>40</span>
                 <span>50</span><span>60</span><span>70</span><span>80</span>
+                <span>90</span><span>100</span><span>110</span><span>120</span>
+                <span>130</span><span>140</span><span>150</span>
               </div>
             </div>
           </div>
@@ -1668,8 +1670,7 @@ const INFO_CONTENT = {
     </p>
     <p>
       This app uses that rating to <strong>estimate your real-world launch FPS</strong>
-      based on your actual draw weight, arrow weight, and string weight until you
-      replace it with chronograph data.
+      until you replace it with chronograph data.
     </p>
   `,
   drawWeight: `
@@ -1939,7 +1940,6 @@ const INFO_CONTENT = {
       FOC, and component breakdown.
     </p>
   `,
-  <!--START OF THE OUTPUT INFORMATION AND MATH-->
   yourSettings: `
     <h2>Your Settings</h2>
     <p>
@@ -1947,7 +1947,7 @@ const INFO_CONTENT = {
       the rest of the performance calculations.
     </p>
 
-    <p><strong>Launch FPS</strong> – Enter your chronographed speed or let the app estimate it from IBO, arrow weight, and string weight. This value drives all trajectory, KE, and momentum predictions.</p>
+    <p><strong>Launch FPS</strong> – Enter your chronographed speed, or let the app estimate it from your IBO rating with simple rule-of-thumb adjustments for draw weight, draw length, arrow weight, and string add-ons. Always trust your chrono over the estimate when you have it.</p>
 
     <p><strong>Crosswind (mph)</strong> – A full-value side wind used for the Wind Drift estimate. Changing this helps visualize how stable your arrow is downrange.</p>
 
@@ -1964,9 +1964,14 @@ const INFO_CONTENT = {
       The speed the arrow leaves the bow, in feet per second.
     </p>
     <p>
-      The app first <strong>estimates</strong> this value from your IBO rating, draw weight,
-      arrow weight, and string weight, but you can overwrite it with chronograph data for
-      more accurate KE, momentum, and impact predictions.
+      If you don’t have chronograph data yet, the app makes a <strong>ballpark estimate</strong>
+      from your IBO rating and simple adjustments for draw weight, draw length, arrow weight,
+      and string add-ons.
+    </p>
+    <p>
+      It’s meant to get you close enough to compare builds and see trends – not to replace a
+      real chrono. When you do have chrono numbers, enter them here and the calculator will
+      treat that as the source of truth.
     </p>
   `,
   gpp: `
@@ -2441,7 +2446,7 @@ const fpsSource = $("fpsSource");
 
 function markFpsEstimated() {
   if (fpsSource) {
-    fpsSource.textContent = 'Estimated from IBO & weights';
+    fpsSource.textContent = 'Estimated from IBO & rules of thumb';
   }
   window.fpsSource = 'estimated';
 }
@@ -2624,6 +2629,7 @@ function calculateEverything(recalcFPS = false) {
   const balance = parseFloat(balancePointEl.value) || 18.5;
   const ibo = parseFloat(iboEl.value) || 350;
   const dw = parseFloat(drawWeightEl.value) || 70;
+  const drawLenVal = parseFloat(drawLengthEl.value) || 30;
   const point = parseFloat(pointWeightEl.value) || 125;
   const arrowSpine = parseFloat(arrowSpineEl.value) || NaN;
 
@@ -2640,8 +2646,31 @@ function calculateEverything(recalcFPS = false) {
 
   let fps = parseFloat(fpsInput.value);
   if (recalcFPS || isNaN(fps) || fps <= 0) {
-    const base = ibo * Math.sqrt((450 + stringW) / (450 + weight + stringW));
-    fps = base * 0.94;
+    // Rule-of-thumb IBO adjustments
+    const refDW = 70;
+    const refDL = 30;
+    const refArrow = 350;
+
+    const baseIbo = ibo || 300;
+    const dwDelta = dw - refDW;
+    const dlDelta = drawLenVal - refDL;
+    const awDelta = weight - refArrow;
+    const extraString = Math.max(0, stringW - 20);
+
+    const adjFromDw      = dwDelta * 2;          // ~2 fps per pound
+    const adjFromDl      = dlDelta * 10;         // ~10 fps per inch
+    const adjFromWeight  = -(awDelta / 10) * 1.5;// ~1–2 fps per 10 gr above 350
+    const adjFromString  = -(extraString / 10) * 1.5; // extra string mass penalty
+
+    let estimated = baseIbo + adjFromDw + adjFromDl + adjFromWeight + adjFromString;
+
+    // Soft real-world factor (gentle nudge down vs factory IBO)
+    estimated *= 0.97;
+
+    // Keep within a sane band
+    estimated = Math.max(150, estimated);
+
+    fps = estimated;
     fpsInput.value = fps.toFixed(1);
     markFpsEstimated();
   }
@@ -2890,8 +2919,24 @@ function calculateEverything(recalcFPS = false) {
 
   window.latestSummary = summary;
 
-  const baseFps = ibo * Math.sqrt((450 + stringW) / (450 + weight + stringW || 1));
-  const estimatedFps = baseFps * 0.94;
+  // Recompute FPS estimate breakdown for math popup
+  const refDW = 70;
+  const refDL = 30;
+  const refArrow = 350;
+  const baseIbo = ibo || 300;
+  const dwDelta = dw - refDW;
+  const dlDelta = drawLenVal - refDL;
+  const awDelta = weight - refArrow;
+  const extraString = Math.max(0, stringW - 20);
+
+  const adjFromDw      = dwDelta * 2;
+  const adjFromDl      = dlDelta * 10;
+  const adjFromWeight  = -(awDelta / 10) * 1.5;
+  const adjFromString  = -(extraString / 10) * 1.5;
+
+  let estimatedFps = baseIbo + adjFromDw + adjFromDl + adjFromWeight + adjFromString;
+  estimatedFps *= 0.97;
+  estimatedFps = Math.max(150, estimatedFps);
 
   window.math = {
     foc: { len, balance, mid: len / 2, value: foc },
@@ -2902,7 +2947,16 @@ function calculateEverything(recalcFPS = false) {
       ibo,
       stringW,
       weight,
-      baseFps,
+      drawWeight: dw,
+      drawLength: drawLenVal,
+      refDrawWeight: refDW,
+      refDrawLength: refDL,
+      refArrowWeight: refArrow,
+      baseFps: baseIbo,
+      adjFromDrawWeight: adjFromDw,
+      adjFromDrawLength: adjFromDl,
+      adjFromArrowWeight: adjFromWeight,
+      adjFromStringWeight: adjFromString,
       estimatedFps,
       usedFps: fps,
       source: window.fpsSource || 'estimated'
@@ -3079,13 +3133,44 @@ function openMath(key) {
     const f = m.fps;
     html = `
       <h2>FPS Estimate Math</h2>
-      <p>We estimate launch FPS from your IBO rating, arrow weight, and string weight.</p>
-      <p><strong>Mass-adjusted base speed:</strong></p>
-      <p>v<sub>base</sub> = IBO × √((450 + String Weight) ÷ (450 + Arrow Weight + String Weight))</p>
-      <p>Then multiply by 0.94 for real-world efficiency.</p>
-      <p>Estimated FPS ≈ <strong>${f.estimatedFps.toFixed(1)} FPS</strong></p>
-      <p>FPS used in calculations: <strong>${f.usedFps.toFixed(1)} FPS</strong>
-      (${f.source === 'chrono' ? 'manual (chrono)' : 'estimated'})</p>
+      <p>
+        When you don’t have a chronograph reading, the app uses a 
+        <strong>rule-of-thumb estimate</strong> based on your bow’s IBO rating:
+      </p>
+      <ul style="margin-left:1.25rem;">
+        <li>Start from IBO (often 30&quot;/70 lb/350 gr arrow).</li>
+        <li>Adjust a few FPS per pound above or below 70 lb.</li>
+        <li>Adjust roughly 8–12 FPS per inch above or below 30&quot; draw.</li>
+        <li>Trim 1–2 FPS per extra ~5–10 grains above 350 gr arrow weight.</li>
+        <li>Subtract a few FPS for peep, D-loop, silencers, and other string add-ons.</li>
+      </ul>
+      <p><strong>Your inputs:</strong></p>
+      <ul style="margin-left:1.25rem;">
+        <li>IBO / ATA rating: ${f.ibo.toFixed(0)} FPS (base)</li>
+        <li>Draw weight: ${f.drawWeight.toFixed(1)} lb (ref ~${f.refDrawWeight} lb)</li>
+        <li>Draw length: ${f.drawLength.toFixed(2)} in (ref ~${f.refDrawLength} in)</li>
+        <li>Arrow weight: ${f.weight.toFixed(1)} gr (ref ~${f.refArrowWeight} gr)</li>
+        <li>String add-ons: ${f.stringW.toFixed(1)} gr (first ~20 gr assumed “free”)</li>
+      </ul>
+      <p><strong>Approximate breakdown:</strong></p>
+      <ul style="margin-left:1.25rem;">
+        <li>Base IBO: ${f.baseFps.toFixed(1)} FPS</li>
+        <li>Draw weight adjustment: ${f.adjFromDrawWeight.toFixed(1)} FPS</li>
+        <li>Draw length adjustment: ${f.adjFromDrawLength.toFixed(1)} FPS</li>
+        <li>Arrow weight adjustment: ${f.adjFromArrowWeight.toFixed(1)} FPS</li>
+        <li>String add-ons adjustment: ${f.adjFromStringWeight.toFixed(1)} FPS</li>
+      </ul>
+      <p>
+        After a small real-world correction, the estimate lands at 
+        <strong>${f.estimatedFps.toFixed(1)} FPS</strong>.
+      </p>
+      <p>
+        FPS used in calculations: <strong>${f.usedFps.toFixed(1)} FPS</strong>
+        (${f.source === 'chrono' ? 'manual (chrono) entry' : 'estimated from IBO & rules of thumb'}).
+      </p>
+      <p>
+        Always treat this as a <strong>ballpark</strong> until you can confirm with an actual chronograph.
+      </p>
     `;
   } else if (key === 'keLaunch' && m.keLaunch) {
     const k = m.keLaunch;
