@@ -446,9 +446,11 @@
       border-radius: 12px;
       max-width: 420px;
       width: 90%;
+      max-height: 80vh;
       padding: 1.25rem 1.5rem;
       box-shadow: 0 20px 40px rgba(15,23,42,0.35);
       position: relative;
+      overflow-y: auto;
     }
     .info-panel h2 {
       margin: 0 0 0.5rem 0;
@@ -520,7 +522,7 @@
         </div>
         <p style="color:var(--light);">
           Offline • Mobile-friendly • Live calculations<br>
-          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.10</span>
+          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.11</span>
         </p>
       </div>
 
@@ -756,8 +758,7 @@
           </p>
         </div>
       </div>
-
-      <!-- Notes -->
+            <!-- Notes -->
       <div class="card">
         <div class="card-header">
           <h3>Notes</h3>
@@ -1247,6 +1248,7 @@
           </div>
 
         </div> <!-- end #targetPanel -->
+      </div> <!-- end Game / Target Effectiveness card -->
 
       <!-- Build Summary -->
       <div class="card build-summary-card">
@@ -1259,8 +1261,8 @@
         </div>
         <div id="summaryTable" style="font-size:1rem;"></div>
       </div>
-    </div>
-  </div>
+    </div> <!-- end #outputs-column -->
+  </div> <!-- end .container -->
 
   <a href="https://www.patreon.com/cw/ArrowTuneCalculator" target="_blank" class="patreon-btn">
     Support on Patreon
@@ -1274,1671 +1276,1748 @@
       <div id="infoContent"></div>
     </div>
   </div>
-
-  <script>
-  const INFO_CONTENT = {
-    buildName: `
-      <h2>Build Name</h2>
-      <p>
-        A human-friendly label for this bow + arrow setup. It’s used as the name
-        when you save, load, and compare builds.
-      </p>
-      <p>
-        The <strong>Suggest</strong> button auto-builds a name using date, bow model,
-        draw weight, arrow name, and total arrow weight so your builds stay organized.
-      </p>
-    `,
-    bowModel: `
-      <h2>Bow Model</h2>
-      <p>
-        The make and model of your bow (e.g., "2025 Hoyt RX-9").
-        This is saved with the build and used in the suggested build name.
-      </p>
-      <p>
-        It doesn’t change the math directly, but it makes it easier to track which
-        numbers go with which bow.
-      </p>
-    `,
-    iboRating: `
-      <h2>IBO / ATA Speed Rating</h2>
-      <p>
-        The manufacturer’s advertised max speed in feet per second (FPS), usually at
-        70 lb draw, 30&quot; draw length, and a 350 gr arrow.
-      </p>
-      <p>
-        This app uses that rating to <strong>estimate your real-world launch FPS</strong>
-        based on your actual draw weight, arrow weight, and string weight until you
-        replace it with chronograph data.
-      </p>
-    `,
-    drawWeight: `
-      <h2>Draw Weight (lbs)</h2>
-      <p>
-        How many pounds you pull at full draw. It controls how much energy the bow can
-        put into the arrow.
-      </p>
-      <p>
-        In this calculator, draw weight is used with total arrow weight to compute
-        <strong>GPP (grains per pound)</strong>, which helps classify your arrow as
-        light, all-around, or heavy for hunting and penetration.
-      </p>
-    `,
-    drawLength: `
-      <h2>Draw Length (inches)</h2>
-      <p>
-        How far you pull the string at full draw (your personal power stroke).
-        Factory IBO speeds assume 30&quot; draw; shorter draws usually shoot slower.
-      </p>
-      <p>
-        This value is saved with your build so your FPS, KE, and trajectory can be
-        interpreted in the context of <em>your</em> form, not just factory specs.
-      </p>
-    `,
-    stringWeightSimple: `
-      <h2>String Add-ons (grains)</h2>
-      <p>
-        The combined weight of everything on your string (peep, loop, kisser, silencers),
-        entered as a single number.
-      </p>
-      <p>
-        This is used in the launch FPS estimate. Heavier strings generally reduce
-        real-world FPS slightly compared to the IBO rating.
-      </p>
-      <p>
-        Turn on <strong>Advanced String Components</strong> if you want to enter each
-        piece separately.
-      </p>
-    `,
-    application: `
-      <h2>Application</h2>
-      <p>
-        High-level use for this setup: Target/3D, Hunting, or Other. This is saved in your
-        build and is used to switch between <strong>Game Effectiveness</strong> (Hunting)
-        and <strong>Target Insights</strong> (Target / Other).
-      </p>
-      <p>
-        It does not change the underlying physics, but it changes how the results are
-        summarized for you.
-      </p>
-    `,
-    toggleString: `
-      <h2>Advanced String Components</h2>
-      <p>
-        Turn this on if you want to enter the weights of your peep, D-loop, kisser, and
-        silencers separately.
-      </p>
-      <p>
-        When enabled, the app <strong>sums the detailed values</strong> and uses that
-        total in the FPS estimate instead of the single String Add-ons field.
-      </p>
-    `,
-    peepWeight: `
-      <h2>Peep Weight</h2>
-      <p>
-        Weight of your peep sight in grains. Included in total string weight and the
-        launch FPS estimate when Advanced String Components are enabled.
-      </p>
-    `,
-    dloopWeight: `
-      <h2>D-Loop Weight</h2>
-      <p>
-        Total weight of your D-loop in grains. Included in total string weight and the
-        launch FPS estimate in Advanced mode.
-      </p>
-    `,
-    kisserWeight: `
-      <h2>Kisser Button Weight</h2>
-      <p>
-        Weight of your kisser button in grains. Included in total string weight and FPS
-        estimation when using Advanced String Components.
-      </p>
-    `,
-    silencersWeight: `
-      <h2>Silencers Weight</h2>
-      <p>
-        Combined weight of all string silencers in grains. Included in total string
-        weight and launch FPS estimation in Advanced mode.
-      </p>
-    `,
-    arrowName: `
-      <h2>Arrow Name</h2>
-      <p>
-        A label for the arrow itself (e.g., "Easton Axis 5mm 300 spine").
-        Used in the suggested build name and saved with the build.
-      </p>
-      <p>
-        It doesn’t change calculations, but makes it much easier to track which shaft
-        you’re tuning.
-      </p>
-    `,
-    arrowLength: `
-      <h2>Arrow Length</h2>
-      <p>
-        Measured from the throat of the nock to the <strong>end of the shaft</strong>
-        (not including the point).
-      </p>
-      <p>
-        This is used for <strong>GPI (grains per inch)</strong> and for the
-        <strong>FOC calculation</strong> so the app knows the total shaft length
-        your balance point is measured over.
-      </p>
-    `,
-    totalArrowWeightSimple: `
-      <h2>Total Arrow Weight (Simple Mode)</h2>
-      <p>
-        The full arrow weight in grains (shaft + insert/outsert + vanes + wrap + nock + point),
-        entered as a single number.
-      </p>
-      <p>
-        When Advanced Arrow Components is <strong>off</strong>, this value drives all
-        weight-based metrics: GPP, KE, momentum, impact energy, and Build Summary.
-      </p>
-      <p>
-        Turn on Advanced mode if you want the app to calculate total weight from individual components.
-      </p>
-    `,
-    pointWeight: `
-      <h2>Point Weight</h2>
-      <p>
-        Weight of your field point or broadhead in grains.
-      </p>
-      <p>
-        Used in the <strong>FOC calculation</strong>, the
-        <strong>Arrow Weight Composition</strong> bar, and total arrow weight
-        when Advanced mode is enabled.
-      </p>
-    `,
-    balancePoint: `
-      <h2>Balance Point from Nock</h2>
-      <p>
-        Measure from the nock throat (string contact point) to the point where the
-        arrow balances perfectly on a finger or edge.
-      </p>
-      <p>
-        This value, together with arrow length, is used to compute
-        <strong>FOC (Front of Center)</strong>.
-      </p>
-    `,
-    toggleArrow: `
-      <h2>Advanced Arrow Components</h2>
-      <p>
-        Enable this if you want to enter the weights of the shaft, vanes, wrap, insert,
-        nock, and glue separately.
-      </p>
-      <p>
-        In Advanced mode, the app <strong>adds up all components plus point weight</strong>
-        to get total arrow weight instead of using the single Total Arrow Weight field.
-      </p>
-    `,
-    bareShaft: `
-      <h2>Bare Shaft Weight</h2>
-      <p>
-        Weight of the cut shaft only (no insert, vanes, wrap, nock, or point).
-      </p>
-      <p>
-        Used in the total arrow weight and the shaft portion of the
-        <strong>Arrow Weight Composition</strong> bar.
-      </p>
-    `,
-    nockWeight: `
-      <h2>Nock System Weight</h2>
-      <p>
-        Weight of your nock or pin-nock system in grains.
-      </p>
-      <p>
-        Included in total arrow weight and counted as part of “Components” in the
-        Arrow Weight Composition bar.
-      </p>
-    `,
-    wrapWeight: `
-      <h2>Wrap Weight</h2>
-      <p>
-        Total weight of any arrow wrap or cap wrap in grains.
-      </p>
-      <p>
-        Included in total arrow weight and treated as “Components” in the composition bar.
-      </p>
-    `,
-    vaneWeightEach: `
-      <h2>Vane Weight (each)</h2>
-      <p>
-        Weight of a single vane or feather in grains.
-      </p>
-      <p>
-        The app multiplies this by <strong>Vane Count</strong>, then adds it to total arrow
-        weight as part of “Components”.
-      </p>
-    `,
-    vaneCount: `
-      <h2>Vane Count</h2>
-      <p>
-        How many vanes or feathers are on the arrow (3-fletch, 4-fletch, etc.).
-      </p>
-      <p>
-        Used with Vane Weight (each) to compute total fletching weight for the
-        arrow weight and composition breakdown.
-      </p>
-    `,
-    insertWeight: `
-      <h2>Insert / Outsert Weight</h2>
-      <p>
-        Weight of your insert or outsert system in grains.
-      </p>
-      <p>
-        Included in total arrow weight and treated as “Components” in the
-        Arrow Weight Composition bar.
-      </p>
-    `,
-    glueWeight: `
-      <h2>Glue / Pin Nock Weight</h2>
-      <p>
-        An estimate of the combined weight of glue, pin bushings, and any small
-        hardware at the nock or insert end.
-      </p>
-      <p>
-        Included in total arrow weight and the “Components” portion of the composition bar.
-      </p>
-    `,
-    notes: `
-      <h2>Notes</h2>
-      <p>
-        Free-form notes saved with this build — great for recording paper tune results,
-        broadhead groups, chrono strings, or field observations.
-      </p>
-      <p>
-        Notes are stored in your saved build so you can revisit why a setup worked
-        (or didn’t) later.
-      </p>
-    `,
-    arrowEfficiency: `
-      <h2>Arrow Efficiency</h2>
-      <p>
-        A quick overview of how your bow’s energy, arrow weight, and balance are working together.
-      </p>
-      <p>
-        This section summarizes your main tuning metrics: launch speed, GPP, GPI, total arrow weight,
-        FOC, and component breakdown.
-      </p>
-    `,
-    actualFPS: `
-      <h2>FPS</h2>
-      <p>
-        The speed the arrow leaves the bow, in feet per second.
-      </p>
-      <p>
-        The app first <strong>estimates</strong> this value from your IBO rating, draw weight,
-        arrow weight, and string weight, but you can overwrite it with chronograph data for
-        more accurate KE, momentum, and impact predictions.
-      </p>
-    `,
-    gpp: `
-      <h2>GPP (Grains per Pound)</h2>
-      <p>
-        Total arrow weight divided by draw weight (grains per pound of draw).
-      </p>
-      <p>
-        It’s a simple way to see if your arrow is light, all-around, or heavy for your bow.
-        The app uses this to give guidance on where your setup sits in that spectrum.
-      </p>
-    `,
-    gpi: `
-      <h2>GPI (Grains per Inch)</h2>
-      <p>
-        Average grains per inch of length based on your total arrow weight and arrow length.
-      </p>
-      <p>
-        Useful for comparing shafts and seeing how heavy your finished arrow is per inch,
-        especially when switching between cut lengths.
-      </p>
-    `,
-    finalArrowWeight: `
-      <h2>TW (Total Weight)</h2>
-      <p>
-        The final arrow weight in grains (shaft + components + point).
-      </p>
-      <p>
-        This drives nearly every other output: GPP, KE, momentum, impact, and the composition bar.
-        Getting this number accurate is critical for realistic results.
-      </p>
-    `,
-    foc: `
-      <h2>FOC (Front of Center)</h2>
-      <p>
-        FOC shows how far forward the balance point is, expressed as a percentage of arrow length.
-        More weight toward the front usually helps broadhead stability and penetration.
-      </p>
-      <p>
-        The bar shows your value on a 0–30% scale, with a highlighted band for
-        <strong>12–18%</strong>, a common sweet spot for many hunting setups.
-      </p>
-    `,
-    composition: `
-      <h2>AWC (Arrow Weight Composition)</h2>
-      <p>
-        A visual breakdown of how your arrow’s total weight is split between
-        <strong>shaft</strong>, <strong>point</strong>, and other components.
-      </p>
-      <p>
-        This is helpful for understanding where your mass is concentrated, and how changing
-        inserts, vanes, or point weight affects overall build and FOC.
-      </p>
-    `,
-    velocitySection: `
-      <h2>Performance @ Distance</h2>
-      <p>
-        Use the slider to set a target distance. The app then estimates:
-        arrow speed at that distance, peak height of the arc, time of flight,
-        and impact energy/momentum.
-      </p>
-      <p>
-        Great for visualizing how your arrow behaves at different ranges and 
-        how much it slows down over distance.
-      </p>
-    `,
-    velocityAtDistance: `
-      <h2>Velocity</h2>
-      <p>
-        Estimated arrow speed at the selected yardage based on your launch FPS and
-        a simple decay model.
-      </p>
-      <p>
-        This feeds the impact KE and momentum calculations and gives you a sense of
-        how much speed you’re giving up at longer shots.
-      </p>
-    `,
-    peakHeight: `
-      <h2>Peak Height</h2>
-      <p>
-        The approximate maximum height of the arrow’s flight path above a flat line
-        from you to the target, in feet.
-      </p>
-      <p>
-        For a level shot, the peak typically occurs about halfway to the target.
-        This is useful for understanding <strong>clearance through trees, brush,
-        or shooting windows</strong>.
-      </p>
-    `,
-    launchKE: `
-      <h2>Launch Kinetic Energy</h2>
-      <p>
-        The arrow’s kinetic energy at the bow (in ft-lbs), based on total arrow weight
-        and launch FPS.
-      </p>
-      <p>
-        This is a common metric for comparing setups and is often used as a baseline for
-        game recommendations.
-      </p>
-    `,
-    timeToImpact: `
-      <h2>Time to Impact</h2>
-      <p>
-        Estimated time (in seconds) for the arrow to reach the target at the current
-        distance slider setting.
-      </p>
-      <p>
-        This gives a feel for how “snappy” or “loopy” your setup is, and is useful when
-        thinking about animal movement and string jump.
-      </p>
-    `,
-    impactKE: `
-      <h2>Impact Kinetic Energy</h2>
-      <p>
-        The arrow’s kinetic energy at the target distance in ft-lbs, using the
-        estimated velocity at that distance.
-      </p>
-      <p>
-        This value is compared against common minimums in the <strong>Game Effectiveness</strong>
-        section to give a rough “Send it / Don’t” suggestion.
-      </p>
-    `,
-    impactMom: `
-      <h2>Impact Momentum</h2>
-      <p>
-        The arrow’s momentum at impact in slug·ft/s.
-      </p>
-      <p>
-        Momentum favors heavier arrows and is another way to evaluate penetration potential,
-        especially at longer distances.
-      </p>
-    `,
-    gameEffectiveness: `
-      <h2>Game Effectiveness / Target Insights</h2>
-      <p>
-        In <strong>Hunting</strong> mode, this compares your impact <strong>kinetic energy</strong> and
-        <strong>momentum</strong> at the chosen distance against conservative thresholds
-        for four game classes.
-      </p>
-      <p>
-        In <strong>Target / 3D / Other</strong> modes, this panel switches to 
-        <strong>Target Insights</strong>:
-      </p>
-      <ul  style="margin-left:1.25rem;">
-        <li>Group Stability badge (Tight / Average) based on FPS, FOC, and GPI.</li>
-        <li>Flatness score using a simple 60 yd arc approximation.</li>
-        <li>Downrange Arrow Drop simulator: relative drop from a 20 yd zero at 30–70 yd.</li>
-      </ul>
-      <p>
-        Think of both views as <strong>sanity checks and tuning helpers</strong>, not guarantees.
-        Broadhead design, shot angle, flight quality, and shot placement still matter more
-        than any single number.
-      </p>
-    `,
-        groupStability: `
-      <h2>Group Stability</h2>
-      <p>
-        This badge is a <strong>sanity check</strong> for how forgiving your setup 
-        should be on paper. It looks at three things together:
-      </p>
-      <ul style="margin-left:1.25rem;">
-        <li><strong>FPS</strong> – overall speed of the arrow.</li>
-        <li><strong>FOC</strong> – how far forward the balance point is.</li>
-        <li><strong>GPI</strong> – finished grains-per-inch of arrow length.</li>
-      </ul>
-      <p>
-        A <strong>Tight</strong> badge means your FPS, FOC, and GPI combination
-        lines up with a setup that should feel stable and repeatable when tuned
-        well and shot with good form.
-      </p>
-      <p>
-        An <strong>Average</strong> badge doesn’t mean “bad” — only that the
-        numbers are more middle-of-the-road, and the setup may be a bit more
-        sensitive to tune or form compared to a really optimized rig.
-      </p>
-      <p>
-        This is not a scoring system, just a quick indicator to help you think
-        about stability when you’re comparing different arrow builds.
-      </p>
-    `,
-    flatnessScore: `
-      <h2>Flatness Score (60 yd)</h2>
-      <p>
-        Flatness looks at <strong>how tall your trajectory arc gets</strong> by 
-        <strong>60 yards</strong> using a simple ballistic model.
-      </p>
-      <p>
-        The calculator estimates how high the arrow must rise above a flat line
-        from you to a 60 yd target, starting from your launch FPS. That peak
-        height is then turned into a simple label:
-      </p>
-      <ul style="margin-left:1.25rem;">
-        <li><strong>Very Flat</strong> – low peak height at 60 yd.</li>
-        <li><strong>Flat</strong> – moderate arc at 60 yd.</li>
-        <li><strong>Curved</strong> – taller, “loopier” arc by 60 yd.</li>
-      </ul>
-      <p>
-        <strong>Why 60 yd?</strong> It’s a practical long-range reference:
-        far enough to reveal differences between setups, but still a common
-        distance for 3D and practice. Using one yardage makes it easy to 
-        compare different arrows and speeds.
-      </p>
-      <p>
-        The exact numbers are an approximation, not a sight tape. Use this
-        score as a <strong>relative comparison</strong> tool when you’re
-        deciding between “flatter” and “more arced” arrow builds.
-      </p>
-    `,
-    sightMarks: `
-      <h2>Downrange Arrow Drop Simulator</h2>
-      <p>
-        This table shows the <strong>relative drop</strong> (in inches) between a
-        <strong>20 yd zero</strong> and longer distances (30–70 yd), using the same
-        simple ballistic model as the trajectory and time-of-flight estimates.
-      </p>
-      <p>
-        The idea is: if you are sighted in at 20 yd, how much more the arrow has to
-        drop at 30, 40, 50, 60, and 70 yd. Bigger numbers mean more sight gap and
-        more “pin spacing” between marks.
-      </p>
-      <p>
-        Behind the scenes, the app:
-      </p>
-      <ul style="margin-left:1.25rem;">
-        <li>Uses your launch FPS.</li>
-        <li>Computes an approximate gravity drop at 20 yd.</li>
-        <li>Computes the same drop at each distance.</li>
-        <li>Subtracts the 20 yd drop so 20 = 0.0 in by definition.</li>
-      </ul>
-      <p>
-        These values are <strong>approximate</strong>, not exact sight tape data,
-        but they’re great for comparing how different arrows and speeds change your
-        Downrange Arrow Drop.
-      </p>
-    `,
-    buildSummary: `
-      <h2>Build Summary</h2>
-      <p>
-        A snapshot of all the key inputs and outputs for your current setup:
-        bow specs, arrow specs, FOC, GPP/GPI, launch speed, energy, momentum,
-        and impact numbers at the selected distance.
-      </p>
-      <p>
-        The <strong>Copy</strong> button copies this table as text so you can paste it
-        into notes, messages, forums, or spreadsheets.
-      </p>
-    `
-  };
-
-  let toastTimer;
-  function showToast(msg) {
-    const toast = document.getElementById('toast');
-    toast.textContent = msg;
-    toast.style.opacity = '1';
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { toast.style.opacity = '0'; }, 2000);
-  }
-
-  const darkToggle = document.getElementById('darkModeToggle');
-  if (
-    localStorage.getItem('dark') === '1' ||
-    (!localStorage.getItem('dark') && matchMedia('(prefers-color-scheme: dark)').matches)
-  ) {
-    document.body.classList.add('dark');
-    darkToggle.checked = true;
-  }
-  darkToggle.addEventListener('change', () => {
-    document.body.classList.toggle('dark', darkToggle.checked);
-    localStorage.setItem('dark', darkToggle.checked ? '1' : '0');
-  });
-
-  const loadSelect = document.getElementById('loadBuildSelect');
-  function refreshBuilds() {
-    loadSelect.innerHTML = '<option value="">– Load Build –</option>';
-    const builds = JSON.parse(localStorage.getItem('atc') || '{}');
-    const keys = Object.keys(builds).sort();
-
-    if (keys.length === 0) {
-      const opt = document.createElement('option');
-      opt.value = '';
-      opt.textContent = 'No saved builds yet';
-      opt.disabled = true;
-      loadSelect.appendChild(opt);
-      return;
-    }
-
-    keys.forEach(n => {
-      const o = document.createElement('option');
-      o.value = n;
-      o.textContent = n;
-      loadSelect.appendChild(o);
-    });
-  }
-
-  function updateArrowWeightMode() {
-    const toggle = document.getElementById('toggleArrow');
-    const simpleTotal = document.getElementById('totalArrowWeightSimple');
-    const hint = document.getElementById('totalWeightHint');
-    const isAdv = toggle.checked;
-
-    if (isAdv) {
-      simpleTotal.readOnly = true;
-      simpleTotal.style.opacity = 0.6;
-    } else {
-      simpleTotal.readOnly = false;
-      simpleTotal.style.opacity = 1;
-      hint.textContent = '';
-    }
-  }
-
-  document.getElementById('toggleString').onchange = e => {
-    document.getElementById('stringAdvanced').style.display = e.target.checked ? 'block' : 'none';
-    calculateEverything();
-  };
-
-  document.getElementById('toggleArrow').onchange = e => {
-    document.getElementById('arrowAdvanced').style.display = e.target.checked ? 'block' : 'none';
-    updateArrowWeightMode();
-    calculateEverything();
-  };
-
-  document.getElementById('saveBuild').onclick = () => {
-    const n = document.getElementById('buildName').value.trim();
-    if (!n) return alert('Name required');
-    const all = JSON.parse(localStorage.getItem('atc') || '{}');
-
-    if (all[n] && !confirm(`Overwrite existing build "${n}"?`)) {
-      return;
-    }
-
-    const data = {};
-    document.querySelectorAll('input,select,textarea').forEach(el => {
-      if (!el.id) return;
-      if (el.type === 'checkbox') {
-        data[el.id] = { type: 'checkbox', checked: el.checked };
-      } else {
-        data[el.id] = { type: 'value', value: el.value };
-      }
-    });
-
-    all[n] = data;
-    localStorage.setItem('atc', JSON.stringify(all));
-    showToast('Build saved');
-    refreshBuilds();
-  };
-
-  loadSelect.onchange = () => {
-    const n = loadSelect.value;
-    if (!n) return;
-    const all = JSON.parse(localStorage.getItem('atc') || '{}');
-    const d = all[n];
-    if (!d) return;
-
-    Object.keys(d).forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-
-      const stored = d[id];
-
-      if (stored && typeof stored === 'object' && 'type' in stored) {
-        if (stored.type === 'checkbox') {
-          el.checked = !!stored.checked;
-          el.dispatchEvent(new Event('change'));
-        } else {
-          el.value = stored.value ?? '';
-        }
-      } else {
-        if (el.type !== 'checkbox') {
-          el.value = stored ?? '';
-        }
-      }
-    });
-
-    updateArrowWeightMode();
-    calculateEverything();
-    showToast('Build loaded');
-  };
-
-  document.getElementById('deleteBuild').onclick = () => {
-    let n = loadSelect.value;
-
-    const typed = document.getElementById('buildName').value.trim();
-    if (!n && typed) n = typed;
-
-    if (!n) {
-      alert('Select a saved build or type its exact name to delete it.');
-      return;
-    }
-
-    const all = JSON.parse(localStorage.getItem('atc') || '{}');
-
-    if (!all[n]) {
-      alert(`No saved build named "${n}" was found.`);
-      return;
-    }
-
-    if (!confirm(`Delete build "${n}"?`)) return;
-
-    delete all[n];
-    localStorage.setItem('atc', JSON.stringify(all));
-    refreshBuilds();
-    loadSelect.value = '';
-    showToast('Build deleted');
-  };
-
-  document.getElementById('suggestName').onclick = () => {
-    const d = new Date().toISOString().slice(0,10);
-    const b = document.getElementById('bowModel').value.trim() || 'Bow';
-    const dw = document.getElementById('drawWeight').value || '70';
-    const arrow = document.getElementById('arrowName').value.trim() || 'Arrow';
-    const weight = getArrowWeight().toFixed(0);
-
-    // NEW — include the Application (Target, Hunting, 3D, Other)
-    const app = document.getElementById('application').value || '';
-
-    document.getElementById('buildName').value =
-      `${d} ${b} ${dw}lb ${arrow} ${weight}gr (${app})`;
-  };
-
-  const fpsInput = document.getElementById('actualFPS');
-  const fpsSource = document.getElementById('fpsSource');
-
-  function markFpsEstimated() {
-    if (fpsSource) {
-      fpsSource.textContent = 'Estimated';
-    }
-    window.fpsSource = 'estimated';
-  }
-
-  function markFpsChrono() {
-    if (fpsSource) {
-      fpsSource.textContent = 'Manual Entry';
-    }
-    window.fpsSource = 'chrono';
-  }
-
-  function getArrowWeight() {
-    const pointWeight = parseFloat(document.getElementById('pointWeight').value) || 125;
-
-    if (document.getElementById('toggleArrow').checked) {
-      const bare   = parseFloat(document.getElementById('bareShaft').value)        || 0;
-      const nock   = parseFloat(document.getElementById('nockWeight').value)       || 0;
-      const wrap   = parseFloat(document.getElementById('wrapWeight').value)       || 0;
-      const vanes  = (parseFloat(document.getElementById('vaneWeightEach').value)  || 0) *
-                     (parseFloat(document.getElementById('vaneCount').value)       || 0);
-      const insert = parseFloat(document.getElementById('insertWeight').value)     || 0;
-      const glue   = parseFloat(document.getElementById('glueWeight').value)       || 0;
-
-      const advTotal = bare + nock + wrap + vanes + insert + glue;
-      document.getElementById('arrowTotal').textContent = advTotal.toFixed(1);
-
-      return advTotal + pointWeight;
-    }
-
-    return parseFloat(document.getElementById('totalArrowWeightSimple').value) || 0;
-  }
-
-  // Helper: get numeric value from element (input or text content)
-  function getNumeric(id) {
-    const el = document.getElementById(id);
-    if (!el) return NaN;
-
-    const raw =
-      el.tagName === 'INPUT'
-        ? el.value
-        : (el.textContent || el.innerText || '');
-
-    const num = parseFloat(String(raw).replace(/[^\d.-]/g, ''));
-    return Number.isFinite(num) ? num : NaN;
-  }
-
-  function calculateEverything(recalcFPS = false) {
-    const len = parseFloat(document.getElementById('arrowLength').value) || 28;
-    const weight = getArrowWeight();
-    const balance = parseFloat(document.getElementById('balancePoint').value) || 18.5;
-    const ibo = parseFloat(document.getElementById('iboRating').value) || 350;
-    const dw = parseFloat(document.getElementById('drawWeight').value) || 70;
-    const stringW = document.getElementById('toggleString').checked
-      ? ['peepWeight','dloopWeight','kisserWeight','silencersWeight']
-          .reduce((a,id)=>a+(parseFloat(document.getElementById(id).value)||0),0)
-      : (parseFloat(document.getElementById('stringWeightSimple').value) || 25);
-
-    if (document.getElementById('toggleString').checked) {
-      const total = ['peepWeight','dloopWeight','kisserWeight','silencersWeight']
-        .reduce((a,id)=>a+(parseFloat(document.getElementById(id).value)||0),0);
-      document.getElementById('stringTotal').textContent = total;
-    }
-
-    let fps = parseFloat(fpsInput.value);
-    if (recalcFPS || isNaN(fps) || fps <= 0) {
-      const base = ibo * Math.sqrt((450 + stringW) / (450 + weight + stringW));
-      fps = base * 0.94;
-      fpsInput.value = fps.toFixed(1);
-      markFpsEstimated();
-    }
-
-    const foc = ((balance - len/2) / len) * 100;
-    const focValEl   = document.getElementById('focValue');
-    const focMarker  = document.getElementById('focMarker');
-    const focBarFill = document.getElementById('focBarFill');
-    const focHint    = document.getElementById('focHint');
-
-    focValEl.textContent = foc.toFixed(1) + '%';
-
-    const focClamped = Math.max(0, Math.min(30, isFinite(foc) ? foc : 0));
-    const markerLeft = (focClamped / 30) * 100;
-    if (focMarker)  focMarker.style.left  = markerLeft + '%';
-    if (focBarFill) focBarFill.style.width = markerLeft + '%';
-
-    if (!isFinite(foc)) {
-      focHint.textContent = 'Enter arrow length, balance point, and weight to compute FOC.';
-      focHint.style.color = 'var(--light)';
-    } else if (foc >= 12 && foc <= 18) {
-      focHint.textContent = 'Ideal range for hunting.';
-      focHint.style.color = 'var(--success)';
-    } else if (foc < 10) {
-      focHint.textContent = 'Very low FOC – may be less stable with broadheads.';
-      focHint.style.color = 'var(--danger)';
-    } else if (foc > 20) {
-      focHint.textContent = 'Very high FOC – heavy front can reduce speed but increase penetration focus.';
-      focHint.style.color = 'var(--warning)';
-    } else {
-      focHint.textContent = 'Workable range; many setups run 10–20%.';
-      focHint.style.color = 'var(--light)';
-    }
-
-    const gpp = weight / dw;
-    const gpi = weight / len;
-    document.getElementById('gppValue').textContent = gpp.toFixed(1);
-    document.getElementById('gpiValue').textContent = gpi.toFixed(1);
-    document.getElementById('finalArrowWeight').textContent = weight.toFixed(1);
-
-    const gppHint = document.getElementById('gppHint');
-    let gppText = '';
-    let gppColor = 'var(--light)';
-    if (gpp < 5) {
-      gppText = 'Very light – often not recommended for most hunting bows.';
-      gppColor = 'var(--danger)';
-    } else if (gpp < 6) {
-      gppText = 'Light arrow – flatter trajectory, more 3D/target style.';
-    } else if (gpp <= 8) {
-      gppText = 'Solid all-around hunting weight.';
-      gppColor = 'var(--success)';
-    } else {
-      gppText = 'Heavy arrow – penetration-focused setups.';
-    }
-    if (gppHint) {
-      gppHint.textContent = gppText;
-      gppHint.style.color = gppColor;
-    }
-
-    const launchKE = (weight * fps * fps) / 450240;
-    const launchMom = (weight * fps) / 225400;
-    document.getElementById('keValue').textContent = launchKE.toFixed(1);
-
-    const distYards = parseFloat(document.getElementById('distanceSlider').value) || 50;
-    document.getElementById('distanceValue').textContent = distYards;
-
-    const currentV = fps * Math.exp(-distYards/300);
-    const impactKE = (weight * currentV * currentV) / 450240;
-    const impactMom = (weight * currentV) / 225400;
-    const time = (distYards * 3) / (fps * 0.8);
-
-    document.getElementById('impactKE').textContent = impactKE.toFixed(1);
-    document.getElementById('impactMom').textContent = impactMom.toFixed(3);
-    document.getElementById('timeToImpact').textContent = time.toFixed(2);
-
-    document.getElementById('velocityDistanceLabel').textContent = distYards;
-    document.getElementById('velocityAtDistance').textContent = currentV.toFixed(0);
-
-    const g = 32.174;
-    const v0 = fps;
-    const R_ft = distYards * 3;
-
-    let peakHeightFt = 0;
-    let peakYard = 0;
-    if (v0 > 0 && R_ft > 0) {
-      let sin2theta = (R_ft * g) / (v0 * v0);
-      if (sin2theta > 0) {
-        sin2theta = Math.min(1, Math.max(0, sin2theta));
-        const theta = 0.5 * Math.asin(sin2theta);
-        const sinTheta = Math.sin(theta);
-        peakHeightFt = (v0 * v0 * sinTheta * sinTheta) / (2 * g);
-        peakYard = distYards / 2;
-      }
-    }
-    document.getElementById('peakHeightValue').textContent = peakHeightFt.toFixed(1);
-    document.getElementById('peakDistanceValue').textContent = peakYard.toFixed(0);
-
-    document.getElementById('gameDistanceDisplay').textContent = distYards;
-    document.getElementById('gameKE').textContent = impactKE.toFixed(1);
-    document.getElementById('gameMom').textContent = impactMom.toFixed(3);
-
-    const isAdv = document.getElementById('toggleArrow').checked;
-    let shaft = 0, point = 0, comp = 0;
-    if (isAdv) {
-      shaft = parseFloat(document.getElementById('bareShaft').value) || 0;
-      const nock   = parseFloat(document.getElementById('nockWeight').value) || 0;
-      const wrap   = parseFloat(document.getElementById('wrapWeight').value) || 0;
-      const vanes  = (parseFloat(document.getElementById('vaneWeightEach').value) || 0) *
-                     (parseFloat(document.getElementById('vaneCount').value) || 0);
-      const insert = parseFloat(document.getElementById('insertWeight').value) || 0;
-      const glue   = parseFloat(document.getElementById('glueWeight').value) || 0;
-      comp  = nock + wrap + vanes + insert + glue;
-      point = parseFloat(document.getElementById('pointWeight').value) || 125;
-    } else {
-      point = parseFloat(document.getElementById('pointWeight').value) || 125;
-      shaft = Math.max(0, weight - point);
-      comp  = 0;
-    }
-
-    let shaftPct = 0, pointPct = 0, compPct = 0;
-    if (weight > 0) {
-      shaftPct = (shaft / weight) * 100;
-      pointPct = (point / weight) * 100;
-      compPct  = (comp  / weight) * 100;
-    }
-
-    const totalPct = shaftPct + pointPct + compPct;
-    if (totalPct > 0 && Math.abs(totalPct - 100) > 0.5) {
-      shaftPct = (shaftPct / totalPct) * 100;
-      pointPct = (pointPct / totalPct) * 100;
-      compPct  = (compPct  / totalPct) * 100;
-    }
-
-    const segShaft = document.getElementById('compShaftSeg');
-    const segPoint = document.getElementById('compPointSeg');
-    const segOther = document.getElementById('compOtherSeg');
-
-    if (segShaft) segShaft.style.width = shaftPct.toFixed(1) + '%';
-    if (segPoint) segPoint.style.width = pointPct.toFixed(1) + '%';
-    if (segOther) segOther.style.width = compPct.toFixed(1) + '%';
-
-    const labelTotal = document.getElementById('compTotalLabel');
-    const labelShaft = document.getElementById('shaftPctLabel');
-    const labelPoint = document.getElementById('pointPctLabel');
-    const labelComp  = document.getElementById('compPctLabel');
-
-    if (labelTotal) labelTotal.textContent = weight > 0 ? `${weight.toFixed(1)} gr total` : '-';
-    if (labelShaft) labelShaft.textContent = `Shaft: ${shaftPct.toFixed(0)}%`;
-    if (labelPoint) labelPoint.textContent = `Point: ${pointPct.toFixed(0)}%`;
-    if (labelComp)  labelComp.textContent  = `Comp.: ${compPct.toFixed(0)}%`;
-
-    const games = [
-      { ke: 25, mom: 0.30, id: "smallGameStatus", label: "Small / Thin-skinned" },
-      { ke: 50, mom: 0.45, id: "deerStatus", label: "Medium Game / Deer" },
-      { ke: 65, mom: 0.60, id: "elkStatus", label: "Large / Tough Game" },
-      { ke: 85, mom: 0.75, id: "mooseStatus", label: "Dangerous / Extreme" }
-    ];
-
-    games.forEach(gm => {
-      const ok = impactKE >= gm.ke && impactMom >= gm.mom;
-      gm.ok = ok;
-      const el = document.getElementById(gm.id);
-      if (!el) return;
-      el.textContent = ok ? "Send it" : "Don’t";
-      el.style.color = ok ? "var(--success)" : "var(--danger)";
-    });
-
-    const summary = {
-      "Build Name": document.getElementById('buildName').value || "Unnamed",
-      "Bow Model": document.getElementById('bowModel').value || "-",
-      "Draw Weight": dw + " lbs",
-      "IBO Speed": ibo + " FPS",
-      "Arrow Length": len.toFixed(2) + " in",
-      "Total Arrow Weight": weight.toFixed(1) + " gr",
-      "Point Weight": (parseFloat(document.getElementById('pointWeight').value) || 125).toFixed(0) + " gr",
-      "FOC": foc.toFixed(1) + "%",
-      "GPP": gpp.toFixed(1),
-      "GPI": gpi.toFixed(1),
-      "Launch FPS": fps.toFixed(1),
-      "Launch KE": launchKE.toFixed(1) + " ft-lbs",
-      "Launch Momentum": launchMom.toFixed(3) + " slug·ft/s",
-      [`Impact @ ${distYards} yd`]: "",
-      "Impact Velocity": currentV.toFixed(0) + " FPS",
-      "Impact KE": impactKE.toFixed(1) + " ft-lbs",
-      "Impact Momentum": impactMom.toFixed(3) + " slug·ft/s",
-      "Time to Impact": time.toFixed(2) + " s"
-    };
-
-    document.getElementById('summaryTable').innerHTML =
-      '<table>' +
-      Object.entries(summary).map(([k, v]) =>
-        `<tr><td>${k}</td><td>${v}</td></tr>`
-      ).join('') +
-      '</table>';
-
-    window.latestSummary = summary;
-
-    const baseFps = ibo * Math.sqrt((450 + stringW) / (450 + weight + stringW || 1));
-    const estimatedFps = baseFps * 0.94;
-
-    window.math = {
-      foc: { len, balance, mid: len / 2, value: foc },
-      gpp: { weight, dw, value: gpp },
-      gpi: { weight, len, value: gpi },
-      tw:  { weight },
-      fps: {
-        ibo,
-        stringW,
-        weight,
-        baseFps,
-        estimatedFps,
-        usedFps: fps,
-        source: window.fpsSource || 'estimated'
-      },
-      keLaunch: {
-        weight,
-        fps,
-        value: launchKE
-      },
-      velocity: {
-        launchFps: fps,
-        distYards,
-        value: currentV
-      },
-      peakHeight: {
-        launchFps: fps,
-        distYards,
-        peakHeightFt,
-        peakYard
-      },
-      impactKE: {
-        weight,
-        distYards,
-        impactV: currentV,
-        value: impactKE
-      },
-      impactMom: {
-        weight,
-        distYards,
-        impactV: currentV,
-        value: impactMom
-      },
-      timeToImpact: {
-        distYards,
-        value: time,
-        launchFps: fps
-      },
-      game: {
-        distYards,
-        impactKE,
-        impactMom,
-        bands: games
-      },
-      awc: {
-        weight,
-        shaft,
-        point,
-        comp,
-        shaftPct,
-        pointPct,
-        compPct
-      }
-    };
-
-    // After all metrics are updated, toggle the Game/Target panel
-    updateApplicationPanels();
-  }
-
-  // Simple ballistic model using a 20 yd zero.
-  // Returns positive drop in inches (down from the sight line).
-  function computeDropInches(distanceYards, fps, zeroYards = 20) {
-    if (!Number.isFinite(fps) || fps <= 0) return NaN;
-
-    const gFt = 32.174;      // gravity in ft/s^2
-    const v0  = fps;
-    const RzFt = zeroYards * 3;
-
-    // Solve launch angle so arrow crosses the sight line again at the zero distance.
-    let sin2theta = (RzFt * gFt) / (v0 * v0);
-    if (sin2theta <= 0) return NaN;
-    sin2theta = Math.min(1, Math.max(0, sin2theta));
-    const theta = 0.5 * Math.asin(sin2theta);
-
-    const cosTheta = Math.cos(theta);
-    const sinTheta = Math.sin(theta);
-    if (cosTheta <= 1e-6) return NaN;
-
-    const dFt = distanceYards * 3;
-    const t   = dFt / (v0 * cosTheta);
-
-    // Vertical position relative to a flat sight line (y=0 at launch and at zero distance)
-    const yFt = v0 * sinTheta * t - 0.5 * gFt * t * t;
-
-    // Positive = drop below sight line
-    const dropIn = -yFt * 12;
-    return dropIn;
-  }
-
-  function updateTargetPanelMetrics() {
-    const appSel = document.getElementById('application');
-    if (!appSel) return;
-
-    const mode = appSel.value;
-    const huntingMode = (mode === 'Hunting');
-    if (huntingMode) return; // Only in Target / Other
-
-    const groupBadgeEl = document.getElementById('groupBadge');
-    const groupHintEl  = document.getElementById('groupBadgeHint');
-    const flatBadgeEl  = document.getElementById('flatnessBadge');
-    const flatPeakEl   = document.getElementById('flatnessPeakHeight');
-    const tableBody    = document.getElementById('sightTableBody');
-
-    if (!groupBadgeEl || !flatBadgeEl || !tableBody) return;
-
-    const fps = getNumeric('actualFPS');     // input
-    const foc = getNumeric('focValue');      // "16.2%"
-    const gpi = getNumeric('gpiValue');      // numeric
-
-    // --- Group Stability Badge ---
-    if (Number.isFinite(fps) && Number.isFinite(foc) && Number.isFinite(gpi)) {
-      const isTight = (fps > 300 && foc > 15 && gpi < 8);
-      groupBadgeEl.textContent = isTight ? 'Tight' : 'Average';
-      if (groupHintEl) {
-        groupHintEl.textContent = isTight
-          ? 'FPS > 300, FOC > 15%, GPI < 8 — very stable setup.'
-          : 'Stability based on FPS, FOC, and GPI. Tweak for tighter groups.';
-      }
-    } else {
-      groupBadgeEl.textContent = '–';
-      if (groupHintEl) {
-        groupHintEl.textContent = 'Enter FPS, FOC, and arrow details to estimate group tightness.';
-      }
-    }
-
-    // --- Flatness Score using approximate arc at 60 yd ---
-    let flatBadge = '–';
-    let peakFtText = '–';
-
-    if (Number.isFinite(fps) && fps > 0) {
-      const baseDrop20 = computeDropInches(20, fps);
-      const drop60 = computeDropInches(60, fps);
-      const extraDrop = drop60 - baseDrop20;
-      if (Number.isFinite(extraDrop)) {
-        const peakFt = Math.max(0, extraDrop / 12); // inches -> feet
-        peakFtText = peakFt.toFixed(1);
-
-        if (peakFt < 3) {
-          flatBadge = 'Very Flat';
-        } else if (peakFt < 4.5) {
-          flatBadge = 'Flat';
-        } else {
-          flatBadge = 'Curved';
-        }
-      }
-    }
-
-    flatBadgeEl.textContent = flatBadge;
-    if (flatPeakEl) {
-      flatPeakEl.textContent = peakFtText;
-    }
-
-    // --- Downrange Arrow Drop Table (relative drop vs 20 yd zero) ---
-    const distances = [20, 30, 40, 50, 60, 70];
-    tableBody.innerHTML = '';
-
-    distances.forEach(d => {
-      const tr = document.createElement('tr');
-      const tdDist = document.createElement('td');
-      const tdDrop = document.createElement('td');
-
-      tdDist.textContent = d.toString();
-
-      if (!Number.isFinite(fps) || fps <= 0) {
-        tdDrop.textContent = d === 20 ? '0.0' : '–';
-      } else {
-        let drop = computeDropInches(d, fps);
-        if (!Number.isFinite(drop)) {
-          tdDrop.textContent = d === 20 ? '0.0' : '–';
-        } else {
-          // by definition, the zero distance should show zero drop
-          if (d === 20) drop = 0;
-          tdDrop.textContent = drop.toFixed(1);
-        }
-      }
-
-      tr.appendChild(tdDist);
-      tr.appendChild(tdDrop);
-      tableBody.appendChild(tr);
-    });
-  }
-
-  function updateApplicationPanels() {
-    const appSel = document.getElementById('application');
-    if (!appSel) return;
-
-    const mode = appSel.value;
-    const huntingMode = (mode === 'Hunting');
-
-    const huntingPanel = document.getElementById('huntingPanel');
-    const targetPanel  = document.getElementById('targetPanel');
-    const titleEl      = document.getElementById('gameCardTitle');
-    const headerText   = document.getElementById('gameHeaderText');
-
-    if (huntingPanel && targetPanel) {
-      huntingPanel.style.display = huntingMode ? '' : 'none';
-      targetPanel.style.display  = huntingMode ? 'none' : '';
-    }
-
-    if (titleEl) {
-      titleEl.textContent = huntingMode ? 'Game Effectiveness' : 'Target Insights';
-    }
-
-    if (headerText) {
-      headerText.style.display = huntingMode ? '' : 'none';
-    }
-
-    if (!huntingMode) {
-      updateTargetPanelMetrics();
-    }
-  }
-
-  document.getElementById('recalcFPS').onclick = () => calculateEverything(true);
-
-  document.getElementById('copySummary').onclick = () => {
-    if (!window.latestSummary) {
-      calculateEverything(false);
-    }
-    const summary = window.latestSummary || {};
-    const lines = [
-      `Arrow Tune Build - ${new Date().toLocaleDateString()}`,
-      ''
-    ];
-
-    Object.entries(summary).forEach(([k, v]) => {
-      if (v === '') return;
-      lines.push(`${k}: ${v}`);
-    });
-
-    const text = lines.join('\n');
-    navigator.clipboard.writeText(text).then(() => showToast('Summary copied'));
-  };
-
-  document.getElementById('distanceSlider').oninput = e => {
-    document.getElementById('distanceValue').textContent = e.target.value;
-    calculateEverything();
-  };
-
-  document.querySelectorAll('input,select,textarea').forEach(el => {
-    el.addEventListener('input', () => {
-      if (document.activeElement.id === 'actualFPS') {
-        markFpsChrono();
-        calculateEverything(false);
-      } else {
-        calculateEverything();
-      }
-    });
-  });
-
-  const infoOverlay = document.getElementById('infoOverlay');
-  const infoContent = document.getElementById('infoContent');
-  const infoClose = document.querySelector('.info-close');
-
-  function openInfo(key) {
-    if (!infoOverlay || !infoContent) return;
-    infoContent.innerHTML = INFO_CONTENT[key] || `
-      <h2>Info</h2>
-      <p>More details coming soon.</p>
-    `;
-    infoOverlay.classList.add('open');
-  }
-
-  function openMath(key) {
-    if (!infoOverlay || !infoContent) return;
-    if (!window.math) {
-      calculateEverything(false);
-    }
-    const m = window.math || {};
-    let html = '';
-
-    if (key === 'foc' && m.foc) {
-      const f = m.foc;
-      html = `
-        <h2>FOC Math</h2>
-        <p><strong>Formula:</strong> FOC = ((Balance Point − (Arrow Length ÷ 2)) ÷ Arrow Length) × 100</p>
-        <p>Arrow Length = ${f.len.toFixed(2)} in</p>
-        <p>Midpoint = ${f.mid.toFixed(2)} in</p>
-        <p>Balance Point = ${f.balance.toFixed(2)} in</p>
-        <p>FOC = ((${f.balance.toFixed(2)} − ${f.mid.toFixed(2)}) ÷ ${f.len.toFixed(2)}) × 100
-           = <strong>${f.value.toFixed(1)}%</strong></p>
-      `;
-    } else if (key === 'sightMarks') {
-  const fps = getNumeric('actualFPS');
-
-  if (!Number.isFinite(fps) || fps <= 0) {
-    html = `
-      <h2>Downrange Arrow Drop Math</h2>
-      <p>
-        Enter a valid launch FPS so the app can estimate drop and sight mark
-        spacing from a <strong>20 yd zero</strong>.
-      </p>
-    `;
-  } else {
-    const distances = [20, 30, 40, 50, 60, 70];
-
-    const base20 = computeDropInches(20, fps);
-    const rows = distances.map(d => {
-      const drop = computeDropInches(d, fps);
-      let rel = drop - base20;
-      if (d === 20) rel = 0;
-      const relStr = Number.isFinite(rel) ? rel.toFixed(1) : '–';
-      return `<tr><td>${d}</td><td>${relStr}</td></tr>`;
-    }).join('');
-
-    html = `
-      <h2>Downrange Arrow Drop Math</h2>
-      <p>
-        We use the same simple flat-launch gravity model as the trajectory
-        estimates. For each distance <em>d</em> (in yards):
-      </p>
-      <p><strong>1.</strong> Convert yards to feet:</p>
-      <p>d<sub>ft</sub> = d × 3</p>
-      <p><strong>2.</strong> Approximate time of flight assuming constant speed:</p>
-      <p>t ≈ d<sub>ft</sub> ÷ FPS</p>
-      <p><strong>3.</strong> Compute vertical drop (inches):</p>
-      <p>drop(d) ≈ ½ × 386 × t²</p>
-      <p>(386 in/s² is gravity in inches per second².)</p>
-      <p><strong>4.</strong> Use 20 yd as the zero:</p>
-      <p>relativeDrop(d) = drop(d) − drop(20 yd)</p>
-      <p>So 20 yd is always <strong>0.0 in</strong>, and everything else is
-         “how much lower” that distance hits compared to your 20 yd mark.</p>
-      <p>With your current launch speed of <strong>${fps.toFixed(1)} FPS</strong>,
-         the approximate relative drops are:</p>
-      <div style="overflow-x:auto;margin-top:0.5rem;">
-        <table style="font-size:0.9rem;margin-top:0;">
-          <thead>
-            <tr>
-              <th>Distance (yd)</th>
-              <th>Drop vs 20 yd (in)</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows}
-          </tbody>
-        </table>
-      </div>
-      <p style="margin-top:0.75rem;">
-        Use these values as a <strong>relative guide</strong> for pin spacing
-        and sight marks when comparing different arrow builds and speeds —
-        not as a replacement for a real sight tape.
-      </p>
-    `;
-    }
-    } else if (key === 'gpp' && m.gpp) {
-      const g = m.gpp;
-      html = `
-        <h2>GPP Math</h2>
-        <p><strong>Formula:</strong> GPP = Total Arrow Weight ÷ Draw Weight</p>
-        <p>Total Arrow Weight = ${g.weight.toFixed(1)} gr</p>
-        <p>Draw Weight = ${g.dw.toFixed(1)} lb</p>
-        <p>GPP = ${g.weight.toFixed(1)} ÷ ${g.dw.toFixed(1)} = <strong>${g.value.toFixed(1)}</strong></p>
-      `;
-    } else if (key === 'gpi' && m.gpi) {
-      const g = m.gpi;
-      html = `
-        <h2>GPI Math</h2>
-        <p><strong>Formula:</strong> GPI = Total Arrow Weight ÷ Arrow Length</p>
-        <p>Total Arrow Weight = ${g.weight.toFixed(1)} gr</p>
-        <p>Arrow Length = ${g.len.toFixed(2)} in</p>
-        <p>GPI = ${g.weight.toFixed(1)} ÷ ${g.len.toFixed(2)} = <strong>${g.value.toFixed(1)}</strong></p>
-      `;
-    } else if (key === 'tw' && m.tw) {
-      const t = m.tw;
-      html = `
-        <h2>Total Arrow Weight</h2>
-        <p>This is the finished arrow weight used for all other calculations.</p>
-        <p>Total Arrow Weight = <strong>${t.weight.toFixed(1)} grains</strong></p>
-      `;
-    } else if (key === 'fps' && m.fps) {
-      const f = m.fps;
-
-      const header =
-        f.source === 'chrono'
-          ? `
-        <h2>FPS Math</h2>
-        <p>You’ve entered <strong>manual FPS</strong> (likely from a chronograph), so the app uses that value directly.</p>
-        <p>Launch FPS = <strong>${f.usedFps.toFixed(1)} FPS</strong></p>
-        <p>The IBO-based estimate is still available as a reference:</p>
+    <script>
+    const INFO_CONTENT = {
+      buildName: `
+        <h2>Build Name</h2>
+        <p>
+          A human-friendly label for this bow + arrow setup. It’s used as the name
+          when you save, load, and compare builds.
+        </p>
+        <p>
+          The <strong>Suggest</strong> button auto-builds a name using date, bow model,
+          draw weight, arrow name, and total arrow weight so your builds stay organized.
+        </p>
+      `,
+      bowModel: `
+        <h2>Bow Model</h2>
+        <p>
+          The make and model of your bow (e.g., "2025 Hoyt RX-9").
+          This is saved with the build and used in the suggested build name.
+        </p>
+        <p>
+          It doesn’t change the math directly, but it makes it easier to track which
+          numbers go with which bow.
+        </p>
+      `,
+      iboRating: `
+        <h2>IBO / ATA Speed Rating</h2>
+        <p>
+          The manufacturer’s advertised max speed in feet per second (FPS), usually at
+          70 lb draw, 30&quot; draw length, and a 350 gr arrow.
+        </p>
+        <p>
+          This app uses that rating to <strong>estimate your real-world launch FPS</strong>
+          based on your actual draw weight, arrow weight, and string weight until you
+          replace it with chronograph data.
+        </p>
+      `,
+      drawWeight: `
+        <h2>Draw Weight (lbs)</h2>
+        <p>
+          How many pounds you pull at full draw. It controls how much energy the bow can
+          put into the arrow.
+        </p>
+        <p>
+          In this calculator, draw weight is used with total arrow weight to compute
+          <strong>GPP (grains per pound)</strong>, which helps classify your arrow as
+          light, all-around, or heavy for hunting and penetration.
+        </p>
+      `,
+      drawLength: `
+        <h2>Draw Length (inches)</h2>
+        <p>
+          How far you pull the string at full draw (your personal power stroke).
+          Factory IBO speeds assume 30&quot; draw; shorter draws usually shoot slower.
+        </p>
+        <p>
+          This value is saved with your build so your FPS, KE, and trajectory can be
+          interpreted in the context of <em>your</em> form, not just factory specs.
+        </p>
+      `,
+      stringWeightSimple: `
+        <h2>String Add-ons (grains)</h2>
+        <p>
+          The combined weight of everything on your string (peep, loop, kisser, silencers),
+          entered as a single number.
+        </p>
+        <p>
+          This is used in the launch FPS estimate. Heavier strings generally reduce
+          real-world FPS slightly compared to the IBO rating.
+        </p>
+        <p>
+          Turn on <strong>Advanced String Components</strong> if you want to enter each
+          piece separately.
+        </p>
+      `,
+      application: `
+        <h2>Application</h2>
+        <p>
+          High-level use for this setup: Target/3D, Hunting, or Other. This is saved in your
+          build and is used to switch between <strong>Game Effectiveness</strong> (Hunting)
+          and <strong>Target Insights</strong> (Target / Other).
+        </p>
+        <p>
+          It does not change the underlying physics, but it changes how the results are
+          summarized for you.
+        </p>
+      `,
+      toggleString: `
+        <h2>Advanced String Components</h2>
+        <p>
+          Turn this on if you want to enter the weights of your peep, D-loop, kisser, and
+          silencers separately.
+        </p>
+        <p>
+          When enabled, the app <strong>sums the detailed values</strong> and uses that
+          total in the FPS estimate instead of the single String Add-ons field.
+        </p>
+      `,
+      peepWeight: `
+        <h2>Peep Weight</h2>
+        <p>
+          Weight of your peep sight in grains. Included in total string weight and the
+          launch FPS estimate when Advanced String Components are enabled.
+        </p>
+      `,
+      dloopWeight: `
+        <h2>D-Loop Weight</h2>
+        <p>
+          Total weight of your D-loop in grains. Included in total string weight and the
+          launch FPS estimate in Advanced mode.
+        </p>
+      `,
+      kisserWeight: `
+        <h2>Kisser Button Weight</h2>
+        <p>
+          Weight of your kisser button in grains. Included in total string weight and FPS
+          estimation when using Advanced String Components.
+        </p>
+      `,
+      silencersWeight: `
+        <h2>Silencers Weight</h2>
+        <p>
+          Combined weight of all string silencers in grains. Included in total string
+          weight and launch FPS estimation in Advanced mode.
+        </p>
+      `,
+      arrowName: `
+        <h2>Arrow Name</h2>
+        <p>
+          A label for the arrow itself (e.g., "Easton Axis 5mm 300 spine").
+          Used in the suggested build name and saved with the build.
+        </p>
+        <p>
+          It doesn’t change calculations, but makes it much easier to track which shaft
+          you’re tuning.
+        </p>
+      `,
+      arrowLength: `
+        <h2>Arrow Length</h2>
+        <p>
+          Measured from the throat of the nock to the <strong>end of the shaft</strong>
+          (not including the point).
+        </p>
+        <p>
+          This is used for <strong>GPI (grains per inch)</strong> and for the
+          <strong>FOC calculation</strong> so the app knows the total shaft length
+          your balance point is measured over.
+        </p>
+      `,
+      totalArrowWeightSimple: `
+        <h2>Total Arrow Weight (Simple Mode)</h2>
+        <p>
+          The full arrow weight in grains (shaft + insert/outsert + vanes + wrap + nock + point),
+          entered as a single number.
+        </p>
+        <p>
+          When Advanced Arrow Components is <strong>off</strong>, this value drives all
+          weight-based metrics: GPP, KE, momentum, impact energy, and Build Summary.
+        </p>
+        <p>
+          Turn on Advanced mode if you want the app to calculate total weight from individual components.
+        </p>
+      `,
+      pointWeight: `
+        <h2>Point Weight</h2>
+        <p>
+          Weight of your field point or broadhead in grains.
+        </p>
+        <p>
+          Used in the <strong>FOC calculation</strong>, the
+          <strong>Arrow Weight Composition</strong> bar, and total arrow weight
+          when Advanced mode is enabled.
+        </p>
+      `,
+      balancePoint: `
+        <h2>Balance Point from Nock</h2>
+        <p>
+          Measure from the nock throat (string contact point) to the point where the
+          arrow balances perfectly on a finger or edge.
+        </p>
+        <p>
+          This value, together with arrow length, is used to compute
+          <strong>FOC (Front of Center)</strong>.
+        </p>
+      `,
+      toggleArrow: `
+        <h2>Advanced Arrow Components</h2>
+        <p>
+          Enable this if you want to enter the weights of the shaft, vanes, wrap, insert,
+          nock, and glue separately.
+        </p>
+        <p>
+          In Advanced mode, the app <strong>adds up all components plus point weight</strong>
+          to get total arrow weight instead of using the single Total Arrow Weight field.
+        </p>
+      `,
+      bareShaft: `
+        <h2>Bare Shaft Weight</h2>
+        <p>
+          Weight of the cut shaft only (no insert, vanes, wrap, nock, or point).
+        </p>
+        <p>
+          Used in the total arrow weight and the shaft portion of the
+          <strong>Arrow Weight Composition</strong> bar.
+        </p>
+      `,
+      nockWeight: `
+        <h2>Nock System Weight</h2>
+        <p>
+          Weight of your nock or pin-nock system in grains.
+        </p>
+        <p>
+          Included in total arrow weight and counted as part of “Components” in the
+          Arrow Weight Composition bar.
+        </p>
+      `,
+      wrapWeight: `
+        <h2>Wrap Weight</h2>
+        <p>
+          Total weight of any arrow wrap or cap wrap in grains.
+        </p>
+        <p>
+          Included in total arrow weight and treated as “Components” in the composition bar.
+        </p>
+      `,
+      vaneWeightEach: `
+        <h2>Vane Weight (each)</h2>
+        <p>
+          Weight of a single vane or feather in grains.
+        </p>
+        <p>
+          The app multiplies this by <strong>Vane Count</strong>, then adds it to total arrow
+          weight as part of “Components”.
+        </p>
+      `,
+      vaneCount: `
+        <h2>Vane Count</h2>
+        <p>
+          How many vanes or feathers are on the arrow (3-fletch, 4-fletch, etc.).
+        </p>
+        <p>
+          Used with Vane Weight (each) to compute total fletching weight for the
+          arrow weight and composition breakdown.
+        </p>
+      `,
+      insertWeight: `
+        <h2>Insert / Outsert Weight</h2>
+        <p>
+          Weight of your insert or outsert system in grains.
+        </p>
+        <p>
+          Included in total arrow weight and treated as “Components” in the
+          Arrow Weight Composition bar.
+        </p>
+      `,
+      glueWeight: `
+        <h2>Glue / Pin Nock Weight</h2>
+        <p>
+          An estimate of the combined weight of glue, pin bushings, and any small
+          hardware at the nock or insert end.
+        </p>
+        <p>
+          Included in total arrow weight and the “Components” portion of the composition bar.
+        </p>
+      `,
+      notes: `
+        <h2>Notes</h2>
+        <p>
+          Free-form notes saved with this build — great for recording paper tune results,
+          broadhead groups, chrono strings, or field observations.
+        </p>
+        <p>
+          Notes are stored in your saved build so you can revisit why a setup worked
+          (or didn’t) later.
+        </p>
+      `,
+      arrowEfficiency: `
+        <h2>Arrow Efficiency</h2>
+        <p>
+          A quick overview of how your bow’s energy, arrow weight, and balance are working together.
+        </p>
+        <p>
+          This section summarizes your main tuning metrics: launch speed, GPP, GPI, total arrow weight,
+          FOC, and component breakdown.
+        </p>
+      `,
+      actualFPS: `
+        <h2>FPS</h2>
+        <p>
+          The speed the arrow leaves the bow, in feet per second.
+        </p>
+        <p>
+          The app first <strong>estimates</strong> this value from your IBO rating, draw weight,
+          arrow weight, and string weight, but you can overwrite it with chronograph data for
+          more accurate KE, momentum, and impact predictions.
+        </p>
+      `,
+      gpp: `
+        <h2>GPP (Grains per Pound)</h2>
+        <p>
+          Total arrow weight divided by draw weight (grains per pound of draw).
+        </p>
+        <p>
+          It’s a simple way to see if your arrow is light, all-around, or heavy for your bow.
+          The app uses this to give guidance on where your setup sits in that spectrum.
+        </p>
+      `,
+      gpi: `
+        <h2>GPI (Grains per Inch)</h2>
+        <p>
+          Average grains per inch of length based on your total arrow weight and arrow length.
+        </p>
+        <p>
+          Useful for comparing shafts and seeing how heavy your finished arrow is per inch,
+          especially when switching between cut lengths.
+        </p>
+      `,
+      finalArrowWeight: `
+        <h2>TW (Total Weight)</h2>
+        <p>
+          The final arrow weight in grains (shaft + components + point).
+        </p>
+        <p>
+          This drives nearly every other output: GPP, KE, momentum, impact, and the composition bar.
+          Getting this number accurate is critical for realistic results.
+        </p>
+      `,
+      foc: `
+        <h2>FOC (Front of Center)</h2>
+        <p>
+          FOC shows how far forward the balance point is, expressed as a percentage of arrow length.
+          More weight toward the front usually helps broadhead stability and penetration.
+        </p>
+        <p>
+          The bar shows your value on a 0–30% scale, with a highlighted band for
+          <strong>12–18%</strong>, a common sweet spot for many hunting setups.
+        </p>
+      `,
+      composition: `
+        <h2>AWC (Arrow Weight Composition)</h2>
+        <p>
+          A visual breakdown of how your arrow’s total weight is split between
+          <strong>shaft</strong>, <strong>point</strong>, and other components.
+        </p>
+        <p>
+          This is helpful for understanding where your mass is concentrated, and how changing
+          inserts, vanes, or point weight affects overall build and FOC.
+        </p>
+      `,
+      velocitySection: `
+        <h2>Performance @ Distance</h2>
+        <p>
+          Use the slider to set a target distance. The app then estimates:
+          arrow speed at that distance, peak height of the arc, time of flight,
+          and impact energy/momentum.
+        </p>
+        <p>
+          Great for visualizing how your arrow behaves at different ranges and 
+          how much it slows down over distance.
+        </p>
+      `,
+      velocityAtDistance: `
+        <h2>Velocity</h2>
+        <p>
+          Estimated arrow speed at the selected yardage based on your launch FPS and
+          a simple decay model.
+        </p>
+        <p>
+          This feeds the impact KE and momentum calculations and gives you a sense of
+          how much speed you’re giving up at longer shots.
+        </p>
+      `,
+      launchKE: `
+        <h2>Launch Kinetic Energy</h2>
+        <p>
+          The arrow’s kinetic energy at the bow (in ft-lbs), based on total arrow weight
+          and launch FPS.
+        </p>
+        <p>
+          This is a common metric for comparing setups and is often used as a baseline for
+          game recommendations.
+        </p>
+      `,
+      timeToImpact: `
+        <h2>Time to Impact</h2>
+        <p>
+          Estimated time (in seconds) for the arrow to reach the target at the current
+          distance slider setting.
+        </p>
+        <p>
+          This gives a feel for how “snappy” or “loopy” your setup is, and is useful when
+          thinking about animal movement and string jump.
+        </p>
+      `,
+      impactKE: `
+        <h2>Impact Kinetic Energy</h2>
+        <p>
+          The arrow’s kinetic energy at the target distance in ft-lbs, using the
+          estimated velocity at that distance.
+        </p>
+        <p>
+          This value is compared against common minimums in the <strong>Game Effectiveness</strong>
+          section to give a rough “Send it / Don’t” suggestion.
+        </p>
+      `,
+      impactMom: `
+        <h2>Impact Momentum</h2>
+        <p>
+          The arrow’s momentum at impact in slug·ft/s.
+        </p>
+        <p>
+          Momentum favors heavier arrows and is another way to evaluate penetration potential,
+          especially at longer distances.
+        </p>
+      `,
+      gameEffectiveness: `
+        <h2>Game Effectiveness / Target Insights</h2>
+        <p>
+          In <strong>Hunting</strong> mode, this compares your impact <strong>kinetic energy</strong> and
+          <strong>momentum</strong> at the chosen distance against conservative thresholds
+          for four game classes.
+        </p>
+        <p>
+          In <strong>Target / 3D / Other</strong> modes, this panel switches to 
+          <strong>Target Insights</strong>:
+        </p>
+        <ul  style="margin-left:1.25rem;">
+          <li>Group Stability badge (Tight / Average) based on FPS, FOC, and GPI.</li>
+          <li>Flatness score using a simple 60 yd arc approximation.</li>
+          <li>Downrange Arrow Drop simulator: relative drop from a 20 yd zero at 30–70 yd.</li>
+        </ul>
+        <p>
+          Think of both views as <strong>sanity checks and tuning helpers</strong>, not guarantees.
+          Broadhead design, shot angle, flight quality, and shot placement still matter more
+          than any single number.
+        </p>
+      `,
+      groupStability: `
+        <h2>Group Stability</h2>
+        <p>
+          This badge is a <strong>sanity check</strong> for how forgiving your setup 
+          should be on paper. It looks at three things together:
+        </p>
+        <ul style="margin-left:1.25rem;">
+          <li><strong>FPS</strong> – overall speed of the arrow.</li>
+          <li><strong>FOC</strong> – how far forward the balance point is.</li>
+          <li><strong>GPI</strong> – finished grains-per-inch of arrow length.</li>
+        </ul>
+        <p>
+          A <strong>Tight</strong> badge means your FPS, FOC, and GPI combination
+          lines up with a setup that should feel stable and repeatable when tuned
+          well and shot with good form.
+        </p>
+        <p>
+          An <strong>Average</strong> badge doesn’t mean “bad” — only that the
+          numbers are more middle-of-the-road, and the setup may be a bit more
+          sensitive to tune or form compared to a really optimized rig.
+        </p>
+        <p>
+          This is not a scoring system, just a quick indicator to help you think
+          about stability when you’re comparing different arrow builds.
+        </p>
+      `,
+      peakHeight: `
+        <h2>Peak Height vs Downrange Drop</h2>
+        <p>
+          Most sight tapes and pin gaps are built from <strong>downrange drop</strong> —
+          how far the arrow falls <em>below your line of sight</em> at 30, 40, 50+ yards.
+          Your line of sight (peep to pin) is tilted slightly upward when you zero at a
+          distance like 20 yards.
+        </p>
+        <p>
+          <strong>Peak Height</strong> is a different view of the same flight. Here we
+          look at the arrow’s <strong>maximum height above the level launch line</strong>
+          — a flat line running straight out from the bow at release.
+        </p>
+        <p>
+          The arrow leaves the bow at a small upward angle, rises to an apex, then falls
+          toward the target. Peak Height tells you:
+        </p>
+        <ul style="margin-left:1rem;">
+          <li>whether your arrow will clear brush, branches, or blind windows</li>
+          <li>how “arched” the true trajectory is</li>
+          <li>how forgiving the setup is at longer ranges</li>
+        </ul>
+        <p>
+          Because <strong>drop</strong> is measured below the angled line of sight and
+          <strong>Peak Height</strong> is measured above a horizontal launch line, the
+          two numbers will <strong>not match</strong> even at the same yardage — they are
+          referenced to different lines.
+        </p>
+      `,
+      flatnessScore: `
+        <h2>Flatness Score (60 yd)</h2>
+        <p>
+          Flatness looks at <strong>how tall your trajectory appears by 60 yards</strong>
+          using a simple ballistic model tied to your launch FPS.
+        </p>
+        <p>
+          Under the hood the calculator estimates how much extra the arrow must arc
+          between a <strong>20 yd zero</strong> and <strong>60 yd</strong>. That extra
+          “up and over” is turned into an effective peak height and mapped to a label:
+        </p>
+        <ul style="margin-left:1.25rem;">
+          <li><strong>Very Flat</strong> – low effective peak by 60 yd</li>
+          <li><strong>Flat</strong> – moderate arc by 60 yd</li>
+          <li><strong>Curved</strong> – taller, loopier arc by 60 yd</li>
+        </ul>
+        <p>
+          This uses the same basic physics as the Peak Height tile, but from a
+          <strong>sight-based perspective</strong> (20→60 yd) instead of whatever
+          distance you’ve set on the main slider. Because the reference distances
+          and lines are different, the height values won’t be identical.
+        </p>
+        <p>
+          Treat Flatness as a <strong>comparison tool</strong> between builds rather
+          than exact sight tape data.
+        </p>
+      `,
+      sightMarks: `
+        <h2>Downrange Arrow Drop Simulator</h2>
+        <p>
+          This table shows the <strong>relative drop</strong> (in inches) between a
+          <strong>20 yd zero</strong> and longer distances (30–70 yd), using the same
+          simple ballistic model as the trajectory and time-of-flight estimates.
+        </p>
+        <p>
+          Think of it as: if you are perfectly sighted at 20 yd, how much farther the
+          arrow has to fall at 30, 40, 50, 60, and 70 yd. Bigger numbers mean more
+          sight gap and wider pin spacing.
+        </p>
+      `,
+      buildSummary: `
+        <h2>Build Summary</h2>
+        <p>
+          A snapshot of all the key inputs and outputs for your current setup:
+          bow specs, arrow specs, FOC, GPP/GPI, launch speed, energy, momentum,
+          and impact numbers at the selected distance.
+        </p>
+        <p>
+          The <strong>Copy</strong> button copies this table as text so you can paste it
+          into notes, messages, forums, or spreadsheets.
+        </p>
       `
-          : `
-        <h2>FPS Estimate Math</h2>
-        <p>The app estimates launch FPS from your IBO rating, arrow weight, and string weight.</p>
-      `;
+    };
 
-      html = header + `
-        <hr />
-        <p><strong>Base formula (IBO-style):</strong></p>
-        <p>v<sub>base</sub> = IBO × √((450 + String Weight) ÷ (450 + Arrow Weight + String Weight))</p>
-        <p>Then we apply a small factor (0.94) to account for real-world losses:</p>
-        <p>v<sub>est</sub> = v<sub>base</sub> × 0.94</p>
-        <p>IBO = ${f.ibo.toFixed(1)} FPS</p>
-        <p>String Weight = ${f.stringW.toFixed(1)} gr</p>
-        <p>Arrow Weight = ${f.weight.toFixed(1)} gr</p>
-        <p>v<sub>base</sub> = ${f.ibo.toFixed(1)} × √((450 + ${f.stringW.toFixed(1)}) ÷ (450 + ${f.weight.toFixed(1)} + ${f.stringW.toFixed(1)}))</p>
-        <p>v<sub>base</sub> ≈ ${f.baseFps.toFixed(1)} FPS</p>
-        <p>v<sub>est</sub> = ${f.baseFps.toFixed(1)} × 0.94 ≈ <strong>${f.estimatedFps.toFixed(1)} FPS</strong></p>
-        <p><strong>FPS used in calculations:</strong> ${f.usedFps.toFixed(1)} FPS (${f.source === 'chrono' ? 'manual' : 'estimated'})</p>
-      `;
-    } else if (key === 'groupStability') {
+    let toastTimer;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.style.opacity = '1';
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+    }
+
+    // Dark mode
+    const darkToggle = document.getElementById('darkModeToggle');
+    if (
+      localStorage.getItem('dark') === '1' ||
+      (!localStorage.getItem('dark') && matchMedia('(prefers-color-scheme: dark)').matches)
+    ) {
+      document.body.classList.add('dark');
+      darkToggle.checked = true;
+    }
+    darkToggle.addEventListener('change', () => {
+      document.body.classList.toggle('dark', darkToggle.checked);
+      localStorage.setItem('dark', darkToggle.checked ? '1' : '0');
+    });
+
+    // Saved builds
+    const loadSelect = document.getElementById('loadBuildSelect');
+    function refreshBuilds() {
+      loadSelect.innerHTML = '<option value="">– Load Build –</option>';
+      const builds = JSON.parse(localStorage.getItem('atc') || '{}');
+      const keys = Object.keys(builds).sort();
+
+      if (keys.length === 0) {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = 'No saved builds yet';
+        opt.disabled = true;
+        loadSelect.appendChild(opt);
+        return;
+      }
+
+      keys.forEach(n => {
+        const o = document.createElement('option');
+        o.value = n;
+        o.textContent = n;
+        loadSelect.appendChild(o);
+      });
+    }
+
+    function updateArrowWeightMode() {
+      const toggle = document.getElementById('toggleArrow');
+      const simpleTotal = document.getElementById('totalArrowWeightSimple');
+      const hint = document.getElementById('totalWeightHint');
+      const isAdv = toggle.checked;
+
+      if (isAdv) {
+        simpleTotal.readOnly = true;
+        simpleTotal.style.opacity = 0.6;
+      } else {
+        simpleTotal.readOnly = false;
+        simpleTotal.style.opacity = 1;
+        hint.textContent = '';
+      }
+    }
+
+    document.getElementById('toggleString').onchange = e => {
+      document.getElementById('stringAdvanced').style.display = e.target.checked ? 'block' : 'none';
+      calculateEverything();
+    };
+
+    document.getElementById('toggleArrow').onchange = e => {
+      document.getElementById('arrowAdvanced').style.display = e.target.checked ? 'block' : 'none';
+      updateArrowWeightMode();
+      calculateEverything();
+    };
+
+    document.getElementById('saveBuild').onclick = () => {
+      const n = document.getElementById('buildName').value.trim();
+      if (!n) return alert('Name required');
+      const all = JSON.parse(localStorage.getItem('atc') || '{}');
+
+      if (all[n] && !confirm(`Overwrite existing build "${n}"?`)) {
+        return;
+      }
+
+      const data = {};
+      document.querySelectorAll('input,select,textarea').forEach(el => {
+        if (!el.id) return;
+        if (el.type === 'checkbox') {
+          data[el.id] = { type: 'checkbox', checked: el.checked };
+        } else {
+          data[el.id] = { type: 'value', value: el.value };
+        }
+      });
+
+      all[n] = data;
+      localStorage.setItem('atc', JSON.stringify(all));
+      showToast('Build saved');
+      refreshBuilds();
+    };
+
+    loadSelect.onchange = () => {
+      const n = loadSelect.value;
+      if (!n) return;
+      const all = JSON.parse(localStorage.getItem('atc') || '{}');
+      const d = all[n];
+      if (!d) return;
+
+      Object.keys(d).forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        const stored = d[id];
+
+        if (stored && typeof stored === 'object' && 'type' in stored) {
+          if (stored.type === 'checkbox') {
+            el.checked = !!stored.checked;
+            el.dispatchEvent(new Event('change'));
+          } else {
+            el.value = stored.value ?? '';
+          }
+        } else {
+          if (el.type !== 'checkbox') {
+            el.value = stored ?? '';
+          }
+        }
+      });
+
+      updateArrowWeightMode();
+      calculateEverything();
+      showToast('Build loaded');
+    };
+
+    document.getElementById('deleteBuild').onclick = () => {
+      let n = loadSelect.value;
+
+      const typed = document.getElementById('buildName').value.trim();
+      if (!n && typed) n = typed;
+
+      if (!n) {
+        alert('Select a saved build or type its exact name to delete it.');
+        return;
+      }
+
+      const all = JSON.parse(localStorage.getItem('atc') || '{}');
+
+      if (!all[n]) {
+        alert(`No saved build named "${n}" was found.`);
+        return;
+      }
+
+      if (!confirm(`Delete build "${n}"?`)) return;
+
+      delete all[n];
+      localStorage.setItem('atc', JSON.stringify(all));
+      refreshBuilds();
+      loadSelect.value = '';
+      showToast('Build deleted');
+    };
+
+    document.getElementById('suggestName').onclick = () => {
+      const d = new Date().toISOString().slice(0,10);
+      const b = document.getElementById('bowModel').value.trim() || 'Bow';
+      const dw = document.getElementById('drawWeight').value || '70';
+      const arrow = document.getElementById('arrowName').value.trim() || 'Arrow';
+      const weight = getArrowWeight().toFixed(0);
+      const app = document.getElementById('application').value || '';
+
+      document.getElementById('buildName').value =
+        `${d} ${b} ${dw}lb ${arrow} ${weight}gr (${app})`;
+    };
+
+    const fpsInput = document.getElementById('actualFPS');
+    const fpsSource = document.getElementById('fpsSource');
+
+    function markFpsEstimated() {
+      if (fpsSource) {
+        fpsSource.textContent = 'Estimated';
+      }
+      window.fpsSource = 'estimated';
+    }
+
+    function markFpsChrono() {
+      if (fpsSource) {
+        fpsSource.textContent = 'Manual Entry';
+      }
+      window.fpsSource = 'chrono';
+    }
+
+    function getArrowWeight() {
+      const pointWeight = parseFloat(document.getElementById('pointWeight').value) || 125;
+
+      if (document.getElementById('toggleArrow').checked) {
+        const bare   = parseFloat(document.getElementById('bareShaft').value)        || 0;
+        const nock   = parseFloat(document.getElementById('nockWeight').value)       || 0;
+        const wrap   = parseFloat(document.getElementById('wrapWeight').value)       || 0;
+        const vanes  = (parseFloat(document.getElementById('vaneWeightEach').value)  || 0) *
+                       (parseFloat(document.getElementById('vaneCount').value)       || 0);
+        const insert = parseFloat(document.getElementById('insertWeight').value)     || 0;
+        const glue   = parseFloat(document.getElementById('glueWeight').value)       || 0;
+
+        const advTotal = bare + nock + wrap + vanes + insert + glue;
+        document.getElementById('arrowTotal').textContent = advTotal.toFixed(1);
+
+        return advTotal + pointWeight;
+      }
+
+      return parseFloat(document.getElementById('totalArrowWeightSimple').value) || 0;
+    }
+
+    // Helper: get numeric value from element (input or text content)
+    function getNumeric(id) {
+      const el = document.getElementById(id);
+      if (!el) return NaN;
+
+      const raw =
+        el.tagName === 'INPUT'
+          ? el.value
+          : (el.textContent || el.innerText || '');
+
+      const num = parseFloat(String(raw).replace(/[^\d.-]/g, ''));
+      return Number.isFinite(num) ? num : NaN;
+    }
+
+    function calculateEverything(recalcFPS = false) {
+      const len = parseFloat(document.getElementById('arrowLength').value) || 28;
+      const weight = getArrowWeight();
+      const balance = parseFloat(document.getElementById('balancePoint').value) || 18.5;
+      const ibo = parseFloat(document.getElementById('iboRating').value) || 350;
+      const dw = parseFloat(document.getElementById('drawWeight').value) || 70;
+      const stringW = document.getElementById('toggleString').checked
+        ? ['peepWeight','dloopWeight','kisserWeight','silencersWeight']
+            .reduce((a,id)=>a+(parseFloat(document.getElementById(id).value)||0),0)
+        : (parseFloat(document.getElementById('stringWeightSimple').value) || 25);
+
+      if (document.getElementById('toggleString').checked) {
+        const total = ['peepWeight','dloopWeight','kisserWeight','silencersWeight']
+          .reduce((a,id)=>a+(parseFloat(document.getElementById(id).value)||0),0);
+        document.getElementById('stringTotal').textContent = total;
+      }
+
+      let fps = parseFloat(fpsInput.value);
+      if (recalcFPS || isNaN(fps) || fps <= 0) {
+        const base = ibo * Math.sqrt((450 + stringW) / (450 + weight + stringW));
+        fps = base * 0.94;
+        fpsInput.value = fps.toFixed(1);
+        markFpsEstimated();
+      }
+
+      // FOC
+      const foc = ((balance - len/2) / len) * 100;
+      const focValEl   = document.getElementById('focValue');
+      const focMarker  = document.getElementById('focMarker');
+      const focBarFill = document.getElementById('focBarFill');
+      const focHint    = document.getElementById('focHint');
+
+      focValEl.textContent = foc.toFixed(1) + '%';
+
+      const focClamped = Math.max(0, Math.min(30, isFinite(foc) ? foc : 0));
+      const markerLeft = (focClamped / 30) * 100;
+      if (focMarker)  focMarker.style.left  = markerLeft + '%';
+      if (focBarFill) focBarFill.style.width = markerLeft + '%';
+
+      if (!isFinite(foc)) {
+        focHint.textContent = 'Enter arrow length, balance point, and weight to compute FOC.';
+        focHint.style.color = 'var(--light)';
+      } else if (foc >= 12 && foc <= 18) {
+        focHint.textContent = 'Ideal range for hunting.';
+        focHint.style.color = 'var(--success)';
+      } else if (foc < 10) {
+        focHint.textContent = 'Very low FOC – may be less stable with broadheads.';
+        focHint.style.color = 'var(--danger)';
+      } else if (foc > 20) {
+        focHint.textContent = 'Very high FOC – heavy front can reduce speed but increase penetration focus.';
+        focHint.style.color = 'var(--warning)';
+      } else {
+        focHint.textContent = 'Workable range; many setups run 10–20%.';
+        focHint.style.color = 'var(--light)';
+      }
+
+      // GPP / GPI / TW
+      const gpp = weight / dw;
+      const gpi = weight / len;
+      document.getElementById('gppValue').textContent = gpp.toFixed(1);
+      document.getElementById('gpiValue').textContent = gpi.toFixed(1);
+      document.getElementById('finalArrowWeight').textContent = weight.toFixed(1);
+
+      const gppHint = document.getElementById('gppHint');
+      let gppText = '';
+      let gppColor = 'var(--light)';
+      if (gpp < 5) {
+        gppText = 'Very light – often not recommended for most hunting bows.';
+        gppColor = 'var(--danger)';
+      } else if (gpp < 6) {
+        gppText = 'Light arrow – flatter trajectory, more 3D/target style.';
+      } else if (gpp <= 8) {
+        gppText = 'Solid all-around hunting weight.';
+        gppColor = 'var(--success)';
+      } else {
+        gppText = 'Heavy arrow – penetration-focused setups.';
+      }
+      if (gppHint) {
+        gppHint.textContent = gppText;
+        gppHint.style.color = gppColor;
+      }
+
+      // Launch KE / Momentum
+      const launchKE = (weight * fps * fps) / 450240;
+      const launchMom = (weight * fps) / 225400;
+      document.getElementById('keValue').textContent = launchKE.toFixed(1);
+
+      // Distance slider + impact metrics
+      const distYards = parseFloat(document.getElementById('distanceSlider').value) || 50;
+      document.getElementById('distanceValue').textContent = distYards;
+
+      const currentV = fps * Math.exp(-distYards/300);
+      const impactKE = (weight * currentV * currentV) / 450240;
+      const impactMom = (weight * currentV) / 225400;
+      const time = (distYards * 3) / (fps * 0.8);
+
+      document.getElementById('impactKE').textContent = impactKE.toFixed(1);
+      document.getElementById('impactMom').textContent = impactMom.toFixed(3);
+      document.getElementById('timeToImpact').textContent = time.toFixed(2);
+
+      document.getElementById('velocityDistanceLabel').textContent = distYards;
+      document.getElementById('velocityAtDistance').textContent = currentV.toFixed(0);
+
+      // Peak height (level trajectory model)
+      const g = 32.174;
+      const v0 = fps;
+      const R_ft = distYards * 3;
+
+      let peakHeightFt = 0;
+      let peakYard = 0;
+      if (v0 > 0 && R_ft > 0) {
+        let sin2theta = (R_ft * g) / (v0 * v0);
+        if (sin2theta > 0) {
+          sin2theta = Math.min(1, Math.max(0, sin2theta));
+          const theta = 0.5 * Math.asin(sin2theta);
+          const sinTheta = Math.sin(theta);
+          peakHeightFt = (v0 * v0 * sinTheta * sinTheta) / (2 * g);
+          peakYard = distYards / 2;
+        }
+      }
+      document.getElementById('peakHeightValue').textContent = peakHeightFt.toFixed(1);
+      document.getElementById('peakDistanceValue').textContent = peakYard.toFixed(0);
+
+      // Game header
+      document.getElementById('gameDistanceDisplay').textContent = distYards;
+      document.getElementById('gameKE').textContent = impactKE.toFixed(1);
+      document.getElementById('gameMom').textContent = impactMom.toFixed(3);
+
+      // Composition
+      const isAdv = document.getElementById('toggleArrow').checked;
+      let shaft = 0, point = 0, comp = 0;
+      if (isAdv) {
+        shaft = parseFloat(document.getElementById('bareShaft').value) || 0;
+        const nock   = parseFloat(document.getElementById('nockWeight').value) || 0;
+        const wrap   = parseFloat(document.getElementById('wrapWeight').value) || 0;
+        const vanes  = (parseFloat(document.getElementById('vaneWeightEach').value) || 0) *
+                       (parseFloat(document.getElementById('vaneCount').value) || 0);
+        const insert = parseFloat(document.getElementById('insertWeight').value) || 0;
+        const glue   = parseFloat(document.getElementById('glueWeight').value) || 0;
+        comp  = nock + wrap + vanes + insert + glue;
+        point = parseFloat(document.getElementById('pointWeight').value) || 125;
+      } else {
+        point = parseFloat(document.getElementById('pointWeight').value) || 125;
+        shaft = Math.max(0, weight - point);
+        comp  = 0;
+      }
+
+      let shaftPct = 0, pointPct = 0, compPct = 0;
+      if (weight > 0) {
+        shaftPct = (shaft / weight) * 100;
+        pointPct = (point / weight) * 100;
+        compPct  = (comp  / weight) * 100;
+      }
+
+      const totalPct = shaftPct + pointPct + compPct;
+      if (totalPct > 0 && Math.abs(totalPct - 100) > 0.5) {
+        shaftPct = (shaftPct / totalPct) * 100;
+        pointPct = (pointPct / totalPct) * 100;
+        compPct  = (compPct  / totalPct) * 100;
+      }
+
+      const segShaft = document.getElementById('compShaftSeg');
+      const segPoint = document.getElementById('compPointSeg');
+      const segOther = document.getElementById('compOtherSeg');
+
+      if (segShaft) segShaft.style.width = shaftPct.toFixed(1) + '%';
+      if (segPoint) segPoint.style.width = pointPct.toFixed(1) + '%';
+      if (segOther) segOther.style.width = compPct.toFixed(1) + '%';
+
+      const labelTotal = document.getElementById('compTotalLabel');
+      const labelShaft = document.getElementById('shaftPctLabel');
+      const labelPoint = document.getElementById('pointPctLabel');
+      const labelComp  = document.getElementById('compPctLabel');
+
+      if (labelTotal) labelTotal.textContent = weight > 0 ? `${weight.toFixed(1)} gr total` : '-';
+      if (labelShaft) labelShaft.textContent = `Shaft: ${shaftPct.toFixed(0)}%`;
+      if (labelPoint) labelPoint.textContent = `Point: ${pointPct.toFixed(0)}%`;
+      if (labelComp)  labelComp.textContent  = `Comp.: ${compPct.toFixed(0)}%`;
+
+      // Hunting bands
+      const games = [
+        { ke: 25, mom: 0.30, id: "smallGameStatus", label: "Small / Thin-skinned" },
+        { ke: 50, mom: 0.45, id: "deerStatus",  label: "Medium Game / Deer" },
+        { ke: 65, mom: 0.60, id: "elkStatus",   label: "Large / Tough Game" },
+        { ke: 85, mom: 0.75, id: "mooseStatus", label: "Dangerous / Extreme" }
+      ];
+
+      games.forEach(gm => {
+        const ok = impactKE >= gm.ke && impactMom >= gm.mom;
+        gm.ok = ok;
+        const el = document.getElementById(gm.id);
+        if (!el) return;
+        el.textContent = ok ? "Send it" : "Don’t";
+        el.style.color = ok ? "var(--success)" : "var(--danger)";
+      });
+
+      // Build summary
+      const summary = {
+        "Build Name": document.getElementById('buildName').value || "Unnamed",
+        "Bow Model": document.getElementById('bowModel').value || "-",
+        "Draw Weight": dw + " lbs",
+        "IBO Speed": ibo + " FPS",
+        "Arrow Length": len.toFixed(2) + " in",
+        "Total Arrow Weight": weight.toFixed(1) + " gr",
+        "Point Weight": (parseFloat(document.getElementById('pointWeight').value) || 125).toFixed(0) + " gr",
+        "FOC": foc.toFixed(1) + "%",
+        "GPP": gpp.toFixed(1),
+        "GPI": gpi.toFixed(1),
+        "Launch FPS": fps.toFixed(1),
+        "Launch KE": launchKE.toFixed(1) + " ft-lbs",
+        "Launch Momentum": launchMom.toFixed(3) + " slug·ft/s",
+        [`Impact @ ${distYards} yd`]: "",
+        "Impact Velocity": currentV.toFixed(0) + " FPS",
+        "Impact KE": impactKE.toFixed(1) + " ft-lbs",
+        "Impact Momentum": impactMom.toFixed(3) + " slug·ft/s",
+        "Time to Impact": time.toFixed(2) + " s"
+      };
+
+      document.getElementById('summaryTable').innerHTML =
+        '<table>' +
+        Object.entries(summary).map(([k, v]) =>
+          `<tr><td>${k}</td><td>${v}</td></tr>`
+        ).join('') +
+        '</table>';
+
+      window.latestSummary = summary;
+
+      const baseFps = ibo * Math.sqrt((450 + stringW) / (450 + weight + stringW || 1));
+      const estimatedFps = baseFps * 0.94;
+
+      window.math = {
+        foc: { len, balance, mid: len / 2, value: foc },
+        gpp: { weight, dw, value: gpp },
+        gpi: { weight, len, value: gpi },
+        tw:  { weight },
+        fps: {
+          ibo,
+          stringW,
+          weight,
+          baseFps,
+          estimatedFps,
+          usedFps: fps,
+          source: window.fpsSource || 'estimated'
+        },
+        keLaunch: {
+          weight,
+          fps,
+          value: launchKE
+        },
+        velocity: {
+          launchFps: fps,
+          distYards,
+          value: currentV
+        },
+        peakHeight: {
+          launchFps: fps,
+          distYards,
+          peakHeightFt,
+          peakYard
+        },
+        impactKE: {
+          weight,
+          distYards,
+          impactV: currentV,
+          value: impactKE
+        },
+        impactMom: {
+          weight,
+          distYards,
+          impactV: currentV,
+          value: impactMom
+        },
+        timeToImpact: {
+          distYards,
+          value: time,
+          launchFps: fps
+        },
+        game: {
+          distYards,
+          impactKE,
+          impactMom,
+          bands: games
+        },
+        awc: {
+          weight,
+          shaft,
+          point,
+          comp,
+          shaftPct,
+          pointPct,
+          compPct
+        }
+      };
+
+      // Toggle hunting vs target panels
+      updateApplicationPanels();
+    }
+
+    // Gravity model: drop vs 20 yd zero (inches, positive = down)
+    function computeDropInches(distanceYards, fps, zeroYards = 20) {
+      if (!Number.isFinite(fps) || fps <= 0) return NaN;
+
+      const gFt = 32.174;
+      const v0  = fps;
+      const RzFt = zeroYards * 3;
+
+      let sin2theta = (RzFt * gFt) / (v0 * v0);
+      if (sin2theta <= 0) return NaN;
+      sin2theta = Math.min(1, Math.max(0, sin2theta));
+      const theta = 0.5 * Math.asin(sin2theta);
+
+      const cosTheta = Math.cos(theta);
+      const sinTheta = Math.sin(theta);
+      if (cosTheta <= 1e-6) return NaN;
+
+      const dFt = distanceYards * 3;
+      const t   = dFt / (v0 * cosTheta);
+
+      const yFt = v0 * sinTheta * t - 0.5 * gFt * t * t;
+      const dropIn = -yFt * 12;
+      return dropIn;
+    }
+
+    function updateTargetPanelMetrics() {
+      const appSel = document.getElementById('application');
+      if (!appSel) return;
+
+      const mode = appSel.value;
+      const huntingMode = (mode === 'Hunting');
+      if (huntingMode) return;
+
+      const groupBadgeEl = document.getElementById('groupBadge');
+      const groupHintEl  = document.getElementById('groupBadgeHint');
+      const flatBadgeEl  = document.getElementById('flatnessBadge');
+      const flatPeakEl   = document.getElementById('flatnessPeakHeight');
+      const tableBody    = document.getElementById('sightTableBody');
+
+      if (!groupBadgeEl || !flatBadgeEl || !tableBody) return;
+
       const fps = getNumeric('actualFPS');
       const foc = getNumeric('focValue');
       const gpi = getNumeric('gpiValue');
 
-      if (!Number.isFinite(fps) || !Number.isFinite(foc) || !Number.isFinite(gpi)) {
-        html = `
-          <h2>Group Stability Math</h2>
-          <p>
-            Enter launch FPS, FOC, and arrow details so the app can estimate 
-            group stability.
-          </p>
-          <p>
-            Until all three are valid numbers, this badge will stay in a 
-            neutral state.
-          </p>
-        `;
-      } else {
+      // Group Stability
+      if (Number.isFinite(fps) && Number.isFinite(foc) && Number.isFinite(gpi)) {
         const isTight = (fps > 300 && foc > 15 && gpi < 8);
-        const label = isTight ? 'Tight' : 'Average';
-
-        html = `
-          <h2>Group Stability Math</h2>
-          <p>
-            The badge is based on a simple rule-of-thumb combination of
-            <strong>FPS</strong>, <strong>FOC</strong>, and <strong>GPI</strong>.
-          </p>
-          <p>Current values:</p>
-          <ul  style="margin-left:1.25rem;">
-            <li>FPS = <strong>${fps.toFixed(1)}</strong></li>
-            <li>FOC = <strong>${foc.toFixed(1)}%</strong></li>
-            <li>GPI = <strong>${gpi.toFixed(1)}</strong></li>
-          </ul>
-          <p>One example threshold for a <strong>Tight</strong> setup is:</p>
-          <ul style="margin-left:1.25rem;">
-            <li>FPS &gt; 300</li>
-            <li>FOC &gt; 15%</li>
-            <li>GPI &lt; 8</li>
-          </ul>
-          <p>
-            Your setup currently evaluates to: 
-            <strong>${label}</strong>.
-          </p>
-          <p>
-            This logic is intentionally simple and conservative — it’s meant 
-            as a quick “how forgiving does this look?” check, not a formal 
-            scoring system.
-          </p>
-        `;
-      }
-    } else if (key === 'flatnessScore') {
-      const fps = getNumeric('actualFPS');
-
-      if (!Number.isFinite(fps) || fps <= 0) {
-        html = `
-          <h2>Flatness Score Math</h2>
-          <p>
-            Enter a valid launch FPS so the app can estimate the arc at 
-            <strong>60 yards</strong>.
-          </p>
-        `;
+        groupBadgeEl.textContent = isTight ? 'Tight' : 'Average';
+        if (groupHintEl) {
+          groupHintEl.textContent = isTight
+            ? 'FPS > 300, FOC > 15%, GPI < 8 — very stable setup.'
+            : 'Stability based on FPS, FOC, and GPI. Tweak for tighter groups.';
+        }
       } else {
+        groupBadgeEl.textContent = '–';
+        if (groupHintEl) {
+          groupHintEl.textContent = 'Enter FPS, FOC, and arrow details to estimate group tightness.';
+        }
+      }
+
+      // Flatness Score / effective peak at 60 yd
+      let flatBadge = '–';
+      let peakFtText = '–';
+
+      if (Number.isFinite(fps) && fps > 0) {
         const baseDrop20 = computeDropInches(20, fps);
         const drop60 = computeDropInches(60, fps);
-        let peakFt = NaN;
-
         if (Number.isFinite(baseDrop20) && Number.isFinite(drop60)) {
           const extraDrop = drop60 - baseDrop20;
-          peakFt = Math.max(0, extraDrop / 12); // inches -> ft
+          const peakFt = Math.max(0, extraDrop / 12);
+          peakFtText = peakFt.toFixed(1);
+
+          if (peakFt < 3)      flatBadge = 'Very Flat';
+          else if (peakFt < 4.5) flatBadge = 'Flat';
+          else                 flatBadge = 'Curved';
+        }
+      }
+
+      flatBadgeEl.textContent = flatBadge;
+      if (flatPeakEl) flatPeakEl.textContent = peakFtText;
+
+      // Downrange drop table
+      const distances = [20, 30, 40, 50, 60, 70];
+      tableBody.innerHTML = '';
+
+      distances.forEach(d => {
+        const tr = document.createElement('tr');
+        const tdDist = document.createElement('td');
+        const tdDrop = document.createElement('td');
+
+        tdDist.textContent = d.toString();
+
+        if (!Number.isFinite(fps) || fps <= 0) {
+          tdDrop.textContent = d === 20 ? '0.0' : '–';
+        } else {
+          let drop = computeDropInches(d, fps);
+          if (!Number.isFinite(drop)) {
+            tdDrop.textContent = d === 20 ? '0.0' : '–';
+          } else {
+            if (d === 20) drop = 0;
+            tdDrop.textContent = drop.toFixed(1);
+          }
         }
 
-        let badge = '–';
-        if (Number.isFinite(peakFt)) {
-          if (peakFt < 3) badge = 'Very Flat';
-          else if (peakFt < 4.5) badge = 'Flat';
-          else badge = 'Curved';
+        tr.appendChild(tdDist);
+        tr.appendChild(tdDrop);
+        tableBody.appendChild(tr);
+      });
+    }
+
+    function updateApplicationPanels() {
+      const appSel = document.getElementById('application');
+      if (!appSel) return;
+
+      const mode = appSel.value;
+      const huntingMode = (mode === 'Hunting');
+
+      const huntingPanel = document.getElementById('huntingPanel');
+      const targetPanel  = document.getElementById('targetPanel');
+      const titleEl      = document.getElementById('gameCardTitle');
+      const headerText   = document.getElementById('gameHeaderText');
+
+      if (huntingPanel && targetPanel) {
+        huntingPanel.style.display = huntingMode ? '' : 'none';
+        targetPanel.style.display  = huntingMode ? 'none' : '';
+      }
+
+      if (titleEl) {
+        titleEl.textContent = huntingMode ? 'Game Effectiveness' : 'Target Insights';
+      }
+
+      if (headerText) {
+        headerText.style.display = huntingMode ? '' : 'none';
+      }
+
+      if (!huntingMode) {
+        updateTargetPanelMetrics();
+      }
+    }
+
+    // Buttons
+    document.getElementById('recalcFPS').onclick = () => calculateEverything(true);
+
+    document.getElementById('copySummary').onclick = () => {
+      if (!window.latestSummary) {
+        calculateEverything(false);
+      }
+      const summary = window.latestSummary || {};
+      const lines = [
+        `Arrow Tune Build - ${new Date().toLocaleDateString()}`,
+        ''
+      ];
+
+      Object.entries(summary).forEach(([k, v]) => {
+        if (v === '') return;
+        lines.push(`${k}: ${v}`);
+      });
+
+      const text = lines.join('\n');
+      navigator.clipboard.writeText(text).then(() => showToast('Summary copied'));
+    };
+
+    document.getElementById('distanceSlider').oninput = e => {
+      document.getElementById('distanceValue').textContent = e.target.value;
+      calculateEverything();
+    };
+
+    // Recalculate on input changes (special-casing manual FPS)
+    document.querySelectorAll('input,select,textarea').forEach(el => {
+      el.addEventListener('input', () => {
+        if (document.activeElement.id === 'actualFPS') {
+          markFpsChrono();
+          calculateEverything(false);
+        } else {
+          calculateEverything();
         }
+      });
+    });
+
+    // Info / Math overlays
+    const infoOverlay = document.getElementById('infoOverlay');
+    const infoContent = document.getElementById('infoContent');
+    const infoClose = document.querySelector('.info-close');
+
+    function openInfo(key) {
+      if (!infoOverlay || !infoContent) return;
+      infoContent.innerHTML = INFO_CONTENT[key] || `
+        <h2>Info</h2>
+        <p>More details coming soon.</p>
+      `;
+      infoOverlay.classList.add('open');
+    }
+
+    function openMath(key) {
+      if (!infoOverlay || !infoContent) return;
+      if (!window.math) {
+        calculateEverything(false);
+      }
+      const m = window.math || {};
+      let html = '';
+
+      if (key === 'foc' && m.foc) {
+        const f = m.foc;
+        html = `
+          <h2>FOC Math</h2>
+          <p><strong>Formula:</strong> FOC = ((Balance Point − (Arrow Length ÷ 2)) ÷ Arrow Length) × 100</p>
+          <p>Arrow Length = ${f.len.toFixed(2)} in</p>
+          <p>Midpoint = ${f.mid.toFixed(2)} in</p>
+          <p>Balance Point = ${f.balance.toFixed(2)} in</p>
+          <p>FOC = ((${f.balance.toFixed(2)} − ${f.mid.toFixed(2)}) ÷ ${f.len.toFixed(2)}) × 100
+             = <strong>${f.value.toFixed(1)}%</strong></p>
+        `;
+      } else if (key === 'sightMarks') {
+        const fps = getNumeric('actualFPS');
+
+        if (!Number.isFinite(fps) || fps <= 0) {
+          html = `
+            <h2>Downrange Arrow Drop Math</h2>
+            <p>
+              Enter a valid launch FPS so the app can estimate drop and sight mark
+              spacing from a <strong>20 yd zero</strong>.
+            </p>
+          `;
+        } else {
+          const distances = [20, 30, 40, 50, 60, 70];
+
+          const base20 = computeDropInches(20, fps);
+          const rows = distances.map(d => {
+            const drop = computeDropInches(d, fps);
+            let rel = drop - base20;
+            if (d === 20) rel = 0;
+            const relStr = Number.isFinite(rel) ? rel.toFixed(1) : '–';
+            return `<tr><td>${d}</td><td>${relStr}</td></tr>`;
+          }).join('');
+
+          html = `
+            <h2>Downrange Arrow Drop Math</h2>
+            <p>
+              We use the same simple flat-launch gravity model as the trajectory
+              estimates. For each distance <em>d</em> (in yards):
+            </p>
+            <p><strong>1.</strong> Convert yards to feet:</p>
+            <p>d<sub>ft</sub> = d × 3</p>
+            <p><strong>2.</strong> Approximate time of flight assuming constant speed:</p>
+            <p>t ≈ d<sub>ft</sub> ÷ FPS</p>
+            <p><strong>3.</strong> Compute vertical drop (inches):</p>
+            <p>drop(d) ≈ ½ × 386 × t²</p>
+            <p>(386 in/s² is gravity in inches per second².)</p>
+            <p><strong>4.</strong> Use 20 yd as the zero:</p>
+            <p>relativeDrop(d) = drop(d) − drop(20 yd)</p>
+            <p>So 20 yd is always <strong>0.0 in</strong>, and everything else is
+               “how much lower” that distance hits compared to your 20 yd mark.</p>
+            <p>With your current launch speed of <strong>${fps.toFixed(1)} FPS</strong>,
+               the approximate relative drops are:</p>
+            <div style="overflow-x:auto;margin-top:0.5rem;">
+              <table style="font-size:0.9rem;margin-top:0;">
+                <thead>
+                  <tr>
+                    <th>Distance (yd)</th>
+                    <th>Drop vs 20 yd (in)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rows}
+                </tbody>
+              </table>
+            </div>
+            <p style="margin-top:0.75rem;">
+              Use these values as a <strong>relative guide</strong> for pin spacing
+              and sight marks when comparing different arrow builds and speeds —
+              not as a replacement for a real sight tape.
+            </p>
+          `;
+        }
+      } else if (key === 'gpp' && m.gpp) {
+        const g = m.gpp;
+        html = `
+          <h2>GPP Math</h2>
+          <p><strong>Formula:</strong> GPP = Total Arrow Weight ÷ Draw Weight</p>
+          <p>Total Arrow Weight = ${g.weight.toFixed(1)} gr</p>
+          <p>Draw Weight = ${g.dw.toFixed(1)} lb</p>
+          <p>GPP = ${g.weight.toFixed(1)} ÷ ${g.dw.toFixed(1)} = <strong>${g.value.toFixed(1)}</strong></p>
+        `;
+      } else if (key === 'gpi' && m.gpi) {
+        const g = m.gpi;
+        html = `
+          <h2>GPI Math</h2>
+          <p><strong>Formula:</strong> GPI = Total Arrow Weight ÷ Arrow Length</p>
+          <p>Total Arrow Weight = ${g.weight.toFixed(1)} gr</p>
+          <p>Arrow Length = ${g.len.toFixed(2)} in</p>
+          <p>GPI = ${g.weight.toFixed(1)} ÷ ${g.len.toFixed(2)} = <strong>${g.value.toFixed(1)}</strong></p>
+        `;
+      } else if (key === 'tw' && m.tw) {
+        const t = m.tw;
+        html = `
+          <h2>Total Arrow Weight</h2>
+          <p>This is the finished arrow weight used for all other calculations.</p>
+          <p>Total Arrow Weight = <strong>${t.weight.toFixed(1)} grains</strong></p>
+        `;
+      } else if (key === 'fps' && m.fps) {
+        const f = m.fps;
+
+        const header =
+          f.source === 'chrono'
+            ? `
+          <h2>FPS Math</h2>
+          <p>You’ve entered <strong>manual FPS</strong> (likely from a chronograph), so the app uses that value directly.</p>
+          <p>Launch FPS = <strong>${f.usedFps.toFixed(1)} FPS</strong></p>
+          <p>The IBO-based estimate is still available as a reference:</p>
+        `
+            : `
+          <h2>FPS Estimate Math</h2>
+          <p>The app estimates launch FPS from your IBO rating, arrow weight, and string weight.</p>
+        `;
+
+        html = header + `
+          <hr />
+          <p><strong>Understanding the 450 and the 0.94 efficiency factor:</strong></p>
+
+          <p><strong>1. Why “450” is used in the IBO-style formula</strong></p>
+          <p>The number <strong>450 grains</strong> represents the standard “reference moving mass” used in IBO speed ratings. It comes from:</p>
+
+          <ul style="margin-left:1rem;">
+            <li><strong>350 gr</strong> — the official IBO test arrow</li>
+            <li><strong>+100 gr</strong> — estimated moving mass of the bow’s string and cables</li>
+          </ul>
+
+          <p>This lets us compare your setup to the IBO test by asking:</p>
+          <p><em>“If the bow shoots its IBO speed with a 450-grain reference mass, how fast will it shoot with <strong>your</strong> arrow + string weight?”</em></p>
+
+          <p><strong>Mass-adjusted formula:</strong></p>
+          <p>v<sub>base</sub> = IBO × √((450 + String Weight) ÷ (450 + Arrow Weight + String Weight))</p>
+
+          <hr />
+
+          <p><strong>2. Why we multiply by 0.94 (real-world bow efficiency)</strong></p>
+
+          <p>Even under perfect IBO test conditions, real bows rarely reach their full rated IBO speed. Across many chronograph tests, actual arrow speeds are typically <strong>4–7% slower</strong> due to:</p>
+
+          <ul style="margin-left:1rem;">
+            <li>string weight (peep, D-loop, serving, silencers)</li>
+            <li>cam system friction and timing variations</li>
+            <li>real-world draw length</li>
+            <li>tuning and manufacturing tolerances</li>
+          </ul>
+
+          <p>The industry average real-world efficiency is about <strong>94%</strong> of theoretical IBO output.  
+          Therefore, we apply:</p>
+
+          <p>v<sub>est</sub> = v<sub>base</sub> × <strong>0.94</strong></p>
+
+          <p>This produces speeds that closely match many chronograph results and keeps KE/momentum predictions realistic for hunting.</p>
+
+          <hr />
+
+          <p><strong>Your numbers:</strong></p>
+          <p>IBO = ${f.ibo.toFixed(1)} FPS</p>
+          <p>String Weight = ${f.stringW.toFixed(1)} gr</p>
+          <p>Arrow Weight = ${f.weight.toFixed(1)} gr</p>
+
+          <p><strong>Mass-adjusted base speed:</strong></p>
+          <p>v<sub>base</sub> = ${f.ibo.toFixed(1)} × √((450 + ${f.stringW.toFixed(1)}) ÷ (450 + ${f.weight.toFixed(1)} + ${f.stringW.toFixed(1)}))</p>
+          <p>v<sub>base</sub> ≈ ${f.baseFps.toFixed(1)} FPS</p>
+
+          <p><strong>After efficiency factor:</strong></p>
+          <p>v<sub>est</sub> = ${f.baseFps.toFixed(1)} × 0.94 ≈ <strong>${f.estimatedFps.toFixed(1)} FPS</strong></p>
+
+          <p><strong>FPS used in calculations:</strong> ${f.usedFps.toFixed(1)} FPS  
+          (${f.source === 'chrono' ? 'manual (chrono)' : 'estimated'})</p>
+        `;
+      } else if (key === 'groupStability') {
+        const fps = getNumeric('actualFPS');
+        const foc = getNumeric('focValue');
+        const gpi = getNumeric('gpiValue');
+
+        if (!Number.isFinite(fps) || !Number.isFinite(foc) || !Number.isFinite(gpi)) {
+          html = `
+            <h2>Group Stability Math</h2>
+            <p>
+              Enter launch FPS, FOC, and arrow details so the app can estimate 
+              group stability.
+            </p>
+            <p>
+              Until all three are valid numbers, this badge will stay in a 
+              neutral state.
+            </p>
+          `;
+        } else {
+          const isTight = (fps > 300 && foc > 15 && gpi < 8);
+          const label = isTight ? 'Tight' : 'Average';
+
+          html = `
+            <h2>Group Stability Math</h2>
+            <p>
+              The badge is based on a simple rule-of-thumb combination of
+              <strong>FPS</strong>, <strong>FOC</strong>, and <strong>GPI</strong>.
+            </p>
+            <p>Current values:</p>
+            <ul  style="margin-left:1.25rem;">
+              <li>FPS = <strong>${fps.toFixed(1)}</strong></li>
+              <li>FOC = <strong>${foc.toFixed(1)}%</strong></li>
+              <li>GPI = <strong>${gpi.toFixed(1)}</strong></li>
+            </ul>
+            <p>One example threshold for a <strong>Tight</strong> setup is:</p>
+            <ul style="margin-left:1.25rem;">
+              <li>FPS &gt; 300</li>
+              <li>FOC &gt; 15%</li>
+              <li>GPI &lt; 8</li>
+            </ul>
+            <p>
+              Your setup currently evaluates to: 
+              <strong>${label}</strong>.
+            </p>
+            <p>
+              This logic is intentionally simple and conservative — it’s meant 
+              as a quick “how forgiving does this look?” check, not a formal 
+              scoring system.
+            </p>
+          `;
+        }
+      } else if (key === 'flatnessScore') {
+        const fps = getNumeric('actualFPS');
+
+        if (!Number.isFinite(fps) || fps <= 0) {
+          html = `
+            <h2>Flatness Score Math</h2>
+            <p>
+              Enter a valid launch FPS so the app can estimate the arc at 
+              <strong>60 yards</strong>.
+            </p>
+          `;
+        } else {
+          const baseDrop20 = computeDropInches(20, fps);
+          const drop60 = computeDropInches(60, fps);
+          let peakFt = NaN;
+
+          if (Number.isFinite(baseDrop20) && Number.isFinite(drop60)) {
+            const extraDrop = drop60 - baseDrop20;
+            peakFt = Math.max(0, extraDrop / 12);
+          }
+
+          let badge = '–';
+          if (Number.isFinite(peakFt)) {
+            if (peakFt < 3) badge = 'Very Flat';
+            else if (peakFt < 4.5) badge = 'Flat';
+            else badge = 'Curved';
+          }
+
+          html = `
+            <h2>Flatness Score Math</h2>
+            <p>
+              We use the same simple, sight-style gravity model as the 
+              Downrange Arrow Drop simulator, focused on how the trajectory 
+              behaves between a <strong>20 yd zero</strong> and <strong>60 yd</strong>.
+            </p>
+            <p>
+              First we estimate drop at both ranges using your launch speed:
+            </p>
+            <ul  style="margin-left:1.25rem;">
+              <li>Launch FPS = <strong>${fps.toFixed(1)}</strong></li>
+              <li>Drop at 20 yd ≈ <strong>${Number.isFinite(baseDrop20) ? baseDrop20.toFixed(1) : '–'} in</strong></li>
+              <li>Drop at 60 yd ≈ <strong>${Number.isFinite(drop60) ? drop60.toFixed(1) : '–'} in</strong></li>
+            </ul>
+            <p>
+              The extra “up and over” between 20 and 60 yd is:
+            </p>
+            <p>
+              extraDrop = drop₆₀ − drop₂₀
+            </p>
+            <p>
+              We convert that into an approximate effective peak height:
+            </p>
+            <p>
+              peakHeight ≈ max(0, extraDrop ÷ 12)
+              ${Number.isFinite(peakFt) ? `≈ <strong>${peakFt.toFixed(1)} ft</strong>` : ''}
+            </p>
+            <p>
+              Then we map that height to a flatness label:
+            </p>
+            <ul  style="margin-left:1.25rem;">
+              <li>Very Flat: peak &lt; 3 ft</li>
+              <li>Flat: 3–4.5 ft</li>
+              <li>Curved: &gt; 4.5 ft</li>
+            </ul>
+            <p>
+              Your current setup evaluates to: <strong>${badge}</strong>.
+            </p>
+            <hr />
+            <p>
+              <strong>Why this usually differs from the Peak Height tile:</strong><br/>
+              Flatness is built from <em>sight-style drop</em> between 20 and 60 yards
+              (referenced to your line of sight), while the Peak Height tile shows the 
+              arc above a horizontal launch line at whatever distance you pick on the 
+              main slider. Different reference lines and distances → different height 
+              numbers — that’s expected.
+            </p>
+          `;
+        }
+      } else if (key === 'keLaunch' && m.keLaunch) {
+        const k = m.keLaunch;
+        html = `
+          <h2>Launch Kinetic Energy</h2>
+          <p><strong>Formula:</strong> KE = (Arrow Weight × Velocity²) ÷ 450240</p>
+          <p>Arrow Weight = ${k.weight.toFixed(1)} gr</p>
+          <p>Launch Velocity = ${k.fps.toFixed(1)} FPS</p>
+          <p>KE = (${k.weight.toFixed(1)} × ${k.fps.toFixed(1)}²) ÷ 450240
+             = <strong>${k.value.toFixed(1)} ft-lbs</strong></p>
+          <p>The constant <strong>450240</strong> is a unit-conversion factor that turns grains and feet-per-second into foot-pounds. It bundles together gravity, the “½” from ½mv², and the 7000 grains-per-pound conversion.</p>
+        `;
+      } else if (key === 'velocity' && m.velocity) {
+        const v = m.velocity;
+        const exponent = -v.distYards / 300;
+        const decay = Math.exp(exponent);
+        html = `
+          <h2>Velocity at Distance</h2>
+          <p><strong>Model:</strong> v(d) = v₀ × e^(−d / 300)</p>
+          <p>Launch Velocity v₀ = ${v.launchFps.toFixed(1)} FPS</p>
+          <p>Distance d = ${v.distYards.toFixed(0)} yd</p>
+          <p><strong>Step 1:</strong> exponent = −d/300 = −${v.distYards.toFixed(0)}/300 ≈ ${exponent.toFixed(3)}</p>
+          <p><strong>Step 2:</strong> e^(exponent) ≈ ${decay.toFixed(3)}</p>
+          <p><strong>Step 3:</strong> v(d) = ${v.launchFps.toFixed(1)} × ${decay.toFixed(3)}
+             ≈ <strong>${v.value.toFixed(0)} FPS</strong></p>
+        `;
+      } else if (key === 'peakHeight' && m.peakHeight) {
+        const p = m.peakHeight;
+        const g = 32.174;
+        const Rft = p.distYards * 3;
+
+        let sin2theta = (Rft * g) / (p.launchFps * p.launchFps);
 
         html = `
-          <h2>Flatness Score Math</h2>
+          <h2>Peak Height Math</h2>
+
           <p>
-            We use a simple flat-launch model to approximate arc height 
-            between a 20 yd zero and a <strong>60 yd</strong> shot.
+            This calculation finds how high your arrow rises above a 
+            <strong>horizontal launch line</strong> before descending toward the target.
+            It uses a classic level-ground projectile model.
           </p>
+
+          <p><strong>Step 1:</strong> Solve the launch angle θ so the arrow reaches  
+            your selected distance:</p>
+          <p>Range = (v₀² × sin(2θ)) ÷ g → sin(2θ) = (Range × g) ÷ v₀²</p>
+          <p>Range = ${p.distYards.toFixed(0)} yd = ${Rft.toFixed(0)} ft</p>
+          <p>v₀ = ${p.launchFps.toFixed(1)} FPS, g = 32.174 ft/s²</p>
+          <p>sin(2θ) ≈ ${sin2theta.toFixed(3)}</p>
+
+          <p><strong>Step 2:</strong> Compute peak height:</p>
+          <p>H = (v₀² × sin²θ) ÷ (2g)</p>
           <p>
-            First, we estimate <strong>drop at 20 yd</strong> and 
-            <strong>drop at 60 yd</strong> using your launch speed:
+            With your setup this becomes:<br/>
+            H ≈ <strong>${p.peakHeightFt.toFixed(1)} ft</strong>
           </p>
-          <ul  style="margin-left:1.25rem;">
-            <li>Launch FPS = <strong>${fps.toFixed(1)}</strong></li>
-            <li>Drop at 20 yd ≈ <strong>${Number.isFinite(baseDrop20) ? baseDrop20.toFixed(1) : '–'} in</strong></li>
-            <li>Drop at 60 yd ≈ <strong>${Number.isFinite(drop60) ? drop60.toFixed(1) : '–'} in</strong></li>
-          </ul>
+
           <p>
-            The extra drop between 20 and 60 yd is turned into an approximate 
-            peak arc height:
+            The peak occurs approximately halfway to the target:<br/>
+            ≈ <strong>${p.peakYard.toFixed(0)} yd</strong>
           </p>
+
+          <hr />
+
           <p>
-            Peak height ≈ max(0, (drop₆₀ − drop₂₀) ÷ 12) 
-            ${Number.isFinite(peakFt) ? `≈ <strong>${peakFt.toFixed(1)} ft</strong>` : ''}
-          </p>
-          <p>
-            That peak height then maps to a label:
-          </p>
-          <ul  style="margin-left:1.25rem;">
-            <li>Very Flat: peak &lt; 3 ft</li>
-            <li>Flat: 3–4.5 ft</li>
-            <li>Curved: &gt; 4.5 ft</li>
-          </ul>
-          <p>
-            Your current setup evaluates to: <strong>${badge}</strong>.
-          </p>
-          <p>
-            This is intended as a <strong>relative comparison tool</strong> between
-            builds, not an exact sight tape or full physics simulation.
+            <strong>Why this number does NOT match the Flatness Score:</strong><br/>
+            Peak Height uses a <em>horizontal launch line</em> as its reference.<br/>
+            Flatness Score and Downrange Drop use your <em>line of sight</em> 
+            from a 20-yard zero, which is angled upward.<br/>
+            Because the reference lines differ, the height values are expected to be different.
           </p>
         `;
+      } else if (key === 'impactKE' && m.impactKE) {
+        const k = m.impactKE;
+        html = `
+          <h2>Impact Kinetic Energy</h2>
+          <p><strong>Formula:</strong> KE = (Arrow Weight × Impact Velocity²) ÷ 450240</p>
+          <p>Arrow Weight = ${k.weight.toFixed(1)} gr</p>
+          <p>Impact Velocity at ${k.distYards.toFixed(0)} yd = ${k.impactV.toFixed(1)} FPS</p>
+          <p>KE = (${k.weight.toFixed(1)} × ${k.impactV.toFixed(1)}²) ÷ 450240
+             = <strong>${k.value.toFixed(1)} ft-lbs</strong></p>
+        `;
+      } else if (key === 'impactMom' && m.impactMom) {
+        const mom = m.impactMom;
+        html = `
+          <h2>Impact Momentum</h2>
+          <p><strong>Formula:</strong> Momentum = (Arrow Weight × Impact Velocity) ÷ 225400</p>
+          <p>Arrow Weight = ${mom.weight.toFixed(1)} gr</p>
+          <p>Impact Velocity at ${mom.distYards.toFixed(0)} yd = ${mom.impactV.toFixed(1)} FPS</p>
+          <p>Momentum = (${mom.weight.toFixed(1)} × ${mom.impactV.toFixed(1)}) ÷ 225400
+             = <strong>${mom.value.toFixed(3)} slug·ft/s</strong></p>
+        `;
+      } else if (key === 'timeToImpact' && m.timeToImpact) {
+        const t = m.timeToImpact;
+        const feet = t.distYards * 3;
+        const avgSpeed = t.launchFps * 0.8;
+        html = `
+          <h2>Time to Impact</h2>
+          <p>We approximate travel time using an average speed over the shot.</p>
+          <p><strong>Step 1:</strong> Convert distance</p>
+          <p>d = ${t.distYards.toFixed(0)} yd = ${feet.toFixed(0)} ft</p>
+          <p><strong>Step 2:</strong> Approximate average speed</p>
+          <p>v₍avg₎ ≈ 0.8 × v₀ = 0.8 × ${t.launchFps.toFixed(1)} ≈ ${avgSpeed.toFixed(1)} ft/s</p>
+          <p><strong>Step 3:</strong> Time ≈ distance ÷ average speed</p>
+          <p>Time ≈ ${feet.toFixed(0)} ÷ ${avgSpeed.toFixed(1)}
+             ≈ <strong>${t.value.toFixed(2)} s</strong></p>
+        `;
+      } else if (key === 'game' && m.game) {
+        const g = m.game;
+        const bandList = (g.bands || []).map(b => {
+          const status = b.ok ? 'Send it' : 'Don\u2019t';
+          return `<li><strong>${b.label}</strong> – min ${b.ke} ft-lbs &amp; ${b.mom.toFixed(2)} slug·ft/s → <strong>${status}</strong></li>`;
+        }).join('');
+        html = `
+          <h2>Game Effectiveness Bands</h2>
+          <p>At ${g.distYards.toFixed(0)} yd, this setup has:</p>
+          <p>Impact KE = <strong>${g.impactKE.toFixed(1)} ft-lbs</strong></p>
+          <p>Impact Momentum = <strong>${g.impactMom.toFixed(3)} slug·ft/s</strong></p>
+          <p>We compare those values against conservative guideline bands:</p>
+          <div style="margin-left:1.25rem;">
+            <ul>${bandList}</ul>
+          </div>
+          <p>Both KE and momentum must meet a band for the app to show "Send it" for that game class.</p>
+        `;
+      } else if (key === 'awc' && m.awc) {
+        const a = m.awc;
+        html = `
+          <h2>Arrow Weight Composition Math</h2>
+          <p>Total Arrow Weight = <strong>${a.weight.toFixed(1)} gr</strong></p>
+          <p>Breakdown by part:</p>
+          <ul>
+            <li><strong>Shaft:</strong> ${a.shaft.toFixed(1)} gr (${a.shaftPct.toFixed(0)}%)</li>
+            <li><strong>Point:</strong> ${a.point.toFixed(1)} gr (${a.pointPct.toFixed(0)}%)</li>
+            <li><strong>Components (nock, vanes, wrap, insert, glue):</strong> ${a.comp.toFixed(1)} gr (${a.compPct.toFixed(0)}%)</li>
+          </ul>
+          <p>Percentages are computed as (part ÷ total) × 100 and then normalized so they sum to about 100% for the bar display.</p>
+        `;
       }
-    } else if (key === 'keLaunch' && m.keLaunch) {
-      const k = m.keLaunch;
-      html = `
-        <h2>Launch Kinetic Energy</h2>
-        <p><strong>Formula:</strong> KE = (Arrow Weight × Velocity²) ÷ 450240</p>
-        <p>Arrow Weight = ${k.weight.toFixed(1)} gr</p>
-        <p>Launch Velocity = ${k.fps.toFixed(1)} FPS</p>
-        <p>KE = (${k.weight.toFixed(1)} × ${k.fps.toFixed(1)}²) ÷ 450240
-           = <strong>${k.value.toFixed(1)} ft-lbs</strong></p>
-        <p>The constant <strong>450240</strong> is a unit-conversion factor that turns grains and feet-per-second into foot-pounds. It bundles together gravity, the “½” from ½mv², and the 7000 grains-per-pound conversion.</p>
-      `;
-    } else if (key === 'velocity' && m.velocity) {
-      const v = m.velocity;
-      const exponent = -v.distYards / 300;
-      const decay = Math.exp(exponent);
-      html = `
-        <h2>Velocity at Distance</h2>
-        <p><strong>Model:</strong> v(d) = v₀ × e^(−d / 300)</p>
-        <p>Launch Velocity v₀ = ${v.launchFps.toFixed(1)} FPS</p>
-        <p>Distance d = ${v.distYards.toFixed(0)} yd</p>
-        <p><strong>Step 1:</strong> exponent = −d/300 = −${v.distYards.toFixed(0)}/300 ≈ ${exponent.toFixed(3)}</p>
-        <p><strong>Step 2:</strong> e^(exponent) ≈ ${decay.toFixed(3)}</p>
-        <p><strong>Step 3:</strong> v(d) = ${v.launchFps.toFixed(1)} × ${decay.toFixed(3)}
-           ≈ <strong>${v.value.toFixed(0)} FPS</strong></p>
-      `;
-    } else if (key === 'peakHeight' && m.peakHeight) {
-      const p = m.peakHeight;
-      const g = 32.174;
-      const Rft = p.distYards * 3;
-      const sin2theta = (Rft * g) / (p.launchFps * p.launchFps);
-      html = `
-        <h2>Peak Height of Arc</h2>
-        <p>For a level shot, we approximate a symmetric ballistic trajectory.</p>
-        <p><strong>Step 1:</strong> Solve for launch angle θ so that the range matches your distance:</p>
-        <p>sin(2θ) = (Range × g) ÷ v₀²</p>
-        <p>Range = ${p.distYards.toFixed(0)} yd = ${Rft.toFixed(0)} ft</p>
-        <p>v₀ = ${p.launchFps.toFixed(1)} FPS, g ≈ 32.174 ft/s²</p>
-        <p>sin(2θ) ≈ ${sin2theta.toFixed(3)}</p>
-        <p><strong>Step 2:</strong> Peak height formula:</p>
-        <p>H = (v₀² × sin²θ) ÷ (2g)</p>
-        <p>Plugging in your numbers (after solving for θ) gives:</p>
-        <p>H ≈ <strong>${p.peakHeightFt.toFixed(1)} ft</strong> above a flat line to the target,</p>
-        <p>with the peak roughly at <strong>${p.peakYard.toFixed(0)} yd</strong> from the shooter.</p>
-      `;
-    } else if (key === 'impactKE' && m.impactKE) {
-      const k = m.impactKE;
-      html = `
-        <h2>Impact Kinetic Energy</h2>
-        <p><strong>Formula:</strong> KE = (Arrow Weight × Impact Velocity²) ÷ 450240</p>
-        <p>Arrow Weight = ${k.weight.toFixed(1)} gr</p>
-        <p>Impact Velocity at ${k.distYards.toFixed(0)} yd = ${k.impactV.toFixed(1)} FPS</p>
-        <p>KE = (${k.weight.toFixed(1)} × ${k.impactV.toFixed(1)}²) ÷ 450240
-           = <strong>${k.value.toFixed(1)} ft-lbs</strong></p>
-        <p>The constant <strong>450240</strong> is the same grains-to-foot-pounds conversion used at launch, so you can compare KE at the bow and at impact on the same scale.</p>
-      `;
-    } else if (key === 'impactMom' && m.impactMom) {
-      const mom = m.impactMom;
-      html = `
-        <h2>Impact Momentum</h2>
-        <p><strong>Formula:</strong> Momentum = (Arrow Weight × Impact Velocity) ÷ 225400</p>
-        <p>Arrow Weight = ${mom.weight.toFixed(1)} gr</p>
-        <p>Impact Velocity at ${mom.distYards.toFixed(0)} yd = ${mom.impactV.toFixed(1)} FPS</p>
-        <p>Momentum = (${mom.weight.toFixed(1)} × ${mom.impactV.toFixed(1)}) ÷ 225400
-           = <strong>${mom.value.toFixed(3)} slug·ft/s</strong></p>
-        <p>The constant <strong>225400</strong> is a unit-conversion factor that turns grains and feet-per-second into slug·ft/s. It essentially wraps together gravity and the 7000 grains-per-pound factor so the result is on a meaningful momentum scale.</p>
-      `;
-    } else if (key === 'timeToImpact' && m.timeToImpact) {
-      const t = m.timeToImpact;
-      const feet = t.distYards * 3;
-      const avgSpeed = t.launchFps * 0.8;
-      html = `
-        <h2>Time to Impact</h2>
-        <p>We approximate travel time using an average speed over the shot.</p>
-        <p><strong>Step 1:</strong> Convert distance</p>
-        <p>d = ${t.distYards.toFixed(0)} yd = ${feet.toFixed(0)} ft</p>
-        <p><strong>Step 2:</strong> Approximate average speed</p>
-        <p>v₍avg₎ ≈ 0.8 × v₀ = 0.8 × ${t.launchFps.toFixed(1)} ≈ ${avgSpeed.toFixed(1)} ft/s</p>
-        <p><strong>Step 3:</strong> Time ≈ distance ÷ average speed</p>
-        <p>Time ≈ ${feet.toFixed(0)} ÷ ${avgSpeed.toFixed(1)}
-           ≈ <strong>${t.value.toFixed(2)} s</strong></p>
-      `;
-    } else if (key === 'game' && m.game) {
-      const g = m.game;
-      const bandList = (g.bands || []).map(b => {
-        const status = b.ok ? 'Send it' : 'Don\u2019t';
-        return `<li><strong>${b.label}</strong> – min ${b.ke} ft-lbs &amp; ${b.mom.toFixed(2)} slug·ft/s → <strong>${status}</strong></li>`;
-      }).join('');
-      html = `
-        <h2>Game Effectiveness Bands</h2>
-        <p>At ${g.distYards.toFixed(0)} yd, this setup has:</p>
-        <p>Impact KE = <strong>${g.impactKE.toFixed(1)} ft-lbs</strong></p>
-        <p>Impact Momentum = <strong>${g.impactMom.toFixed(3)} slug·ft/s</strong></p>
-        <p>We compare those values against conservative guideline bands:</p>
-        <div style="margin-left:1.25rem;">
-          <ul>${bandList}</ul>
-        </div>
-        <p>Both KE and momentum must meet a band for the app to show "Send it" for that game class.</p>
-      `;
-    } else if (key === 'awc' && m.awc) {
-      const a = m.awc;
-      html = `
-        <h2>Arrow Weight Composition Math</h2>
-        <p>Total Arrow Weight = <strong>${a.weight.toFixed(1)} gr</strong></p>
-        <p>Breakdown by part:</p>
-        <ul>
-          <li><strong>Shaft:</strong> ${a.shaft.toFixed(1)} gr (${a.shaftPct.toFixed(0)}%)</li>
-          <li><strong>Point:</strong> ${a.point.toFixed(1)} gr (${a.pointPct.toFixed(0)}%)</li>
-          <li><strong>Components (nock, vanes, wrap, insert, glue):</strong> ${a.comp.toFixed(1)} gr (${a.compPct.toFixed(0)}%)</li>
-        </ul>
-        <p>Percentages are computed as (part ÷ total) × 100 and then normalized so they sum to about 100% for the bar display.</p>
-      `;
+
+      if (!html) {
+        html = `
+          <h2>Math</h2>
+          <p>Math details are not available for this section yet.</p>
+        `;
+      }
+
+      infoContent.innerHTML = html;
+      infoOverlay.classList.add('open');
     }
 
-    if (!html) {
-      html = `
-        <h2>Math</h2>
-        <p>Math details are not available for this section yet.</p>
-      `;
+    if (infoClose) {
+      infoClose.addEventListener('click', () => infoOverlay.classList.remove('open'));
     }
 
-    infoContent.innerHTML = html;
-    infoOverlay.classList.add('open');
-  }
+    if (infoOverlay) {
+      infoOverlay.addEventListener('click', (e) => {
+        if (e.target === infoOverlay) infoOverlay.classList.remove('open');
+      });
+    }
 
-  if (infoClose) {
-    infoClose.addEventListener('click', () => infoOverlay.classList.remove('open'));
-  }
-
-  if (infoOverlay) {
-    infoOverlay.addEventListener('click', (e) => {
-      if (e.target === infoOverlay) infoOverlay.classList.remove('open');
+    document.querySelectorAll('.info-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const key = btn.dataset.info;
+        if (key) openInfo(key);
+      });
     });
-  }
 
-  document.querySelectorAll('.info-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const key = btn.dataset.info;
-      if (key) openInfo(key);
+    document.querySelectorAll('.math-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const key = btn.dataset.math;
+        if (key) openMath(key);
+      });
     });
-  });
 
-  document.querySelectorAll('.math-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const key = btn.dataset.math;
-      if (key) openMath(key);
-    });
-  });
-
-  refreshBuilds();
-  updateArrowWeightMode();
-  calculateEverything(true);
-</script>
+    // Init
+    refreshBuilds();
+    updateArrowWeightMode();
+    calculateEverything(true);
+  </script>
 </body>
 </html>
