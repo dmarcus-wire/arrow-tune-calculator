@@ -2093,26 +2093,28 @@ const INFO_CONTENT = {
       how much it slows down over distance.
     </p>
   `,
-  velocityAtDistance: `
+    velocityAtDistance: `
     <h2>Velocity</h2>
     <p>
       Estimated arrow speed at the selected yardage based on your launch FPS and
-      a simple decay model.
+      a simple decay model that <strong>scales with arrow weight</strong>.
+      Lighter arrows (lower GPP) shed speed faster; heavier arrows hang onto
+      speed a bit longer.
     </p>
     <p>
-      This feeds the impact KE and momentum calculations and gives you a sense of
-      how much speed you’re giving up at longer shots.
+      Under the hood the calculator uses an exponential curve:
+      v(d) = v₀ × e^(−d / L), where <strong>L</strong> is an effective
+      “speed-retention distance” in yards. L is tuned from your
+      grains-per-pound (GPP) so it behaves like common hunting setups:
     </p>
-  `,
-  launchKE: `
-    <h2>Launch Kinetic Energy</h2>
+    <ul style="margin-left:1.25rem;">
+      <li>~5–6 GPP → shorter L (faster speed loss)</li>
+      <li>~7 GPP → mid L (neutral reference)</li>
+      <li>~8–9 GPP → longer L (better speed retention)</li>
+    </ul>
     <p>
-      The arrow’s kinetic energy at the bow (in ft-lbs), based on total arrow weight
-      and launch FPS.
-    </p>
-    <p>
-      This is a common metric for comparing setups and is often used as a baseline for
-      game recommendations.
+      This feeds the impact KE and momentum calculations and gives you a feel
+      for how much speed you’re giving up as range increases.
     </p>
   `,
   timeToImpact: `
@@ -2582,6 +2584,52 @@ function computeDropInches(distanceYards, fps, zeroYards = 20) {
   return dropIn;
 }
 
+// Simple drop model for sight-based math
+function computeDropInches(distanceYards, fps, zeroYards = 20) {
+  if (!Number.isFinite(fps) || fps <= 0) return NaN;
+
+  const gFt = 32.174;      // gravity in ft/s^2
+  const v0  = fps;
+  const RzFt = zeroYards * 3;
+
+  let sin2theta = (RzFt * gFt) / (v0 * v0);
+  if (sin2theta <= 0) return NaN;
+  sin2theta = Math.min(1, Math.max(0, sin2theta));
+  const theta = 0.5 * Math.asin(sin2theta);
+
+  const cosTheta = Math.cos(theta);
+  const sinTheta = Math.sin(theta);
+  if (cosTheta <= 1e-6) return NaN;
+
+  const dFt = distanceYards * 3;
+  const t   = dFt / (v0 * cosTheta);
+
+  const yFt = v0 * sinTheta * t - 0.5 * gFt * t * t;
+  const dropIn = -yFt * 12;
+  return dropIn;
+}
+
+/**
+ * Velocity decay length (L) in yards.
+ * Heavier arrows (higher GPP) keep speed longer → larger L.
+ * Lighter arrows (lower GPP) lose speed faster → smaller L.
+ */
+function getVelocityDecayYards(weightGrains, drawWeightLbs) {
+  if (!Number.isFinite(weightGrains) || !Number.isFinite(drawWeightLbs) || drawWeightLbs <= 0) {
+    return 300; // neutral fallback
+  }
+
+  const gpp = weightGrains / drawWeightLbs;   // grains-per-pound
+  let delta = gpp - 7;                        // 7 GPP = neutral
+  delta = clamp(delta, -2, 2);               // clamp between ~5–9 GPP
+
+  const base = 300;      // neutral retention distance in yards
+  const perGpp = 35;     // ~35 yd change in L per GPP step
+
+  // 5 GPP → ~230 yd, 7 GPP → 300 yd, 9 GPP → ~370 yd
+  return base + delta * perGpp;
+}
+
 /* ============================================================
    TARGET PANEL METRICS (Target / 3D / Other)
 ============================================================ */
@@ -2802,7 +2850,10 @@ function calculateEverything(recalcFPS = false) {
   const distYards = parseFloat(distanceSliderEl.value) || 50;
   $("distanceValue").textContent = distYards;
 
-  const currentV = fps * Math.exp(-distYards/300);
+  // Velocity decay tuned by grains-per-pound (GPP):
+  // lighter arrows (low GPP) shed speed faster, heavier arrows shed speed slower.
+  const decayYards = getVelocityDecayYards(weight, dw);
+  const currentV = fps * Math.exp(-distYards / decayYards);
   const impactKE = (weight * currentV * currentV) / 450240;
   const impactMom = (weight * currentV) / 225400;
   const time = (distYards * 3) / (fps * 0.8);
@@ -3058,6 +3109,8 @@ function calculateEverything(recalcFPS = false) {
     velocity: {
       launchFps: fps,
       distYards,
+      decayYards,          // effective retention distance L (yards)
+      gpp,                 // grains-per-pound snapshot
       value: currentV
     },
     peakHeight: {
@@ -3370,12 +3423,34 @@ function openMath(key) {
     `;
   } else if (key === 'velocity' && m.velocity) {
     const v = m.velocity;
+    const L = Number.isFinite(v.decayYards) && v.decayYards > 0 ? v.decayYards : 300;
+    const exponent = -v.distYards / L;
+
     html = `
       <h2>Velocity at Distance</h2>
-      <p><strong>Model:</strong> v(d) = v₀ × e^(−d / 300)</p>
-      <p>Launch Velocity v₀ = ${v.launchFps.toFixed(1)} FPS</p>
-      <p>Distance d = ${v.distYards.toFixed(0)} yd</p>
-      <p>v(d) ≈ <strong>${v.value.toFixed(0)} FPS</strong></p>
+      <p><strong>Model:</strong> v(d) = v₀ × e^(−d / L)</p>
+      <p>
+        v₀ is your launch FPS, d is distance in yards, and L is an
+        effective “speed-retention distance” in yards.
+      </p>
+      <p><strong>Your inputs:</strong></p>
+      <ul style="margin-left:1.25rem;">
+        <li>Launch velocity v₀ = ${v.launchFps.toFixed(1)} FPS</li>
+        <li>Distance d = ${v.distYards.toFixed(0)} yd</li>
+        <li>Current GPP ≈ ${Number.isFinite(v.gpp) ? v.gpp.toFixed(2) : '–'} gr/lb</li>
+        <li>Retention distance L ≈ ${L.toFixed(0)} yd</li>
+      </ul>
+      <p><strong>Computation:</strong></p>
+      <p>
+        v(d) = ${v.launchFps.toFixed(1)} × e<sup>${exponent.toFixed(3)}</sup>
+        ≈ <strong>${v.value.toFixed(0)} FPS</strong>
+      </p>
+      <p style="margin-top:0.5rem;">
+        Lower GPP arrows get a smaller L (they slow down faster); higher GPP
+        arrows get a larger L (they keep speed longer). This keeps the curve
+        in the ballpark of real hunting rigs without trying to be a full
+        drag-coefficient ballistic solver.
+      </p>
     `;
   } else if (key === 'peakHeight' && m.peakHeight) {
     const p = m.peakHeight;
