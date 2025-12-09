@@ -726,7 +726,7 @@
         </div>
         <p style="color:var(--light);">
           Offline • Mobile-friendly • Live calculations<br>
-          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.13</span>
+          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.14</span>
         </p>
       </div>
 
@@ -1100,8 +1100,12 @@
           <div class="subcard" id="gameCard" style="margin-top:0.25rem;">
             <div class="card-header compact" style="border-bottom:none;padding-bottom:0.25rem;margin-bottom:0.5rem;">
               <h3 id="gameCardTitle" style="margin:0;">Game Effectiveness</h3>
-              <button class="info-btn" type="button" data-info="gameEffectiveness">ⓘ</button>
+              <div style="display:flex;align-items:center;gap:0.35rem;">
+                <button class="info-btn" type="button" data-info="gameEffectiveness">ⓘ</button>
+                <button class="math-btn" type="button" data-math="game">∑</button>
+              </div>
             </div>
+        
 
             <!-- Hunting mode panel -->
             <div id="huntingMode">
@@ -2145,29 +2149,34 @@ const INFO_CONTENT = {
     </p>
   `,
   groupStability: `
-    <h2>Group Stability</h2>
+    <h2>Group Stability (Target / 3D)</h2>
     <p>
-      This badge is a <strong>sanity check</strong> for how forgiving your setup 
-      should be on paper. It looks at three things together:
+      This badge is a <strong>sanity check</strong> for how forgiving your setup
+      should feel on paper when tuned well and shot with good form.
     </p>
+    <p>It looks at three things together:</p>
     <ul style="margin-left:1.25rem;">
-      <li><strong>FPS</strong> – overall speed of the arrow.</li>
+      <li><strong>FPS</strong> – overall launch speed of the arrow.</li>
       <li><strong>FOC</strong> – how far forward the balance point is.</li>
       <li><strong>GPI</strong> – finished grains-per-inch of arrow length.</li>
     </ul>
     <p>
-      A <strong>Tight</strong> badge means your FPS, FOC, and GPI combination
-      lines up with a setup that should feel stable and repeatable when tuned
-      well and shot with good form.
+      Behind the scenes, the calculator looks for a combination like:
+    </p>
+    <ul style="margin-left:1.25rem;">
+      <li>Launch speed ≳ <strong>270 FPS</strong></li>
+      <li>FOC in the <strong>12–18%</strong> sweet spot</li>
+      <li>Finished GPI ≲ <strong>9.5 gr/in</strong></li>
+    </ul>
+    <p>
+      When you’re close to that zone, the badge tends toward
+      <strong>Tight</strong>. Outside of it, the badge reads
+      <strong>Average</strong> — still fully usable, just not as optimized on paper.
     </p>
     <p>
-      An <strong>Average</strong> badge doesn’t mean “bad” — only that the
-      numbers are more middle-of-the-road, and the setup may be a bit more
-      sensitive to tune or form compared to a really optimized rig.
-    </p>
-    <p>
-      This is not a scoring system, just a quick indicator to help you think
-      about stability when you’re comparing different arrow builds.
+      It’s not a scoring system or a guarantee of X&quot; groups — it’s a quick,
+      <strong>comparison tool</strong> for different builds so you can see which
+      ones should feel more forgiving at the same distance.
     </p>
   `,
   peakHeight: `
@@ -2200,30 +2209,31 @@ const INFO_CONTENT = {
     </p>
   `,
   flatnessScore: `
-    <h2>Flatness Score (60 yd)</h2>
+    <h2>Flatness Score (20 → 60 yd)</h2>
     <p>
-      Flatness looks at <strong>how tall your trajectory appears by 60 yards</strong>
-      using a simple ballistic model tied to your launch FPS.
+      Flatness looks at <strong>how tall your arc needs to be by 60 yards</strong>
+      when you are zeroed at 20 yards.
     </p>
     <p>
-      Under the hood the calculator estimates how much extra the arrow must arc
-      between a <strong>20 yd zero</strong> and <strong>60 yd</strong>. That extra
-      “up and over” is turned into an effective peak height and mapped to a label:
+      Under the hood, the calculator:
     </p>
     <ul style="margin-left:1.25rem;">
-      <li><strong>Very Flat</strong> – low effective peak by 60 yd</li>
-      <li><strong>Flat</strong> – moderate arc by 60 yd</li>
-      <li><strong>Curved</strong> – taller, loopier arc by 60 yd</li>
+      <li>Uses your launch FPS to model gravity drop at 20 and 60 yd.</li>
+      <li>Measures the extra drop from <strong>20 → 60 yd</strong>.</li>
+      <li>Turns that into an effective arc height and maps it to a label.</li>
     </ul>
     <p>
-      This uses the same basic physics as the Peak Height tile, but from a
-      <strong>sight-based perspective</strong> (20→60 yd) instead of whatever
-      distance you’ve set on the main slider. Because the reference distances
-      and lines are different, the height values won’t be identical.
+      Roughly:
     </p>
+    <ul style="margin-left:1.25rem;">
+      <li><strong>Very Flat</strong> – effective arc &lt; ~3 ft by 60 yd</li>
+      <li><strong>Flat</strong> – ~3–4.5 ft of effective arc</li>
+      <li><strong>Curved</strong> – &gt; ~4.5 ft of effective arc</li>
+    </ul>
     <p>
-      Treat Flatness as a <strong>comparison tool</strong> between builds rather
-      than exact sight tape data.
+      Use this as a <strong>comparison tool</strong> between builds — it’s not meant
+      to replace a dedicated sight tape or ballistic solver, just to show whether a
+      build is more “flat bow” or “loopy 3D rig” by the time it gets to 60 yards.
     </p>
   `,
   sightMarks: `
@@ -2533,10 +2543,14 @@ function updateTargetPanelMetrics() {
   const foc = getNumeric('focValue');
   const gpi = getNumeric('gpiValue');
 
-  // Group stability badge
+  // Group stability badge – use the same thresholds as the description
   if (groupStabilityBadgeEl) {
     if (Number.isFinite(fps) && Number.isFinite(foc) && Number.isFinite(gpi)) {
-      const isTight = (fps > 300 && foc > 15 && gpi < 8);
+      const isTight =
+        fps >= 270 &&      // solid speed
+        foc >= 12 && foc <= 18 && // sweet-spot FOC band
+        gpi <= 9.5;        // not overly heavy per inch
+
       groupStabilityBadgeEl.textContent = isTight ? 'Tight' : 'Average';
     } else {
       groupStabilityBadgeEl.textContent = '–';
@@ -2553,9 +2567,9 @@ function updateTargetPanelMetrics() {
         const extraDrop = drop60 - baseDrop20;
         const peakFt = Math.max(0, extraDrop / 12);
 
-        if (peakFt < 3) label = 'Very Flat';
+        if (peakFt < 3.0)      label = 'Very Flat';
         else if (peakFt < 4.5) label = 'Flat';
-        else label = 'Curved';
+        else                   label = 'Curved';
       }
     }
     flatnessScoreValueEl.textContent = label;
@@ -2858,26 +2872,50 @@ function calculateEverything(recalcFPS = false) {
     spineHint.textContent = 'Enter draw, arrow length, point weight, and spine to get a chart-like match check.';
   }
 
-  // Game bands (with Adjust instead of Don’t)
+  // Game bands – conservative *minimum* thresholds (no upper cap)
+  // KE mins are based on common Easton-style guidance:
+  // 15–25 ft-lbs Small, 25–41 Medium (deer), 42–65 Large (elk),
+  // 65–80 Toughest. Momentum mins are ballpark heuristics.
   const games = [
-    { keMin: 25, keMax: 50, momMin: 0.30, momMax: 0.45, id: "smallGameStatus", label: "Small / Thin-skinned" },
-    { keMin: 50, keMax: 65, momMin: 0.45, momMax: 0.60, id: "deerStatus",      label: "Medium Game / Deer" },
-    { keMin: 42, keMax: 65, momMin: 0.44, momMax: 0.65, id: "elkStatus",       label: "Large / Tough Game" },
-    { keMin: 65, keMax: 85, momMin: 0.60, momMax: 0.75, id: "mooseStatus",     label: "Dangerous / Extreme" }
+    {
+      id: "smallGameStatus",
+      label: "Small Game",
+      keMin: 15,          // ft-lbs
+      momMin: 0.20        // slug·ft/s
+    },
+    {
+      id: "deerStatus",
+      label: "Deer / Antelope",
+      keMin: 25,
+      momMin: 0.30
+    },
+    {
+      id: "elkStatus",
+      label: "Elk / Large Game",
+      keMin: 42,
+      momMin: 0.45
+    },
+    {
+      id: "mooseStatus",
+      label: "Toughest Game",
+      keMin: 65,
+      momMin: 0.60
+    }
   ];
 
   games.forEach(gm => {
-    const ok =
-      impactKE >= gm.keMin &&
-      impactKE <= gm.keMax &&
-      impactMom >= gm.momMin &&
-      impactMom <= gm.momMax;
+    const meetsKE  = impactKE  >= gm.keMin;
+    const meetsMom = impactMom >= gm.momMin;
 
-    gm.ok = ok;
+    gm.meetsKE  = meetsKE;
+    gm.meetsMom = meetsMom;
+    gm.ok       = meetsKE && meetsMom;
+
     const el = $(gm.id);
     if (!el) return;
 
-    if (ok) {
+    if (gm.ok) {
+      // Overgunned or right on the line both show as "Send it"
       el.textContent = "Send it";
       el.style.color = "var(--success)";
     } else {
@@ -3184,7 +3222,6 @@ function openMath(key) {
     `;
   } else if (key === 'velocity' && m.velocity) {
     const v = m.velocity;
-    const exponent = -v.distYards / 300;
     html = `
       <h2>Velocity at Distance</h2>
       <p><strong>Model:</strong> v(d) = v₀ × e^(−d / 300)</p>
@@ -3246,21 +3283,55 @@ function openMath(key) {
     `;
   } else if (key === 'game' && m.game) {
     const g = m.game;
-    const bandList = (g.bands || []).map(b => {
-      const status = b.ok ? 'Send it' : 'Adjust';
-      return `<li><strong>${b.label}</strong> → <strong>${status}</strong></li>`;
+    const rows = (g.bands || []).map(b => {
+      const status    = b.ok ? 'Send it' : 'Adjust';
+      const keStatus  = g.impactKE  >= b.keMin  ? '✓' : '×';
+      const momStatus = g.impactMom >= b.momMin ? '✓' : '×';
+
+      return `
+        <tr>
+          <td>${b.label}</td>
+          <td>${b.keMin.toFixed(0)}+</td>
+          <td>${b.momMin.toFixed(2)}+</td>
+          <td>${g.impactKE.toFixed(1)} (${keStatus})</td>
+          <td>${g.impactMom.toFixed(3)} (${momStatus})</td>
+          <td>${status}</td>
+        </tr>
+      `;
     }).join('');
+
     html = `
-      <h2>Game Effectiveness Bands</h2>
-      <p>At ${g.distYards.toFixed(0)} yd, this setup has:</p>
-      <p>Impact KE = <strong>${g.impactKE.toFixed(1)} ft-lbs</strong></p>
-      <p>Impact Momentum = <strong>${g.impactMom.toFixed(3)} slug·ft/s</strong></p>
-      <p>Band results:</p>
-      <ul style="margin-left:1.25rem;">${bandList}</ul>
+      <h2>Game Effectiveness Math</h2>
+      <p>At ${g.distYards.toFixed(0)} yd this build is carrying:</p>
+      <ul style="margin-left:1.25rem;">
+        <li>Impact KE = <strong>${g.impactKE.toFixed(1)} ft-lbs</strong></li>
+        <li>Impact Momentum = <strong>${g.impactMom.toFixed(3)} slug·ft/s</strong></li>
+      </ul>
       <p>
-        "Adjust" suggests moving closer, increasing arrow weight, or tuning spine
-        instead of writing the setup off entirely.
+        Each band below is a <strong>minimum</strong> guideline: being “overgunned”
+        (well above the line) still shows as <strong>Send it</strong>. 
       </p>
+      <div style="overflow-x:auto;margin-top:0.5rem;">
+        <table style="font-size:0.9rem;margin-top:0;">
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>KE Min (ft-lbs)</th>
+              <th>Mom Min (slug·ft/s)</th>
+              <th>Your KE</th>
+              <th>Your Mom</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:0.5rem;">
+        These are <em>conservative</em> sanity checks, not guarantees. Broadhead design, 
+        arrow flight, and shot placement still matter more than any single number.
+      </p>  
     `;
   } else if (key === 'awc' && m.awc) {
     const a = m.awc;
@@ -3319,11 +3390,19 @@ function openMath(key) {
     if (!Number.isFinite(fps) || !Number.isFinite(foc) || !Number.isFinite(gpi)) {
       html = `
         <h2>Group Stability Math</h2>
-        <p>Enter FPS, FOC, and arrow details so the app can estimate group stability.</p>
+        <p>
+          Enter launch FPS, FOC, and arrow length/weight so the app can estimate
+          group stability.
+        </p>
       `;
     } else {
-      const isTight = (fps > 300 && foc > 15 && gpi < 8);
+      const isTight =
+        fps >= 270 &&
+        foc >= 12 && foc <= 18 &&
+        gpi <= 9.5;
+
       const label = isTight ? 'Tight' : 'Average';
+
       html = `
         <h2>Group Stability Math</h2>
         <p>Current values:</p>
@@ -3333,7 +3412,18 @@ function openMath(key) {
           <li>GPI = <strong>${gpi.toFixed(1)}</strong></li>
         </ul>
         <p>Badge result: <strong>${label}</strong>.</p>
-        <p>A “Tight” badge indicates a setup that is fast (≥ 270 FPS), front-stabilized (12–18% FOC), and relatively light per inch (≤ 9.5 GPI). These combinations generally produce the most forgiving arrow flight and smallest group sizes when well tuned.</p>
+        <p>
+          The calculator flags <strong>Tight</strong> when all of these are true:
+        </p>
+        <ul style="margin-left:1.25rem;">
+          <li>Launch FPS ≳ <strong>270</strong></li>
+          <li>FOC between <strong>12–18%</strong></li>
+          <li>GPI ≲ <strong>9.5 gr/in</strong></li>
+        </ul>
+        <p>
+          Anything outside that zone is labeled <strong>Average</strong> — still fully
+          usable, but not as optimized on paper for forgiveness and small groups.
+        </p>
       `;
     }
   } else if (key === 'flatnessScore') {
@@ -3341,23 +3431,49 @@ function openMath(key) {
     if (!Number.isFinite(fps) || fps <= 0) {
       html = `
         <h2>Flatness Score Math</h2>
-        <p>Enter a valid launch FPS so the app can estimate the arc between 20 and 60 yd.</p>
+        <p>
+          Enter a valid launch FPS so the app can estimate the trajectory arc
+          between 20 and 60 yards.
+        </p>
       `;
     } else {
       const baseDrop20 = computeDropInches(20, fps);
       const drop60 = computeDropInches(60, fps);
       let peakFt = NaN;
+      let label = '–';
+
       if (Number.isFinite(baseDrop20) && Number.isFinite(drop60)) {
         const extraDrop = drop60 - baseDrop20;
         peakFt = Math.max(0, extraDrop / 12);
+
+        if (peakFt < 3.0)      label = 'Very Flat';
+        else if (peakFt < 4.5) label = 'Flat';
+        else                   label = 'Curved';
       }
+
       html = `
         <h2>Flatness Score Math</h2>
         <p>
-          We look at how much additional drop occurs between 20 and 60 yd, and turn
-          that into an approximate peak arc height.
+          We model gravity drop at <strong>20 yd</strong> and <strong>60 yd</strong>,
+          then look at how much additional drop happens between those points.
         </p>
-        <p>Approximate height by 60 yd ≈ <strong>${Number.isFinite(peakFt) ? peakFt.toFixed(1) : '–'} ft</strong></p>
+        <p>
+          That extra drop is converted into an effective arc height by 60 yd.
+        </p>
+        <p>
+          Approximate effective height by 60 yd:
+          <strong>${Number.isFinite(peakFt) ? peakFt.toFixed(2) : '–'} ft</strong>
+        </p>
+        <p>Score label: <strong>${label}</strong></p>
+        <ul style="margin-left:1.25rem;">
+          <li><strong>Very Flat</strong> → effective arc &lt; ~3 ft</li>
+          <li><strong>Flat</strong> → ~3–4.5 ft</li>
+          <li><strong>Curved</strong> → &gt; ~4.5 ft</li>
+        </ul>
+        <p>
+          Use this to compare builds — it isn’t meant to be exact sight tape data,
+          just a feel for how “flat” the rig is by 60 yards.
+        </p>
       `;
     }
   }
