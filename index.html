@@ -2117,15 +2117,28 @@ const INFO_CONTENT = {
       for how much speed you’re giving up as range increases.
     </p>
   `,
-  timeToImpact: `
+    timeToImpact: `
     <h2>Time to Impact</h2>
     <p>
-      Estimated time (in seconds) for the arrow to reach the target at the current
-      distance slider setting.
+      How long the arrow is in the air before it reaches the target at the
+      current distance setting.
     </p>
     <p>
-      This gives a feel for how “snappy” or “loopy” your setup is, and is useful when
-      thinking about animal movement and string jump.
+      The calculator uses a simple <strong>average–velocity model</strong>:
+      it looks at your launch FPS and your estimated velocity at the chosen
+      distance, averages them, and then divides the total distance by that
+      average speed.
+    </p>
+    <p>
+      That keeps the math intuitive:
+      faster setups have shorter times, slower or heavy–arrow builds stay in
+      the air longer, and anything that robs speed (distance, drag, extra
+      weight) stretches the time slightly.
+    </p>
+    <p>
+      Treat this as a <strong>ballpark flight time</strong> to help you think
+      about string jump and animal movement, not a frame–by–frame slow-motion
+      measurement.
     </p>
   `,
   impactKE: `
@@ -2850,20 +2863,28 @@ function calculateEverything(recalcFPS = false) {
   const distYards = parseFloat(distanceSliderEl.value) || 50;
   $("distanceValue").textContent = distYards;
 
-  // Velocity decay tuned by grains-per-pound (GPP):
-  // lighter arrows (low GPP) shed speed faster, heavier arrows shed speed slower.
+  // Velocity-at-distance model with GPP-aware decay length:
+  // v(d) = v0 * e^(-d / L), where L depends on grains-per-pound
   const decayYards = getVelocityDecayYards(weight, dw);
-  const currentV = fps * Math.exp(-distYards / decayYards);
-  const impactKE = (weight * currentV * currentV) / 450240;
+  const currentV   = fps * Math.exp(-distYards / Math.max(decayYards, 1));
+
+  // Impact KE & Momentum at that downrange velocity
+  const impactKE  = (weight * currentV * currentV) / 450240;
   const impactMom = (weight * currentV) / 225400;
-  const time = (distYards * 3) / (fps * 0.8);
 
-  impactKEEl.textContent = impactKE.toFixed(1);
-  impactMomEl.textContent = impactMom.toFixed(3);
-  timeToImpactEl.textContent = time.toFixed(2);
+  // Time to impact:
+  // distance in feet / average velocity between launch and downrange
+  const distanceFt = distYards * 3;
+  const avgV       = (fps + currentV) / 2;           // simple average of v₀ and v(d)
+  const time       = distanceFt / Math.max(avgV, 1); // protect against divide-by-zero
 
+  // Update UI tiles
   $("velocityDistanceLabel").textContent = distYards;
   velocityAtDistanceEl.textContent = currentV.toFixed(0);
+
+  impactKEEl.textContent     = impactKE.toFixed(1);
+  impactMomEl.textContent    = impactMom.toFixed(3);
+  timeToImpactEl.textContent = time.toFixed(2);
 
   // Peak height (horizontal launch line model)
   const g = 32.174;
@@ -3133,8 +3154,11 @@ function calculateEverything(recalcFPS = false) {
     },
     timeToImpact: {
       distYards,
-      value: time,
-      launchFps: fps
+      distFeet: distanceFt,  // distance converted to feet
+      value: time,           // final time in seconds
+      launchFps: fps,        // launch velocity
+      impactV: currentV,     // velocity at distance
+      avgV                    // average velocity between launch & impact
     },
     wind: {
       distYards,
@@ -3273,30 +3297,7 @@ if (distanceDisplayEl) {
   });
 }
 
-/* Click the printed distance to type a value (keyboard entry) */
-if (distanceValueEl && distanceSliderEl) {
-  distanceValueEl.style.cursor = 'pointer';
-  distanceValueEl.title = 'Click to type a distance in yards';
 
-  distanceValueEl.addEventListener('click', () => {
-    const current = parseFloat(distanceSliderEl.value) || 50;
-    const min = parseFloat(distanceSliderEl.min) || 5;
-    const max = parseFloat(distanceSliderEl.max) || 100;
-    const input = prompt(`Enter target distance in yards (${min}–${max}):`, current);
-
-    if (input === null) return;
-    const val = parseFloat(input);
-    if (!Number.isFinite(val)) {
-      alert('Please enter a valid number for distance.');
-      return;
-    }
-
-    const clamped = clamp(val, min, max);
-    distanceSliderEl.value = clamped;
-    distanceValueEl.textContent = clamped;
-    calculateEverything();
-  });
-}
 
 document.querySelectorAll('input,select,textarea').forEach(el => {
   el.addEventListener('input', () => {
@@ -3519,9 +3520,52 @@ function openMath(key) {
     const t = m.timeToImpact;
     html = `
       <h2>Time to Impact</h2>
-      <p>Distance = ${t.distYards.toFixed(0)} yd</p>
-      <p>Launch FPS ≈ ${t.launchFps.toFixed(1)}</p>
-      <p>Estimated time ≈ <strong>${t.value.toFixed(2)} s</strong></p>
+      <p>
+        The calculator uses a simple <strong>average–velocity model</strong> so the
+        math stays intuitive but still reacts correctly when you change FPS, arrow
+        weight, or distance.
+      </p>
+
+      <p><strong>1) Convert distance to feet</strong></p>
+      <p>
+        Distance in yards → feet:<br>
+        d<sub>ft</sub> = d<sub>yd</sub> × 3<br>
+        d<sub>yd</sub> = ${t.distYards.toFixed(0)} yd → 
+        d<sub>ft</sub> = ${t.distYards.toFixed(0)} × 3
+        = <strong>${t.distFeet.toFixed(1)} ft</strong>
+      </p>
+
+      <p><strong>2) Estimate average velocity</strong></p>
+      <p>
+        We assume the arrow slows down roughly in a straight line from launch
+        speed to the estimated speed at your chosen distance, then take the
+        average of those two speeds:
+      </p>
+      <p>
+        v₀ (launch speed) = ${t.launchFps.toFixed(1)} fps<br>
+        v(d) (speed at ${t.distYards.toFixed(0)} yd) ≈ ${t.impactV.toFixed(1)} fps<br>
+        v̄ (average speed) = (v₀ + v(d)) ÷ 2
+      </p>
+      <p>
+        v̄ = (${t.launchFps.toFixed(1)} + ${t.impactV.toFixed(1)}) ÷ 2
+        ≈ <strong>${t.avgV.toFixed(1)} fps</strong>
+      </p>
+
+      <p><strong>3) Time = distance ÷ average speed</strong></p>
+      <p>
+        t = d<sub>ft</sub> ÷ v̄
+      </p>
+      <p>
+        t = ${t.distFeet.toFixed(1)} ÷ ${t.avgV.toFixed(1)}
+        ≈ <strong>${t.value.toFixed(2)} s</strong>
+      </p>
+
+      <p style="margin-top:0.5rem;">
+        This isn’t trying to be a full-blown physics sim — it’s a
+        <strong>ballpark flight time</strong> that tracks correctly with your FPS,
+        arrow mass, and distance so you can think about string jump and animal
+        movement in realistic terms.
+      </p>
     `;
   } else if ((key === 'wind' || key === 'windDrift') && m.wind) {
     const w = m.wind;
