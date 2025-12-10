@@ -2143,25 +2143,137 @@ const INFO_CONTENT = {
   `,
   impactKE: `
     <h2>Impact Kinetic Energy</h2>
+
     <p>
-      The arrow’s kinetic energy at the target distance in ft-lbs, using the
-      estimated velocity at that distance.
+      <strong>Impact KE</strong> tells you how much usable energy the arrow is still carrying
+      <em>at the selected target distance</em>. Because arrows slow down in flight,
+      impact KE is always lower than launch KE — sometimes dramatically lower on lighter setups.
     </p>
+
+    <p>This value comes from:</p>
+    <ul style="margin-left:1.25rem;">
+      <li>Your total arrow weight (in grains)</li>
+      <li>Your estimated velocity at the chosen distance</li>
+    </ul>
+
     <p>
-      This value is compared against common minimums in the <strong>Game Effectiveness</strong>
-      section to give a rough “Send it / Adjust” suggestion.
+      Heavier arrows lose speed more slowly and retain more KE downrange.  
+      Lighter arrows start fast but shed energy quickly.
+    </p>
+
+    <h3 style="margin-top:1rem;">Why Impact KE Matters</h3>
+    <p>
+      This number feeds into the <strong>Game Effectiveness</strong> guidance.  
+      It is compared against conservative minimum KE guidelines for different classes of game.
+      These are not laws — but they're common reference points used by bowhunters.
+    </p>
+
+    <p>
+      High impact KE generally means:
+    </p>
+    <ul style="margin-left:1.25rem;">
+      <li>Better penetration potential</li>
+      <li>More forgiving momentum at imperfect angles</li>
+      <li>Reduced sensitivity to heavy clothing, ribs, or shoulder muscle</li>
+    </ul>
+
+    <h3 style="margin-top:1rem;">How We Compute It</h3>
+    <p>
+      Velocity at distance comes from the arrow’s modeled speed decay over the selected yardage.  
+      Once we have the impact velocity, we apply the standard archery KE formula.
+    </p>
+
+    <p>
+      KE drops quickly if:
+    </p>
+    <ul style="margin-left:1.25rem;">
+      <li>The arrow is light (low momentum)</li>
+      <li>The shot distance is long</li>
+      <li>Your launch FPS is modest</li>
+    </ul>
+
+    <p>
+      Treat Impact KE as a <strong>sanity check</strong> — not a strict requirement.
+      Broadhead type, tuning quality, and shot placement matter more than any single number.
     </p>
   `,
   impactMom: `
     <h2>Impact Momentum</h2>
     <p>
-      The arrow’s momentum at impact in slug·ft/s.
+      Momentum measures how much “push” the arrow carries into the target.  
+      While kinetic energy favors lighter, faster arrows, <strong>momentum favors mass</strong>.
     </p>
+
+    <p><strong>Why it matters:</strong></p>
+    <ul style="margin-left:1.25rem;">
+      <li>Heavier arrows lose speed more slowly downrange.</li>
+      <li>Heavier arrows maintain a higher portion of their launch momentum.</li>
+      <li>Momentum correlates strongly with penetration and broadhead stability.</li>
+    </ul>
+
+    <p><strong>Interpretation:</strong></p>
+    <ul style="margin-left:1.25rem;">
+      <li>Values around <strong>0.20–0.30 slug·ft/s</strong> are typical for small-game setups.</li>
+      <li><strong>0.30–0.45</strong> is common for whitetail / antelope rigs.</li>
+      <li><strong>0.45–0.60+</strong> is common for elk-strength or heavier builds.</li>
+    </ul>
+
     <p>
-      Momentum favors heavier arrows and is another way to evaluate penetration potential,
-      especially at longer distances.
+      This calculator uses your <strong>impact velocity</strong> (after simulated drag loss)  
+      and your <strong>total arrow weight</strong> to compute real downrange momentum.
     </p>
   `,
+  stiffness: `
+  <h2>Stiffness / Forgiveness</h2>
+
+  <p>
+    This tile compares your arrow’s <strong>static spine rating</strong> (e.g., 250, 300, 340)
+    against a <strong>chart-style recommended spine</strong> based on draw weight, arrow
+    length, and point weight. It acts like a modernized version of the old Easton
+    selection charts.
+  </p>
+
+  <p>
+    The calculator builds an <strong>effective load number</strong> from your setup:
+  </p>
+
+  <ul style="margin-left:1.25rem;">
+    <li>Heavier draw weights increase required stiffness</li>
+    <li>Longer arrows increase required stiffness</li>
+    <li>Heavier point weights increase required stiffness</li>
+  </ul>
+
+  <p>
+    That load is mapped to a <strong>recommended spine</strong> using a tuned constant,
+    giving a realistic match to how shafts behave in the field.
+  </p>
+
+  <p><strong>Interpretation:</strong></p>
+  <ul style="margin-left:1.25rem;">
+    <li><strong>Good</strong> — Your actual spine is very close to the recommended number.
+        Tuning should be straightforward, broadheads should group well, and the setup
+        should be forgiving.</li>
+
+    <li><strong>Adjust (Stiff)</strong> — Your arrow spine number is <em>lower</em> than
+        recommended (e.g., 250 vs 300). Arrow is too stiff. You can add point weight,
+        increase arrow length slightly, or move to a weaker spine.</li>
+
+    <li><strong>Adjust (Weak)</strong> — Your arrow spine number is <em>higher</em> than
+        recommended (e.g., 400 vs 300). Arrow is too weak. Consider shorter arrows,
+        lighter points, or a stiffer shaft.</li>
+  </ul>
+
+  <p>
+    This match check does <strong>not</strong> replace paper tuning, bareshaft tuning,
+    broadhead flight testing, or dynamic spine testing — but it gives a solid
+    chart-correct starting point for tuning and troubleshooting.
+  </p>
+
+  <p>
+    Use this to see which arrow builds will tune easiest and fly the most
+    consistently with fixed-blade broadheads.
+  </p>
+`,
   windDrift: `
     <h2>Wind Drift</h2>
     <p>
@@ -2217,61 +2329,35 @@ const INFO_CONTENT = {
   groupStability: `
     <h2>Group Stability (Target / 3D)</h2>
     <p>
-      This badge is a <strong>sanity check</strong> for how forgiving your setup
-      should feel on paper when tuned well and shot with good form.
+      Group Stability is a <strong>forgiveness indicator</strong> meant to help target/3D shooters
+      understand how consistent a setup should feel when the bow is well tuned and form is solid.
     </p>
-    <p>It looks at three things together:</p>
+    
+    <p>It evaluates how well three factors work together:</p>
     <ul style="margin-left:1.25rem;">
-      <li><strong>FPS</strong> – overall launch speed of the arrow.</li>
-      <li><strong>FOC</strong> – how far forward the balance point is.</li>
-      <li><strong>GPI</strong> – finished grains-per-inch of arrow length.</li>
+      <li><strong>Launch FPS</strong> – higher speeds reduce hold time and tighten groups.</li>
+      <li><strong>FOC</strong> – mid-range FOC (≈12–18%) usually stabilizes broadheads and fletching quickly.</li>
+      <li><strong>GPI</strong> – lighter arrows (lower grains per inch) accelerate faster and arc less.</li>
     </ul>
-    <p>
-      Behind the scenes, the calculator looks for a combination like:
-    </p>
+
+    <p><strong>How the calculator interprets these:</strong></p>
     <ul style="margin-left:1.25rem;">
-      <li>Launch speed ≳ <strong>270 FPS</strong></li>
-      <li>FOC in the <strong>12–18%</strong> sweet spot</li>
-      <li>Finished GPI ≲ <strong>9.5 gr/in</strong></li>
+      <li>FPS ≥ <strong>270</strong> → strong for target/3D forgiveness</li>
+      <li>FOC between <strong>12% and 18%</strong> → ideal balance & point control</li>
+      <li>GPI ≤ <strong>9.5 gr/in</strong> → not overly heavy per inch; stabilizes quickly</li>
     </ul>
+
     <p>
-      When you’re close to that zone, the badge tends toward
-      <strong>Tight</strong>. Outside of it, the badge reads
-      <strong>Average</strong> — still fully usable, just not as optimized on paper.
+      When all three fall in their optimal zones, the badge reads 
+      <strong style="color:var(--success);">Tight</strong>.
+      If one or more are outside the zone, it reads 
+      <strong style="color:var(--warning);">Average</strong>.
     </p>
+
     <p>
-      It’s not a scoring system or a guarantee of X&quot; groups — it’s a quick,
-      <strong>comparison tool</strong> for different builds so you can see which
-      ones should feel more forgiving at the same distance.
-    </p>
-  `,
-  peakHeight: `
-    <h2>Peak Height vs Downrange Drop</h2>
-    <p>
-      Most sight tapes and pin gaps are built from <strong>downrange drop</strong> —
-      how far the arrow falls <em>below your line of sight</em> at 30, 40, 50+ yards.
-      Your line of sight (peep to pin) is tilted slightly upward when you zero at a
-      distance like 20 yards.
-    </p>
-    <p>
-      <strong>Peak Height</strong> is a different view of the same flight. Here we
-      look at the arrow’s <strong>maximum height above the level launch line</strong>
-      — a flat line running straight out from the bow at release.
-    </p>
-    <p>
-      The arrow leaves the bow at a small upward angle, rises to an apex, then falls
-      toward the target. Peak Height tells you:
-    </p>
-    <ul style="margin-left:1rem;">
-      <li>whether your arrow will clear brush, branches, or blind windows</li>
-      <li>how “arched” the true trajectory is</li>
-      <li>how forgiving the setup is at longer ranges</li>
-    </ul>
-    <p>
-      Because <strong>drop</strong> is measured below the angled line of sight and
-      <strong>Peak Height</strong> is measured above a horizontal launch line, the
-      two numbers will <strong>not match</strong> even at the same yardage — they are
-      referenced to different lines.
+      This metric is not meant as a guarantee of group size — it’s a 
+      <strong>relative comparison tool</strong> between arrow builds, letting you see which setups
+      should feel more forgiving at the same distance.
     </p>
   `,
   flatnessScore: `
@@ -2644,6 +2730,112 @@ function getVelocityDecayYards(weightGrains, drawWeightLbs) {
 }
 
 /* ============================================================
+   EASTON-STYLE SPINE RECOMMENDATION
+   (stubbed example – expand with full chart as you like)
+============================================================ */
+
+/**
+ * Convert raw draw weight + point weight into an "effective" bow weight,
+ * similar in spirit to the Easton chart adjustments.
+ *
+ * - Heavier points make the arrow behave as if the bow is "heavier"
+ *   → we bump the effective draw weight a bit.
+ */
+function getEffectiveBowWeight(drawWeightLbs, pointGrains) {
+  if (!Number.isFinite(drawWeightLbs) || drawWeightLbs <= 0) return NaN;
+
+  const base = drawWeightLbs;
+  const refPoint = 100;        // many charts assume ~100 gr
+  const extraPoint = Math.max(0, pointGrains - refPoint);
+
+  // very rough: every +25 grains above 100 adds ~5 lb effective
+  const extraLbs = (extraPoint / 25) * 5;
+
+  return base + extraLbs;
+}
+
+/**
+ * A minimal example of an Easton-style chart. You can extend this with
+ * the full grid from the PDF.
+ *
+ * Each entry: a band of effective draw weight and arrow length,
+ * mapping to a recommended spine range.
+ */
+const EASTON_SPINE_CHART = [
+  // Light–medium draw, shorter arrows
+  {
+    minDw: 22, maxDw: 45,
+    rows: [
+      { maxLen: 26, minSpine: 600, maxSpine: 700 },
+      { maxLen: 28, minSpine: 500, maxSpine: 600 },
+      { maxLen: 30, minSpine: 400, maxSpine: 500 },
+      { maxLen: 32, minSpine: 400, maxSpine: 500 }
+    ]
+  },
+  // Mid-range hunting rigs
+  {
+    minDw: 46, maxDw: 65,
+    rows: [
+      { maxLen: 26, minSpine: 400, maxSpine: 500 },
+      { maxLen: 28, minSpine: 350, maxSpine: 400 },
+      { maxLen: 30, minSpine: 300, maxSpine: 350 },
+      { maxLen: 32, minSpine: 300, maxSpine: 350 }
+    ]
+  },
+  // Heavy draw weights
+  {
+    minDw: 66, maxDw: 90,
+    rows: [
+      { maxLen: 26, minSpine: 250, maxSpine: 300 },
+      { maxLen: 28, minSpine: 250, maxSpine: 300 },
+      { maxLen: 30, minSpine: 200, maxSpine: 250 },
+      { maxLen: 32, minSpine: 200, maxSpine: 250 }
+    ]
+  }
+];
+
+/**
+ * Look up recommended spine range based on:
+ *  - effective bow weight (lbs)
+ *  - shaft length (inches)
+ *
+ * Returns { minSpine, maxSpine, centerSpine } or null if not found.
+ */
+function lookupRecommendedSpine(effectiveDw, shaftLengthIn) {
+  if (!Number.isFinite(effectiveDw) || !Number.isFinite(shaftLengthIn)) {
+    return null;
+  }
+
+  for (const band of EASTON_SPINE_CHART) {
+    if (effectiveDw < band.minDw || effectiveDw > band.maxDw) continue;
+
+    // Find first row whose maxLen is >= shaft length
+    let chosenRow = null;
+    for (const row of band.rows) {
+      if (shaftLengthIn <= row.maxLen) {
+        chosenRow = row;
+        break;
+      }
+    }
+
+    // If no row matched length, use last row in band
+    if (!chosenRow && band.rows.length > 0) {
+      chosenRow = band.rows[band.rows.length - 1];
+    }
+
+    if (chosenRow) {
+      const minSpine = chosenRow.minSpine;
+      const maxSpine = chosenRow.maxSpine;
+      const centerSpine = (minSpine + maxSpine) / 2;
+
+      return { minSpine, maxSpine, centerSpine };
+    }
+  }
+
+  return null;
+}
+
+/* ============================================================
    TARGET PANEL METRICS (Target / 3D / Other)
 ============================================================ */
 
@@ -2953,46 +3145,62 @@ function calculateEverything(recalcFPS = false) {
   if (pointPctLabelEl) pointPctLabelEl.textContent = `Point: ${pointPct.toFixed(0)}%`;
   if (compPctLabelEl)  compPctLabelEl.textContent  = `Comp.: ${compPct.toFixed(0)}%`;
 
-  // Spine stiffness / forgiveness — tuned to chart-like behavior
+  // Spine stiffness / forgiveness — Easton-style chart integration
   const spineBadge = stiffnessBadgeEl;
   const spineHint  = stiffnessHintEl;
-  let effWeight = dw + 5 * (len - 28) + (point - 100) / 25;
-  let recSpine = effWeight > 0 ? 22000 / effWeight : NaN; // tuned constant
+
+  // Use draw weight + point weight to form an "effective" bow weight
+  const effectiveDw = getEffectiveBowWeight(dw, point);
+
+  // Look up recommended spine band from chart
+  const rec = lookupRecommendedSpine(effectiveDw, len);
+  const recMin = rec ? rec.minSpine : NaN;
+  const recMax = rec ? rec.maxSpine : NaN;
+  const recCenter = rec ? rec.centerSpine : NaN;
 
   if (
     spineBadge && spineHint &&
-    Number.isFinite(arrowSpine) && Number.isFinite(recSpine)
+    Number.isFinite(arrowSpine) &&
+    Number.isFinite(recCenter)
   ) {
-    const delta = arrowSpine - recSpine;
-    let label = 'Good';
+    let label  = 'Good';
     let detail = '';
 
-    if (Math.abs(delta) <= 30) {
-      label = 'Good';
-      detail = `Arrow spine ≈ ${arrowSpine.toFixed(0)}, recommended ≈ ${recSpine.toFixed(0)}. Solid chart-style match.`;
-      spineBadge.style.color = 'var(--success)';
-    } else if (delta < -30) {
-      // arrowSpine smaller than recSpine → stiffer
+    if (arrowSpine < recMin) {
+      // smaller number = stiffer
       label = 'Adjust';
       detail =
-        `On the stiff side (arrow ${arrowSpine.toFixed(0)} vs ~${recSpine.toFixed(0)}). ` +
-        `You can add point weight, lengthen the arrow slightly, or move to a weaker shaft.`;
+        `On the stiff side (arrow ${arrowSpine.toFixed(0)} vs ` +
+        `chart band ~${recMin.toFixed(0)}–${recMax.toFixed(0)}). ` +
+        `You can add point weight, lengthen the arrow slightly, or ` +
+        `move to a weaker (higher-number) spine.`;
       spineBadge.style.color = 'var(--warning)';
-    } else {
-      // arrowSpine larger than recSpine → weaker
+    } else if (arrowSpine > recMax) {
+      // larger number = weaker
       label = 'Adjust';
       detail =
-        `On the weak side (arrow ${arrowSpine.toFixed(0)} vs ~${recSpine.toFixed(0)}). ` +
-        `Consider moving closer, reducing point weight, or stepping to a stiffer shaft.`;
+        `On the weak side (arrow ${arrowSpine.toFixed(0)} vs ` +
+        `chart band ~${recMin.toFixed(0)}–${recMax.toFixed(0)}). ` +
+        `Consider shortening the arrow, reducing point weight, or ` +
+        `moving to a stiffer (lower-number) shaft.`;
       spineBadge.style.color = 'var(--danger)';
+    } else {
+      // within recommended band
+      label = 'Good';
+      detail =
+        `Arrow spine ≈ ${arrowSpine.toFixed(0)}, ` +
+        `recommended chart band ≈ ${recMin.toFixed(0)}–${recMax.toFixed(0)}. ` +
+        `Solid match to a typical Easton-style selection chart.`;
+      spineBadge.style.color = 'var(--success)';
     }
 
     spineBadge.textContent = label;
-    spineHint.textContent = detail;
+    spineHint.textContent  = detail;
   } else if (spineBadge && spineHint) {
     spineBadge.textContent = '–';
     spineBadge.style.color = 'var(--light)';
-    spineHint.textContent = 'Enter draw, arrow length, point weight, and spine to get a chart-like match check.';
+    spineHint.textContent =
+      'Enter draw weight, arrow length, point weight, and spine to check against a chart-style recommendation.';
   }
 
   // Game bands – conservative *minimum* thresholds (no upper cap)
@@ -3185,10 +3393,12 @@ function calculateEverything(recalcFPS = false) {
       drawWeight: dw,
       arrowLength: len,
       pointWeight: point,
-      effectiveWeight: effWeight,
-      recommendedSpine: recSpine,
+      effectiveDrawWeight: effectiveDw,
+      recommendedBandMin: recMin,
+      recommendedBandMax: recMax,
+      recommendedCenter: recCenter,
       arrowSpine,
-      weight,
+      totalArrowWeight: weight
     }
   };
 
@@ -3502,19 +3712,104 @@ function openMath(key) {
     const k = m.impactKE;
     html = `
       <h2>Impact Kinetic Energy</h2>
-      <p><strong>Formula:</strong> KE = (Arrow Weight × Impact Velocity²) ÷ 450240</p>
-      <p>Arrow Weight = ${k.weight.toFixed(1)} gr</p>
-      <p>Impact Velocity at ${k.distYards.toFixed(0)} yd = ${k.impactV.toFixed(1)} FPS</p>
-      <p>KE ≈ <strong>${k.value.toFixed(1)} ft-lbs</strong></p>
+      <p>
+        Kinetic energy (KE) is how much <strong>work</strong> your arrow can do on
+        impact. It depends on both <strong>mass</strong> and <strong>speed</strong>,
+        and it naturally drops as the arrow slows down downrange.
+      </p>
+
+      <p><strong>Archery formula:</strong></p>
+      <p>
+        KE (ft-lbs) = (Arrow Weight (grains) × Velocity (fps)²) ÷ 450240
+      </p>
+
+      <p>
+        The constant <strong>450240</strong> bundles the unit conversions needed to go
+        from grains and feet-per-second into foot-pounds:
+      </p>
+      <ul style="margin-left:1.25rem;">
+        <li>7000 grains = 1 pound of mass</li>
+        <li>g ≈ 32.174 ft/s² (acceleration due to gravity)</li>
+        <li>KE = ½ × m × v² in consistent units (slugs and ft/s)</li>
+      </ul>
+      <p>
+        Bowhunters have used this compact version for decades; you just plug in grains
+        and FPS and get ft-lbs directly.
+      </p>
+
+      <p><strong>Your numbers at the target:</strong></p>
+      <ul style="margin-left:1.25rem;">
+        <li>Arrow Weight = <strong>${k.weight.toFixed(1)} gr</strong></li>
+        <li>Impact Velocity at ${k.distYards.toFixed(0)} yd = 
+            <strong>${k.impactV.toFixed(1)} FPS</strong></li>
+      </ul>
+
+      <p>Step-by-step at this distance:</p>
+      <p>
+        KE = (${k.weight.toFixed(1)} × ${k.impactV.toFixed(1)}²) ÷ 450240
+      </p>
+      <p>
+        KE ≈ <strong>${k.value.toFixed(1)} ft-lbs</strong> at 
+        <strong>${k.distYards.toFixed(0)} yards</strong>.
+      </p>
+
+      <p style="margin-top:0.5rem;">
+        You can compare this number to the <strong>Launch KE</strong> to see how much
+        energy you keep out to that yardage, and to the <strong>Game Effectiveness</strong>
+        bands to decide whether to <em>send it</em> or adjust arrow weight, distance,
+        or shot selection.
+      </p>
     `;
   } else if (key === 'impactMom' && m.impactMom) {
     const mom = m.impactMom;
+    const W = mom.weight.toFixed(1);
+    const V = mom.impactV.toFixed(1);
+
     html = `
       <h2>Impact Momentum</h2>
-      <p><strong>Formula:</strong> Momentum = (Arrow Weight × Impact Velocity) ÷ 225400</p>
-      <p>Arrow Weight = ${mom.weight.toFixed(1)} gr</p>
-      <p>Impact Velocity at ${mom.distYards.toFixed(0)} yd = ${mom.impactV.toFixed(1)} FPS</p>
-      <p>Momentum ≈ <strong>${mom.value.toFixed(3)} slug·ft/s</strong></p>
+
+      <p>
+        Momentum is a measure of how hard an arrow keeps pushing after impact.
+        Unlike KE (which scales with velocity squared), momentum scales
+        <strong>linearly</strong> with both mass and velocity, so heavier arrows
+        tend to hold their penetration better at long range.
+      </p>
+
+      <p><strong>Archery formula:</strong></p>
+      <p>
+        Momentum (slug·ft/s) = (Arrow Weight (grains) × Velocity (fps)) ÷ 225400
+      </p>
+
+      <p><strong>Your values at the target:</strong></p>
+      <ul style="margin-left:1.25rem;">
+        <li>Arrow Weight = ${W} grains</li>
+        <li>Impact Velocity at ${mom.distYards.toFixed(0)} yd = ${V} FPS</li>
+      </ul>
+
+      <p><strong>Where 225400 comes from:</strong></p>
+      <p>
+        It bundles the unit conversions from grains and feet-per-second into
+        slug·ft/s:
+      </p>
+      <ul style="margin-left:1.25rem;">
+        <li>7000 grains = 1 pound of mass</li>
+        <li>1 slug = 32.174 lb·s²/ft</li>
+        <li>Momentum = mass × velocity in consistent units</li>
+      </ul>
+
+      <p><strong>Step-by-step at this distance:</strong></p>
+      <p>
+        Momentum = (${W} × ${V}) ÷ 225400
+      </p>
+      <p>
+        Momentum ≈ <strong>${mom.value.toFixed(3)} slug·ft/s</strong>
+        at <strong>${mom.distYards.toFixed(0)} yards</strong>.
+      </p>
+
+      <p style="margin-top:0.75rem;">
+        In the Game Effectiveness panel, this is paired with impact KE to give a more
+        complete picture of how your arrow will behave on real animals.
+      </p>
     `;
   } else if (key === 'timeToImpact' && m.timeToImpact) {
     const t = m.timeToImpact;
@@ -3528,7 +3823,6 @@ function openMath(key) {
 
       <p><strong>1) Convert distance to feet</strong></p>
       <p>
-        Distance in yards → feet:<br>
         d<sub>ft</sub> = d<sub>yd</sub> × 3<br>
         d<sub>yd</sub> = ${t.distYards.toFixed(0)} yd → 
         d<sub>ft</sub> = ${t.distYards.toFixed(0)} × 3
@@ -3679,7 +3973,7 @@ function openMath(key) {
         </div>
       `;
     }
-  } else if (key === 'groupStability' || key === 'stiffness') {
+  } else if (key === 'groupStability') {
     const fps = getNumeric('actualFPS');
     const foc = getNumeric('focValue');
     const gpi = getNumeric('gpiValue');
@@ -3720,6 +4014,75 @@ function openMath(key) {
         <p>
           Anything outside that zone is labeled <strong>Average</strong> — still fully
           usable, but not as optimized on paper for forgiveness and small groups.
+        </p>
+      `;
+    }
+  } else if (key === 'stiffness' && m.spine) {
+    const s = m.spine;
+    const rec = s.recommendedSpine;
+    const arrow = s.arrowSpine;
+
+    if (!Number.isFinite(rec) || !Number.isFinite(arrow)) {
+      html = `
+        <h2>Stiffness / Forgiveness Math</h2>
+        <p>
+          Enter draw weight, arrow length, point weight, and arrow spine so
+          the app can compare your shaft to a chart-style recommendation.
+        </p>
+      `;
+    } else {
+      const delta = arrow - rec;
+      let side = 'near the recommended chart value.';
+      if (delta < -30) {
+        side = 'on the <strong>stiffer</strong> side of the chart (smaller spine number).';
+      } else if (delta > 30) {
+        side = 'on the <strong>weaker</strong> side of the chart (larger spine number).';
+      }
+
+      html = `
+        <h2>Stiffness / Forgiveness Math</h2>
+        <p>
+          This badge compares your <strong>actual arrow spine</strong> to a
+          <strong>recommended spine</strong> based on draw weight, arrow length,
+          and point weight — similar in spirit to the Easton-style charts.
+        </p>
+
+        <p><strong>Your inputs:</strong></p>
+        <ul style="margin-left:1.25rem;">
+          <li>Draw weight ≈ ${s.drawWeight.toFixed(1)} lb</li>
+          <li>Arrow length ≈ ${s.arrowLength.toFixed(2)} in</li>
+          <li>Point weight ≈ ${s.pointWeight.toFixed(0)} gr</li>
+          <li>Arrow spine (entered) ≈ ${arrow.toFixed(0)}</li>
+        </ul>
+
+        <p><strong>Effective load calculation (simplified):</strong></p>
+        <p>
+          The calculator builds an <em>effective load</em> from your inputs, then
+          maps that to a spine recommendation:
+        </p>
+        <ul style="margin-left:1.25rem;">
+          <li>Start from draw weight</li>
+          <li>Add a small bump for longer arrows</li>
+          <li>Add a bump for heavier points</li>
+        </ul>
+        <p>
+          That effective load is then translated into a recommended static spine
+          number (e.g., 250 / 300 / 340 / 400) similar to what a chart would suggest.
+        </p>
+
+        <p><strong>Comparison:</strong></p>
+        <ul style="margin-left:1.25rem;">
+          <li>Recommended spine ≈ <strong>${rec.toFixed(0)}</strong></li>
+          <li>Your arrow spine ≈ <strong>${arrow.toFixed(0)}</strong></li>
+        </ul>
+        <p>
+          In words: your setup is ${side}
+        </p>
+
+        <p style="margin-top:0.5rem;">
+          Slightly stiff or slightly weak can both be tunable, especially with
+          broadhead-friendly FOC and good form. The badge is there to nudge you
+          if you’re drifting far off the chart into “hard to tune” territory.
         </p>
       `;
     }
