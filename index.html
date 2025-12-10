@@ -4139,75 +4139,123 @@ function openMath(key) {
         </p>
       `;
     }
+
   } else if (key === 'stiffness' && m.spine) {
     const s = m.spine;
-    const rec = s.recommendedSpine;
-    const arrow = s.arrowSpine;
 
-    if (!Number.isFinite(rec) || !Number.isFinite(arrow)) {
+    // These are the fields you actually populate in window.math.spine
+    const recMin   = s.recommendedBandMin;
+    const recMax   = s.recommendedBandMax;
+    const recCenter = s.recommendedCenter;
+    const arrow    = s.arrowSpine;
+
+    // If we don't at least have a center recommendation and an actual spine, show the simple help text
+    if (!Number.isFinite(recCenter) || !Number.isFinite(arrow)) {
       html = `
         <h2>Stiffness / Forgiveness Math</h2>
         <p>
-          Enter draw weight, arrow length, point weight, and arrow spine so
-          the app can compare your shaft to a chart-style recommendation.
+          This badge compares your actual arrow spine (the number printed on the shaft)
+          to a chart-style recommendation built from draw weight, arrow length,
+          and point weight.
+        </p>
+        <p>To see the full numeric breakdown, make sure you’ve entered:</p>
+        <ul style="margin-left:1.25rem;">
+          <li><strong>Draw Weight</strong> (lbs)</li>
+          <li><strong>Arrow Length</strong> (inches)</li>
+          <li><strong>Point Weight</strong> (grains)</li>
+          <li><strong>Arrow Spine</strong> (e.g., 250 / 300 / 340 / 400)</li>
+        </ul>
+        <p>
+          Once those are filled in, the calculator estimates a recommended spine band
+          and shows how far your current shaft is from that “chart” value.
         </p>
       `;
     } else {
-      const delta = arrow - rec;
-      let side = 'near the recommended chart value.';
-      if (delta < -30) {
-        side = 'on the <strong>stiffer</strong> side of the chart (smaller spine number).';
-      } else if (delta > 30) {
-        side = 'on the <strong>weaker</strong> side of the chart (larger spine number).';
+      const DW   = Number.isFinite(s.drawWeight)         ? s.drawWeight.toFixed(1)         : '–';
+      const L    = Number.isFinite(s.arrowLength)        ? s.arrowLength.toFixed(2)        : '–';
+      const PT   = Number.isFinite(s.pointWeight)        ? s.pointWeight.toFixed(0)        : '–';
+      const eff  = Number.isFinite(s.effectiveDrawWeight)? s.effectiveDrawWeight.toFixed(1): '–';
+      const wTot = Number.isFinite(s.totalArrowWeight)   ? s.totalArrowWeight.toFixed(1)   : '–';
+
+      const recC = recCenter.toFixed(0);
+      const recLo = Number.isFinite(recMin) ? recMin.toFixed(0) : '–';
+      const recHi = Number.isFinite(recMax) ? recMax.toFixed(0) : '–';
+      const shaft = arrow.toFixed(0);
+
+      const delta = arrow - recCenter;
+      const deltaStr = delta.toFixed(0);
+
+      let sideSummary;
+      if (Math.abs(delta) <= 20) {
+        sideSummary = 'very close to the recommended chart center.';
+      } else if (delta < -20) {
+        sideSummary = 'on the <strong>stiffer</strong> side (lower spine number than recommended).';
+      } else {
+        sideSummary = 'on the <strong>weaker</strong> side (higher spine number than recommended).';
       }
 
       html = `
         <h2>Stiffness / Forgiveness Math</h2>
+
         <p>
-          This badge compares your <strong>actual arrow spine</strong> to a
-          <strong>recommended spine</strong> based on draw weight, arrow length,
-          and point weight — similar in spirit to the Easton-style charts.
+          This tile compares your <strong>actual arrow spine</strong> to a
+          <strong>recommended spine band</strong> built from draw weight, arrow length,
+          point weight, and total arrow weight — a modernized version of the classic
+          Easton selection charts.
         </p>
 
-        <p><strong>Your inputs:</strong></p>
+        <p><strong>1) Inputs from your build</strong></p>
         <ul style="margin-left:1.25rem;">
-          <li>Draw weight ≈ ${s.drawWeight.toFixed(1)} lb</li>
-          <li>Arrow length ≈ ${s.arrowLength.toFixed(2)} in</li>
-          <li>Point weight ≈ ${s.pointWeight.toFixed(0)} gr</li>
-          <li>Arrow spine (entered) ≈ ${arrow.toFixed(0)}</li>
+          <li>Draw weight ≈ <strong>${DW}</strong> lb</li>
+          <li>Arrow length ≈ <strong>${L}</strong> in</li>
+          <li>Point weight ≈ <strong>${PT}</strong> gr</li>
+          <li>Total arrow weight ≈ <strong>${wTot}</strong> gr</li>
+          <li>Arrow spine (printed on shaft) ≈ <strong>${shaft}</strong></li>
         </ul>
 
-        <p><strong>Effective load calculation (simplified):</strong></p>
+        <p><strong>2) Effective load → recommended spine band</strong></p>
         <p>
-          The calculator builds an <em>effective load</em> from your inputs, then
-          maps that to a spine recommendation:
+          Behind the scenes, the calculator builds an <em>effective draw weight</em>
+          from those inputs:
+        </p>
+        <p style="margin-left:1.25rem;">
+          effectiveDrawWeight ≈ base draw weight<br>
+          &nbsp;&nbsp; + adjustments for longer arrows<br>
+          &nbsp;&nbsp; + adjustments for heavier points<br>
+          &nbsp;&nbsp; + a nudge for total arrow weight
+        </p>
+        <p>
+          For your setup this comes out to an effective draw weight of
+          <strong>${eff}</strong>.
+        </p>
+        <p>
+          That effective load is then mapped into a recommended static spine
+          <em>band</em>:
         </p>
         <ul style="margin-left:1.25rem;">
-          <li>Start from draw weight</li>
-          <li>Add a small bump for longer arrows</li>
-          <li>Add a bump for heavier points</li>
+          <li>Recommended band ≈ <strong>${recLo} – ${recHi}</strong></li>
+          <li>Recommended center ≈ <strong>${recC}</strong></li>
         </ul>
-        <p>
-          That effective load is then translated into a recommended static spine
-          number (e.g., 250 / 300 / 340 / 400) similar to what a chart would suggest.
-        </p>
 
-        <p><strong>Comparison:</strong></p>
+        <p><strong>3) Compare recommended vs actual</strong></p>
         <ul style="margin-left:1.25rem;">
-          <li>Recommended spine ≈ <strong>${rec.toFixed(0)}</strong></li>
-          <li>Your arrow spine ≈ <strong>${arrow.toFixed(0)}</strong></li>
+          <li>Recommended center spine ≈ <strong>${recC}</strong></li>
+          <li>Your shaft spine ≈ <strong>${shaft}</strong></li>
+          <li>Difference (your − center) ≈ <strong>${deltaStr}</strong></li>
         </ul>
         <p>
-          In words: your setup is ${side}
+          In plain words: your arrow is ${sideSummary}
         </p>
 
         <p style="margin-top:0.5rem;">
-          Slightly stiff or slightly weak can both be tunable, especially with
-          broadhead-friendly FOC and good form. The badge is there to nudge you
-          if you’re drifting far off the chart into “hard to tune” territory.
+          Being slightly stiff or slightly weak is often tunable with good form and broadhead-friendly FOC.
+          This check doesn’t replace paper tuning or broadhead flight testing, but it gives a fast
+          <strong>“does this shaft live in the right neighborhood?”</strong> sanity check before you
+          burn time and money on the wrong arrows.
         </p>
       `;
     }
+
   } else if (key === 'flatnessScore') {
     const fps = getNumeric('actualFPS');
     if (!Number.isFinite(fps) || fps <= 0) {
