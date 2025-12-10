@@ -2320,24 +2320,24 @@ const INFO_CONTENT = {
   windDrift: `
     <h2>Wind Drift</h2>
     <p>
-      Approximate side drift (in inches) from a full-value crosswind at the
-      selected distance.
+      Wind drift estimates how far a crosswind can push your arrow sideways by the time it reaches the target.
+      Because arrows are relatively light and slow compared to bullets, even moderate wind can move them several inches.
     </p>
-    <p>
-      Model: drift ≈ 0.065 × distance² × wind / arrowWeight
-    </p>
-    <p>
-      This scales realistically with distance, wind speed, and arrow mass:
-      heavier arrows drift less; lighter arrows drift more.
-    </p>
-    <p>
-      If you see big drift values, consider:
-    </p>
+
+    <p><strong>What affects wind drift?</strong></p>
     <ul style="margin-left:1.25rem;">
-      <li>moving closer for windy shots</li>
-      <li>increasing arrow mass</li>
-      <li>reducing effective crosswind (shooting with the wind, not against it)</li>
+      <li><strong>Distance</strong> — the farther the arrow travels, the more time wind has to act on it.</li>
+      <li><strong>Wind speed</strong> — higher mph means stronger sideways force.</li>
+      <li><strong>Arrow weight</strong> — heavier arrows resist wind better.</li>
+      <li><strong>Arrow shape & FOC</strong> — higher FOC and lower drag designs drift slightly less.</li>
     </ul>
+
+    <p><strong>How to use it:</strong></p>
+    <p>
+      This is not a ballistic solver — it's a practical field estimate so you can compare
+      <em>light vs heavy arrows</em> and <em>calm vs windy conditions</em>.
+      Use it to understand how much your setup may drift at 40–60 yd in a typical 5–15 mph crosswind.
+    </p>
   `,
   gameEffectiveness: `
     <h2>Game Effectiveness / Target Insights</h2>
@@ -3142,7 +3142,7 @@ function calculateEverything(recalcFPS = false) {
   peakDistanceValueEl.textContent = peakYard.toFixed(0);
 
   // Wind drift
-  const windMph = parseFloat(windMphEl.value) || 10;
+  const windMph = parseFloat(windMphEl.value) || 0;
   const driftIn = 0.065 * (distYards * distYards) * windMph / Math.max(weight, 1);
   windDriftValueEl.textContent = driftIn.toFixed(1);
 
@@ -3998,12 +3998,43 @@ function openMath(key) {
     const w = m.wind;
     html = `
       <h2>Wind Drift Math</h2>
-      <p><strong>Approximate model:</strong></p>
-      <p>drift ≈ 0.065 × distance² × wind / arrowWeight</p>
-      <p>Distance = ${w.distYards.toFixed(0)} yd</p>
-      <p>Wind = ${w.windMph.toFixed(0)} mph</p>
-      <p>Arrow Weight ≈ ${w.weight.toFixed(1)} gr</p>
-      <p>Drift ≈ <strong>${w.value.toFixed(1)} in</strong></p>
+
+      <p>
+        This drift model is a <strong>practical archery approximation</strong> — not a CFD solver —
+        designed to match typical hunting-weight arrows in 5–20 mph winds.
+        It shows how distance, wind speed, and arrow weight interact.
+      </p>
+
+      <p><strong>1) Inputs</strong></p>
+      <ul style="margin-left:1.25rem;">
+        <li>Distance = <strong>${w.distYards.toFixed(0)} yd</strong></li>
+        <li>Wind speed = <strong>${w.windMph.toFixed(0)} mph</strong></li>
+        <li>Arrow weight = <strong>${w.weight.toFixed(1)} gr</strong></li>
+      </ul>
+
+      <p><strong>2) Approximate formula</strong></p>
+      <p>
+        drift ≈ 0.065 × distance² × wind ÷ arrowWeight
+      </p>
+      <p>
+        The constant <strong>0.065</strong> is tuned to typical arrow aerodynamics:
+        heavier arrows drift less, lighter arrows drift more, and drift increases rapidly with distance.
+      </p>
+
+      <p><strong>3) Plug in your numbers</strong></p>
+      <p style="margin-left:1.25rem;">
+        drift ≈ 0.065 × ${w.distYards.toFixed(0)}² × ${w.windMph.toFixed(0)} ÷ ${w.weight.toFixed(1)}
+      </p>
+
+      <p><strong>4) Result</strong></p>
+      <p>
+        Wind drift ≈ <strong>${w.value.toFixed(1)} inches</strong>
+      </p>
+
+      <p style="margin-top:0.5rem;">
+        Heavier shafts, higher FOC, and smaller fletchings generally reduce drift.
+        A 10–15 mph crosswind at 40–60 yards is where differences between light and heavy arrows become most noticeable.
+      </p>
     `;
   } else if (key === 'game' && m.game) {
     const g = m.game;
