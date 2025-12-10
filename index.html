@@ -2109,12 +2109,36 @@ const INFO_CONTENT = {
   `,
   gpi: `
     <h2>GPI (Grains per Inch)</h2>
+
     <p>
-      Average grains per inch of length based on your total arrow weight and arrow length.
+      GPI tells you how much of your arrow’s finished weight comes from the <strong>shaft itself</strong>.
+      It is simply your <strong>total arrow weight</strong> divided by your <strong>arrow length</strong>.
     </p>
+
     <p>
-      Useful for comparing shafts and seeing how heavy your finished arrow is per inch,
-      especially when switching between cut lengths.
+      A lower GPI generally means a lighter, faster shaft (often thinner-walled or smaller diameter).
+      A higher GPI usually indicates a heavier, more robust shaft that can boost momentum and stability,
+      especially for broadheads.
+    </p>
+
+    <p>
+      Unlike spine, GPI is not a stiffness rating — it’s purely a <strong>mass-per-inch</strong>
+      measurement. But because mass influences speed, arc height, and momentum retention,
+      GPI helps show where your build sits on the “light vs heavy” spectrum.
+    </p>
+
+    <p style="margin-top:0.5rem;">
+      Inside this calculator, GPI helps inform:
+    </p>
+    <ul style="margin-left:1.25rem;">
+      <li><strong>Group Stability</strong> (lighter GPI may drift more, heavier GPI stabilizes broadheads)</li>
+      <li><strong>Velocity and downrange speed retention</strong></li>
+      <li><strong>Kinetic energy and momentum calculations</strong></li>
+    </ul>
+
+    <p style="margin-top:0.5rem;">
+      Think of GPI as the arrow shaft’s “diet profile” — how much weight your materials add
+      before points, vanes, inserts, and components.
     </p>
   `,
   finalArrowWeight: `
@@ -3680,59 +3704,46 @@ function openMath(key) {
     const g = m.gpi;
     html = `
       <h2>GPI Math</h2>
-      <p><strong>Formula:</strong> GPI = Total Arrow Weight ÷ Arrow Length</p>
-      <p>Total Arrow Weight = ${g.weight.toFixed(1)} gr</p>
-      <p>Arrow Length = ${g.len.toFixed(2)} in</p>
-      <p>GPI = ${g.weight.toFixed(1)} ÷ ${g.len.toFixed(2)} = <strong>${g.value.toFixed(1)}</strong></p>
-    `;
-  } else if (key === 'tw' && m.tw) {
-    const t = m.tw;
-    html = `
-      <h2>Total Arrow Weight</h2>
-      <p>This is the finished arrow weight used for all other calculations.</p>
-      <p>Total Arrow Weight = <strong>${t.weight.toFixed(1)} grains</strong></p>
-    `;
-  } else if (key === 'fps' && m.fps) {
-    const f = m.fps;
-    html = `
-      <h2>FPS Estimate Math</h2>
+
+      <p><strong>Formula:</strong></p>
       <p>
-        When you don’t have a chronograph reading, the app uses a 
-        <strong>rule-of-thumb estimate</strong> based on your bow’s IBO rating:
+        GPI = Total Arrow Weight ÷ Arrow Length
+      </p>
+
+      <p><strong>Your numbers:</strong></p>
+      <ul style="margin-left:1.25rem;">
+        <li>Total Arrow Weight = <strong>${g.weight.toFixed(1)} gr</strong></li>
+        <li>Arrow Length = <strong>${g.len.toFixed(2)} in</strong></li>
+      </ul>
+
+      <p><strong>Step-by-step:</strong></p>
+      <p>
+        GPI = ${g.weight.toFixed(1)} ÷ ${g.len.toFixed(2)}
+        = <strong>${g.value.toFixed(1)} grains per inch</strong>
+      </p>
+
+      <p style="margin-top:0.75rem;">
+        GPI is a <em>density-like</em> value for your shaft. Higher GPI shafts tend to:
       </p>
       <ul style="margin-left:1.25rem;">
-        <li>Start from IBO (often 30&quot;/70 lb/350 gr arrow).</li>
-        <li>Adjust a few FPS per pound above or below 70 lb.</li>
-        <li>Adjust roughly 8–12 FPS per inch above or below 30&quot; draw.</li>
-        <li>Trim 1–2 FPS per extra ~5–10 grains above 350 gr arrow weight.</li>
-        <li>Subtract a few FPS for peep, D-loop, silencers, and other string add-ons.</li>
+        <li>carry momentum better downrange</li>
+        <li>stabilize fixed-blade broadheads more easily</li>
+        <li>produce a quieter shot</li>
       </ul>
-      <p><strong>Your inputs:</strong></p>
-      <ul style="margin-left:1.25rem;">
-        <li>IBO / ATA rating: ${f.ibo.toFixed(0)} FPS (base)</li>
-        <li>Draw weight: ${f.drawWeight.toFixed(1)} lb (ref ~${f.refDrawWeight} lb)</li>
-        <li>Draw length: ${f.drawLength.toFixed(2)} in (ref ~${f.refDrawLength} in)</li>
-        <li>Arrow weight: ${f.weight.toFixed(1)} gr (ref ~${f.refArrowWeight} gr)</li>
-        <li>String add-ons: ${f.stringW.toFixed(1)} gr (first ~20 gr assumed “free”)</li>
-      </ul>
-      <p><strong>Approximate breakdown:</strong></p>
-      <ul style="margin-left:1.25rem;">
-        <li>Base IBO: ${f.baseFps.toFixed(1)} FPS</li>
-        <li>Draw weight adjustment: ${f.adjFromDrawWeight.toFixed(1)} FPS</li>
-        <li>Draw length adjustment: ${f.adjFromDrawLength.toFixed(1)} FPS</li>
-        <li>Arrow weight adjustment: ${f.adjFromArrowWeight.toFixed(1)} FPS</li>
-        <li>String add-ons adjustment: ${f.adjFromStringWeight.toFixed(1)} FPS</li>
-      </ul>
+
       <p>
-        After a small real-world correction, the estimate lands at 
-        <strong>${f.estimatedFps.toFixed(1)} FPS</strong>.
+        Lower GPI shafts tend to:
       </p>
-      <p>
-        FPS used in calculations: <strong>${f.usedFps.toFixed(1)} FPS</strong>
-        (${f.source === 'chrono' ? 'manual (chrono) entry' : 'estimated from IBO & rules of thumb'}).
-      </p>
-      <p>
-        Always treat this as a <strong>ballpark</strong> until you can confirm with an actual chronograph.
+      <ul style="margin-left:1.25rem;">
+        <li>shoot faster and flatter</li>
+        <li>retain less momentum</li>
+        <li>be more sensitive to wind drift</li>
+      </ul>
+
+      <p style="margin-top:0.75rem;">
+        The GPI result here is based on your <strong>finished arrow</strong> weight rather than
+        the manufacturer’s raw shaft GPI rating, making it a practical measure of how your build
+        behaves in the real world.
       </p>
     `;
   } else if (key === 'keLaunch' && m.keLaunch) {
