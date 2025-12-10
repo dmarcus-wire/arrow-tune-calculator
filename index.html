@@ -3604,15 +3604,53 @@ function openMath(key) {
       <p>FOC = ((${f.balance.toFixed(2)} − ${f.mid.toFixed(2)}) ÷ ${f.len.toFixed(2)}) × 100
          = <strong>${f.value.toFixed(1)}%</strong></p>
     `;
-  } else if (key === 'gpp' && m.gpp) {
-    const g = m.gpp;
-    html = `
-      <h2>GPP Math</h2>
-      <p><strong>Formula:</strong> GPP = Total Arrow Weight ÷ Draw Weight</p>
-      <p>Total Arrow Weight = ${g.weight.toFixed(1)} gr</p>
-      <p>Draw Weight = ${g.dw.toFixed(1)} lb</p>
-      <p>GPP = ${g.weight.toFixed(1)} ÷ ${g.dw.toFixed(1)} = <strong>${g.value.toFixed(1)}</strong></p>
-    `;
+} else if (key === 'gpp' && m.gpp) {
+  const g = m.gpp;
+  html = `
+      <h2>Arrow Efficiency – GPP Math</h2>
+
+      <p>
+        GPP (<strong>grains per pound</strong>) is one of the simplest ways to
+        describe how “heavy” or “light” your hunting arrow is for a given bow.
+        It’s just your <strong>finished arrow weight</strong> divided by your
+        <strong>draw weight</strong>.
+      </p>
+
+      <p><strong>Formula:</strong></p>
+      <p>
+        GPP = Total Arrow Weight (grains) ÷ Draw Weight (pounds)
+      </p>
+
+      <p><strong>Your numbers:</strong></p>
+      <ul style="margin-left:1.25rem;">
+        <li>Total Arrow Weight = <strong>${g.weight.toFixed(1)} gr</strong></li>
+        <li>Draw Weight = <strong>${g.dw.toFixed(1)} lb</strong></li>
+      </ul>
+
+      <p>Step-by-step:</p>
+      <p>
+        GPP = ${g.weight.toFixed(1)} ÷ ${g.dw.toFixed(1)}
+        = <strong>${g.value.toFixed(1)} grains per pound</strong>
+      </p>
+
+      <p style="margin-top:0.75rem;">
+        Lighter GPP (e.g., ~5–6) is typically <strong>faster and flatter</strong>
+        but carries less momentum and can be harsher on the bow. Heavier GPP
+        (e.g., ~7–9+) is usually <strong>slower but quieter</strong>, easier on
+        the bow, and tends to keep momentum better for penetration.
+      </p>
+
+      <p style="margin-top:0.75rem;">
+        Inside this calculator, your GPP also feeds into the
+        <strong>velocity / speed-retention model</strong>: lighter GPP arrows
+        get a smaller “retention distance” (they shed speed faster), while
+        heavier GPP arrows are treated as hanging onto speed a bit longer.
+        That way your <strong>Arrow Efficiency</strong> panel, 
+        <strong>velocity at distance</strong>, and
+        <strong>downrange KE / momentum</strong> all stay consistent with the
+        same underlying arrow build.
+      </p>
+  `;
   } else if (key === 'gpi' && m.gpi) {
     const g = m.gpi;
     html = `
