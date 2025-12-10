@@ -1945,6 +1945,45 @@ const INFO_CONTENT = {
       FOC, and component breakdown.
     </p>
   `,
+    peakHeight: `
+    <h2>Peak Height vs Downrange Drop</h2>
+    <p>
+      Most archery charts talk about <strong>drop</strong> — how far the arrow is
+      <em>below your line of sight</em> (your peep–to–pin line) at 30, 40, 50+ yards.
+      That line of sight is tilted slightly upward when you zero at a distance like
+      20 yards.
+    </p>
+    <p>
+      <strong>Peak Height</strong> in this app uses a different reference:
+      it measures how high the arrow’s path gets above a
+      <strong>horizontal launch line</strong> — a flat line shooting straight out
+      of the bow at release.
+    </p>
+    <p>
+      Under the hood, the calculator:
+    </p>
+    <ul style="margin-left:1.25rem;">
+      <li>Assumes level ground and no wind.</li>
+      <li>Solves for the launch angle that would land the arrow at your chosen distance.</li>
+      <li>Uses that angle to find the highest point of the arc above the launch line.</li>
+      <li>Assumes the peak happens roughly halfway to the target in yards.</li>
+    </ul>
+    <p>
+      That’s why Peak Height:
+    </p>
+    <ul style="margin-left:1.25rem;">
+      <li>Shows how much “ceiling” you need to clear brush, branches, or blind windows.</li>
+      <li>Gives a feel for how “arched” the flight really is at that distance.</li>
+      <li>
+        Won’t match sight–tape drop numbers one-for-one —
+        they’re measured from a <em>tilted sight line</em>, not a flat launch line.
+      </li>
+    </ul>
+    <p>
+      Use it as a <strong>sanity check</strong> for clearance and overall arc shape,
+      not as a replacement for your actual sight tape.
+    </p>
+  `,
   yourSettings: `
     <h2>Your Settings</h2>
     <p>
@@ -3695,17 +3734,100 @@ function openMath(key) {
     `;
   } else if (key === 'peakHeight' && m.peakHeight) {
     const p = m.peakHeight;
+    const g = 32.174;                 // ft/s², gravity
+    const v0 = p.launchFps;           // launch speed in FPS
+    const Ryd = p.distYards;          // target distance in yards
+    const Rft = Ryd * 3;              // convert yards → feet
+
+    // Same steps the calculator uses in calculateEverything(...)
+    const v0sq = v0 * v0;
+    let sin2theta = (Rft * g) / v0sq;
+    // Clamp to a safe 0–1 range for asin
+    sin2theta = Math.min(1, Math.max(0, sin2theta));
+    const thetaRad = 0.5 * Math.asin(sin2theta);
+    const thetaDeg = thetaRad * 180 / Math.PI;
+    const sinTheta = Math.sin(thetaRad);
+
+    const peakFt   = p.peakHeightFt;  // already computed in main math
+    const peakYd   = p.peakYard;      // typically ~Ryd / 2
+
     html = `
       <h2>Peak Height Math</h2>
+
       <p>
-        Uses a level-ground projectile model to find the apex above a horizontal
-        launch line for your selected distance.
+        Peak Height uses a simple <strong>projectile model</strong> on level ground to
+        estimate how high the arrow climbs above a <strong>horizontal launch line</strong>
+        before gravity pulls it back down.
       </p>
-      <p>Peak Height ≈ <strong>${p.peakHeightFt.toFixed(1)} ft</strong> at about
-         <strong>${p.peakYard.toFixed(0)} yd</strong>.</p>
+
+      <p><strong>1) Inputs and unit conversions</strong></p>
+      <ul style="margin-left:1.25rem;">
+        <li>Launch speed v₀ = <strong>${v0.toFixed(1)} fps</strong></li>
+        <li>Target distance R = <strong>${Ryd.toFixed(0)} yd</strong>
+            → R = ${Ryd.toFixed(0)} × 3 = <strong>${Rft.toFixed(1)} ft</strong></li>
+        <li>Gravity g ≈ <strong>${g.toFixed(3)} ft/s²</strong></li>
+      </ul>
+
+      <p><strong>2) Solve for launch angle</strong></p>
       <p>
-        This is a different reference line than sight-based drop, so it will not
-        match the Flatness / Drop values one-for-one.
+        For a level shot (same height bow to target), the classic range equation is:
+      </p>
+      <p style="margin-left:1.25rem;">
+        R = (v₀² / g) × sin(2θ)
+      </p>
+      <p>
+        Rearranged to find the angle θ:
+      </p>
+      <p style="margin-left:1.25rem;">
+        sin(2θ) = (R × g) / v₀²
+      </p>
+      <p>With your numbers:</p>
+      <p style="margin-left:1.25rem;">
+        sin(2θ) = (${Rft.toFixed(1)} × ${g.toFixed(3)}) ÷ ${v0sq.toFixed(1)}
+        ≈ <strong>${sin2theta.toFixed(3)}</strong>
+      </p>
+      <p>
+        Then:
+      </p>
+      <p style="margin-left:1.25rem;">
+        2θ = arcsin(${sin2theta.toFixed(3)}) → θ ≈ <strong>${thetaDeg.toFixed(1)}°</strong>
+      </p>
+
+      <p><strong>3) Compute peak height above the launch line</strong></p>
+      <p>
+        For a projectile launched at angle θ, the maximum height above the
+        <em>horizontal launch line</em> is:
+      </p>
+      <p style="margin-left:1.25rem;">
+        H<sub>max</sub> = (v₀² × sin²θ) ÷ (2g)
+      </p>
+      <p>
+        Plugging in your values:
+      </p>
+      <p style="margin-left:1.25rem;">
+        H<sub>max</sub> ≈ <strong>${peakFt.toFixed(2)} ft</strong>
+        (shown as ${peakFt.toFixed(1)} ft in the tile)
+      </p>
+
+      <p><strong>4) Where along the path does this happen?</strong></p>
+      <p>
+        For this idealized arc, the apex occurs halfway through the flight in
+        horizontal distance:
+      </p>
+      <p style="margin-left:1.25rem;">
+        Distance to peak ≈ R ÷ 2 ≈ ${ (Ryd / 2).toFixed(1) } yd
+      </p>
+      <p>
+        The calculator reports this as:
+        <strong>${peakYd.toFixed(0)} yd</strong>.
+      </p>
+
+      <p style="margin-top:0.75rem;">
+        Remember: this height is measured from a
+        <strong>flat launch line</strong>, not from your tilted peep–to–pin line. That’s
+        why Peak Height won’t match your sight–tape “drop” numbers one-for-one, but it
+        does give a clear picture of <em>how tall</em> the true arc is and whether it
+        will comfortably clear obstacles between you and the target.
       </p>
     `;
   } else if (key === 'impactKE' && m.impactKE) {
