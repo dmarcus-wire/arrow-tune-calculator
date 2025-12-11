@@ -3673,16 +3673,45 @@ function openMath(key) {
   let html = '';
 
   if (key === 'foc' && m.foc) {
-    const f = m.foc;
-    html = `
-      <h2>FOC Math</h2>
-      <p><strong>Formula:</strong> FOC = ((Balance Point − (Arrow Length ÷ 2)) ÷ Arrow Length) × 100</p>
-      <p>Arrow Length = ${f.len.toFixed(2)} in</p>
-      <p>Midpoint = ${f.mid.toFixed(2)} in</p>
-      <p>Balance Point = ${f.balance.toFixed(2)} in</p>
-      <p>FOC = ((${f.balance.toFixed(2)} − ${f.mid.toFixed(2)}) ÷ ${f.len.toFixed(2)}) × 100
-         = <strong>${f.value.toFixed(1)}%</strong></p>
-    `;
+  const f = m.foc;
+
+  html = `
+    <h2>FOC (Front of Center) Math</h2>
+
+    <p>
+      FOC measures how far the arrow’s balance point sits 
+      <strong>in front of the midpoint</strong>.
+      Higher FOC generally improves broadhead stability and penetration;
+      lower FOC produces flatter trajectories and is more forgiving to shoot.
+    </p>
+
+    <p><strong>Formula:</strong></p>
+    <p>
+      FOC = ((Balance Point − Midpoint) ÷ Arrow Length) × 100
+    </p>
+
+    <p><strong>Your inputs:</strong></p>
+    <ul style="margin-left:1.25rem;">
+      <li>Arrow Length = <strong>${f.len.toFixed(2)} in</strong></li>
+      <li>Midpoint = Arrow Length ÷ 2 = <strong>${f.mid.toFixed(2)} in</strong></li>
+      <li>Balance Point = <strong>${f.balance.toFixed(2)} in</strong></li>
+    </ul>
+
+    <p><strong>Step-by-step:</strong></p>
+    <p>
+      FOC = ((${f.balance.toFixed(2)} − ${f.mid.toFixed(2)}) ÷ ${f.len.toFixed(2)}) × 100
+    </p>
+
+    <p>
+      FOC = <strong>${f.value.toFixed(1)}%</strong>
+    </p>
+
+    <p style="margin-top:0.75rem;">
+      Typical hunting arrows fall between <strong>10–18%</strong>.
+      Higher FOC (18%+) is often preferred for fixed-blade broadheads and heavier setups,
+      while moderate FOC (12–16%) gives a good blend of forgiveness and stability.
+    </p>
+  `;
 } else if (key === 'gpp' && m.gpp) {
   const g = m.gpp;
   html = `
