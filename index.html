@@ -4227,15 +4227,73 @@ function openMath(key) {
     `;
   } else if (key === 'awc' && m.awc) {
     const a = m.awc;
+    const total = a.weight;
+    const shaft  = a.shaft;
+    const point  = a.point;
+    const comp   = a.comp;
+
     html = `
       <h2>Arrow Weight Composition Math</h2>
-      <p>Total Arrow Weight = <strong>${a.weight.toFixed(1)} gr</strong></p>
-      <p>Breakdown:</p>
-      <ul>
-        <li><strong>Shaft:</strong> ${a.shaft.toFixed(1)} gr (${a.shaftPct.toFixed(0)}%)</li>
-        <li><strong>Point:</strong> ${a.point.toFixed(1)} gr (${a.pointPct.toFixed(0)}%)</li>
-        <li><strong>Components:</strong> ${a.comp.toFixed(1)} gr (${a.compPct.toFixed(0)}%)</li>
+
+      <p>
+        This panel shows how your <strong>total arrow weight</strong> is split between the
+        <strong>shaft</strong>, <strong>point</strong>, and all other
+        <strong>components</strong> (insert, collar, nock, vanes, wrap, etc.).
+      </p>
+
+      <p><strong>1) Total arrow weight</strong></p>
+      <p>
+        We start from the finished arrow weight used everywhere else in the app:
+      </p>
+      <ul style="margin-left:1.25rem;">
+        <li>Total Arrow Weight = <strong>${total.toFixed(1)} gr</strong></li>
       </ul>
+
+      <p><strong>2) Break it into pieces</strong></p>
+      <p>
+        The total is split into three buckets:
+      </p>
+      <ul style="margin-left:1.25rem;">
+        <li>Shaft weight ≈ <strong>${shaft.toFixed(1)} gr</strong></li>
+        <li>Point weight ≈ <strong>${point.toFixed(1)} gr</strong></li>
+        <li>Other components ≈ <strong>${comp.toFixed(1)} gr</strong></li>
+      </ul>
+      <p>
+        These should add up very close to your total arrow weight (small rounding differences are normal).
+      </p>
+
+      <p><strong>3) Convert to percentages for the bar</strong></p>
+      <p>
+        Each piece is then turned into a percentage of the total:
+      </p>
+      <ul style="margin-left:1.25rem;">
+        <li>
+          Shaft % = (Shaft ÷ Total) × 100
+          ≈ (${shaft.toFixed(1)} ÷ ${total.toFixed(1)}) × 100
+          = <strong>${a.shaftPct.toFixed(0)}%</strong>
+        </li>
+        <li>
+          Point % = (Point ÷ Total) × 100
+          ≈ (${point.toFixed(1)} ÷ ${total.toFixed(1)}) × 100
+          = <strong>${a.pointPct.toFixed(0)}%</strong>
+        </li>
+        <li>
+          Components % = (Other ÷ Total) × 100
+          ≈ (${comp.toFixed(1)} ÷ ${total.toFixed(1)}) × 100
+          = <strong>${a.compPct.toFixed(0)}%</strong>
+        </li>
+      </ul>
+
+      <p style="margin-top:0.5rem;">
+        Those three percentages drive the <strong>stacked composition bar</strong> and
+        the “Shaft / Point / Comp.” labels under it, so you can see at a glance how much
+        of your arrow’s weight lives in the shaft vs. up front vs. in the “other” pieces.
+      </p>
+
+      <p style="margin-top:0.5rem;">
+        Paired with <strong>FOC</strong> and <strong>Total Weight (TW)</strong>, this gives a
+        clear picture of how your arrow is built, not just what it weighs.
+      </p>
     `;
   } else if (key === 'sightMarks') {
     const fps = getNumeric('actualFPS');
