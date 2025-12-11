@@ -49,6 +49,146 @@
     line-height:1.6;
   }
 
+  /* --- Compact panel layout for "Your Setups" --- */
+
+  /* Shared compact field rows */
+  .form-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Make sure labels sit to the left in this layout */
+  .form-row label {
+    display: flex;              /* override any global display:block */
+    align-items: center;
+    flex: 0 0 45%;
+    font-size: 0.9rem;
+    margin-bottom: 0;           /* override any global label margin */
+  }
+
+  .form-row input,
+  .form-row select {
+    flex: 1;
+    padding: 0.4rem 0.5rem;
+    font-size: 1rem;
+  }
+
+  /* Optional: separate row header (label + info button + etc.) */
+  .form-row-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;         /* fix from 0.rem */
+    color: var(--light);
+  }
+
+  .form-row-label .label-main {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .form-row-label .label-main span {
+    font-weight: 500;
+  }
+
+  .form-row-label .label-actions {
+    display: flex;
+    gap: 0.35rem;
+  }
+
+  /* Button row for suggest/save/delete */
+  .build-actions-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.2rem;
+  }
+
+  .build-actions-row button {
+    flex: 1 1 30%;
+    min-width: 0;
+  }
+
+  /* Make the top rows 2-column once there is space */
+  @media (min-width: 640px) {
+    .panel-setups .panel-body-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.4fr);
+      gap: 0.5rem 1rem;
+    }
+
+    .panel-setups .panel-body-grid .form-row {
+      margin-bottom: 0.3rem;
+    }
+  }
+
+  .card-subsection-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: nowrap;          /* <— force one line until it absolutely can't */
+    margin-top: 0.75rem;
+  }
+
+  .card-subsection-title {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    flex: 1 1 auto;             /* <— title can shrink/stretch */
+    min-width: 0;
+  }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;        /* <— keeps “Show breakdown Off” together */
+    font-size: 0.9rem;
+    flex-shrink: 0;             /* <— don’t let this side get squished away */
+  }
+
+    .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .field-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.35rem;
+  }
+
+  .field-label-text {
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .field-inline {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .field-inline input,
+  .field-inline select {
+    flex: 1;
+  }
+
+  .field-unit {
+    font-size: 0.85rem;
+    color: var(--light);
+  }
+    /* --- End Compact panel layout for "Your Setups" --- */
+
   .container {
     max-width:1400px;
     margin:auto;
@@ -114,6 +254,19 @@
     margin:1rem 0 0.4rem;
     font-weight:600;
     font-size:0.95rem;
+  }
+
+  /* Override global label for compact inline rows */
+  .form-row > label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.35rem;
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  .form-row > .field-inline {
+    flex: 1;
   }
 
   input, select, textarea {
@@ -750,274 +903,698 @@
     /* keep your existing distance-ticks styling if you have it */
 </style>
 </head>
+
 <body>
   <div class="container">
     <!-- LEFT: INPUTS -->
     <div id="inputs-column">
-      <!-- Title / Theme card -->
-      <div class="card">
+      <!-- TOP: TITLE + YOUR SETUPS (COMBINED) -->
+      <section class="card">
         <div class="card-header">
-          <h1>Arrow Tune Calculator</h1>
+          <div>
+            <h1 style="font-size:1.4rem; margin-bottom:0.15rem;">
+              Arrow Tune Calculator
+            </h1>
+            <p class="card-subtitle" style="margin:0; font-size:0.9rem;">
+              <span style="font-weight:600; color:var(--primary);">Version 2.0.15</span>
+              &nbsp;•&nbsp; Offline &nbsp;•&nbsp; Mobile-friendly &nbsp;•&nbsp; Live calculations
+            </p>
+          </div>
           <div class="flex">
-            <span style="color:var(--light);">Light</span>
+            <span style="color:var(--light); font-size:0.85rem;">Light</span>
             <label class="toggle-switch">
-              <input type="checkbox" id="darkModeToggle"><span class="slider"></span>
+              <input type="checkbox" id="darkModeToggle">
+              <span class="slider"></span>
             </label>
-            <span style="color:var(--light);">Dark</span>
+            <span style="color:var(--light); font-size:0.85rem;">Dark</span>
           </div>
         </div>
-        <p style="color:var(--light);">
-          Offline • Mobile-friendly • Live calculations<br>
-          <span style="font-size:0.9rem; color:var(--primary); font-weight:600;">Version 2.0.15</span>
-        </p>
-      </div>
 
-      <!-- Your Setups -->
-      <div class="card">
-        <div class="card-header">
-          <h2>Your Setups</h2>
-        </div>
-        <label>
-          Build Name
-          <button class="info-btn" type="button" data-info="buildName">ⓘ</button>
-        </label>
-        <div class="flex">
-          <input type="text" id="buildName" placeholder="e.g. 2025 Hoyt RX-9 70lb 500gr">
-          <button class="btn-small" id="suggestName">Suggest</button>
-        </div>
-        <div class="flex" style="margin-top:1rem;gap:0.5rem;flex-wrap:wrap;">
-          <button id="saveBuild">Save Build</button>
-          <select id="loadBuildSelect"><option value="">– Load Build –</option></select>
-          <button style="background:var(--danger);" id="deleteBuild">Delete</button>
-        </div>
-      </div>
+        <div class="panel-body" style="padding-top:0.35rem;">
+          <h3 style="margin:0 0 0.5rem 0; font-size:1.05rem;">Your Setups</h3>
 
-      <!-- Bow Setup -->
-      <div class="card">
+          <div class="panel-body-grid">
+            <!-- Build Name -->
+            <div class="form-row">
+              <label for="buildName">
+                <span>Build Name</span>
+                <button
+                  class="info-btn small"
+                  type="button"
+                  data-info="buildName"
+                >ⓘ</button>
+              </label>
+              <input
+                id="buildName"
+                type="text"
+                inputmode="text"
+                autocomplete="off"
+                placeholder="e.g. 2025 Hoyt RX-9 / 500gr / 70lb"
+              />
+            </div>
+
+            <!-- Load Build -->
+            <div class="form-row">
+              <label for="savedBuildSelect">
+                <span>Load Build</span>
+                <button
+                  class="info-btn small"
+                  type="button"
+                  data-info="savedBuilds"
+                >ⓘ</button>
+              </label>
+              <select id="savedBuildSelect">
+                <option value="">Select a saved build…</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Suggest / Save / Delete row -->
+          <div class="build-actions-row" style="margin-top:0.6rem;">
+            <button id="suggestBuildNameBtn" type="button">
+              Suggest Name
+            </button>
+            <button id="saveBuildBtn" type="button">
+              Save Build
+            </button>
+            <button id="deleteBuildBtn" type="button">
+              Delete Build
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bow Setup (minimal, known-good) -->
+      <section class="card">
         <div class="card-header">
           <h3>Bow Setup</h3>
-          <button class="info-btn" type="button" data-info="bowModel">ⓘ</button>
-        </div>
-        <div class="grid-2">
-          <div>
-            <label>
-              Bow Model
-              <button class="info-btn" type="button" data-info="bowModel">ⓘ</button>
-            </label>
-            <input type="text" id="bowModel">
-          </div>
-          <div>
-            <label>
-              IBO/ATA Speed (FPS)
-              <button class="info-btn" type="button" data-info="iboRating">ⓘ</button>
-            </label>
-            <input type="number" id="iboRating" value="0" step="0.5">
-          </div>
-          <div>
-            <label>
-              Draw Weight (lbs)
-              <button class="info-btn" type="button" data-info="drawWeight">ⓘ</button>
-            </label>
-            <input type="number" id="drawWeight" value="70" step="0.5">
-          </div>
-          <div>
-            <label>
-              Draw Length (in)
-              <button class="info-btn" type="button" data-info="drawLength">ⓘ</button>
-            </label>
-            <input type="number" id="drawLength" value="30" step="0.5">
-          </div>
-          <div>
-            <label>
-              String Add-ons (gr)
-              <button class="info-btn" type="button" data-info="stringWeightSimple">ⓘ</button>
-            </label>
-            <input type="number" id="stringWeightSimple" value="0" step="0.5">
-          </div>
-          <div>
-            <label>
-              Application
-              <button class="info-btn" type="button" data-info="application">ⓘ</button>
-            </label>
-            <select id="application">
-              <option>Target / 3D</option>
-              <option selected>Hunting</option>
-              <option>Other</option>
-            </select>
-          </div>
+          <button
+            class="info-btn small"
+            type="button"
+            data-info="bowSetup"
+            aria-label="Bow Setup info"
+          >
+            ⓘ
+          </button>
         </div>
 
-        <div class="flex" style="margin-top:1rem;justify-content:space-between;">
-          <label>
-            Advanced String Components
-            <button class="info-btn" type="button" data-info="toggleString">ⓘ</button>
+        <p class="card-subtitle">
+          Core bow specs used to estimate speed and “effective load” on the arrow.
+        </p>
+
+        <!-- Application -->
+        <div class="form-row">
+          <label for="application">
+            <span>Application</span>
+            <button
+              class="info-btn small"
+              type="button"
+              data-info="application"
+              aria-label="Application info"
+            >
+              ⓘ
+            </button>
           </label>
-          <label class="toggle-switch">
-            <input type="checkbox" id="toggleString"><span class="slider"></span>
+          <select id="application">
+            <option value="">Select…</option>
+            <option value="target3d">Target / 3D</option>
+            <option value="hunting">Hunting</option>
+            <option value="other">Other / Mixed</option>
+          </select>
+        </div>
+
+        <!-- Bow Model -->
+        <div class="form-row">
+          <label for="bowModel">
+            <span>Bow Model</span>
+            <button
+              class="info-btn small"
+              type="button"
+              data-info="bowModel"
+              aria-label="Bow model info"
+            >
+              ⓘ
+            </button>
+          </label>
+          <input
+            id="bowModel"
+            type="text"
+            inputmode="text"
+            autocomplete="off"
+            placeholder="e.g., 2025 Hoyt RX-9"
+          />
+        </div>
+
+        <!-- IBO / ATA Speed -->
+        <div class="form-row">
+          <label for="iboFPS">
+            <span>IBO / ATA Speed (FPS)</span>
+            <button
+              class="info-btn small"
+              type="button"
+              data-info="ibo"
+              aria-label="IBO/ATA speed info"
+            >
+              ⓘ
+            </button>
+          </label>
+          <input
+            id="iboFPS"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="1"
+            placeholder="e.g., 340"
+          />
+        </div>
+
+        <!-- Draw Weight -->
+        <div class="form-row">
+          <label for="drawWeight">
+            <span>Draw Weight (lb)</span>
+            <button
+              class="info-btn small"
+              type="button"
+              data-info="drawWeight"
+              aria-label="Draw weight info"
+            >
+              ⓘ
+            </button>
+          </label>
+          <input
+            id="drawWeight"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="0.5"
+            placeholder="e.g., 70"
+          />
+        </div>
+
+        <!-- Draw Length -->
+        <div class="form-row">
+          <label for="drawLength">
+            <span>Draw Length (in)</span>
+            <button
+              class="info-btn small"
+              type="button"
+              data-info="drawLength"
+              aria-label="Draw length info"
+            >
+              ⓘ
+            </button>
+          </label>
+          <input
+            id="drawLength"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="0.25"
+            placeholder="e.g., 28.5"
+          />
+        </div>
+
+        <!-- String Add-ons (simple total) -->
+        <div class="form-row">
+          <label for="stringAddOn">
+            <span>String Add-ons (gr)</span>
+            <button
+              class="info-btn small"
+              type="button"
+              data-info="stringAddOn"
+              aria-label="String add-ons info"
+            >
+              ⓘ
+            </button>
+          </label>
+          <input
+            id="stringAddOn"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="0.5"
+            placeholder="e.g., 20"
+          />
+        </div>
+
+        <!-- Advanced String Components: inline label + toggle -->
+        <div class="card-subsection-header" style="margin-top:0.9rem;">
+          <div class="card-subsection-title">
+            <span>Advanced String Components</span>
+            <button
+              class="info-btn small"
+              type="button"
+              data-info="advancedString"
+              aria-label="Advanced string components info"
+            >
+              ⓘ
+            </button>
+          </div>
+          <label class="toggle-row">
+            <span>Show breakdown</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggleArrow" />
+              <span class="slider"></span>
+            </label>
           </label>
         </div>
-        <div id="stringAdvanced" class="advanced">
-          <div class="grid-2">
-            <div>
-              <label>
-                Peep
-                <button class="info-btn" type="button" data-info="peepWeight">ⓘ</button>
-              </label>
-              <input type="number" id="peepWeight" value="0" step="0.5">
-            </div>
-            <div>
-              <label>
-                D-Loop
-                <button class="info-btn" type="button" data-info="dloopWeight">ⓘ</button>
-              </label>
-              <input type="number" id="dloopWeight" value="0" step="0.5">
-            </div>
-            <div>
-              <label>
-                Kisser
-                <button class="info-btn" type="button" data-info="kisserWeight">ⓘ</button>
-              </label>
-              <input type="number" id="kisserWeight" value="0" step="0.5">
-            </div>
-            <div>
-              <label>
-                Silencers
-                <button class="info-btn" type="button" data-info="silencersWeight">ⓘ</button>
-              </label>
-              <input type="number" id="silencersWeight" value="0" step="0.5">
+
+        <!-- Advanced string breakdown (collapsible) -->
+        <div id="string-advanced" class="advanced" data-section="string-advanced">
+
+          <!-- Peep -->
+          <div class="form-row">
+            <label for="peepWeight">
+              <span>Peep</span>
+              <button class="info-btn tiny" type="button" data-info="peep">ⓘ</button>
+            </label>
+            <div class="field-inline" style="width:100%;">
+              <input 
+                id="peepWeight"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="0.5"
+              />
+              <span class="field-unit">gr</span>
             </div>
           </div>
-          <p style="text-align:right;font-weight:600;">
-            Total: <span id="stringTotal">0</span> grains
+
+          <!-- D-loop -->
+          <div class="form-row">
+            <label for="dloopWeight">
+              <span>D-Loop</span>
+              <button class="info-btn tiny" type="button" data-info="dloop">ⓘ</button>
+            </label>
+            <div class="field-inline" style="width:100%;">
+              <input 
+                id="dloopWeight"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="0.5"
+              />
+              <span class="field-unit">gr</span>
+            </div>
+          </div>
+
+          <!-- Kisser -->
+          <div class="form-row">
+            <label for="kisserWeight">
+              <span>Kisser</span>
+              <button class="info-btn tiny" type="button" data-info="kisser">ⓘ</button>
+            </label>
+            <div class="field-inline" style="width:100%;">
+              <input 
+                id="kisserWeight"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="0.5"
+              />
+              <span class="field-unit">gr</span>
+            </div>
+          </div>
+
+          <!-- Silencers -->
+          <div class="form-row">
+            <label for="silencerWeight">
+              <span>Silencers</span>
+              <button class="info-btn tiny" type="button" data-info="silencers">ⓘ</button>
+            </label>
+            <div class="field-inline" style="width:100%;">
+              <input 
+                id="silencerWeight"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="0.5"
+              />
+              <span class="field-unit">gr</span>
+            </div>
+          </div>
+
+          <!-- Total -->
+          <p class="inline-total" style="text-align:right; margin-top:0.5rem;">
+            Total string components:
+            <strong><span id="stringAdvTotal">0.0</span> gr</strong>
           </p>
-        </div>
-      </div>
 
-      <!-- Arrow Setup -->
-      <div class="card">
+        </div>
+      </section>
+
+      <!-- Arrow Setup (compressed, matches Bow Setup style) -->
+      <section class="card">
         <div class="card-header">
           <h3>Arrow Setup</h3>
-          <button class="info-btn" type="button" data-info="arrowName">ⓘ</button>
+          <button
+            class="info-btn small"
+            type="button"
+            data-info="arrowSetup"
+          >
+            ⓘ
+          </button>
         </div>
 
-        <!-- Arrow name + spine aligned -->
-        <div class="grid-2">
-          <div>
-            <label>
-              Arrow Name
-              <button class="info-btn" type="button" data-info="arrowName">ⓘ</button>
-            </label>
-            <input type="text" id="arrowName">
-          </div>
-          <div>
-            <label>
-              Arrow Spine Stiffness
-              <button class="info-btn" type="button" data-info="arrowSpine">ⓘ</button>
-            </label>
-            <input type="number" id="arrowSpine" value="340" step="10">
-          </div>
-        </div>
+        <p class="card-subtitle">
+          Finished arrow specs used for weight, FOC, spine guidance, and downrange performance.
+        </p>
 
-        <div class="grid-2">
-          <div>
-            <label>
-              Arrow Length (in)
-              <button class="info-btn" type="button" data-info="arrowLength">ⓘ</button>
-            </label>
-            <input type="number" id="arrowLength" value="28.5" step="0.5">
-          </div>
-          <div>
-            <label>
-              Total Arrow Weight (gr)
-              <button class="info-btn" type="button" data-info="totalArrowWeightSimple">ⓘ</button>
-            </label>
-            <input type="number" id="totalArrowWeightSimple" value="450" step="0.5">
-            <small id="totalWeightHint"
-                   style="display:block;margin-top:0.25rem;font-size:0.85rem;color:var(--light);">
-            </small>
-          </div>
-          <div>
-            <label>
-              Point Weight (gr)
-              <button class="info-btn" type="button" data-info="pointWeight">ⓘ</button>
-            </label>
-            <input type="number" id="pointWeight" value="150" step="0.5">
-          </div>
-          <div>
-            <label>
-              Balance Point (in)
-              <button class="info-btn" type="button" data-info="balancePoint">ⓘ</button>
-            </label>
-            <input type="number" id="balancePoint" value="18.5" step="0.05">
-          </div>
-        </div>
-
-        <div class="flex" style="margin-top:1rem;justify-content:space-between;">
-          <label>
-            Advanced Arrow Components
-            <button class="info-btn" type="button" data-info="toggleArrow">ⓘ</button>
+        <!-- Arrow Name -->
+        <div class="form-row">
+          <label for="arrowName">
+            <span>Arrow Name</span>
+            <button
+              class="info-btn small"
+              type="button"
+              data-info="arrowName"
+            >
+              ⓘ
+            </button>
           </label>
-          <label class="toggle-switch">
-            <input type="checkbox" id="toggleArrow"><span class="slider"></span>
+          <input
+            id="arrowName"
+            type="text"
+            inputmode="text"
+            autocomplete="off"
+            placeholder="e.g., Axis 5mm / 504gr / 150gr point"
+          />
+        </div>
+
+        <!-- Arrow Spine -->
+        <div class="form-row">
+          <label for="arrowSpine">
+            <span>Arrow Spine Stiffness</span>
+            <button
+              class="info-btn small"
+              type="button"
+              data-info="arrowSpine"
+            >
+              ⓘ
+            </button>
+          </label>
+          <input
+            id="arrowSpine"
+            type="number"
+            inputmode="decimal"
+            step="10"
+            value="340"
+          />
+        </div>
+
+        <!-- Length + Total Weight -->
+        <div class="form-row">
+          <label for="arrowLength">
+            <span>Arrow Length (in)</span>
+            <button
+              class="info-btn small"
+              type="button"
+              data-info="arrowLength"
+            >
+              ⓘ
+            </button>
+          </label>
+          <input
+            id="arrowLength"
+            type="number"
+            inputmode="decimal"
+            step="0.25"
+            value="28.5"
+          />
+        </div>
+
+        <div class="form-row">
+          <label for="totalArrowWeightSimple">
+            <span>Total Arrow Weight (gr)</span>
+            <button
+              class="info-btn small"
+              type="button"
+              data-info="totalArrowWeightSimple"
+            >
+              ⓘ
+            </button>
+          </label>
+          <input
+            id="totalArrowWeightSimple"
+            type="number"
+            inputmode="decimal"
+            step="0.5"
+            value="450"
+          />
+        </div>
+        <small
+          id="totalWeightHint"
+          style="display:block;margin-top:-0.3rem;margin-bottom:0.35rem;font-size:0.85rem;color:var(--light);"
+        ></small>
+
+        <!-- Point Weight -->
+        <div class="form-row">
+          <label for="pointWeight">
+            <span>Point Weight (gr)</span>
+            <button
+              class="info-btn small"
+              type="button"
+              data-info="pointWeight"
+            >
+              ⓘ
+            </button>
+          </label>
+          <input
+            id="pointWeight"
+            type="number"
+            inputmode="decimal"
+            step="0.5"
+            value="150"
+          />
+        </div>
+
+        <!-- Balance Point -->
+        <div class="form-row">
+          <label for="balancePoint">
+            <span>Balance Point (in)</span>
+            <button
+              class="info-btn small"
+              type="button"
+              data-info="balancePoint"
+            >
+              ⓘ
+            </button>
+          </label>
+          <input
+            id="balancePoint"
+            type="number"
+            inputmode="decimal"
+            step="0.05"
+            value="18.5"
+          />
+        </div>
+
+        <!-- Advanced Arrow Components: inline label + toggle -->
+        <div class="card-subsection-header" style="margin-top:0.9rem;">
+          <div class="card-subsection-title">
+            <span>Advanced Arrow Components</span>
+            <button
+              class="info-btn small"
+              type="button"
+              data-info="toggleArrow"
+            >
+              ⓘ
+            </button>
+          </div>
+          <label class="toggle-row">
+            <span>Show breakdown</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggleArrow" />
+              <span class="slider"></span>
+            </label>
           </label>
         </div>
+
+        <!-- Advanced arrow breakdown (collapsible) -->
         <div id="arrowAdvanced" class="advanced">
-          <div class="grid-2">
-            <div>
-              <label>
-                Bare Shaft
-                <button class="info-btn" type="button" data-info="bareShaft">ⓘ</button>
-              </label>
-              <input type="number" id="bareShaft" value="0" step="0.1">
-            </div>
-            <div>
-              <label>
-                Nock System
-                <button class="info-btn" type="button" data-info="nockWeight">ⓘ</button>
-              </label>
-              <input type="number" id="nockWeight" value="0" step="0.1">
-            </div>
-            <div>
-              <label>
-                Wrap
-                <button class="info-btn" type="button" data-info="wrapWeight">ⓘ</button>
-              </label>
-              <input type="number" id="wrapWeight" value="0" step="0.1">
-            </div>
-            <div>
-              <label>
-                Vane Weight (each)
-                <button class="info-btn" type="button" data-info="vaneWeightEach">ⓘ</button>
-              </label>
-              <input type="number" id="vaneWeightEach" value="0" step="0.1">
-            </div>
-            <div>
-              <label>
-                Vane Count
-                <button class="info-btn" type="button" data-info="vaneCount">ⓘ</button>
-              </label>
-              <input type="number" id="vaneCount" value="0" step="1">
-            </div>
-            <div>
-              <label>
-                Insert/Outsert
-                <button class="info-btn" type="button" data-info="insertWeight">ⓘ</button>
-              </label>
-              <input type="number" id="insertWeight" value="50" step="0.5">
-            </div>
-            <div>
-              <label>
-                Glue / Pin Nock
-                <button class="info-btn" type="button" data-info="glueWeight">ⓘ</button>
-              </label>
-              <input type="number" id="glueWeight" value="0" step="0.5">
+          <!-- Bare Shaft -->
+          <div class="form-row">
+            <label for="bareShaft">
+              <span>Bare Shaft</span>
+              <button
+                class="info-btn tiny"
+                type="button"
+                data-info="bareShaft"
+              >
+                ⓘ
+              </button>
+            </label>
+            <div class="field-inline" style="width:100%;">
+              <input
+                id="bareShaft"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="0.1"
+                value="0"
+              />
+              <span class="field-unit">gr</span>
             </div>
           </div>
-          <p style="text-align:right;font-weight:600;">
+
+          <!-- Nock system -->
+          <div class="form-row">
+            <label for="nockWeight">
+              <span>Nock System</span>
+              <button
+                class="info-btn tiny"
+                type="button"
+                data-info="nockWeight"
+              >
+                ⓘ
+              </button>
+            </label>
+            <div class="field-inline" style="width:100%;">
+              <input
+                id="nockWeight"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="0.1"
+                value="0"
+              />
+              <span class="field-unit">gr</span>
+            </div>
+          </div>
+
+          <!-- Wrap -->
+          <div class="form-row">
+            <label for="wrapWeight">
+              <span>Wrap</span>
+              <button
+                class="info-btn tiny"
+                type="button"
+                data-info="wrapWeight"
+              >
+                ⓘ
+              </button>
+            </label>
+            <div class="field-inline" style="width:100%;">
+              <input
+                id="wrapWeight"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="0.1"
+                value="0"
+              />
+              <span class="field-unit">gr</span>
+            </div>
+          </div>
+
+          <!-- Vane weight each -->
+          <div class="form-row">
+            <label for="vaneWeightEach">
+              <span>Vane Weight (each)</span>
+              <button
+                class="info-btn tiny"
+                type="button"
+                data-info="vaneWeightEach"
+              >
+                ⓘ
+              </button>
+            </label>
+            <div class="field-inline" style="width:100%;">
+              <input
+                id="vaneWeightEach"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="0.1"
+                value="0"
+              />
+              <span class="field-unit">gr</span>
+            </div>
+          </div>
+
+          <!-- Vane count -->
+          <div class="form-row">
+            <label for="vaneCount">
+              <span>Vane Count</span>
+              <button
+                class="info-btn tiny"
+                type="button"
+                data-info="vaneCount"
+              >
+                ⓘ
+              </button>
+            </label>
+            <div class="field-inline" style="width:100%;">
+              <input
+                id="vaneCount"
+                type="number"
+                inputmode="numeric"
+                min="0"
+                step="1"
+                value="0"
+              />
+              <span class="field-unit">ea</span>
+            </div>
+          </div>
+
+          <!-- Insert / Outsert -->
+          <div class="form-row">
+            <label for="insertWeight">
+              <span>Insert / Outsert</span>
+              <button
+                class="info-btn tiny"
+                type="button"
+                data-info="insertWeight"
+              >
+                ⓘ
+              </button>
+            </label>
+            <div class="field-inline" style="width:100%;">
+              <input
+                id="insertWeight"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="0.5"
+                value="50"
+              />
+              <span class="field-unit">gr</span>
+            </div>
+          </div>
+
+          <!-- Glue / Pin -->
+          <div class="form-row">
+            <label for="glueWeight">
+              <span>Glue / Pin Nock</span>
+              <button
+                class="info-btn tiny"
+                type="button"
+                data-info="glueWeight"
+              >
+                ⓘ
+              </button>
+            </label>
+            <div class="field-inline" style="width:100%;">
+              <input
+                id="glueWeight"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="0.5"
+                value="0"
+              />
+              <span class="field-unit">gr</span>
+            </div>
+          </div>
+
+          <!-- Total -->
+          <p
+            style="text-align:right;font-weight:600;margin-top:0.5rem;"
+          >
             Total: <span id="arrowTotal">0.0</span> grains
           </p>
         </div>
-      </div>
+      </section>
 
       <!-- Notes -->
       <div class="card">
@@ -1695,12 +2272,15 @@ const INFO_CONTENT = {
   buildName: `
     <h2>Build Name</h2>
     <p>
-      A human-friendly label for this bow + arrow setup. It’s used as the name
-      when you save, load, and compare builds.
+      A short label so you can recognize this setup later. Many shooters
+      include the bow, arrow model, spine, total weight, and draw weight.
     </p>
+  `,
+  savedBuilds: `
+    <h2>Load Build</h2>
     <p>
-      The <strong>Suggest</strong> button auto-builds a name using date, bow model,
-      draw weight, arrow name, and total arrow weight so your builds stay organized.
+      Pick from your previously saved setups. Loading a build will
+      overwrite the current inputs with that saved configuration.
     </p>
   `,
   bowModel: `
@@ -4772,8 +5352,35 @@ document.querySelectorAll('.math-btn').forEach(btn => {
     e.preventDefault();
     const key = btn.dataset.math;
     if (key) openMath(key);
+
+document.querySelectorAll('.math-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const key = btn.dataset.math;
+    if (key) openMath(key);
   });
 });
+
+// Advanced String Components toggle (button-style)
+const toggleStringAdvBtn = document.getElementById('toggleStringAdv');
+
+if (toggleStringAdvBtn) {
+  toggleStringAdvBtn.addEventListener('click', () => {
+    const sec = document.getElementById('string-advanced');
+    if (!sec) return;
+
+    const isHidden =
+      sec.style.display === '' || sec.style.display === 'none';
+
+    if (isHidden) {
+      sec.style.display = 'block';
+      toggleStringAdvBtn.textContent = 'On';
+    } else {
+      sec.style.display = 'none';
+      toggleStringAdvBtn.textContent = 'Off';
+    }
+  });
+}
 
 /* ============================================================
    INITIALIZE
