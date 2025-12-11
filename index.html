@@ -1111,7 +1111,6 @@
                     <span id="distanceValue">50</span> yd
                   </span>
                 </div>
-                <span class="perf-edit-pill">adjust</span>
               </div>
               <input
                 id="distanceSlider"
@@ -4454,50 +4453,71 @@ function openMath(key) {
         </div>
       `;
     }
-  } else if (key === 'groupStability') {
-    const fps = getNumeric('actualFPS');
-    const foc = getNumeric('focValue');
-    const gpi = getNumeric('gpiValue');
+} else if (key === 'groupStability') {
+  const fps = getNumeric('actualFPS');
+  const foc = getNumeric('focValue');
+  const gpi = getNumeric('gpiValue');
 
-    if (!Number.isFinite(fps) || !Number.isFinite(foc) || !Number.isFinite(gpi)) {
-      html = `
-        <h2>Group Stability Math</h2>
-        <p>
-          Enter launch FPS, FOC, and arrow length/weight so the app can estimate
-          group stability.
-        </p>
-      `;
-    } else {
-      const isTight =
-        fps >= 270 &&
-        foc >= 12 && foc <= 18 &&
-        gpi <= 9.5;
+  if (!Number.isFinite(fps) || !Number.isFinite(foc) || !Number.isFinite(gpi)) {
+    html = `
+      <h2>Group Stability Math</h2>
+      <p>
+        Enter launch FPS, FOC, and arrow length/weight so the app can estimate
+        group stability.
+      </p>
+    `;
+  } else {
+    const isTight =
+      fps >= 270 &&
+      foc >= 12 && foc <= 18 &&
+      gpi <= 9.5;
 
-      const label = isTight ? 'Tight' : 'Average';
+    const label = isTight ? 'Tight' : 'Average';
 
-      html = `
-        <h2>Group Stability Math</h2>
-        <p>Current values:</p>
-        <ul style="margin-left:1.25rem;">
-          <li>FPS = <strong>${fps.toFixed(1)}</strong></li>
-          <li>FOC = <strong>${foc.toFixed(1)}%</strong></li>
-          <li>GPI = <strong>${gpi.toFixed(1)}</strong></li>
-        </ul>
-        <p>Badge result: <strong>${label}</strong>.</p>
-        <p>
-          The calculator flags <strong>Tight</strong> when all of these are true:
-        </p>
-        <ul style="margin-left:1.25rem;">
-          <li>Launch FPS ≳ <strong>270</strong></li>
-          <li>FOC between <strong>12–18%</strong></li>
-          <li>GPI ≲ <strong>9.5 gr/in</strong></li>
-        </ul>
-        <p>
-          Anything outside that zone is labeled <strong>Average</strong> — still fully
-          usable, but not as optimized on paper for forgiveness and small groups.
-        </p>
-      `;
-    }
+    html = `
+      <h2>Group Stability Math</h2>
+
+      <p>
+        This badge rolls three things together into a quick “how forgiving on paper
+        is this setup?” indicator:
+      </p>
+      <ul style="margin-left:1.25rem;">
+        <li><strong>Launch FPS</strong> (how fast the arrow leaves the bow)</li>
+        <li><strong>FOC%</strong> (how balanced the arrow is front-to-back)</li>
+        <li><strong>GPI</strong> (finished grains per inch – how dense the shaft is)</li>
+      </ul>
+
+      <p><strong>Your current numbers:</strong></p>
+      <ul style="margin-left:1.25rem;">
+        <li>FPS = <strong>${fps.toFixed(1)}</strong></li>
+        <li>FOC = <strong>${foc.toFixed(1)}%</strong></li>
+        <li>GPI = <strong>${gpi.toFixed(1)} gr/in</strong></li>
+      </ul>
+
+      <p>
+        Badge result: <strong>${label}</strong>
+      </p>
+
+      <p><strong>“Tight” is awarded when all of these are true:</strong></p>
+      <ul style="margin-left:1.25rem;">
+        <li>Launch FPS ≳ <strong>270</strong></li>
+        <li>FOC between <strong>12–18%</strong></li>
+        <li>GPI ≲ <strong>9.5 gr/in</strong></li>
+      </ul>
+
+      <p>
+        When any of those are outside the target window, the badge shows
+        <strong>Average</strong> — still fully usable, just not as theoretically
+        optimized for small, forgiving groups on paper.
+      </p>
+
+      <p style="margin-top:0.5rem;">
+        Use this as a <strong>relative</strong> comparison between builds, not a hard
+        rule. Clean form, broadhead tuning, and shot execution will always matter
+        more than a single badge.
+      </p>
+    `;
+  }
 
   } else if (key === 'stiffness' && m.spine) {
     const s = m.spine || {};
@@ -4643,13 +4663,18 @@ function openMath(key) {
       `;
     } else {
       const baseDrop20 = computeDropInches(20, fps);
-      const drop60 = computeDropInches(60, fps);
-      let peakFt = NaN;
-      let label = '–';
+      const drop60     = computeDropInches(60, fps);
+
+      let extraDrop = NaN;
+      let peakFt    = NaN;
+      let label     = '–';
 
       if (Number.isFinite(baseDrop20) && Number.isFinite(drop60)) {
-        const extraDrop = drop60 - baseDrop20;
-        peakFt = Math.max(0, extraDrop / 12);
+        // Extra drop between 20 → 60 yd (inches)
+        extraDrop = drop60 - baseDrop20;
+
+        // Turn that extra drop into an "effective arc height" in feet
+        peakFt = Math.max(0, extraDrop / 12); // in → ft, clamp at 0
 
         if (peakFt < 3.0)      label = 'Very Flat';
         else if (peakFt < 4.5) label = 'Flat';
@@ -4658,26 +4683,56 @@ function openMath(key) {
 
       html = `
         <h2>Flatness Score Math</h2>
+
         <p>
-          We model gravity drop at <strong>20 yd</strong> and <strong>60 yd</strong>,
-          then look at how much additional drop happens between those points.
+          Flatness looks at <strong>how tall your arc needs to be by 60 yards</strong>
+          when you are zeroed at 20 yards.
         </p>
+
+        <p><strong>1) Compute gravity drop at 20 and 60 yd</strong></p>
         <p>
-          That extra drop is converted into an effective arc height by 60 yd.
+          Using your launch FPS, the calculator estimates pure gravity drop at:
         </p>
+        <ul style="margin-left:1.25rem;">
+          <li>Drop at 20 yd ≈ <strong>${Number.isFinite(baseDrop20) ? baseDrop20.toFixed(1) : '–'} in</strong></li>
+          <li>Drop at 60 yd ≈ <strong>${Number.isFinite(drop60) ? drop60.toFixed(1) : '–'} in</strong></li>
+        </ul>
+
+        <p><strong>2) Re-anchor to your 20 yd zero</strong></p>
         <p>
-          Approximate effective height by 60 yd:
+          Because sights are usually set so 20 yd is your "zero," we look at the
+          <em>extra</em> drop between 20 and 60, not the absolute numbers:
+        </p>
+        <p style="margin-left:1.25rem;">
+          Extra drop 20 → 60 yd =
+          <strong>${Number.isFinite(extraDrop) ? extraDrop.toFixed(1) : '–'} in</strong>
+        </p>
+
+        <p><strong>3) Convert extra drop into an effective arc height</strong></p>
+        <p>
+          That extra drop is turned into an <strong>effective arc height</strong>
+          by 60 yd:
+        </p>
+        <p style="margin-left:1.25rem;">
+          Height ≈ extra drop ÷ 12 =
           <strong>${Number.isFinite(peakFt) ? peakFt.toFixed(2) : '–'} ft</strong>
         </p>
-        <p>Score label: <strong>${label}</strong></p>
+
+        <p><strong>4) Map height → Flatness label</strong></p>
+        <p>Your current build falls into:</p>
+        <p style="margin-left:1.25rem;">
+          Flatness label = <strong>${label}</strong>
+        </p>
+
         <ul style="margin-left:1.25rem;">
           <li><strong>Very Flat</strong> → effective arc &lt; ~3 ft</li>
           <li><strong>Flat</strong> → ~3–4.5 ft</li>
           <li><strong>Curved</strong> → &gt; ~4.5 ft</li>
         </ul>
-        <p>
+
+        <p style="margin-top:0.5rem;">
           Use this to compare builds — it isn’t meant to be exact sight tape data,
-          just a feel for how “flat” the rig is by 60 yards.
+          just a feel for how “flat” the rig is by 60 yards with your current FPS.
         </p>
       `;
     }
