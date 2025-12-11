@@ -1257,7 +1257,7 @@
               <div class="metric-header-row">
                 <div class="metric-title">
                   <span>Launch KE</span>
-                  <button class="info-btn small" type="button" data-info="launchKE">ⓘ</button>
+                  <button class="info-btn small" type="button" data-info="keLaunch">ⓘ</button>
                   <button class="math-btn" type="button" data-math="keLaunch">∑</button>
                 </div>
               </div>
@@ -2231,6 +2231,32 @@ const INFO_CONTENT = {
       Treat this as a <strong>ballpark flight time</strong> to help you think
       about string jump and animal movement, not a frame–by–frame slow-motion
       measurement.
+    </p>
+  `,
+    keLaunch: `
+    <h2>Launch Kinetic Energy (KE)</h2>
+    <p>
+      Kinetic energy is how much <strong>work</strong> your arrow can do at the bow.
+      It combines <strong>mass</strong> (arrow weight) and <strong>speed</strong> (FPS)
+      into one number measured in <strong>foot-pounds (ft-lbs)</strong>.
+    </p>
+
+    <p>
+      Heavier arrows and higher FPS both increase KE. Light, fast arrows may
+      have similar KE to heavier, slower ones, but they behave differently on impact.
+    </p>
+
+    <p>
+      This tile shows KE <strong>right at launch</strong>. The calculator then uses
+      your velocity-at-distance model to estimate how much KE is left at your chosen
+      yardage, which you’ll see in the <strong>Impact KE</strong> and
+      <strong>Game Effectiveness</strong> panels.
+    </p>
+
+    <p style="margin-top:0.5rem;">
+      Treat KE as one part of the story alongside <strong>momentum</strong>,
+      <strong>arrow flight</strong>, and <strong>shot placement</strong>—not a
+      solo green light to take any shot.
     </p>
   `,
   impactKE: `
