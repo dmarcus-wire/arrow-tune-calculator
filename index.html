@@ -1424,6 +1424,8 @@
               </p>
             </div>
 
+            
+
             <!-- FOC -->
             <div class="metric-tile">
               <div class="metric-header-row">
@@ -3436,7 +3438,9 @@ function calculateEverything(recalcFPS = false) {
     foc: { len, balance, mid: len / 2, value: foc },
     gpp: { weight, dw, value: gpp },
     gpi: { weight, len, value: gpi },
-    tw:  { weight },
+    tw: {
+      weight: Number.isFinite(weight) ? weight : NaN
+    },
     fps: {
       ibo,
       stringW,
@@ -3770,6 +3774,39 @@ function openMath(key) {
         The GPI result here is based on your <strong>finished arrow</strong> weight rather than
         the manufacturer’s raw shaft GPI rating, making it a practical measure of how your build
         behaves in the real world.
+      </p>
+    `;
+    } else if (key === 'tw' && m.tw) {
+    const t = m.tw;
+    html = `
+      <h2>Total Arrow Weight (TW) Math</h2>
+
+      <p>
+        TW is your <strong>finished arrow weight</strong> in grains — shaft, components,
+        and point all added together. This is the number that drives almost every
+        other output in the app.
+      </p>
+
+      <p><strong>Your build:</strong></p>
+      <p>
+        Total Arrow Weight = <strong>${t.weight.toFixed(1)} grains</strong>
+      </p>
+
+      <p style="margin-top:0.5rem;">
+        This same TW value is reused in:
+      </p>
+      <ul style="margin-left:1.25rem;">
+        <li><strong>GPP</strong> (grains per pound)</li>
+        <li><strong>GPI</strong> (grains per inch)</li>
+        <li><strong>Launch KE</strong> and <strong>Impact KE</strong></li>
+        <li><strong>Momentum</strong> and <strong>Game Effectiveness</strong></li>
+        <li>The <strong>Arrow Weight Composition</strong> bar</li>
+      </ul>
+
+      <p>
+        If this number is off, every downstream calculation will be off with it —
+        so TW is the most important value to get as close as possible to your
+        real, finished arrow.
       </p>
     `;
   } else if (key === 'keLaunch' && m.keLaunch) {
