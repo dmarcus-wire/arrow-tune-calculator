@@ -3754,6 +3754,57 @@ function openMath(key) {
       while moderate FOC (12–16%) gives a good blend of forgiveness and stability.
     </p>
   `;
+} else if (key === 'fps' && m.fps) {
+  const f = m.fps;
+  html = `
+      <h2>FPS Estimate Math</h2>
+      <p>
+        When you don’t have a chronograph reading, the app uses a 
+        <strong>rule-of-thumb estimate</strong> based on your bow’s IBO rating:
+      </p>
+      <ul style="margin-left:1.25rem;">
+        <li>Start from IBO (often 30&quot;/70 lb/350 gr arrow).</li>
+        <li>Adjust a few FPS per pound above or below 70 lb.</li>
+        <li>Adjust roughly 8–12 FPS per inch above or below 30&quot; draw.</li>
+        <li>Trim 1–2 FPS per extra ~5–10 grains above 350 gr arrow weight.</li>
+        <li>Subtract a few FPS for peep, D-loop, silencers, and other string add-ons.</li>
+      </ul>
+
+      <p><strong>Your inputs:</strong></p>
+      <ul style="margin-left:1.25rem;">
+        <li>IBO / ATA rating: ${f.ibo.toFixed(0)} FPS (base)</li>
+        <li>Draw weight: ${f.drawWeight.toFixed(1)} lb (ref ~${f.refDrawWeight} lb)</li>
+        <li>Draw length: ${f.drawLength.toFixed(2)} in (ref ~${f.refDrawLength} in)</li>
+        <li>Arrow weight: ${f.weight.toFixed(1)} gr (ref ~${f.refArrowWeight} gr)</li>
+        <li>String add-ons: ${f.stringW.toFixed(1)} gr (first ~20 gr assumed “free”)</li>
+      </ul>
+
+      <p><strong>Approximate breakdown:</strong></p>
+      <ul style="margin-left:1.25rem;">
+        <li>Base IBO: ${f.baseFps.toFixed(1)} FPS</li>
+        <li>Draw weight adjustment: ${f.adjFromDrawWeight.toFixed(1)} FPS</li>
+        <li>Draw length adjustment: ${f.adjFromDrawLength.toFixed(1)} FPS</li>
+        <li>Arrow weight adjustment: ${f.adjFromArrowWeight.toFixed(1)} FPS</li>
+        <li>String add-ons adjustment: ${f.adjFromStringWeight.toFixed(1)} FPS</li>
+      </ul>
+
+      <p>
+        After a small real-world correction, the estimate lands at 
+        <strong>${f.estimatedFps.toFixed(1)} FPS</strong>.
+      </p>
+
+      <p>
+        FPS used in calculations: <strong>${f.usedFps.toFixed(1)} FPS</strong>
+        (${f.source === 'chrono'
+          ? 'manual (chrono) entry'
+          : 'estimated from IBO & rules of thumb'}).
+      </p>
+
+      <p style="margin-top:0.5rem;">
+        Always treat this as a <strong>ballpark</strong> until you can confirm with an
+        actual chronograph.
+      </p>
+  `;
 } else if (key === 'gpp' && m.gpp) {
   const g = m.gpp;
   html = `
