@@ -484,12 +484,54 @@
     display:flex;
     margin-top:0.4rem;
   }
-  .comp-segment {
+  .comp-seg {
     height:100%;
   }
-  .comp-segment.shaft { background:#94a3b8; }
-  .comp-segment.point { background:#0ea5e9; }
-  .comp-segment.comps { background:#22c55e; }
+
+  .comp-seg {
+    flex: 0 0 auto;
+    height: 100%;
+  }
+
+  /* Colors for the three segments */
+  .comp-seg-shaft {
+    background: var(--primary);
+  }
+
+  .comp-seg-point {
+    background: var(--success);
+  }
+
+  .comp-seg-other {
+    background: var(--warning);
+  }
+
+  /* Optional: small spacing between segments by using borders instead of gaps */
+  .comp-seg + .comp-seg {
+    border-left: 1px solid rgba(15, 23, 42, 0.12); /* or appropriate light/dark */
+  }
+
+  /* Legend dots (if not already styled) */
+  .comp-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    margin-right: 0.3rem;
+  }
+
+  .comp-dot-shaft {
+    background: var(--primary);
+  }
+
+  .comp-dot-point {
+    background: var(--success);
+  }
+
+  .comp-dot-other {
+    background: var(--warning);
+  }
+
 
   /* Performance controls (distance slider + wind) */
   .performance-controls {
