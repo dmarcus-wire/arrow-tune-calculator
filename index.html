@@ -170,7 +170,7 @@
       display: block;
     }
 
-    /* Mobile-only collapsible cards – FINAL VERSION */
+    /* Mobile-only card collapse (Bow & Arrow on mobile) */
     @media (max-width: 768px) {
       .collapsible-mobile .card-content {
         display: none;
@@ -178,12 +178,78 @@
       .collapsible-mobile.open .card-content {
         display: block;
       }
-      .collapsible-mobile .mobile-only-trigger {
+      .mobile-only-trigger {
         display: flex;
       }
       .collapsible-mobile.open .mobile-only-trigger .chevron {
         transform: rotate(90deg);
       }
+    }
+
+    /* Desktop: always show main card content, hide mobile trigger */
+    @media (min-width: 769px) {
+      .mobile-only-trigger {
+        display: none !important;
+      }
+      .collapsible-mobile .card-content {
+        display: block !important;
+      }
+    }
+
+    /* Mobile-only trigger bar (Bow / Arrow on phone) */
+    .mobile-only-trigger {
+      cursor: pointer;
+      padding: 0.75rem 1rem;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: var(--primary);
+      margin-top: 0.5rem;
+      border-radius: 0 0 14px 14px;
+    }
+
+    /* Inner collapsible sections inside cards (String Details, Component Details) */
+    /* Works on mobile AND desktop */
+    .collapsible-trigger {
+      cursor: pointer;
+      padding: 0.75rem 0 0.5rem 0;
+      margin-top: 0.75rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .collapsible-trigger .chevron {
+      font-size: 1.5rem;
+      transition: transform 0.25s ease;
+      color: var(--light);
+    }
+
+    /* This makes the chevron rotate when .open is on the trigger */
+    .collapsible-trigger.open .chevron {
+      transform: rotate(90deg);
+    }
+
+    /* Hide content when trigger is NOT open */
+    .collapsible-trigger + .collapsible-content {
+      display: none;
+      padding-top: 0.5rem;
+    }
+    .collapsible-trigger.open + .collapsible-content {
+      display: block;
+    }
+
+    /* Make sure inner sections start closed */
+    .collapsible-trigger.closed + .collapsible-content {
+      display: none;
+    }
+    .collapsible-trigger.closed .chevron {
+      transform: rotate(0deg);
     }
 
     /* Desktop: always show content, hide mobile trigger */
@@ -211,15 +277,15 @@
       border-radius: 0 0 14px 14px;
     }
 
-/* Hide trigger on desktop */
-@media (min-width: 769px) {
-  .mobile-only {
-    display: none;
+  /* Hide trigger on desktop */
+  @media (min-width: 769px) {
+    .mobile-only {
+      display: none;
+    }
+    .collapsible-mobile .card-content {
+      display: block !important;
+    }
   }
-  .collapsible-mobile .card-content {
-    display: block !important;
-  }
-}
 
     button {
       padding:0.5rem 1rem;
