@@ -10,359 +10,260 @@
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiQXJyb3dGb3JnZSIsInNob3J0X25hbWUiOiJBcnJvd0ZvcmdlIiwic3RhcnRfdXJsIjoiaHR0cHM6Ly9hIiwiaWNvbnMiOlt7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbCxiYXNlNjQsdmFsdWUiOiJkYXRhOmltYWdlL3N2Zyt4bWwgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48dGV4dCB5PSIuOWVtIiBmb250LXNpemU9IjkwIj7wn5iBLTwvdGV4dD48L3N2Zz4iLCJzaXplcyI6IjEyOHgxMjgiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCIsInB1cnBvc2UiOiJhbnkgbWFza2FibGUifV19">
   <link href="https://rsms.me/inter/inter.css" rel="stylesheet">
   <style>
-    /* ===================================================================
-       COLOR THEME — light & dark mode
-       =================================================================== */
-    :root {
-      --bg:#f8fafc; --card:#ffffff; --text:#1e293b; --light:#64748b; --border:#e2e8f0;
-      --primary:#0ea5e9; --success:#22c55e; --warning:#f59e0b; --danger:#ef4444; --purple:#8b5cf6;
-    }
-    .dark {
-      --bg:#0f172a; --card:#020617; --text:#e2e8f0; --light:#94a3b8; --border:#1e293b;
-    }
+  /* ===================================================================
+     COLOR THEME — light & dark mode
+     =================================================================== */
+  :root {
+    --bg:#f8fafc; --card:#ffffff; --text:#1e293b; --light:#64748b; --border:#e2e8f0;
+    --primary:#0ea5e9; --success:#22c55e; --warning:#f59e0b; --danger:#ef4444; --purple:#8b5cf6;
+  }
+  .dark {
+    --bg:#0f172a; --card:#020617; --text:#e2e8f0; --light:#94a3b8; --border:#1e293b;
+  }
 
-    /* ===================================================================
-       BASIC LAYOUT — 2-column on desktop, stacked on mobile
-       =================================================================== */
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      font-family:'Inter',sans-serif;
-      background:var(--bg);
-      color:var(--text);
-      padding:0.5rem;
-      min-height:100vh;
-    }
+  /* ===================================================================
+     BASIC LAYOUT — 2-column on desktop, stacked on mobile
+     =================================================================== */
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'Inter',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding:0.5rem;
+    min-height:100vh;
+  }
+  .container {
+    max-width:1600px;
+    margin:auto;
+    display:grid;
+    gap:1rem 1.5rem;
+  }
+  @media (max-width:1023px) { .container { grid-template-columns:1fr; } }
+  @media (min-width:1024px) {
     .container {
-      max-width:1600px;
-      margin:auto;
-      display:grid;
-      gap:1rem 1.5rem;
+      grid-template-columns: 460px 1fr;
     }
-    @media (max-width:1023px) { .container { grid-template-columns:1fr; } }
-    @media (min-width:1024px) {
-      .container {
-        grid-template-columns: 460px 1fr;   /* ← wider, more breathing room */
-      }
-    }
+  }
 
-    /* ===================================================================
-       CARD STYLES — inputs are tight, dashboard is spacious
-       =================================================================== */
-    .card {
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:1rem;
-      box-shadow:0 4px 12px rgba(15,23,42,0.08);
-    }
-    #inputs-column .card { padding:0.8rem; }          /* left column = compact */
-    #inputs-column label { margin:0.5rem 0 0.2rem; font-size:0.9rem; }
-    #inputs-column input, #inputs-column select { padding:0.5rem; font-size:0.95rem; }
-    #outputs-column .card { padding:1.25rem; }         /* right column = spacious */
-    #outputs-column h2 { font-size:1.4rem; margin-bottom:1rem; }
+  /* ===================================================================
+     CARD STYLES — inputs are tight, dashboard is spacious
+     =================================================================== */
+  .card {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:1rem;
+    box-shadow:0 4px 12px rgba(15,23,42,0.08);
+  }
+  #inputs-column .card { padding:0.8rem; }
+  #inputs-column label { margin:0.5rem 0 0.2rem; font-size:0.9rem; }
+  #inputs-column input, #inputs-column select { padding:0.5rem; font-size:0.95rem; }
+  #outputs-column .card { padding:1.25rem; }
+  #outputs-column h2 { font-size:1.4rem; margin-bottom:1rem; }
 
-    /* ===================================================================
-       COMMON UI ELEMENTS
-       =================================================================== */
-    .card-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem; }
-    h1 { font-size:1.5rem; margin:0; }
-    input, select {
-      width:100%;
-      border:1px solid var(--border);
-      border-radius:8px;
-      background:var(--card);
-      color:var(--text);
-      padding:0.5rem;
-    }
+  /* ===================================================================
+     COMMON UI ELEMENTS
+     =================================================================== */
+  .card-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem; }
+  h1 { font-size:1.5rem; margin:0; }
+  input, select {
+    width:100%;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:var(--card);
+    color:var(--text);
+    padding:0.5rem;
+  }
 
-    /* ============================================================= */
-    /* UNIVERSAL INLINE LABELS – looks great on mobile AND desktop   */
-    /* laptop/tablet. No more stacked labels!                        */
-    /* ============================================================= */
-    .input-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin: 0.5rem 0;
-      gap: 0.75rem;
-    }
-
-    .input-row label {
-      margin: 0;
-      font-weight: 600;
-      font-size: 0.95rem;
-      white-space: nowrap;
-      color: var(--text);
-      flex-shrink: 0;
-    }
-
-    .input-row label::after {
-      content: ":";
-      margin-left: 0.25rem;
-      color: var(--light);
-    }
-
-    .input-row input,
-    .input-row select {
-      flex: 1;
-      min-width: 140px;
-      text-align: right;
-      font-size: 1rem;
-    }
-
-    /* On desktop: make inputs wider and more spacious */
-    @media (min-width: 769px) {
-      .input-row {
-        gap: 1rem;
-      }
-      .input-row input,
-      .input-row select {
-        max-width: 240px;
-        text-align: left;
-        font-size: 1.05rem;
-      }
-      .input-row label {
-        font-size: 1rem;
-      }
-    }
-
-    /* Clean collapsible sections inside cards */
-    .collapsible-trigger {
-      cursor: pointer;
-      padding: 0.75rem 0 0.5rem 0;
-      margin-top: 0.75rem;
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 600;
-      color: var(--primary);
-    }
-
-    .collapsible-trigger:active .chevron {
-      transform: scale(0.9);
-    }
-
-    /* This is the key fix — the trigger's parent gets .open */
-    .collapsible-trigger.open + .collapsible-content,
-    .open .collapsible-content {
-      display: block !important;
-    }
-
-    .collapsible-trigger.open .chevron,
-    .open .collapsible-trigger .chevron {
-      transform: rotate(90deg);
-    }
-
-    .chevron {
-      font-size: 1.5rem;
-      transition: transform 0.25s ease;
-      color: var(--light);
-    }
-    .collapsible-content {
-      display: none;
-      padding-top: 0.5rem;
-    }
-    .open .chevron {
-      transform: rotate(90deg);
-    }
-    .open .collapsible-content {
-      display: block;
-    }
-
-    /* Mobile-only card collapse (Bow & Arrow on mobile) */
-    @media (max-width: 768px) {
-      .collapsible-mobile .card-content {
-        display: none;
-      }
-      .collapsible-mobile.open .card-content {
-        display: block;
-      }
-      .mobile-only-trigger {
-        display: flex;
-      }
-      .collapsible-mobile.open .mobile-only-trigger .chevron {
-        transform: rotate(90deg);
-      }
-    }
-
-    /* Desktop: always show main card content, hide mobile trigger */
-    @media (min-width: 769px) {
-      .mobile-only-trigger {
-        display: none !important;
-      }
-      .collapsible-mobile .card-content {
-        display: block !important;
-      }
-    }
-
-    /* Mobile-only trigger bar (Bow / Arrow on phone) */
-    .mobile-only-trigger {
-      cursor: pointer;
-      padding: 0.75rem 1rem;
-      background: var(--card);
-      border-top: 1px solid var(--border);
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 600;
-      color: var(--primary);
-      margin-top: 0.5rem;
-      border-radius: 0 0 14px 14px;
-    }
-
-    /* Inner collapsible sections inside cards (String Details, Component Details) */
-    /* Works on mobile AND desktop */
-    .collapsible-trigger {
-      cursor: pointer;
-      padding: 0.75rem 0 0.5rem 0;
-      margin-top: 0.75rem;
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 600;
-      color: var(--primary);
-    }
-
-    .collapsible-trigger .chevron {
-      font-size: 1.5rem;
-      transition: transform 0.25s ease;
-      color: var(--light);
-    }
-
-    /* This makes the chevron rotate when .open is on the trigger */
-    .collapsible-trigger.open .chevron {
-      transform: rotate(90deg);
-    }
-
-    /* Hide content when trigger is NOT open */
-    .collapsible-trigger + .collapsible-content {
-      display: none;
-      padding-top: 0.5rem;
-    }
-    .collapsible-trigger.open + .collapsible-content {
-      display: block;
-    }
-
-    /* Make sure inner sections start closed */
-    .collapsible-trigger.closed + .collapsible-content {
-      display: none;
-    }
-    .collapsible-trigger.closed .chevron {
-      transform: rotate(0deg);
-    }
-
-    /* Desktop: always show content, hide mobile trigger */
-    @media (min-width: 769px) {
-      .collapsible-mobile .card-content {
-        display: block !important;
-      }
-      .collapsible-mobile .mobile-only-trigger {
-        display: none !important;
-      }
-    }
-
-    /* Mobile-only trigger bar */
-    .mobile-only-trigger {
-      cursor: pointer;
-      padding: 0.75rem 1rem;
-      background: var(--card);
-      border-top: 1px solid var(--border);
-      display: none; /* hidden by default, shown only on mobile */
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 600;
-      color: var(--primary);
-      margin-top: 0.5rem;
-      border-radius: 0 0 14px 14px;
-    }
-
-  /* Hide trigger on desktop */
+  /* ============================================================= */
+  /* UNIVERSAL INLINE LABELS – looks great on mobile AND desktop   */
+  /* ============================================================= */
+  .input-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0.5rem 0;
+    gap: 0.75rem;
+  }
+  .input-row label {
+    margin: 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+  .input-row label::after {
+    content: ":";
+    margin-left: 0.25rem;
+    color: var(--light);
+  }
+  .input-row input,
+  .input-row select {
+    flex: 1;
+    min-width: 140px;
+    text-align: right;
+    font-size: 1rem;
+  }
   @media (min-width: 769px) {
-    .mobile-only {
+    .input-row { gap: 1rem; }
+    .input-row input, .input-row select {
+      max-width: 240px;
+      text-align: left;
+      font-size: 1.05rem;
+    }
+    .input-row label { font-size: 1rem; }
+  }
+
+  /* ============================================================= */
+  /* COLLAPSIBLE SECTIONS – CLEAN & FINAL (no duplicates)           */
+  /* ============================================================= */
+
+  /* Inner collapsibles (String Details, Component Details) – work on all devices */
+  .collapsible-trigger {
+    cursor: pointer;
+    padding: 0.75rem 0 0.5rem 0;
+    margin-top: 0.75rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: var(--primary);
+  }
+  .collapsible-trigger .chevron {
+    font-size: 1.5rem;
+    transition: transform 0.25s ease;
+    color: var(--light);
+  }
+  .collapsible-trigger.open .chevron {
+    transform: rotate(90deg);
+  }
+  .collapsible-content {
+    display: none;
+    padding-top: 0.5rem;
+  }
+  .collapsible-trigger.open + .collapsible-content {
+    display: block;
+  }
+
+  /* Mobile-only collapse for Bow & Arrow cards */
+  @media (max-width: 768px) {
+    .collapsible-mobile .card-content {
       display: none;
+    }
+    .collapsible-mobile.open .card-content {
+      display: block;
+    }
+    .mobile-only-trigger {
+      display: flex !important;
+      cursor: pointer;
+      padding: 0.75rem 1rem;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: var(--primary);
+      margin-top: 0.5rem;
+      border-radius: 0 0 14px 14px;
+    }
+    .collapsible-mobile.open .mobile-only-trigger .chevron {
+      transform: rotate(90deg);
+    }
+  }
+
+  /* Desktop: always show Bow/Arrow content, hide mobile trigger */
+  @media (min-width: 769px) {
+    .mobile-only-trigger {
+      display: none !important;
     }
     .collapsible-mobile .card-content {
       display: block !important;
     }
   }
 
-    button {
-      padding:0.5rem 1rem;
-      border:none;
-      border-radius:999px;
-      background:var(--primary);
-      color:white;
-      font-weight:600;
-      font-size:0.95rem;     /* ← NEW: consistent font size */
-      line-height:1;
-      cursor:pointer;
-    }
+  /* Default state for mobile trigger (hidden until media query overrides) */
+  .mobile-only-trigger {
+    display: none;
+  }
 
-    /* Make ALL buttons (including Save/Delete) exactly the same height & text size */
-    button, .btn-small {
-      min-height:44px;       /* ← touch-friendly on mobile */
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .btn-small { padding:0.35rem 0.7rem; font-size:0.85rem; }
-    .secondary { background:transparent; color:var(--primary); border:1px solid var(--primary); }
-    .flex { display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; }
-    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; }
-    @media (max-width:640px) { .grid-2 { grid-template-columns:1fr; } }
+  /* ============================================================= */
+  /* BUTTONS & OTHER UI                                            */
+  /* ============================================================= */
+  button {
+    padding:0.5rem 1rem;
+    border:none;
+    border-radius:999px;
+    background:var(--primary);
+    color:white;
+    font-weight:600;
+    font-size:0.95rem;
+    line-height:1;
+    cursor:pointer;
+  }
+  button, .btn-small {
+    min-height:44px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .btn-small { padding:0.35rem 0.7rem; font-size:0.85rem; }
+  .secondary { background:transparent; color:var(--primary); border:1px solid var(--primary); }
+  .flex { display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; }
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; }
+  @media (max-width:640px) { .grid-2 { grid-template-columns:1fr; } }
 
-    /* Dark mode toggle */
-    .toggle-switch { position:relative; width:50px; height:26px; }
-    .toggle-switch input { opacity:0; width:0; height:0; }
-    .slider { position:absolute; inset:0; background:#cbd5e1; border-radius:34px; transition:.3s; }
-    .slider:before { position:absolute; content:""; height:20px; width:20px; left:3px; bottom:3px; background:white; border-radius:50%; transition:.3s; }
-    input:checked + .slider { background:var(--primary); }
-    input:checked + .slider:before { transform:translateX(24px); }
+  /* Dark mode toggle */
+  .toggle-switch { position:relative; width:50px; height:26px; }
+  .toggle-switch input { opacity:0; width:0; height:0; }
+  .slider { position:absolute; inset:0; background:#cbd5e1; border-radius:34px; transition:.3s; }
+  .slider:before { position:absolute; content:""; height:20px; width:20px; left:3px; bottom:3px; background:white; border-radius:50%; transition:.3s; }
+  input:checked + .slider { background:var(--primary); }
+  input:checked + .slider:before { transform:translateX(24px); }
 
-    /* Progress bars */
-    .bar { height:8px; border-radius:999px; background:var(--border); margin:0.4rem 0; position:relative; overflow:hidden; }
-    .bar-fill { height:100%; background:linear-gradient(to right, var(--success), var(--warning)); transition:width 0.3s ease; }
+  /* Progress bars */
+  .bar { height:8px; border-radius:999px; background:var(--border); margin:0.4rem 0; position:relative; overflow:hidden; }
+  .bar-fill { height:100%; background:linear-gradient(to right,var(--success),var(--warning)); transition:width 0.3s ease; }
 
-    /* Dashboard tiles */
-    .dashboard-grid { display:grid; gap:0.75rem; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); }
-    .dash-tile { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:0.8rem; text-align:center; }
-    .dash-value { font-size:1.6rem; font-weight:800; margin:0.2rem 0; }
-    .dash-label { font-size:0.8rem; color:var(--light); }
+  /* Dashboard tiles */
+  .dashboard-grid { display:grid; gap:0.75rem; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); }
+  .dash-tile { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:0.8rem; text-align:center; }
+  .dash-value { font-size:1.6rem; font-weight:800; margin:0.2rem 0; }
+  .dash-label { font-size:0.8rem; color:var(--light); }
 
-    /* Game table */
-    .game-table { width:100%; border-collapse:collapse; font-size:0.95rem; }
-    .game-table th, .game-table td { padding:0.4rem; text-align:left; border-bottom:1px solid var(--border); }
-    .send { color:var(--success); font-weight:700; }
-    .marginal { color:var(--warning); font-weight:700; }
-    .no { color:var(--danger); font-weight:700; }
+  /* Game table */
+  .game-table { width:100%; border-collapse:collapse; font-size:0.95rem; }
+  .game-table th, .game-table td { padding:0.4rem; text-align:left; border-bottom:1px solid var(--border); }
+  .send { color:var(--success); font-weight:700; }
+  .marginal { color:var(--warning); font-weight:700; }
+  .no { color:var(--danger); font-weight:700; }
 
-    /* Trajectory canvas */
-    canvas { width:100%; height:200px; margin:1rem 0; background:#00000004; border-radius:8px; }
+  /* Trajectory canvas */
+  canvas { width:100%; height:200px; margin:1rem 0; background:#00000004; border-radius:8px; }
 
-    /* AI Modal */
-    .info-overlay {
-      position:fixed; inset:0; background:rgba(0,0,0,0.5);
-      display:none; align-items:center; justify-content:center; z-index:1000;
-    }
-    .info-panel {
-      background:var(--card);
-      border-radius:12px;
-      max-width:600px;
-      width:90%;
-      max-height:90vh;
-      padding:1.5rem;
-      box-shadow:0 20px 40px rgba(0,0,0,0.3);
-      position:relative;
-      overflow-y:auto;
-    }
-    .info-close {
-      position:absolute; top:0.8rem; right:1rem;
-      background:none; border:none; font-size:1.8rem;
-      color:var(--light); cursor:pointer;
-    }
-
-  </style>
+  /* AI Modal */
+  .info-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,0.5);
+    display:none; align-items:center; justify-content:center; z-index:1000;
+  }
+  .info-panel {
+    background:var(--card);
+    border-radius:12px;
+    max-width:600px;
+    width:90%;
+    max-height:90vh;
+    padding:1.5rem;
+    box-shadow:0 20px 40px rgba(0,0,0,0.3);
+    position:relative;
+    overflow-y:auto;
+  }
+  .info-close {
+    position:absolute; top:0.8rem; right:1rem;
+    background:none; border:none; font-size:1.8rem;
+    color:var(--light); cursor:pointer;
+  }
+</style>
 </head>
 <body>
 
@@ -390,6 +291,10 @@
     <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v1.0</p>
   </div>
 
+<!-- ============================================================= -->
+<!-- LEFT COLUMN – BUILD (compact & efficient)                  -->
+<!-- ============================================================= --> 
+
   <!-- Build Card -->
   <div class="card">
     <h2>Build</h2>
@@ -407,26 +312,30 @@
     </div>
   </div>
 
-  <!-- BOW CARD – collapses on mobile only -->
-  <div class="card collapsible-mobile" id="bowCard">
-    <!-- Always-visible header -->
-    <h2 style="margin:0 0 0.75rem 0;">Bow</h2>
-    
-    <!-- Main content (hidden on mobile until opened) -->
-    <div class="card-content">
-      <div class="input-row"><label for="appType">Application</label><select id="appType"><option>Target</option><option selected>Hunting</option><option>Other</option></select></div>
-      <div class="input-row"><label for="bowModel">Model</label><input type="text" id="bowModel" placeholder="Hoyt RX-9"></div>
-      <div class="input-row"><label for="ibo">IBO fps</label><input type="number" id="ibo" value="340"></div>
-      <div class="input-row"><label for="drawWt">Draw wt lb</label><input type="number" id="drawWt" value="70" step="0.5"></div>
-      <div class="input-row"><label for="drawLen">Draw length in</label><input type="number" id="drawLen" value="29" step="0.1"></div>
-      <div class="input-row"><label for="stringWt">String add-ons gr</label><input type="number" id="stringWt" value="20"></div>
+<!-- ============================================================= -->
+<!-- LEFT COLUMN – BOW (compact & efficient)                  -->
+<!-- ============================================================= --> 
 
-      <!-- String Details – always collapsible -->
-      <div class="collapsible-trigger" onclick="toggleSection('stringDetails')">
-        <span>String Details</span>
-        <span class="chevron">></span>
-      </div>
-      <div id="stringDetails" class="collapsible-content">
+<!-- BOW CARD – FIXED for mobile -->
+<div class="card collapsible-mobile" id="bowCard">
+  <!-- Header always visible -->
+  <h2 style="margin:0 0 0.75rem 0;">Bow</h2>
+  
+  <!-- Content – hidden on mobile until opened -->
+  <div class="card-content">
+    <div class="input-row"><label for="appType">Application</label><select id="appType"><option>Target</option><option selected>Hunting</option><option>Other</option></select></div>
+    <div class="input-row"><label for="bowModel">Model</label><input type="text" id="bowModel" placeholder="Hoyt RX-9"></div>
+    <div class="input-row"><label for="ibo">IBO fps</label><input type="number" id="ibo" value="340"></div>
+    <div class="input-row"><label for="drawWt">Draw wt lb</label><input type="number" id="drawWt" value="70" step="0.5"></div>
+    <div class="input-row"><label for="drawLen">Draw length in</label><input type="number" id="drawLen" value="29" step="0.1"></div>
+    <div class="input-row"><label for="stringWt">String add-ons gr</label><input type="number" id="stringWt" value="20"></div>
+
+    <!-- String Details – collapsible (unchanged) -->
+    <div class="collapsible-trigger" onclick="toggleSection('stringDetails')">
+      <span>String Details</span>
+      <span class="chevron">></span>
+    </div>
+    <div id="stringDetails" class="collapsible-content">
         <div class="input-row"><label for="peepWt">Peep weight gr</label><input type="number" id="peepWt" value="8" step="0.5"></div>
         <div class="input-row"><label for="dloopWt">D-loop gr</label><input type="number" id="dloopWt" value="8" step="0.5"></div>
         <div class="input-row"><label for="kisserWt">Kisser gr</label><input type="number" id="kisserWt" value="0" step="0.5"></div>
@@ -435,36 +344,37 @@
         <div style="margin-top:0.75rem;text-align:right;font-weight:600;color:var(--primary);">
           Total string add-ons: <span id="totalStringDisplay">38</span> gr
         </div>
-      </div>
-    </div>
-
-    <!-- Mobile-only expand bar -->
-    <div class="mobile-only-trigger" onclick="toggleMobileCard('bowCard')">
-      <span>Bow</span>
-      <span class="chevron">></span>
     </div>
   </div>
 
-  <!-- ARROW CARD – collapses on mobile only -->
-  <div class="card collapsible-mobile" id="arrowCard">
-    <!-- Always-visible header -->
-    <h2 style="margin:0 0 0.75rem 0;">Arrow</h2>
-    
-    <!-- Main content -->
-    <div class="card-content">
-      <div class="input-row"><label for="arrowName">Name</label><input type="text" id="arrowName" placeholder="Victory VAP TKO"></div>
-      <div class="input-row"><label for="spine">Spine</label><input type="number" id="spine" value="300"></div>
-      <div class="input-row"><label for="arrowLen">Length in</label><input type="number" id="arrowLen" value="28.5" step="0.1"></div>
-      <div class="input-row"><label for="totalWt">Total weight gr</label><input type="number" id="totalWt" value="495" step="0.5"></div>
-      <div class="input-row"><label for="pointWt">Point weight gr</label><input type="number" id="pointWt" value="125"></div>
-      <div class="input-row"><label for="balancePt">Balance point in</label><input type="number" id="balancePt" value="17.2" step="0.05"></div>
+  <!-- MOBILE TRIGGER – always visible on mobile, hidden on desktop -->
+  <div class="mobile-only-trigger" onclick="toggleMobileCard('bowCard')">
+    <span>Bow Details</span>
+    <span class="chevron">></span>
+  </div>
+</div>
 
-      <!-- Component Details – always collapsible -->
-      <div class="collapsible-trigger" onclick="toggleSection('componentDetails')">
-        <span>Component Details</span>
-        <span class="chevron">></span>
-      </div>
-      <div id="componentDetails" class="collapsible-content">
+<!-- ============================================================= -->
+<!-- LEFT COLUMN – ARROW (compact & efficient)                  -->
+<!-- ============================================================= --> 
+
+<!-- ARROW CARD – FIXED similarly -->
+<div class="card collapsible-mobile" id="arrowCard">
+  <h2 style="margin:0 0 0.75rem 0;">Arrow</h2>
+  <div class="card-content">
+    <div class="input-row"><label for="arrowName">Name</label><input type="text" id="arrowName" placeholder="Victory VAP TKO"></div>
+    <div class="input-row"><label for="spine">Spine</label><input type="number" id="spine" value="300"></div>
+    <div class="input-row"><label for="arrowLen">Length in</label><input type="number" id="arrowLen" value="28.5" step="0.1"></div>
+    <div class="input-row"><label for="totalWt">Total weight gr</label><input type="number" id="totalWt" value="495" step="0.5"></div>
+    <div class="input-row"><label for="pointWt">Point weight gr</label><input type="number" id="pointWt" value="125"></div>
+    <div class="input-row"><label for="balancePt">Balance point in</label><input type="number" id="balancePt" value="17.2" step="0.05"></div>
+
+    <!-- Component Details – collapsible (unchanged) -->
+    <div class="collapsible-trigger" onclick="toggleSection('componentDetails')">
+      <span>Component Details</span>
+      <span class="chevron">></span>
+    </div>
+    <div id="componentDetails" class="collapsible-content">
         <div class="input-row"><label for="insertWt">Insert/Outsert gr</label><input type="number" id="insertWt" value="50" step="0.5"></div>
         <div class="input-row"><label for="wrapWt">Wrap gr</label><input type="number" id="wrapWt" value="8" step="0.5"></div>
         <div class="input-row"><label for="vaneWt">Vane weight (each) gr</label><input type="number" id="vaneWt" value="8" step="0.1"></div>
@@ -473,16 +383,13 @@
         <div style="margin-top:0.75rem;text-align:right;font-weight:600;color:var(--primary);">
           Total components: <span id="totalCompDisplay">71</span> gr
         </div>
-      </div>
-    </div>
-
-    <!-- Mobile-only expand bar -->
-    <div class="mobile-only-trigger" onclick="toggleMobileCard('arrowCard')">
-      <span>Arrow</span>
-      <span class="chevron">></span>
     </div>
   </div>
 
+  <div class="mobile-only-trigger" onclick="toggleMobileCard('arrowCard')">
+    <span>Arrow Details</span>
+    <span class="chevron">></span>
+  </div>
 </div>
 
   <!-- ============================================================= -->
@@ -759,8 +666,12 @@ function toggleSection(id) {
   const trigger = document.querySelector(`[onclick="toggleSection('${id}')"]`);
   if (trigger) trigger.classList.toggle('open');
 }
+
+/* MOBILE COLLAPSIBLE */
 function toggleMobileCard(cardId) {
-  if (window.innerWidth <= 768) $(cardId).classList.toggle('open');
+  if (window.innerWidth <= 768) {
+    document.getElementById(cardId).classList.toggle('open');
+  }
 }
 
 /* AI MODAL */
