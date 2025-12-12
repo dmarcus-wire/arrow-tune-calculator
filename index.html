@@ -289,7 +289,7 @@
           <button id="aiButton" class="btn-small" style="background:var(--purple);">AI Advisor</button>
         </div>
       </div>
-      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.3</p>
+      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.4</p>
     </div>
 
 <!-- ============================================================= -->
@@ -402,16 +402,41 @@
     <div class="card">
       <h2>Live Settings</h2>
 
-      <!-- Actual Speed (fps) -->
+      <!-- Actual Speed (fps) with info icon -->
       <div style="margin:1.2rem 0;">
-        <label style="display:block; margin-bottom:0.4rem; font-weight:600;">Actual Speed (fps)</label>
+        <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.6rem;">
+          <label style="font-weight:600; margin:0;">Actual Speed (fps)</label>
+          <button onclick="showFpsMathPopup()" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--primary);padding:0;" title="Show FPS estimate math">ⓘ</button>
+          <button onclick="recalculateAndShowMath()" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--primary);padding:0;" title="Recalculate and show estimate">Calculate</button>
+        </div>
+
         <div style="display:flex; align-items:center; gap:1rem;">
           <input type="range" id="fpsSlider" min="150" max="400" value="278" step="1"
                 style="flex:1; height:6px; border-radius:3px; background:var(--border);">
           <input type="number" id="fpsInput" value="278" min="150" max="400"
-                style="width:70px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
+                style="width:80px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
         </div>
       </div>
+
+      <!-- FPS Estimate Math panel – opens with info icon -->
+
+      <div id="fpsMath" class="collapsible-content">
+        <p id="fpsMathContent" style="font-size:0.95rem;">
+          Enter bow details to see estimated FPS when no chrono value is provided.
+        </p>
+      </div>
+
+      <!-- FPS Estimate Math Popup Modal -->
+      <div id="fpsMathModal" class="info-overlay">
+        <div class="info-panel" style="max-width:500px;">
+          <button class="info-close" onclick="closeFpsMath()">×</button>
+          <h2>FPS Estimate Breakdown</h2>
+          <div id="fpsMathPopupContent" style="font-size:0.95rem;line-height:1.5;">
+            Fill in bow details to see the estimate.
+          </div>
+        </div>
+      </div>
+
 
       <!-- Crosswind (mph) -->
       <div style="margin:1.2rem 0;">
@@ -512,11 +537,18 @@
   </div>
 </div>
 
+<!-- ============================================================= -->
+<!-- SCRIPTS                     -->
+<!-- ============================================================= -->
+
 <script>
 /* ============================================================= */
 /* GLOBAL HELPERS                                               */
 /* ============================================================= */
 const $ = id => document.getElementById(id);
+
+// Add this global variable at the top of your script (after const $ = ...)
+let fpsWasRecalculated = false; // tracks if last change was from Recalculate
 
 /* ============================================================= */
 /* SLIDER SYNC — connects sliders to number inputs               */
@@ -550,29 +582,201 @@ syncSlider('windSlider', 'windInput');
 syncSlider('rangeSlider', 'rangeInput');
 
 /* ============================================================= */
+/* FPS CALCULATION BUTTON              */
+/* ============================================================= */
+
+// ROBUST FPS ESTIMATE (your v2 logic – tuned and accurate)
+function calculateEstimatedFPS() {
+  const ibo = parseFloat($('ibo').value) || 340;
+  const drawWt = parseFloat($('drawWt').value) || 70;
+  const drawLen = parseFloat($('drawLen').value) || 29;
+  const totalWt = parseFloat($('totalWt').value) || 495;
+  const peepWt = parseFloat($('peepWt').value) || 8;
+  const dloopWt = parseFloat($('dloopWt').value) || 8;
+  const kisserWt = parseFloat($('kisserWt').value) || 0;
+  const silencerWt = parseFloat($('silencerWt').value) || 12;
+  const nockWt = parseFloat($('nockWt').value) || 10;
+
+  const totalStringAddons = peepWt + dloopWt + kisserWt + silencerWt + nockWt;
+
+  // Reference IBO conditions
+  const refDrawWt = 70;
+  const refDrawLen = 30;
+  const refArrowWt = 350;
+  const refStringFree = 20; // first 20gr "free"
+
+  let est = ibo;
+
+  // Adjustments
+  est += (drawWt - refDrawWt) * 1.8;                    // ~1.8 FPS per lb
+  est += (drawLen - refDrawLen) * 10;                   // ~10 FPS per inch
+  est -= Math.max(0, (totalWt - refArrowWt) / 5);       // ~1 FPS loss per 5gr over 350
+  est -= Math.max(0, (totalStringAddons - refStringFree) / 10); // ~1 FPS loss per 10gr over 20
+
+  // Real-world correction (IBO is optimistic)
+  est *= 0.97;
+
+  const estimated = Math.max(150, Math.round(est * 10) / 10);
+
+  return {
+    estimated: estimated,
+    breakdown: {
+      base: ibo,
+      adjDrawWt: (drawWt - refDrawWt) * 1.8,
+      adjDrawLen: (drawLen - refDrawLen) * 10,
+      adjArrowWt: -Math.max(0, (totalWt - refArrowWt) / 5),
+      adjString: -Math.max(0, (totalStringAddons - refStringFree) / 10),
+      correction: est * -0.03
+    }
+  };
+}
+
+
+// Updated popup function
+function showFpsMathPopup() {
+  const content = $('fpsMathPopupContent');
+  const currentFps = parseFloat($('fpsSlider').value);
+
+  // If we just recalculated — show "updated" message
+  if (fpsWasRecalculated) {
+    const est = calculateEstimatedFPS();
+    const b = est.breakdown;
+
+    content.innerHTML = `
+      <p style="color:var(--success);font-weight:700;">✓ Speed updated to calculated estimate!</p>
+      <p><strong>New FPS:</strong> ${est.estimated.toFixed(1)}</p>
+      <p style="margin-top:0.75rem;"><strong>Breakdown:</strong></p>
+      <ul style="margin-left:1.25rem;font-size:0.9rem;">
+        <li>Base IBO: ${b.base.toFixed(0)} FPS</li>
+        <li>Draw weight: ${b.adjDrawWt > 0 ? '+' : ''}${b.adjDrawWt.toFixed(1)} FPS</li>
+        <li>Draw length: ${b.adjDrawLen > 0 ? '+' : ''}${b.adjDrawLen.toFixed(1)} FPS</li>
+        <li>Arrow weight: ${b.adjArrowWt.toFixed(1)} FPS</li>
+        <li>String add-ons: ${b.adjString.toFixed(1)} FPS</li>
+        <li>Real-world correction: ${b.correction.toFixed(1)} FPS</li>
+      </ul>
+      <p style="margin-top:0.75rem;color:var(--light);font-size:0.9rem;">
+        Your previous value has been replaced with the current estimate.
+      </p>
+    `;
+
+    fpsWasRecalculated = false; // reset for next time
+    $('fpsMathModal').style.display = 'flex';
+    return;
+  }
+
+  // Normal view
+  const hasManualFps = !isNaN(currentFps) && currentFps > 0;
+  if (hasManualFps) {
+    content.innerHTML = `
+      <p><strong>Using your chronographed speed:</strong> ${currentFps.toFixed(1)} FPS</p>
+      <p style="margin-top:0.75rem;color:var(--light);">
+        Manual entry overrides estimate — this is the most accurate!
+      </p>
+    `;
+  } else {
+    const est = calculateEstimatedFPS();
+    const b = est.breakdown;
+    content.innerHTML = `
+      <p><strong>Calculated estimate:</strong> ${est.estimated.toFixed(1)} FPS</p>
+      <p style="margin-top:0.75rem;"><strong>Breakdown:</strong></p>
+      <ul style="margin-left:1.25rem;font-size:0.9rem;">
+        <li>Base IBO: ${b.base.toFixed(0)} FPS</li>
+        <li>Draw weight: ${b.adjDrawWt > 0 ? '+' : ''}${b.adjDrawWt.toFixed(1)} FPS</li>
+        <li>Draw length: ${b.adjDrawLen > 0 ? '+' : ''}${b.adjDrawLen.toFixed(1)} FPS</li>
+        <li>Arrow weight: ${b.adjArrowWt.toFixed(1)} FPS</li>
+        <li>String add-ons: ${b.adjString.toFixed(1)} FPS</li>
+        <li>Real-world correction: ${b.correction.toFixed(1)} FPS</li>
+      </ul>
+      <p style="margin-top:0.75rem;color:var(--light);font-size:0.9rem;">
+        No manual FPS entered — using estimate.
+      </p>
+    `;
+  }
+  $('fpsMathModal').style.display = 'flex';
+}
+
+/* ============================================================= */
 /* MAIN CALCULATION ENGINE – NOW USES SLIDER VALUES              */
 /* ============================================================= */
 function calculateEverything() {
-  // SLIDER VALUES
-  const fps     = parseFloat($('fpsSlider').value) || 278;
+  // === INPUTS FROM FORM ===
+  const drawWt = parseFloat($('drawWt').value) || 70;
+  const drawLen = parseFloat($('drawLen').value) || 29;
+  const ibo = parseFloat($('ibo').value) || 340;
+  const totalWt = parseFloat($('totalWt').value) || 495;
+  const pointWt = parseFloat($('pointWt').value) || 125;
+  const arrowLen = parseFloat($('arrowLen').value) || 28.5;
+  const balancePt = parseFloat($('balancePt').value) || 17.2;
+  const stringBase = parseFloat($('stringWt').value) || 20;
+  const peepWt = parseFloat($('peepWt').value) || 8;
+  const dloopWt = parseFloat($('dloopWt').value) || 8;
+  const kisserWt = parseFloat($('kisserWt').value) || 0;
+  const silencerWt = parseFloat($('silencerWt').value) || 12;
+  const nockWt = parseFloat($('nockWt').value) || 10;
   const windMph = parseFloat($('windSlider').value) || 5;
   const rangeYd = parseFloat($('rangeSlider').value) || 50;
 
-  // Sync number inputs
-  $('fpsInput').value = fps;
+  const totalStringAddons = peepWt + dloopWt + kisserWt + silencerWt + nockWt;
+
+  // === FPS LOGIC – CHRONO OVERRIDES ESTIMATE ===
+  let userFps = parseFloat($('fpsSlider').value);
+  let fpsSource = 'chrono';
+  let estimatedFps = 0;
+  let fpsBreakdown = null;
+
+  if (isNaN(userFps) || userFps <= 0) {
+    // No chrono — calculate estimate
+    fpsSource = 'estimate';
+
+    // Reference IBO conditions
+    const refDrawWt = 70;
+    const refDrawLen = 30;
+    const refArrowWt = 350;
+    const refStringFree = 20; // first 20gr "included" in IBO
+
+    let est = ibo;
+
+    // Draw weight: ~1.8 FPS per lb over/under 70
+    est += (drawWt - refDrawWt) * 1.8;
+
+    // Draw length: ~10 FPS per inch over/under 30"
+    est += (drawLen - refDrawLen) * 10;
+
+    // Arrow weight: ~1 FPS loss per 5gr over 350
+    est -= Math.max(0, (totalWt - refArrowWt) / 5);
+
+    // String add-ons: ~1 FPS loss per 10gr over "free" 20gr
+    est -= Math.max(0, (totalStringAddons - refStringFree) / 10);
+
+    // Real-world correction (IBO is optimistic)
+    est *= 0.97;
+
+    estimatedFps = Math.max(150, Math.round(est * 10) / 10);
+
+    fpsBreakdown = {
+      base: ibo,
+      adjDrawWt: (drawWt - refDrawWt) * 1.8,
+      adjDrawLen: (drawLen - refDrawLen) * 10,
+      adjArrowWt: -Math.max(0, (totalWt - refArrowWt) / 5),
+      adjString: -Math.max(0, (totalStringAddons - refStringFree) / 10),
+      correction: est * -0.03
+    };
+
+    userFps = estimatedFps;
+  }
+
+  const fps = userFps;
+
+  // Sync sliders/inputs
+  $('windSlider').value = windMph;
   $('windInput').value = windMph;
+  $('rangeSlider').value = rangeYd;
   $('rangeInput').value = rangeYd;
   $('rangeVal').textContent = rangeYd;
   $('gameDist').textContent = rangeYd;
   $('barDist').textContent = rangeYd;
 
-  // Your existing arrow/bow values
-  const drawWt      = parseFloat($('drawWt').value) || 70;
-  const totalWt     = parseFloat($('totalWt').value) || 495;
-  const pointWt     = parseFloat($('pointWt').value) || 125;
-  const arrowLen    = parseFloat($('arrowLen').value) || 28.5;
-  const balancePt   = parseFloat($('balancePt').value) || 17.2;
-
+  // === CALCULATIONS ===
   // FOC
   const midPoint = arrowLen / 2;
   const foc = ((balancePt - midPoint) / arrowLen) * 100;
@@ -582,32 +786,32 @@ function calculateEverything() {
   $('gppVal').textContent = (totalWt / drawWt).toFixed(1);
   $('gpiVal').textContent = (totalWt / arrowLen).toFixed(1);
 
-  // VELOCITY RETENTION (uses slider FPS)
+  // Velocity retention
   const retention = Math.pow(0.985, rangeYd / 10);
   const velImpact = Math.round(fps * retention);
   $('velLaunch').textContent = fps;
   $('velImpact').textContent = velImpact;
   $('velFill').style.width = (retention * 100) + '%';
 
-  // KE (uses slider FPS)
+  // Kinetic Energy
   const keLaunch = Math.round(totalWt * fps * fps / 450240);
   const keImpact = Math.round(totalWt * velImpact * velImpact / 450240);
   $('keLaunch').textContent = keLaunch;
   $('keImpact').textContent = keImpact;
   $('keFill').style.width = (keImpact / keLaunch * 100) + '%';
 
-  // MOMENTUM (uses slider FPS)
+  // Momentum
   const momLaunch = (totalWt * fps / 225400).toFixed(2);
   const momImpact = (totalWt * velImpact / 225400).toFixed(2);
   $('momLaunch').textContent = momLaunch;
   $('momImpact').textContent = momImpact;
   $('momFill').style.width = (momImpact / momLaunch * 100) + '%';
 
-  // Game table
+  // Game Readiness
   const gameBands = [
     {id:'smallRes', ke:15, mom:0.20},
-    {id:'deerRes',  ke:25, mom:0.30},
-    {id:'elkRes',   ke:42, mom:0.44},
+    {id:'deerRes', ke:25, mom:0.30},
+    {id:'elkRes', ke:42, mom:0.44},
     {id:'mooseRes', ke:65, mom:0.65}
   ];
   gameBands.forEach(b => {
@@ -617,27 +821,28 @@ function calculateEverything() {
     $(b.id).className = ok ? 'send' : marginal ? 'marginal' : 'no';
   });
 
-  // Wind drift (uses slider wind & range)
+  // Wind Drift
   $('driftVal').textContent = (0.065 * rangeYd * rangeYd * windMph / totalWt).toFixed(1);
 
-  // Spine forgiveness
-  const effectiveDw = drawWt + (pointWt/25) + (arrowLen-28);
-  const recSpine = Math.round(400 - effectiveDw*5);
-  const delta = (parseFloat($('spine').value)||300) - recSpine;
-  let text = 'Ideal';
-  if (delta < -30) text = 'Very Stiff';
-  else if (delta < -10) text = 'Stiff';
-  else if (delta > 30) text = 'Very Weak';
-  else if (delta > 10) text = 'Weak';
-  $('stiffVal').textContent = text;
+  // Spine Forgiveness
+  const effectiveDw = drawWt + (pointWt / 25) + (arrowLen - 28);
+  const recSpine = Math.round(400 - effectiveDw * 5);
+  const delta = (parseFloat($('spine').value) || 300) - recSpine;
+  let stiffText = 'Ideal';
+  if (delta < -30) stiffText = 'Very Stiff';
+  else if (delta < -10) stiffText = 'Stiff';
+  else if (delta > 30) stiffText = 'Very Weak';
+  else if (delta > 10) stiffText = 'Weak';
+  $('stiffVal').textContent = stiffText;
 
-  // Flight time & peak
-  const flightTime = ((rangeYd * 3) / ((fps + velImpact)/2)).toFixed(2);
+  // Flight time & peak height
+  const avgVel = (fps + velImpact) / 2;
+  const flightTime = ((rangeYd * 3) / avgVel).toFixed(2);
   $('flightTime').textContent = flightTime;
   const peakFt = (fps * fps * 0.5) / 64.4 / 12;
   $('peakHt').textContent = peakFt.toFixed(1);
 
-  // Trajectory
+  // Trajectory chart
   const ctx = $('trajChart').getContext('2d');
   const w = ctx.canvas.width = ctx.canvas.parentElement.clientWidth;
   const h = ctx.canvas.height = 200;
@@ -646,13 +851,22 @@ function calculateEverything() {
   ctx.lineWidth = 4;
   ctx.beginPath();
   ctx.moveTo(0, h-20);
-  for (let x=0; x<=w; x+=4) {
-    const t = (x/w) * flightTime;
+  for (let x = 0; x <= w; x += 4) {
+    const t = (x / w) * flightTime;
     const y = h - 20 - (fps * 0.707 * t - 16.1 * t * t) * 8;
     ctx.lineTo(x, y);
   }
   ctx.stroke();
+
+  // Update FPS Estimate Math panel
+  updateFPSMath(fpsSource, estimatedFps, fpsBreakdown, fps);
 }
+
+/* ============================================================= */
+/* FPS MATH helper functions       */
+/* ============================================================= */
+
+
 
 /* EVENT LISTENERS */
 document.querySelectorAll('input, select').forEach(el => {
@@ -678,6 +892,30 @@ function toggleMobileCard(cardId) {
 /* PWA */
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('data:,').catch(() => {});
+}
+
+/* ============================================================= */
+/* FPS Math Breakdown         */
+/* ============================================================= */
+
+// RECALCULATE + SHOW "updated" popup
+function recalculateAndShowMath() {
+  const est = calculateEstimatedFPS();
+  const newFps = est.estimated;
+
+  $('fpsSlider').value = newFps;
+  $('fpsInput').value = newFps;
+
+  fpsWasRecalculated = true; // <-- remember we just recalculated
+
+  calculateEverything();
+
+  showFpsMathPopup(); // open popup — it will see the flag and show "updated" message
+}
+
+
+function closeFpsMath() {
+  $('fpsMathModal').style.display = 'none';
 }
 
 /* ============================================================= */
