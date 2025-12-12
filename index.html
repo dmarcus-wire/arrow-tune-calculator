@@ -126,30 +126,48 @@
       }
     }
 
-    /* Collapsible cards on mobile only */
-    @media (max-width: 768px) {
-      .collapsible-card > .card-content {
-        display: none;                     /* hidden by default */
-        margin-top: 0.75rem;
-      }
-      .collapsible-card.open > .card-content {
-        display: block;
-      }
-      .collapsible-header {
-        cursor: pointer;
-        user-select: none;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .chevron {
-        font-size: 1.4rem;
-        transition: transform 0.2s ease;
-        color: var(--light);
-      }
-      .collapsible-card.open .chevron {
-        transform: rotate(90deg);
-      }
+    /* Clean collapsible sections inside cards */
+    .collapsible-trigger {
+      cursor: pointer;
+      padding: 0.75rem 0 0.5rem 0;
+      margin-top: 0.75rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .collapsible-trigger:active .chevron {
+      transform: scale(0.9);
+    }
+
+    /* This is the key fix — the trigger's parent gets .open */
+    .collapsible-trigger.open + .collapsible-content,
+    .open .collapsible-content {
+      display: block !important;
+    }
+
+    .collapsible-trigger.open .chevron,
+    .open .collapsible-trigger .chevron {
+      transform: rotate(90deg);
+    }
+
+    .chevron {
+      font-size: 1.5rem;
+      transition: transform 0.25s ease;
+      color: var(--light);
+    }
+    .collapsible-content {
+      display: none;
+      padding-top: 0.5rem;
+    }
+    .open .chevron {
+      transform: rotate(90deg);
+    }
+    .open .collapsible-content {
+      display: block;
     }
 
     button {
@@ -254,7 +272,7 @@
       <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v1.0</p>
     </div>
 
-    <!-- Build Card – always visible -->
+    <!-- Build Card -->
     <div class="card">
       <h2>Build</h2>
       <div class="input-row">
@@ -271,35 +289,57 @@
       </div>
     </div>
 
-    <!-- Bow Card – collapsible on mobile -->
-    <div class="card collapsible-card" id="bowCard">
-      <div class="collapsible-header" onclick="toggleCard('bowCard')">
-        <h2>Bow</h2>
+    <!-- BOW SECTION -->
+    <div class="card">
+      <h2>Bow</h2>
+      <div class="input-row"><label for="appType">Application</label><select id="appType"><option>Target</option><option selected>Hunting</option><option>Other</option></select></div>
+      <div class="input-row"><label for="bowModel">Model</label><input type="text" id="bowModel" placeholder="Hoyt RX-9"></div>
+      <div class="input-row"><label for="ibo">IBO fps</label><input type="number" id="ibo" value="340"></div>
+      <div class="input-row"><label for="drawWt">Draw wt lb</label><input type="number" id="drawWt" value="70" step="0.5"></div>
+      <div class="input-row"><label for="drawLen">Draw length in</label><input type="number" id="drawLen" value="29" step="0.1"></div>
+      <div class="input-row"><label for="stringWt">String add-ons gr</label><input type="number" id="stringWt" value="20"></div>
+
+      <!-- String Details – collapsible -->
+      <div class="collapsible-trigger" onclick="toggleSection('stringDetails')">
+        <span>String Details</span>
         <span class="chevron">></span>
       </div>
-      <div class="card-content">
-        <div class="input-row"><label for="appType">Application</label><select id="appType"><option>Target</option><option selected>Hunting</option><option>Other</option></select></div>
-        <div class="input-row"><label for="bowModel">Model</label><input type="text" id="bowModel" placeholder="Hoyt RX-9"></div>
-        <div class="input-row"><label for="ibo">IBO fps</label><input type="number" id="ibo" value="340"></div>
-        <div class="input-row"><label for="drawWt">Draw wt lb</label><input type="number" id="drawWt" value="70" step="0.5"></div>
-        <div class="input-row"><label for="drawLen">Draw length in</label><input type="number" id="drawLen" value="29" step="0.1"></div>
-        <div class="input-row"><label for="stringWt">String add-ons gr</label><input type="number" id="stringWt" value="20"></div>
+      <div id="stringDetails" class="collapsible-content">
+        <div class="input-row"><label for="peepWt">Peep weight gr</label><input type="number" id="peepWt" value="8" step="0.5"></div>
+        <div class="input-row"><label for="dloopWt">D-loop gr</label><input type="number" id="dloopWt" value="8" step="0.5"></div>
+        <div class="input-row"><label for="kisserWt">Kisser gr</label><input type="number" id="kisserWt" value="0" step="0.5"></div>
+        <div class="input-row"><label for="silencerWt">Silencers gr</label><input type="number" id="silencerWt" value="12" step="0.5"></div>
+        <div class="input-row"><label for="nockWt">Nock weight gr</label><input type="number" id="nockWt" value="10" step="0.5"></div>
+        <div style="margin-top:0.75rem;text-align:right;font-weight:600;color:var(--primary);">
+          Total string add-ons: <span id="totalStringDisplay">38</span> gr
+        </div>
       </div>
     </div>
 
-    <!-- Arrow Card – collapsible on mobile -->
-    <div class="card collapsible-card" id="arrowCard">
-      <div class="collapsible-header" onclick="toggleCard('arrowCard')">
-        <h2>Arrow</h2>
+    <!-- ARROW SECTION -->
+    <div class="card">
+      <h2>Arrow</h2>
+      <div class="input-row"><label for="arrowName">Name</label><input type="text" id="arrowName" placeholder="Victory VAP TKO"></div>
+      <div class="input-row"><label for="spine">Spine</label><input type="number" id="spine" value="300"></div>
+      <div class="input-row"><label for="arrowLen">Length in</label><input type="number" id="arrowLen" value="28.5" step="0.1"></div>
+      <div class="input-row"><label for="totalWt">Total weight gr</label><input type="number" id="totalWt" value="495" step="0.5"></div>
+      <div class="input-row"><label for="pointWt">Point weight gr</label><input type="number" id="pointWt" value="125"></div>
+      <div class="input-row"><label for="balancePt">Balance point in</label><input type="number" id="balancePt" value="17.2" step="0.05"></div>
+
+      <!-- Component Details – collapsible -->
+      <div class="collapsible-trigger" onclick="toggleSection('componentDetails')">
+        <span>Component Details</span>
         <span class="chevron">></span>
       </div>
-      <div class="card-content">
-        <div class="input-row"><label for="arrowName">Name</label><input type="text" id="arrowName" placeholder="Victory VAP TKO"></div>
-        <div class="input-row"><label for="spine">Spine</label><input type="number" id="spine" value="300"></div>
-        <div class="input-row"><label for="arrowLen">Length in</label><input type="number" id="arrowLen" value="28.5" step="0.1"></div>
-        <div class="input-row"><label for="totalWt">Total weight gr</label><input type="number" id="totalWt" value="495" step="0.5"></div>
-        <div class="input-row"><label for="pointWt">Point weight gr</label><input type="number" id="pointWt" value="125"></div>
-        <div class="input-row"><label for="balancePt">Balance point in</label><input type="number" id="balancePt" value="17.2" step="0.05"></div>
+      <div id="componentDetails" class="collapsible-content">
+        <div class="input-row"><label for="insertWt">Insert/Outsert gr</label><input type="number" id="insertWt" value="50" step="0.5"></div>
+        <div class="input-row"><label for="wrapWt">Wrap gr</label><input type="number" id="wrapWt" value="8" step="0.5"></div>
+        <div class="input-row"><label for="vaneWt">Vane weight (each) gr</label><input type="number" id="vaneWt" value="8" step="0.1"></div>
+        <div class="input-row"><label for="vaneCount">Vane count</label><input type="number" id="vaneCount" value="3"></div>
+        <div class="input-row"><label for="glueWt">Glue / Pin gr</label><input type="number" id="glueWt" value="5" step="0.5"></div>
+        <div style="margin-top:0.75rem;text-align:right;font-weight:600;color:var(--primary);">
+          Total components: <span id="totalCompDisplay">71</span> gr
+        </div>
       </div>
     </div>
 
@@ -549,18 +589,22 @@ function sendAi() {
   $('chatHist').scrollTop = $('chatHist').scrollHeight;
 }
 
+// FIXED — now works perfectly!
+function toggleSection(id) {
+  const trigger = document.querySelector(`[onclick="toggleSection('${id}')"]`);
+  const content = document.getElementById(id);
+
+  if (trigger && content) {
+    trigger.classList.toggle('open');
+    // No need to touch content — CSS handles it
+  }
+}
+
 /* ============================================================= */
 /* PWA – make it installable                                    */
 /* ============================================================= */
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('data:,').catch(() => {}); // dummy SW for basic caching
-}
-
-// Toggle collapsible cards on mobile
-function toggleCard(cardId) {
-  if (window.innerWidth <= 768) {
-    document.getElementById(cardId).classList.toggle('open');
-  }
 }
 
 /* ============================================================= */
