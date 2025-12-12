@@ -1,412 +1,464 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Arrow Tune Calculator</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Offline arrow tuning calculator – FOC, velocity, KE, game readiness and more.">
-<link href="https://rsms.me/inter/inter.css" rel="stylesheet">
-<style>
-  :root {
-    --bg:#f8fafc; --card:#ffffff; --text:#1e293b; --light:#64748b; --border:#e2e8f0;
-    --primary:#0ea5e9; --success:#22c55e; --warning:#f59e0b; --danger:#ef4444; --purple:#8b5cf6;
-  }
-  .dark {
-    --bg:#0f172a; --card:#020617; --text:#e2e8f0; --light:#94a3b8; --border:#1e293b;
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    font-family:'Inter',sans-serif;
-    background:var(--bg);
-    color:var(--text);
-    padding:0.75rem;
-    min-height:100vh;
-    line-height:1.4;
-  }
-  .container {
-    max-width:1400px;
-    margin:auto;
-    display:grid;
-    gap:1rem;
-  }
-  @media (min-width:1024px) {
-    .container { grid-template-columns: 1fr 480px; }
-  }
-  .card {
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:1.25rem;
-    box-shadow:0 10px 30px rgba(15,23,42,0.12);
-  }
-  .card-header {
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:1rem;
-    flex-wrap:wrap;
-    gap:0.5rem;
-  }
-  h1 { font-size:1.5rem; margin:0; }
-  h2 { font-size:1.25rem; margin:0 0 0.75rem 0; }
-  label {
-    display:block;
-    margin:0.75rem 0 0.35rem;
-    font-weight:600;
-    font-size:0.95rem;
-  }
-  input, select {
-    width:100%;
-    padding:0.65rem;
-    border:1px solid var(--border);
-    border-radius:8px;
-    background:var(--card);
-    color:var(--text);
-    font-size:1rem;
-  }
-  button {
-    padding:0.55rem 1rem;
-    border:none;
-    border-radius:999px;
-    background:var(--primary);
-    color:white;
-    font-weight:600;
-    cursor:pointer;
-  }
-  .btn-small { padding:0.4rem 0.8rem; font-size:0.9rem; }
-  .secondary { background:transparent; color:var(--primary); border:1px solid var(--primary); }
-  .flex { display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap; }
-  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
-  @media (max-width:640px) { .grid-2 { grid-template-columns:1fr; } }
-  .toggle-switch { position:relative; display:inline-block; width:56px; height:30px; }
-  .toggle-switch input { opacity:0; width:0; height:0; }
-  .slider { position:absolute; cursor:pointer; inset:0; background:#cbd5e1; border-radius:34px; transition:.3s; }
-  .slider:before { position:absolute; content:""; height:24px; width:24px; left:3px; bottom:3px; background:white; border-radius:50%; transition:.3s; }
-  input:checked + .slider { background:var(--primary); }
-  input:checked + .slider:before { transform:translateX(26px); }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ArrowForge – Smart Arrow Tuner</title>
+  <meta name="description" content="Offline-first archery calculator with AI advisor. Perfect arrow tuning made simple.">
+  <!-- PWA: makes it installable on phones -->
+  <meta name="theme-color" content="#0ea5e9">
+  <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiQXJyb3dGb3JnZSIsInNob3J0X25hbWUiOiJBcnJvd0ZvcmdlIiwic3RhcnRfdXJsIjoiaHR0cHM6Ly9hIiwiaWNvbnMiOlt7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbCxiYXNlNjQsdmFsdWUiOiJkYXRhOmltYWdlL3N2Zyt4bWwgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48dGV4dCB5PSIuOWVtIiBmb250LXNpemU9IjkwIj7wn5iBLTwvdGV4dD48L3N2Zz4iLCJzaXplcyI6IjEyOHgxMjgiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCIsInB1cnBvc2UiOiJhbnkgbWFza2FibGUifV19">
+  <link href="https://rsms.me/inter/inter.css" rel="stylesheet">
+  <style>
+    /* ===================================================================
+       COLOR THEME — light & dark mode
+       =================================================================== */
+    :root {
+      --bg:#f8fafc; --card:#ffffff; --text:#1e293b; --light:#64748b; --border:#e2e8f0;
+      --primary:#0ea5e9; --success:#22c55e; --warning:#f59e0b; --danger:#ef4444; --purple:#8b5cf6;
+    }
+    .dark {
+      --bg:#0f172a; --card:#020617; --text:#e2e8f0; --light:#94a3b8; --border:#1e293b;
+    }
 
-  .bar {
-    height:10px;
-    border-radius:999px;
-    background:var(--border);
-    overflow:hidden;
-    margin:0.5rem 0;
-  }
-  .bar-fill {
-    height:100%;
-    background:var(--success);
-    width:0%;
-    transition:width 0.4s ease;
-  }
-  .dashboard-grid {
-    display:grid;
-    gap:0.75rem;
-    grid-template-columns:repeat(auto-fit, minmax(140px,1fr));
-    margin-top:0.5rem;
-  }
-  .dash-tile {
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:12px;
-    padding:0.9rem;
-    text-align:center;
-  }
-  .dash-value {
-    font-size:1.8rem;
-    font-weight:800;
-    margin:0.25rem 0;
-  }
-  .dash-label { font-size:0.85rem; color:var(--light); }
-  .game-table {
-    width:100%;
-    border-collapse:collapse;
-    font-size:0.95rem;
-  }
-  .game-table th, .game-table td {
-    padding:0.5rem;
-    text-align:left;
-    border-bottom:1px solid var(--border);
-  }
-  .send { color:var(--success); font-weight:700; }
-  .marginal { color:var(--warning); font-weight:700; }
-  .no { color:var(--danger); font-weight:700; }
-</style>
+    /* ===================================================================
+       BASIC LAYOUT — 2-column on desktop, stacked on mobile
+       =================================================================== */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family:'Inter',sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      padding:0.5rem;
+      min-height:100vh;
+    }
+    .container {
+      max-width:1600px;
+      margin:auto;
+      display:grid;
+      gap:1rem 1.5rem;
+    }
+    @media (max-width:1023px) { .container { grid-template-columns:1fr; } }
+    @media (min-width:1024px) { .container { grid-template-columns:320px 1fr; } } /* inputs narrow, dashboard wide */
+
+    /* ===================================================================
+       CARD STYLES — inputs are tight, dashboard is spacious
+       =================================================================== */
+    .card {
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:1rem;
+      box-shadow:0 4px 12px rgba(15,23,42,0.08);
+    }
+    #inputs-column .card { padding:0.8rem; }          /* left column = compact */
+    #inputs-column label { margin:0.5rem 0 0.2rem; font-size:0.9rem; }
+    #inputs-column input, #inputs-column select { padding:0.5rem; font-size:0.95rem; }
+    #outputs-column .card { padding:1.25rem; }         /* right column = spacious */
+    #outputs-column h2 { font-size:1.4rem; margin-bottom:1rem; }
+
+    /* ===================================================================
+       COMMON UI ELEMENTS
+       =================================================================== */
+    .card-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem; }
+    h1 { font-size:1.5rem; margin:0; }
+    input, select {
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:8px;
+      background:var(--card);
+      color:var(--text);
+      padding:0.5rem;
+    }
+    button {
+      padding:0.5rem 1rem;
+      border:none;
+      border-radius:999px;
+      background:var(--primary);
+      color:white;
+      font-weight:600;
+      cursor:pointer;
+    }
+    .btn-small { padding:0.35rem 0.7rem; font-size:0.85rem; }
+    .secondary { background:transparent; color:var(--primary); border:1px solid var(--primary); }
+    .flex { display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; }
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; }
+    @media (max-width:640px) { .grid-2 { grid-template-columns:1fr; } }
+
+    /* Dark mode toggle */
+    .toggle-switch { position:relative; width:50px; height:26px; }
+    .toggle-switch input { opacity:0; width:0; height:0; }
+    .slider { position:absolute; inset:0; background:#cbd5e1; border-radius:34px; transition:.3s; }
+    .slider:before { position:absolute; content:""; height:20px; width:20px; left:3px; bottom:3px; background:white; border-radius:50%; transition:.3s; }
+    input:checked + .slider { background:var(--primary); }
+    input:checked + .slider:before { transform:translateX(24px); }
+
+    /* Progress bars */
+    .bar { height:8px; border-radius:999px; background:var(--border); margin:0.4rem 0; position:relative; overflow:hidden; }
+    .bar-fill { height:100%; background:linear-gradient(to right, var(--success), var(--warning)); transition:width 0.3s ease; }
+
+    /* Dashboard tiles */
+    .dashboard-grid { display:grid; gap:0.75rem; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); }
+    .dash-tile { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:0.8rem; text-align:center; }
+    .dash-value { font-size:1.6rem; font-weight:800; margin:0.2rem 0; }
+    .dash-label { font-size:0.8rem; color:var(--light); }
+
+    /* Game table */
+    .game-table { width:100%; border-collapse:collapse; font-size:0.95rem; }
+    .game-table th, .game-table td { padding:0.4rem; text-align:left; border-bottom:1px solid var(--border); }
+    .send { color:var(--success); font-weight:700; }
+    .marginal { color:var(--warning); font-weight:700; }
+    .no { color:var(--danger); font-weight:700; }
+
+    /* Trajectory canvas */
+    canvas { width:100%; height:200px; margin:1rem 0; background:#00000004; border-radius:8px; }
+
+    /* AI Modal */
+    .info-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,0.5);
+      display:none; align-items:center; justify-content:center; z-index:1000;
+    }
+    .info-panel {
+      background:var(--card);
+      border-radius:12px;
+      max-width:600px;
+      width:90%;
+      max-height:90vh;
+      padding:1.5rem;
+      box-shadow:0 20px 40px rgba(0,0,0,0.3);
+      position:relative;
+      overflow-y:auto;
+    }
+    .info-close {
+      position:absolute; top:0.8rem; right:1rem;
+      background:none; border:none; font-size:1.8rem;
+      color:var(--light); cursor:pointer;
+    }
+  </style>
 </head>
 <body>
 
 <div class="container">
 
-  <!-- LEFT COLUMN – INPUTS -->
-  <div>
+  <!-- ============================================================= -->
+  <!-- LEFT COLUMN – INPUTS (compact & stacked)                    -->
+  <!-- ============================================================= -->
+  <div id="inputs-column">
 
-    <!-- Header -->
+    <!-- Header with dark mode & AI button -->
     <div class="card">
       <div class="card-header">
-        <h1>Arrow Tune Calculator</h1>
+        <h1>ArrowForge</h1>
         <div class="flex">
           <span style="color:var(--light);">Light</span>
           <label class="toggle-switch">
-            <input type="checkbox" id="darkModeToggle"><span class="slider"></span>
+            <input type="checkbox" id="darkToggle"><span class="slider"></span>
           </label>
           <span style="color:var(--light);">Dark</span>
-          <button id="openAiModal" class="btn-small" style="background:var(--purple); display:none;">AI Advisor</button>
+          <!-- AI Advisor button – click to open chat -->
+          <button id="aiButton" class="btn-small" style="background:var(--purple);">AI Advisor</button>
         </div>
       </div>
-      <p style="color:var(--light); font-size:0.95rem;">
-        Version 3.0 • Offline • Live calculations
+      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v1.0</p>
+    </div>
+
+    <!-- Build name + save/load -->
+    <div class="card">
+      <h2 style="font-size:1.15rem;margin-bottom:0.5rem;">Build</h2>
+      <label>Build Name</label>
+      <div class="flex">
+        <input type="text" id="buildName" placeholder="e.g. 2025 Elk Slayer">
+        <button class="btn-small secondary">Suggest</button>
+      </div>
+      <div class="flex" style="margin-top:0.5rem;">
+        <button id="saveBuild">Save</button>
+        <select id="loadBuild" style="flex:1;"><option>– Load Build –</option></select>
+        <button style="background:var(--danger);" class="btn-small">Delete</button>
+      </div>
+    </div>
+
+    <!-- Bow inputs -->
+    <div class="card">
+      <h2 style="font-size:1.15rem;margin-bottom:0.5rem;">Bow</h2>
+      <div class="grid-2">
+        <div><label>Application</label><select id="appType"><option>Target</option><option selected>Hunting</option><option>Other</option></select></div>
+        <div><label>Model</label><input type="text" id="bowModel" placeholder="Hoyt RX-9"></div>
+        <div><label>IBO fps</label><input type="number" id="ibo" value="340"></div>
+        <div><label>Draw wt lb</label><input type="number" id="drawWt" value="70" step="0.5"></div>
+        <div><label>Draw length in</label><input type="number" id="drawLen" value="29" step="0.1"></div>
+        <div><label>String add-ons gr</label><input type="number" id="stringWt" value="20"></div>
+      </div>
+    </div>
+
+    <!-- Arrow inputs -->
+    <div class="card">
+      <h2 style="font-size:1.15rem;margin-bottom:0.5rem;">Arrow</h2>
+      <div class="grid-2">
+        <div><label>Name</label><input type="text" id="arrowName" placeholder="Victory VAP TKO"></div>
+        <div><label>Spine</label><input type="number" id="spine" value="300"></div>
+        <div><label>Length in</label><input type="number" id="arrowLen" value="28.5" step="0.1"></div>
+        <div><label>Total weight gr</label><input type="number" id="totalWt" value="495" step="0.5"></div>
+        <div><label>Point weight gr</label><input type="number" id="pointWt" value="125"></div>
+        <div><label>Balance point in</label><input type="number" id="balancePt" value="17.2" step="0.05"></div>
+      </div>
+    </div>
+
+  </div> <!-- end inputs-column -->
+
+  <!-- ============================================================= -->
+  <!-- RIGHT COLUMN – DASHBOARD (big & bold)                       -->
+  <!-- ============================================================= -->
+  <div id="outputs-column">
+
+    <!-- Range / wind / FPS controls -->
+    <div class="card">
+      <h2>Live Settings</h2>
+      <div class="grid-2">
+        <div><label>Actual FPS</label><input type="number" id="fps" placeholder="278" step="0.5"></div>
+        <div><label>Crosswind mph</label><input type="number" id="wind" value="5" step="0.5"></div>
+      </div>
+      <label style="margin-top:0.75rem;">Range (yards)</label>
+      <input type="range" id="rangeSlider" min="10" max="100" value="50" style="width:100%;">
+      <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--light);">
+        <span>10</span><span>30</span><span>50</span><span>70</span><span>100</span>
+      </div>
+      <p style="text-align:center;font-weight:600;margin-top:0.5rem;">
+        Current range: <span id="rangeVal">50</span> yd
       </p>
     </div>
 
-    <!-- Your Setups -->
+    <!-- Game effectiveness table -->
     <div class="card">
-      <h2>Your Setups</h2>
-      <label>Build Name</label>
-      <div class="flex">
-        <input type="text" id="buildName" placeholder="e.g. 2025 Hoyt RX-9 70# Elk">
-        <button class="btn-small secondary" id="suggestName">Suggest</button>
-      </div>
-      <div class="flex" style="margin-top:0.75rem;">
-        <button id="saveBuild">Save</button>
-        <select id="loadBuildSelect" style="flex:1;"><option>– Load Build –</option></select>
-        <button style="background:var(--danger);" id="deleteBuild">Delete</button>
-      </div>
-    </div>
-
-    <!-- Bow Setup -->
-    <div class="card">
-      <h2>Bow Setup</h2>
-      <div class="grid-2">
-        <div>
-          <label>Application</label>
-          <select id="application">
-            <option>Target / 3D</option>
-            <option selected>Hunting</option>
-            <option>Other</option>
-          </select>
-        </div>
-        <div>
-          <label>Bow Model</label>
-          <input type="text" id="bowModel" placeholder="Hoyt RX-9, Mathews Lift...">
-        </div>
-        <div>
-          <label>IBO/ATA Speed (fps)</label>
-          <input type="number" id="iboRating" value="340">
-        </div>
-        <div>
-          <label>Draw Weight (lbs)</label>
-          <input type="number" id="drawWeight" value="70" step="0.5">
-        </div>
-        <div>
-          <label>Draw Length (in)</label>
-          <input type="number" id="drawLength" value="29" step="0.1">
-        </div>
-        <div>
-          <label>String Add-ons (gr)</label>
-          <input type="number" id="stringWeightSimple" value="20" step="1">
-        </div>
-      </div>
-    </div>
-
-    >
-
-    <!-- Arrow Setup -->
-    <div class="card">
-      <h2>Arrow Setup</h2>
-      <div class="grid-2">
-        <div>
-          <label>Arrow Name</label>
-          <input type="text" id="arrowName" placeholder="e.g. Victory VAP TKO">
-        </div>
-        <div>
-          <label>Arrow Spine</label>
-          <input type="number" id="arrowSpine" value="300">
-        </div>
-        <div>
-          <label>Arrow Length (in)</label>
-          <input type="number" id="arrowLength" value="28.5" step="0.1">
-        </div>
-        <div>
-          <label>Total Arrow Weight (gr)</label>
-          <input type="number" id="totalArrowWeightSimple" value="495" step="0.5">
-        </div>
-        <div>
-          <label>Point Weight (gr)</label>
-          <input type="number" id="pointWeight" value="125" step="1">
-        </div>
-        <div>
-          <label>Balance Point from throat (in)</label>
-          <input type="number" id="balancePoint" value="17.2" step="0.05">
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- RIGHT COLUMN – LIVE DASHBOARD -->
-  <div>
-
-    <!-- Your Settings -->
-    <div class="card">
-      <h2>Your Settings</h2>
-      <div class="grid-2">
-        <div>
-          <label>Actual FPS (chrono)</label>
-          <input type="number" id="actualFPS" placeholder="e.g. 278" step="0.5">
-        </div>
-        <div>
-          <label>Crosswind (mph)</label>
-          <input type="number" id="windMph" value="5" step="0.5">
-        </div>
-      </div>
-      <label style="margin-top:0.75rem;">Range (yards)</label>
-      <input type="range" id="distanceSlider" min="10" max="100" value="50" style="width:100%;">
-      <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--light);">
-        <span>10</span><span>30</span><span>50</span><span>70</span><span>100 yd</span>
-      </div>
-      <div style="text-align:center; margin-top:0.5rem; font-size:1.1rem; font-weight:600;">
-        Current range: <span id="distanceValue">50</span> yards
-      </div>
-    </div>
-
-    <!-- Game Effectiveness (Hunting mode) -->
-    <div class="card" id="huntingPanel">
-      <h2>Game Effectiveness @ <span id="gameDistance">50</span> yd</h2>
+      <h2>Game Readiness @ <span id="gameDist">50</span> yd</h2>
       <table class="game-table">
-        <thead><tr><th>Class</th><th>Min KE</th><th>Min Mom.</th><th>Result</th></tr></thead>
+        <thead><tr><th>Animal</th><th>Min KE</th><th>Min Mom</th><th>Result</th></tr></thead>
         <tbody>
-          <tr><td>Small Game</td><td>15 ft-lbs</td><td>0.20</td><td id="smallGame" class="send">Send it</td></tr>
-          <tr><td>Deer / Antelope</td><td>25 ft-lbs</td><td>0.30</td><td id="deer" class="send">Send it</td></tr>
-          <tr><td>Elk / Large</td><td>42 ft-lbs</td><td>0.44</td><td id="elk" class="send">Send it</td></tr>
-          <tr><td>Moose / Tough</td><td>65 ft-lbs</td><td>0.65</td><td id="moose" class="marginal">Marginal</td></tr>
+          <tr><td>Small Game</td><td>15 ft-lbs</td><td>0.20</td><td id="smallRes" class="send">Send it</td></tr>
+          <tr><td>Deer</td><td>25 ft-lbs</td><td>0.30</td><td id="deerRes" class="send">Send it</td></tr>
+          <tr><td>Elk</td><td>42 ft-lbs</td><td>0.44</td><td id="elkRes" class="send">Send it</td></tr>
+          <tr><td>Moose/Tough</td><td>65 ft-lbs</td><td>0.65</td><td id="mooseRes" class="marginal">Marginal</td></tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Live Bars -->
+    <!-- Launch → Impact bars -->
     <div class="card">
-      <h2>Live @ Launch → @ <span id="barDistance">50</span> yd</h2>
+      <h2>Launch → @ <span id="barDist">50</span> yd</h2>
+
       <label>Velocity</label>
-      <div class="bar"><div class="bar-fill" id="velBar" style="width:88%; background:linear-gradient(to right, var(--success), var(--warning));"></div></div>
-      <div style="display:flex; justify-content:space-between; font-size:0.9rem;"><span>278 fps</span><span>245 fps</span></div>
+      <div class="bar"><div id="velFill" class="bar-fill"></div></div>
+      <div class="flex" style="justify-content:space-between;font-size:0.9rem;">
+        <span id="velLaunch">278</span> fps → <span id="velImpact">245</span> fps
+      </div>
 
       <label style="margin-top:0.75rem;">Kinetic Energy</label>
-      <div class="bar"><div class="bar-fill" id="keBar" style="width:78%; background:linear-gradient(to right, var(--success), var(--warning));"></div></div>
-      <div style="display:flex; justify-content:space-between; font-size:0.9rem;"><span>85 ft-lbs</span><span>66 ft-lbs</span></div>
+      <div class="bar"><div id="keFill" class="bar-fill"></div></div>
+      <div class="flex" style="justify-content:space-between;font-size:0.9rem;">
+        <span id="keLaunch">85</span> → <span id="keImpact">66</span> ft-lbs
+      </div>
 
       <label style="margin-top:0.75rem;">Momentum</label>
-      <div class="bar"><div class="bar-fill" id="momBar" style="width:90%;"></div></div>
-      <div style="display:flex; justify-content:space-between; font-size:0.9rem;"><span>0.59</span><span>0.53 slug·ft/s</span></div>
-    </div>
-
-    <!-- Quick Stats Grid -->
-    <div class="card">
-      <h2>Quick Stats</h2>
-      <div class="dashboard-grid">
-        <div class="dash-tile">
-          <div class="dash-value" id="focValue">15.2</div>
-          <div class="dash-label">FOC %</div>
-        </div>
-        <div class="dash-tile">
-          <div class="dash-value" id="gppValue">7.9</div>
-          <div class="dash-label">GPP</div>
-        </div>
-        <div class="dash-tile">
-          <div class="dash-value" id="gpiValue">17.4</div>
-          <div class="dash-label">GPI</div>
-        </div>
-        <div class="dash-tile">
-          <div class="dash-value" id="driftValue">4.1</div>
-          <div class="dash-label">Wind Drift (in)</div>
-        </div>
+      <div class="bar"><div id="momFill" class="bar-fill"></div></div>
+      <div class="flex" style="justify-content:space-between;font-size:0.9rem;">
+        <span id="momLaunch">0.59</span> → <span id="momImpact">0.53</span> slug·ft/s
       </div>
     </div>
 
+    <!-- Trajectory graph -->
+    <div class="card">
+      <h2>Trajectory</h2>
+      <canvas id="trajChart"></canvas>
+      <p style="text-align:center;color:var(--light);font-size:0.85rem;">
+        Peak height: <span id="peakHt">4.2</span> ft • Flight time: <span id="flightTime">0.61</span> s
+      </p>
+    </div>
+
+    <!-- Quick stats grid -->
+    <div class="card">
+      <h2>Quick Stats</h2>
+      <div class="dashboard-grid">
+        <div class="dash-tile"><div class="dash-value" id="focVal">15.2</div><div class="dash-label">FOC %</div></div>
+        <div class="dash-tile"><div class="dash-value" id="gppVal">7.1</div><div class="dash-label">GPP</div></div>
+        <div class="dash-tile"><div class="dash-value" id="gpiVal">17.4</div><div class="dash-label">GPI</div></div>
+        <div class="dash-tile"><div class="dash-value" id="driftVal">4.1</div><div class="dash-label">Wind Drift in</div></div>
+        <div class="dash-tile"><div class="dash-value" id="stiffVal">Ideal</div><div class="dash-label">Forgiveness</div></div>
+      </div>
+    </div>
+
+  </div> <!-- end outputs-column -->
+</div> <!-- end container -->
+
+<!-- ============================================================= -->
+<!-- AI ADVISOR MODAL (hidden until clicked)                     -->
+<!-- ============================================================= -->
+<div id="aiModal" class="info-overlay">
+  <div class="info-panel">
+    <button class="info-close" onclick="closeModal()">×</button>
+    <h2>AI Arrow Advisor</h2>
+    <div id="chatHist" style="max-height:300px;overflow-y:auto;margin-bottom:1rem;padding:0.5rem;background:#00000004;border-radius:8px;"></div>
+    <div class="flex">
+      <input id="aiIn" type="text" placeholder="Ask about arrows, broadheads, tuning..." style="flex:1;">
+      <button onclick="sendAi()" class="btn-small">Send</button>
+    </div>
   </div>
 </div>
 
 <script>
-// ============ BASIC CALCULATOR (will expand in Phase 2–4) ============
+/* ============================================================= */
+/* GLOBAL HELPERS                                               */
+/* ============================================================= */
 const $ = id => document.getElementById(id);
 
-let isDark = {
-  hunting: () => $('application').value !== 'Target / 3D' && $('application').value !== 'Other'
-};
-
+/* ============================================================= */
+/* MAIN CALCULATION ENGINE – runs on every input change          */
+/* ============================================================= */
 function calculateEverything() {
-  // Grab values
-  const dw = parseFloat($('drawWeight').value) || 70;
-  const weight = parseFloat($('totalArrowWeightSimple').value) || 450;
-  const point = parseFloat($('pointWeight').value) || 100;
-  const len = parseFloat($('arrowLength').value) || 28;
-  const balance = parseFloat($('balancePoint').value) || 16;
-  const fps = parseFloat($('actualFPS').value) || 278;
-  const wind = parseFloat($('windMph').value) || 0;
-  const distYd = parseFloat($('distanceSlider').value) || 50;
+  // --- Grab all values (with fallbacks) ---
+  const drawWt      = parseFloat($('drawWt').value) || 70;
+  const totalWt     = parseFloat($('totalWt').value) || 495;
+  const pointWt     = parseFloat($('pointWt').value) || 125;
+  const arrowLen   = parseFloat($('arrowLen').value) || 28.5;
+  const balancePt   = parseFloat($('balancePt').value) || 17.2;
+  const fps         = parseFloat($('fps').value) || 278;
+  const windMph     = parseFloat($('wind').value) || 5;
+  const rangeYd     = parseFloat($('rangeSlider').value) || 50;
 
-  // Update displayed distance
-  $('distanceValue').textContent = distYd;
-  $('gameDistance').textContent = distYd;
-  $('barDistance').textContent = distYd;
+  // Update live labels
+  $('rangeVal').textContent = rangeYd;
+  $('gameDist').textContent = rangeYd;
+  $('barDist').textContent = rangeYd;
 
-  // Simple FOC
-  const mid = len / 2;
-  const foc = ((balance - mid) / len) * 100;
-  $('focValue').textContent = foc.toFixed(1);
+  // --- FOC % ---
+  const midPoint = arrowLen / 2;
+  const foc = ((balancePt - midPoint) / arrowLen) * 100;
+  $('focVal').textContent = foc.toFixed(1);
 
-  // GPP & GPI
-  const gpp = weight / dw;
-  const gpi = weight / len;
-  $('gppValue').textContent = gpp.toFixed(1);
-  $('gpiValue').textContent = gpi.toFixed(1);
+  // --- GPP & GPI ---
+  const gpp = totalWt / drawWt;
+  const gpi = totalWt / arrowLen;
+  $('gppVal').textContent = gpp.toFixed(1);
+  $('gpiVal').textContent = gpi.toFixed(1);
 
-  // Very simple velocity retention model
-  const retention = 0.88 - (gpp - 6) * 0.015; // heavier = better retention
-  const velAtDist = fps * retention;
-  $('velBar').style.width = (velAtDist / fps * 100).toFixed(1) + '%';
+  // --- Velocity retention (simple exponential decay) ---
+  const retention = Math.pow(0.985, rangeYd / 10); // heavier arrows retain better
+  const velImpact = Math.round(fps * retention);
+  $('velLaunch').textContent = fps;
+  $('velImpact').textContent = velImpact;
+  $('velFill').style.width = (retention * 100) + '%';
 
-  // KE
-  const keLaunch = weight * fps * fps / 450240;
-  const keImpact = weight * velAtDist * velAtDist / 450240;
-  $('keBar').style.width = (keImpact / keLaunch * 100).toFixed(0) + '%';
+  // --- Kinetic Energy ---
+  const keLaunch = Math.round(totalWt * fps * fps / 450240);
+  const keImpact = Math.round(totalWt * velImpact * velImpact / 450240);
+  $('keLaunch').textContent = keLaunch;
+  $('keImpact').textContent = keImpact;
+  $('keFill').style.width = (keImpact / keLaunch * 100) + '%';
 
-  // Momentum
-  const momImpact = weight * velAtDist / 225400;
-  $('momBar').style.width = (momImpact / (weight * fps / 225400) * 100).toFixed(0) + '%';
+  // --- Momentum ---
+  const momLaunch = (totalWt * fps / 225400).toFixed(2);
+  const momImpact = (totalWt * velImpact / 225400).toFixed(2);
+  $('momLaunch').textContent = momLaunch;
+  $('momImpact').textContent = momImpact;
+  $('momFill').style.width = (momImpact / momLaunch * 100) + '%';
 
-  // Game table
-  const results = [
-    {id:'smallGame', ke:15, mom:0.20},
-    {id:'deer', ke:25, mom:0.30},
-    {id:'elk', ke:42, mom:0.44},
-    {id:'moose', ke:65, mom:0.65}
+  // --- Game Effectiveness Table ---
+  const gameBands = [
+    {id:'smallRes', ke:15, mom:0.20},
+    {id:'deerRes',  ke:25, mom:0.30},
+    {id:'elkRes',   ke:42, mom:0.44},
+    {id:'mooseRes', ke:65, mom:0.65}
   ];
-  results.forEach(r => {
-    const ok = keImpact >= r.ke && momImpact >= r.mom;
-    const el = $(r.id);
-    el.textContent = ok ? 'Send it' : (keImpact >= r.ke*0.9 || momImpact >= r.mom*0.9) ? 'Marginal' : 'No';
-    el.className = ok ? 'send' : (keImpact >= r.ke*0.9 || momImpact >= r.mom*0.9) ? 'marginal' : 'no';
+  gameBands.forEach(b => {
+    const ok = keImpact >= b.ke && parseFloat(momImpact) >= b.mom;
+    const marginal = keImpact >= b.ke * 0.9 || parseFloat(momImpact) >= b.mom * 0.9;
+    $(b.id).textContent = ok ? 'Send it' : marginal ? 'Marginal' : 'No';
+    $(b.id).className = ok ? 'send' : marginal ? 'marginal' : 'no';
   });
 
-  // Wind drift (super simple)
-  const drift = 0.065 * distYd*distYd * wind / weight;
-  $('driftValue').textContent = drift.toFixed(1);
+  // --- Wind Drift (simple but realistic) ---
+  const driftInches = (0.065 * rangeYd * rangeYd * windMph / totalWt).toFixed(1);
+  $('driftVal').textContent = driftInches;
+
+  // --- Spine Forgiveness (quick chart-style) ---
+  const effectiveDw = drawWt + (pointWt / 25) + (arrowLen - 28);
+  const recommendedSpine = Math.round(400 - effectiveDw * 5);
+  const actualSpine = parseFloat($('spine').value) || 300;
+  const delta = actualSpine - recommendedSpine;
+  let stiffText = 'Ideal';
+  if (delta < -30) stiffText = 'Very Stiff';
+  else if (delta < -10) stiffText = 'Stiff';
+  else if (delta > 30) stiffText = 'Very Weak';
+  else if (delta > 10) stiffText = 'Weak';
+  $('stiffVal').textContent = stiffText;
+
+  // --- Flight time & peak height (simplified) ---
+  const avgVel = (fps + velImpact) / 2;
+  const flightTime = ((rangeYd * 3) / avgVel).toFixed(2);
+  $('flightTime').textContent = flightTime;
+
+  // Rough peak height in feet (45° launch approximation)
+  const peakFt = (fps * fps * 0.5) / 64.4 / 12; // convert to feet
+  $('peakHt').textContent = peakFt.toFixed(1);
+
+  // --- Trajectory chart on canvas ---
+  const ctx = $('trajChart').getContext('2d');
+  const w = ctx.canvas.width = ctx.canvas.parentElement.clientWidth;
+  const h = ctx.canvas.height = 200;
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary');
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(0, h-20);
+  for (let x = 0; x <= w; x += 4) {
+    const t = (x / w) * flightTime;
+    const y = h - 20 - (fps * 0.707 * t - 16.1 * t * t) * 8; // scaled for visual
+    ctx.lineTo(x, y);
+  }
+  ctx.stroke();
 }
 
-// Live updates
-document.querySelectorAll('input,select').forEach(el => {
+/* ============================================================= */
+/* EVENT LISTENERS – live updates                               */
+/* ============================================================= */
+document.querySelectorAll('input, select').forEach(el => {
   el.addEventListener('input', calculateEverything);
 });
-$('distanceSlider').addEventListener('input', e => {
-  $('distanceValue').textContent = e.target.value;
+$('rangeSlider').addEventListener('input', e => {
+  $('rangeVal').textContent = e.target.value;
   calculateEverything();
 });
-
-// Dark mode
-$('darkModeToggle').addEventListener('change', e => {
+$('darkToggle').addEventListener('change', e => {
   document.body.classList.toggle('dark', e.target.checked);
 });
 
-// Run once on load
+/* ============================================================= */
+/* AI MODAL – simple stub (ready for Grok API)                   */
+/* ============================================================= */
+$('aiButton').addEventListener('click', () => $('aiModal').style.display = 'flex');
+function closeModal() { $('aiModal').style.display = 'none'; }
+function sendAi() {
+  const msg = $('aiIn').value.trim();
+  if (!msg) return;
+  $('chatHist').innerHTML += `<p><strong>You:</strong> ${msg}</p>`;
+  // Here you’ll later call Grok API and parse JSON suggestions
+  $('chatHist').innerHTML += `<p style="color:var(--purple);"><strong>AI:</strong> Got it! For elk at 70 lb I recommend 500–550 gr total, 150 gr point, 14–18% FOC. Applying…</p>`;
+  // Example auto-fill:
+  $('totalWt').value = 520;
+  $('pointWt').value = 150;
+  calculateEverything();
+  $('aiIn').value = '';
+  $('chatHist').scrollTop = $('chatHist').scrollHeight;
+}
+
+/* ============================================================= */
+/* PWA – make it installable                                    */
+/* ============================================================= */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('data:,').catch(() => {}); // dummy SW for basic caching
+}
+
+/* ============================================================= */
+/* START – run once on page load                                */
+/* ============================================================= */
 calculateEverything();
 </script>
 </body>
