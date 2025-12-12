@@ -126,6 +126,32 @@
       }
     }
 
+    /* Collapsible cards on mobile only */
+    @media (max-width: 768px) {
+      .collapsible-card > .card-content {
+        display: none;                     /* hidden by default */
+        margin-top: 0.75rem;
+      }
+      .collapsible-card.open > .card-content {
+        display: block;
+      }
+      .collapsible-header {
+        cursor: pointer;
+        user-select: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .chevron {
+        font-size: 1.4rem;
+        transition: transform 0.2s ease;
+        color: var(--light);
+      }
+      .collapsible-card.open .chevron {
+        transform: rotate(90deg);
+      }
+    }
+
     button {
       padding:0.5rem 1rem;
       border:none;
@@ -204,14 +230,15 @@
 </head>
 <body>
 
+<!-- ============================================================= -->
+<!-- LEFT COLUMN – INPUTS (compact & efficient)                  -->
+<!-- ============================================================= -->
+ 
 <div class="container">
 
-  <!-- ============================================================= -->
-  <!-- LEFT COLUMN – INPUTS (compact & stacked)                    -->
-  <!-- ============================================================= -->
   <div id="inputs-column">
 
-    <!-- Header with dark mode & AI button -->
+    <!-- Header -->
     <div class="card">
       <div class="card-header">
         <h1>ArrowForge</h1>
@@ -227,54 +254,56 @@
       <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v1.0</p>
     </div>
 
-    <!-- Build card – mobile inline + consistent buttons -->
+    <!-- Build Card – always visible -->
     <div class="card">
-      <h2 style="font-size:1.15rem;margin-bottom:0.5rem;">Build</h2>
-
+      <h2>Build</h2>
       <div class="input-row">
         <label for="buildName">Build Name</label>
-        <div class="flex" style="gap:0.4rem;">
+        <div class="flex" style="gap:0.5rem;">
           <input type="text" id="buildName" placeholder="e.g. 2025 Elk Slayer">
-          <button class="btn-small secondary" style="white-space:nowrap;">Suggest</button>
+          <button class="btn-small secondary">Suggest</button>
         </div>
       </div>
-
       <div class="flex" style="margin-top:0.75rem; gap:0.5rem;">
-        <button id="saveBuild" class="btn-small">Save</button>
-        <select id="loadBuild" style="flex:1;">
-          <option>– Load Build –</option>
-        </select>
-        <button id="deleteBuild" class="btn-small" style="background:var(--danger);">Delete</button>
+        <button id="saveBuild">Save</button>
+        <select id="loadBuild" style="flex:1;"><option>– Load Build –</option></select>
+        <button id="deleteBuild" style="background:var(--danger);">Delete</button>
       </div>
     </div>
 
-    <!-- Bow card – inline labels on mobile -->
-    <div class="card">
-      <h2 style="font-size:1.15rem;margin-bottom:0.5rem;">Bow</h2>
-
-      <div class="input-row"><label for="appType">Application</label>
-        <select id="appType"><option>Target</option><option selected>Hunting</option><option>Other</option></select>
+    <!-- Bow Card – collapsible on mobile -->
+    <div class="card collapsible-card" id="bowCard">
+      <div class="collapsible-header" onclick="toggleCard('bowCard')">
+        <h2>Bow</h2>
+        <span class="chevron">></span>
       </div>
-      <div class="input-row"><label for="bowModel">Model</label><input type="text" id="bowModel" placeholder="Hoyt RX-9"></div>
-      <div class="input-row"><label for="ibo">IBO fps</label><input type="number" id="ibo" value="340"></div>
-      <div class="input-row"><label for="drawWt">Draw wt lb</label><input type="number" id="drawWt" value="70" step="0.5"></div>
-      <div class="input-row"><label for="drawLen">Draw length in</label><input type="number" id="drawLen" value="29" step="0.1"></div>
-      <div class="input-row"><label for="stringWt">String add-ons gr</label><input type="number" id="stringWt" value="20"></div>
+      <div class="card-content">
+        <div class="input-row"><label for="appType">Application</label><select id="appType"><option>Target</option><option selected>Hunting</option><option>Other</option></select></div>
+        <div class="input-row"><label for="bowModel">Model</label><input type="text" id="bowModel" placeholder="Hoyt RX-9"></div>
+        <div class="input-row"><label for="ibo">IBO fps</label><input type="number" id="ibo" value="340"></div>
+        <div class="input-row"><label for="drawWt">Draw wt lb</label><input type="number" id="drawWt" value="70" step="0.5"></div>
+        <div class="input-row"><label for="drawLen">Draw length in</label><input type="number" id="drawLen" value="29" step="0.1"></div>
+        <div class="input-row"><label for="stringWt">String add-ons gr</label><input type="number" id="stringWt" value="20"></div>
+      </div>
     </div>
 
-    <!-- Arrow card – inline labels on mobile -->
-    <div class="card">
-      <h2 style="font-size:1.15rem;margin-bottom:0.5rem;">Arrow</h2>
-
-      <div class="input-row"><label for="arrowName">Name</label><input type="text" id="arrowName" placeholder="Victory VAP TKO"></div>
-      <div class="input-row"><label for="spine">Spine</label><input type="number" id="spine" value="300"></div>
-      <div class="input-row"><label for="arrowLen">Length in</label><input type="number" id="arrowLen" value="28.5" step="0.1"></div>
-      <div class="input-row"><label for="totalWt">Total weight gr</label><input type="number" id="totalWt" value="495" step="0.5"></div>
-      <div class="input-row"><label for="pointWt">Point weight gr</label><input type="number" id="pointWt" value="125"></div>
-      <div class="input-row"><label for="balancePt">Balance point in</label><input type="number" id="balancePt" value="17.2" step="0.05"></div>
+    <!-- Arrow Card – collapsible on mobile -->
+    <div class="card collapsible-card" id="arrowCard">
+      <div class="collapsible-header" onclick="toggleCard('arrowCard')">
+        <h2>Arrow</h2>
+        <span class="chevron">></span>
+      </div>
+      <div class="card-content">
+        <div class="input-row"><label for="arrowName">Name</label><input type="text" id="arrowName" placeholder="Victory VAP TKO"></div>
+        <div class="input-row"><label for="spine">Spine</label><input type="number" id="spine" value="300"></div>
+        <div class="input-row"><label for="arrowLen">Length in</label><input type="number" id="arrowLen" value="28.5" step="0.1"></div>
+        <div class="input-row"><label for="totalWt">Total weight gr</label><input type="number" id="totalWt" value="495" step="0.5"></div>
+        <div class="input-row"><label for="pointWt">Point weight gr</label><input type="number" id="pointWt" value="125"></div>
+        <div class="input-row"><label for="balancePt">Balance point in</label><input type="number" id="balancePt" value="17.2" step="0.05"></div>
+      </div>
     </div>
 
-  </div> <!-- end inputs-column -->
+  </div>
 
   <!-- ============================================================= -->
   <!-- RIGHT COLUMN – DASHBOARD (big & bold)                       -->
@@ -525,6 +554,13 @@ function sendAi() {
 /* ============================================================= */
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('data:,').catch(() => {}); // dummy SW for basic caching
+}
+
+// Toggle collapsible cards on mobile
+function toggleCard(cardId) {
+  if (window.innerWidth <= 768) {
+    document.getElementById(cardId).classList.toggle('open');
+  }
 }
 
 /* ============================================================= */
