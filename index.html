@@ -289,7 +289,7 @@
           <button id="aiButton" class="btn-small" style="background:var(--purple);">AI Advisor</button>
         </div>
       </div>
-      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.2</p>
+      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.3</p>
     </div>
 
 <!-- ============================================================= -->
@@ -654,6 +654,48 @@ function calculateEverything() {
   ctx.stroke();
 }
 
+/* EVENT LISTENERS */
+document.querySelectorAll('input, select').forEach(el => {
+  el.addEventListener('input', calculateEverything);
+});
+$('darkToggle').addEventListener('change', e => {
+  document.body.classList.toggle('dark', e.target.checked);
+});
+
+/* COLLAPSIBLE */
+function toggleSection(id) {
+  const trigger = document.querySelector(`[onclick="toggleSection('${id}')"]`);
+  if (trigger) trigger.classList.toggle('open');
+}
+
+/* MOBILE COLLAPSIBLE */
+function toggleMobileCard(cardId) {
+  if (window.innerWidth <= 768) {
+    document.getElementById(cardId).classList.toggle('open');
+  }
+}
+
+/* PWA */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('data:,').catch(() => {});
+}
+
+/* ============================================================= */
+/* AI / SAVE / LOAD / DELETE BUILDS – works offline forever           */
+/* ============================================================= */
+
+/* AI MODAL */
+$('aiButton').addEventListener('click', () => $('aiModal').style.display = 'flex');
+function closeModal() { $('aiModal').style.display = 'none'; }
+function sendAi() {
+  const msg = $('aiIn').value.trim();
+  if (!msg) return;
+  $('chatHist').innerHTML += `<p><strong>You:</strong> ${msg}</p>`;
+  $('chatHist').innerHTML += `<p style="color:var(--purple);"><strong>AI:</strong> Got it! Example response...</p>`;
+  $('aiIn').value = '';
+  $('chatHist').scrollTop = $('chatHist').scrollHeight;
+}
+
 // SUGGEST BUILD NAME BUTTON
 document.getElementById('saveBuild').addEventListener('click', saveBuild); // if not already there
 document.querySelector('.secondary').addEventListener('click', suggestBuildName); // the Suggest button
@@ -689,43 +731,136 @@ function suggestBuildName() {
   $('buildName').value = best.trim();
 }
 
-/* EVENT LISTENERS */
-document.querySelectorAll('input, select').forEach(el => {
-  el.addEventListener('input', calculateEverything);
-});
-$('darkToggle').addEventListener('change', e => {
-  document.body.classList.toggle('dark', e.target.checked);
-});
+// Save current build
+function saveBuild() {
+  const buildName = $('buildName').value.trim();
+  if (!buildName) {
+    alert('Please enter a Build Name first');
+    return;
+  }
 
-/* COLLAPSIBLE */
-function toggleSection(id) {
-  const trigger = document.querySelector(`[onclick="toggleSection('${id}')"]`);
-  if (trigger) trigger.classList.toggle('open');
+  const buildData = {
+    name: buildName,
+    date: new Date().toISOString().slice(0,10),
+    // Grab every input value you care about
+    appType: $('appType').value,
+    bowModel: $('bowModel').value,
+    ibo: $('ibo').value,
+    drawWt: $('drawWt').value,
+    drawLen: $('drawLen').value,
+    stringWt: $('stringWt').value,
+    peepWt: $('peepWt').value,
+    dloopWt: $('dloopWt').value,
+    kisserWt: $('kisserWt').value,
+    silencerWt: $('silencerWt').value,
+    nockWt: $('nockWt').value,
+    arrowName: $('arrowName').value,
+    spine: $('spine').value,
+    arrowLen: $('arrowLen').value,
+    totalWt: $('totalWt').value,
+    pointWt: $('pointWt').value,
+    balancePt: $('balancePt').value,
+    insertWt: $('insertWt').value,
+    wrapWt: $('wrapWt').value,
+    vaneWt: $('vaneWt').value,
+    vaneCount: $('vaneCount').value,
+    glueWt: $('glueWt').value,
+  };
+
+  let builds = JSON.parse(localStorage.getItem('arrowForgeBuilds') || '[]');
+  // Remove old version if exists
+  builds = builds.filter(b => b.name !== buildName);
+  // Add new
+  builds.push(buildData);
+  localStorage.setItem('arrowForgeBuilds', JSON.stringify(builds));
+
+  updateLoadDropdown();
+  alert(`Build "${buildName}" saved!`);
 }
 
-/* MOBILE COLLAPSIBLE */
-function toggleMobileCard(cardId) {
-  if (window.innerWidth <= 768) {
-    document.getElementById(cardId).classList.toggle('open');
+// Load selected build
+function loadBuild() {
+  const select = $('loadBuild');
+  const selectedName = select.value;
+  if (!selectedName || selectedName === '– Load Build –') return;
+
+  const builds = JSON.parse(localStorage.getItem('arrowForgeBuilds') || '[]');
+  const build = builds.find(b => b.name === selectedName);
+  if (!build) return;
+
+  // Populate all fields
+  $('buildName').value = build.name;
+  $('appType').value = build.appType || 'Hunting';
+  $('bowModel').value = build.bowModel || '';
+  $('ibo').value = build.ibo || '';
+  $('drawWt').value = build.drawWt || '';
+  $('drawLen').value = build.drawLen || '';
+  $('stringWt').value = build.stringWt || '';
+  $('peepWt').value = build.peepWt || '8';
+  $('dloopWt').value = build.dloopWt || '8';
+  $('kisserWt').value = build.kisserWt || '0';
+  $('silencerWt').value = build.silencerWt || '12';
+  $('nockWt').value = build.nockWt || '10';
+  $('arrowName').value = build.arrowName || '';
+  $('spine').value = build.spine || '';
+  $('arrowLen').value = build.arrowLen || '';
+  $('totalWt').value = build.totalWt || '';
+  $('pointWt').value = build.pointWt || '';
+  $('balancePt').value = build.balancePt || '';
+  $('insertWt').value = build.insertWt || '50';
+  $('wrapWt').value = build.wrapWt || '8';
+  $('vaneWt').value = build.vaneWt || '8';
+  $('vaneCount').value = build.vaneCount || '3';
+  $('glueWt').value = build.glueWt || '5';
+
+  calculateEverything();
+  alert(`Build "${build.name}" loaded!`);
+}
+
+// Delete selected build
+function deleteBuild() {
+  const select = $('loadBuild');
+  const selectedName = select.value;
+  if (!selectedName || selectedName === '– Load Build –') {
+    alert('Select a build to delete');
+    return;
+  }
+
+  if (confirm(`Delete "${selectedName}" forever?`)) {
+    let builds = JSON.parse(localStorage.getItem('arrowForgeBuilds') || '[]');
+    builds = builds.filter(b => b.name !== selectedName);
+    localStorage.setItem('arrowForgeBuilds', JSON.stringify(builds));
+    updateLoadDropdown();
+    alert(`Build deleted`);
   }
 }
 
-/* AI MODAL */
-$('aiButton').addEventListener('click', () => $('aiModal').style.display = 'flex');
-function closeModal() { $('aiModal').style.display = 'none'; }
-function sendAi() {
-  const msg = $('aiIn').value.trim();
-  if (!msg) return;
-  $('chatHist').innerHTML += `<p><strong>You:</strong> ${msg}</p>`;
-  $('chatHist').innerHTML += `<p style="color:var(--purple);"><strong>AI:</strong> Got it! Example response...</p>`;
-  $('aiIn').value = '';
-  $('chatHist').scrollTop = $('chatHist').scrollHeight;
+// Update the dropdown with saved builds
+function updateLoadDropdown() {
+  const select = $('loadBuild');
+  const builds = JSON.parse(localStorage.getItem('arrowForgeBuilds') || '[]');
+
+  // Clear except first option
+  select.innerHTML = '<option>– Load Build –</option>';
+
+  // Sort newest first
+  builds
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .forEach(build => {
+      const opt = document.createElement('option');
+      opt.value = build.name;
+      opt.textContent = `${build.date} – ${build.name}`;
+      select.appendChild(opt);
+    });
 }
 
-/* PWA */
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('data:,').catch(() => {});
-}
+// Connect buttons
+$('saveBuild').addEventListener('click', saveBuild);
+$('loadBuild').addEventListener('change', loadBuild);
+$('deleteBuild').addEventListener('click', deleteBuild);
+
+// Load saved builds into dropdown on page load
+updateLoadDropdown();
 
 /* INIT */
 calculateEverything();
