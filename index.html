@@ -361,6 +361,7 @@
       background:none; border:none; font-size:1.8rem;
       color:var(--light); cursor:pointer;
     }
+
   </style>
 </head>
 <body>
@@ -489,21 +490,42 @@
   <!-- ============================================================= -->
   <div id="outputs-column">
 
-    <!-- Range / wind / FPS controls -->
+    <!-- Live Settings – your original skinny sliders, fully working -->
     <div class="card">
       <h2>Live Settings</h2>
-      <div class="grid-2">
-        <div><label>Actual FPS</label><input type="number" id="fps" placeholder="278" step="0.5"></div>
-        <div><label>Crosswind mph</label><input type="number" id="wind" value="5" step="0.5"></div>
+
+      <!-- Actual Speed (fps) -->
+      <div style="margin:1.2rem 0;">
+        <label style="display:block; margin-bottom:0.4rem; font-weight:600;">Actual Speed (fps)</label>
+        <div style="display:flex; align-items:center; gap:1rem;">
+          <input type="range" id="fpsSlider" min="150" max="400" value="278" step="1"
+                style="flex:1; height:6px; border-radius:3px; background:var(--border);">
+          <input type="number" id="fpsInput" value="278" min="150" max="400"
+                style="width:70px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
+        </div>
       </div>
-      <label style="margin-top:0.75rem;">Range (yards)</label>
-      <input type="range" id="rangeSlider" min="10" max="100" value="50" style="width:100%;">
-      <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--light);">
-        <span>10</span><span>30</span><span>50</span><span>70</span><span>100</span>
+
+      <!-- Crosswind (mph) -->
+      <div style="margin:1.2rem 0;">
+        <label style="display:block; margin-bottom:0.4rem; font-weight:600;">Crosswind (mph)</label>
+        <div style="display:flex; align-items:center; gap:1rem;">
+          <input type="range" id="windSlider" min="0" max="40" value="5" step="0.5"
+                style="flex:1; height:6px; border-radius:3px; background:var(--border);">
+          <input type="number" id="windInput" value="5" min="0" max="40" step="0.5"
+                style="width:70px; padding:0.45rem; text-align:center; font-weight:600;">
+        </div>
       </div>
-      <p style="text-align:center;font-weight:600;margin-top:0.5rem;">
-        Current range: <span id="rangeVal">50</span> yd
-      </p>
+
+      <!-- Range (yards) -->
+      <div style="margin:1.2rem 0;">
+        <label style="display:block; margin-bottom:0.4rem; font-weight:600;">Range (yards)</label>
+        <div style="display:flex; align-items:center; gap:1rem;">
+          <input type="range" id="rangeSlider" min="10" max="150" value="50" step="1"
+                style="flex:1; height:6px; border-radius:3px; background:var(--border);">
+          <input type="number" id="rangeInput" value="50" min="10" max="150"
+                style="width:70px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
+        </div>
+      </div>
     </div>
 
     <!-- Game effectiveness table -->
@@ -589,57 +611,91 @@
 const $ = id => document.getElementById(id);
 
 /* ============================================================= */
-/* MAIN CALCULATION ENGINE – runs on every input change          */
+/* SLIDER SYNC — connects sliders to number inputs               */
+/* ============================================================= */
+function syncSlider(sliderId, inputId) {
+  const slider = $(sliderId);
+  const input = $(inputId);
+
+  if (!slider || !input) return;
+
+  slider.addEventListener('input', () => {
+    input.value = slider.value;
+    if (sliderId === 'rangeSlider') $('rangeVal').textContent = slider.value;
+    calculateEverything();
+  });
+
+  input.addEventListener('input', () => {
+    let val = parseFloat(input.value);
+    if (isNaN(val)) val = slider.min;
+    val = Math.max(slider.min, Math.min(slider.max, val));
+    slider.value = val;
+    input.value = val;
+    if (sliderId === 'rangeSlider') $('rangeVal').textContent = val;
+    calculateEverything();
+  });
+}
+
+// Connect FPS, Wind, Range sliders
+syncSlider('fpsSlider', 'fpsInput');
+syncSlider('windSlider', 'windInput');
+syncSlider('rangeSlider', 'rangeInput');
+
+/* ============================================================= */
+/* MAIN CALCULATION ENGINE – NOW USES SLIDER VALUES              */
 /* ============================================================= */
 function calculateEverything() {
-  // --- Grab all values (with fallbacks) ---
-  const drawWt      = parseFloat($('drawWt').value) || 70;
-  const totalWt     = parseFloat($('totalWt').value) || 495;
-  const pointWt     = parseFloat($('pointWt').value) || 125;
-  const arrowLen   = parseFloat($('arrowLen').value) || 28.5;
-  const balancePt   = parseFloat($('balancePt').value) || 17.2;
-  const fps         = parseFloat($('fps').value) || 278;
-  const windMph     = parseFloat($('wind').value) || 5;
-  const rangeYd     = parseFloat($('rangeSlider').value) || 50;
+  // SLIDER VALUES
+  const fps     = parseFloat($('fpsSlider').value) || 278;
+  const windMph = parseFloat($('windSlider').value) || 5;
+  const rangeYd = parseFloat($('rangeSlider').value) || 50;
 
-  // Update live labels
+  // Sync number inputs
+  $('fpsInput').value = fps;
+  $('windInput').value = windMph;
+  $('rangeInput').value = rangeYd;
   $('rangeVal').textContent = rangeYd;
   $('gameDist').textContent = rangeYd;
   $('barDist').textContent = rangeYd;
 
-  // --- FOC % ---
+  // Your existing arrow/bow values
+  const drawWt      = parseFloat($('drawWt').value) || 70;
+  const totalWt     = parseFloat($('totalWt').value) || 495;
+  const pointWt     = parseFloat($('pointWt').value) || 125;
+  const arrowLen    = parseFloat($('arrowLen').value) || 28.5;
+  const balancePt   = parseFloat($('balancePt').value) || 17.2;
+
+  // FOC
   const midPoint = arrowLen / 2;
   const foc = ((balancePt - midPoint) / arrowLen) * 100;
   $('focVal').textContent = foc.toFixed(1);
 
-  // --- GPP & GPI ---
-  const gpp = totalWt / drawWt;
-  const gpi = totalWt / arrowLen;
-  $('gppVal').textContent = gpp.toFixed(1);
-  $('gpiVal').textContent = gpi.toFixed(1);
+  // GPP & GPI
+  $('gppVal').textContent = (totalWt / drawWt).toFixed(1);
+  $('gpiVal').textContent = (totalWt / arrowLen).toFixed(1);
 
-  // --- Velocity retention (simple exponential decay) ---
-  const retention = Math.pow(0.985, rangeYd / 10); // heavier arrows retain better
+  // VELOCITY RETENTION (uses slider FPS)
+  const retention = Math.pow(0.985, rangeYd / 10);
   const velImpact = Math.round(fps * retention);
   $('velLaunch').textContent = fps;
   $('velImpact').textContent = velImpact;
   $('velFill').style.width = (retention * 100) + '%';
 
-  // --- Kinetic Energy ---
+  // KE (uses slider FPS)
   const keLaunch = Math.round(totalWt * fps * fps / 450240);
   const keImpact = Math.round(totalWt * velImpact * velImpact / 450240);
   $('keLaunch').textContent = keLaunch;
   $('keImpact').textContent = keImpact;
   $('keFill').style.width = (keImpact / keLaunch * 100) + '%';
 
-  // --- Momentum ---
+  // MOMENTUM (uses slider FPS)
   const momLaunch = (totalWt * fps / 225400).toFixed(2);
   const momImpact = (totalWt * velImpact / 225400).toFixed(2);
   $('momLaunch').textContent = momLaunch;
   $('momImpact').textContent = momImpact;
   $('momFill').style.width = (momImpact / momLaunch * 100) + '%';
 
-  // --- Game Effectiveness Table ---
+  // Game table
   const gameBands = [
     {id:'smallRes', ke:15, mom:0.20},
     {id:'deerRes',  ke:25, mom:0.30},
@@ -653,32 +709,27 @@ function calculateEverything() {
     $(b.id).className = ok ? 'send' : marginal ? 'marginal' : 'no';
   });
 
-  // --- Wind Drift (simple but realistic) ---
-  const driftInches = (0.065 * rangeYd * rangeYd * windMph / totalWt).toFixed(1);
-  $('driftVal').textContent = driftInches;
+  // Wind drift (uses slider wind & range)
+  $('driftVal').textContent = (0.065 * rangeYd * rangeYd * windMph / totalWt).toFixed(1);
 
-  // --- Spine Forgiveness (quick chart-style) ---
-  const effectiveDw = drawWt + (pointWt / 25) + (arrowLen - 28);
-  const recommendedSpine = Math.round(400 - effectiveDw * 5);
-  const actualSpine = parseFloat($('spine').value) || 300;
-  const delta = actualSpine - recommendedSpine;
-  let stiffText = 'Ideal';
-  if (delta < -30) stiffText = 'Very Stiff';
-  else if (delta < -10) stiffText = 'Stiff';
-  else if (delta > 30) stiffText = 'Very Weak';
-  else if (delta > 10) stiffText = 'Weak';
-  $('stiffVal').textContent = stiffText;
+  // Spine forgiveness
+  const effectiveDw = drawWt + (pointWt/25) + (arrowLen-28);
+  const recSpine = Math.round(400 - effectiveDw*5);
+  const delta = (parseFloat($('spine').value)||300) - recSpine;
+  let text = 'Ideal';
+  if (delta < -30) text = 'Very Stiff';
+  else if (delta < -10) text = 'Stiff';
+  else if (delta > 30) text = 'Very Weak';
+  else if (delta > 10) text = 'Weak';
+  $('stiffVal').textContent = text;
 
-  // --- Flight time & peak height (simplified) ---
-  const avgVel = (fps + velImpact) / 2;
-  const flightTime = ((rangeYd * 3) / avgVel).toFixed(2);
+  // Flight time & peak
+  const flightTime = ((rangeYd * 3) / ((fps + velImpact)/2)).toFixed(2);
   $('flightTime').textContent = flightTime;
-
-  // Rough peak height in feet (45° launch approximation)
-  const peakFt = (fps * fps * 0.5) / 64.4 / 12; // convert to feet
+  const peakFt = (fps * fps * 0.5) / 64.4 / 12;
   $('peakHt').textContent = peakFt.toFixed(1);
 
-  // --- Trajectory chart on canvas ---
+  // Trajectory
   const ctx = $('trajChart').getContext('2d');
   const w = ctx.canvas.width = ctx.canvas.parentElement.clientWidth;
   const h = ctx.canvas.height = 200;
@@ -687,74 +738,49 @@ function calculateEverything() {
   ctx.lineWidth = 4;
   ctx.beginPath();
   ctx.moveTo(0, h-20);
-  for (let x = 0; x <= w; x += 4) {
-    const t = (x / w) * flightTime;
-    const y = h - 20 - (fps * 0.707 * t - 16.1 * t * t) * 8; // scaled for visual
+  for (let x=0; x<=w; x+=4) {
+    const t = (x/w) * flightTime;
+    const y = h - 20 - (fps * 0.707 * t - 16.1 * t * t) * 8;
     ctx.lineTo(x, y);
   }
   ctx.stroke();
 }
 
-/* ============================================================= */
-/* EVENT LISTENERS – live updates                               */
-/* ============================================================= */
+/* EVENT LISTENERS */
 document.querySelectorAll('input, select').forEach(el => {
   el.addEventListener('input', calculateEverything);
-});
-$('rangeSlider').addEventListener('input', e => {
-  $('rangeVal').textContent = e.target.value;
-  calculateEverything();
 });
 $('darkToggle').addEventListener('change', e => {
   document.body.classList.toggle('dark', e.target.checked);
 });
 
-/* ============================================================= */
-/* AI MODAL – simple stub (ready for Grok API)                   */
-/* ============================================================= */
+/* COLLAPSIBLE */
+function toggleSection(id) {
+  const trigger = document.querySelector(`[onclick="toggleSection('${id}')"]`);
+  if (trigger) trigger.classList.toggle('open');
+}
+function toggleMobileCard(cardId) {
+  if (window.innerWidth <= 768) $(cardId).classList.toggle('open');
+}
+
+/* AI MODAL */
 $('aiButton').addEventListener('click', () => $('aiModal').style.display = 'flex');
 function closeModal() { $('aiModal').style.display = 'none'; }
 function sendAi() {
   const msg = $('aiIn').value.trim();
   if (!msg) return;
   $('chatHist').innerHTML += `<p><strong>You:</strong> ${msg}</p>`;
-  // Here you’ll later call Grok API and parse JSON suggestions
-  $('chatHist').innerHTML += `<p style="color:var(--purple);"><strong>AI:</strong> Got it! For elk at 70 lb I recommend 500–550 gr total, 150 gr point, 14–18% FOC. Applying…</p>`;
-  // Example auto-fill:
-  $('totalWt').value = 520;
-  $('pointWt').value = 150;
-  calculateEverything();
+  $('chatHist').innerHTML += `<p style="color:var(--purple);"><strong>AI:</strong> Got it! Example response...</p>`;
   $('aiIn').value = '';
   $('chatHist').scrollTop = $('chatHist').scrollHeight;
 }
 
-// FIXED — now works perfectly!
-function toggleSection(id) {
-  const trigger = document.querySelector(`[onclick="toggleSection('${id}')"]`);
-  const content = document.getElementById(id);
-
-  if (trigger && content) {
-    trigger.classList.toggle('open');
-    // No need to touch content — CSS handles it
-  }
-}
-
-function toggleMobileCard(cardId) {
-  if (window.innerWidth <= 768) {
-    document.getElementById(cardId).classList.toggle('open');
-  }
-}
-
-/* ============================================================= */
-/* PWA – make it installable                                    */
-/* ============================================================= */
+/* PWA */
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('data:,').catch(() => {}); // dummy SW for basic caching
+  navigator.serviceWorker.register('data:,').catch(() => {});
 }
 
-/* ============================================================= */
-/* START – run once on page load                                */
-/* ============================================================= */
+/* INIT */
 calculateEverything();
 </script>
 </body>
