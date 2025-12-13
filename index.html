@@ -39,6 +39,28 @@
       padding:1rem;
       box-shadow:0 4px 12px rgba(15,23,42,0.08);
     }
+
+    /* Minimal tick marks for range sliders */
+    input[type="range"] {
+      -webkit-appearance: none; /* Remove default styling */
+      appearance: none;
+      background: linear-gradient(to right, 
+        transparent 0%, 
+        transparent 4%, 
+        var(--light) 4%, 
+        var(--light) 6%, 
+        transparent 6%, 
+        transparent 100%
+      ) repeat-x;
+      background-size: 10% 6px; /* Adjust for interval spacing (10% = every 10 units on 0-100 scale) */
+      background-position: 0 center;
+    }
+
+    /* Optional: make ticks even subtler */
+    .dark input[type="range"] {
+      background-color: var(--border);
+    }
+
     #inputs-column .card { padding:0.8rem; }
     #inputs-column input, #inputs-column select { padding:0.5rem; font-size:0.95rem; }
     #outputs-column .card { padding:1.25rem; }
@@ -214,11 +236,11 @@
           <span class="chevron">></span>
         </div>
         <div class="collapsible-content">
-          <div class="input-row"><label for="peepWt">Peep weight gr</label><input type="number" id="peepWt" value="8" step="0.5"></div>
-          <div class="input-row"><label for="dloopWt">D-loop gr</label><input type="number" id="dloopWt" value="8" step="0.5"></div>
+          <div class="input-row"><label for="peepWt">Peep weight gr</label><input type="number" id="peepWt" value="0" step="0.5"></div>
+          <div class="input-row"><label for="dloopWt">D-loop gr</label><input type="number" id="dloopWt" value="0" step="0.5"></div>
           <div class="input-row"><label for="kisserWt">Kisser gr</label><input type="number" id="kisserWt" value="0" step="0.5"></div>
-          <div class="input-row"><label for="silencerWt">Silencers gr</label><input type="number" id="silencerWt" value="12" step="0.5"></div>
-          <div class="input-row"><label for="nockWt">Nock weight gr</label><input type="number" id="nockWt" value="10" step="0.5"></div>
+          <div class="input-row"><label for="silencerWt">Silencers gr</label><input type="number" id="silencerWt" value="0" step="0.5"></div>
+          <div class="input-row"><label for="nockWt">Nock weight gr</label><input type="number" id="nockWt" value="0" step="0.5"></div>
         </div>
       </div>
       <div class="mobile-only-trigger" onclick="this.parentElement.classList.toggle('open')">
@@ -240,11 +262,11 @@
           <span class="chevron">></span>
         </div>
         <div class="collapsible-content">
-          <div class="input-row"><label for="insertWt">Insert/Outsert gr</label><input type="number" id="insertWt" value="50" step="0.5"></div>
-          <div class="input-row"><label for="wrapWt">Wrap gr</label><input type="number" id="wrapWt" value="8" step="0.5"></div>
-          <div class="input-row"><label for="vaneWt">Vane weight (each) gr</label><input type="number" id="vaneWt" value="8" step="0.1"></div>
-          <div class="input-row"><label for="vaneCount">Vane count</label><input type="number" id="vaneCount" value="3"></div>
-          <div class="input-row"><label for="glueWt">Glue / Pin gr</label><input type="number" id="glueWt" value="5" step="0.5"></div>
+          <div class="input-row"><label for="insertWt">Insert/Outsert gr</label><input type="number" id="insertWt" value="0" step="0.5"></div>
+          <div class="input-row"><label for="wrapWt">Wrap gr</label><input type="number" id="wrapWt" value="0" step="0.5"></div>
+          <div class="input-row"><label for="vaneWt">Vane weight (each) gr</label><input type="number" id="vaneWt" value="0" step="0.1"></div>
+          <div class="input-row"><label for="vaneCount">Vane count</label><input type="number" id="vaneCount" value="0"></div>
+          <div class="input-row"><label for="glueWt">Glue / Pin gr</label><input type="number" id="glueWt" value="0" step="0.5"></div>
         </div>
       </div>
       <div class="mobile-only-trigger" onclick="this.parentElement.classList.toggle('open')">
@@ -259,26 +281,25 @@
       <div style="margin:1.2rem 0;">
         <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.6rem;">
           <label style="font-weight:600; margin:0;">Actual Speed (fps)</label>
-          <button onclick="showFpsMathPopup()" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--primary);padding:0;" title="Show FPS estimate math">ⓘ</button>
           <button onclick="recalculateAndShowMath()" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--primary);padding:0;" title="Recalculate and show estimate">Calculate</button>
         </div>
         <div style="display:flex; align-items:center; gap:1rem;">
-          <input type="range" id="fpsSlider" min="150" max="400" value="278" step="1" style="flex:1; height:6px; border-radius:3px; background:var(--border);">
+          <input type="range" id="fpsSlider" min="150" max="400" value="278" step="1" style="background-size: 12.5% 6px;">
           <input type="number" id="fpsInput" value="278" min="150" max="400" style="width:80px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
         </div>
       </div>
       <div style="margin:1.2rem 0;">
         <label style="display:block; margin-bottom:0.4rem; font-weight:600;">Crosswind (mph)</label>
         <div style="display:flex; align-items:center; gap:1rem;">
-          <input type="range" id="windSlider" min="0" max="40" value="5" step="0.5" style="flex:1; height:6px; border-radius:3px; background:var(--border);">
-          <input type="number" id="windInput" value="5" min="0" max="40" step="0.5" style="width:70px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
+          <input type="range" id="windSlider" min="0" max="40" value="0" step="0.1" style="background-size: 12.5% 6px;">
+          <input type="number" id="windInput" value="0" min="0" max="40" step="0.1" style="width:70px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
         </div>
       </div>
       <div style="margin:1.2rem 0;">
         <label style="display:block; margin-bottom:0.4rem; font-weight:600;">Range (yards)</label>
         <div style="display:flex; align-items:center; gap:1rem;">
-          <input type="range" id="rangeSlider" min="10" max="150" value="50" step="1" style="flex:1; height:6px; border-radius:3px; background:var(--border);">
-          <input type="number" id="rangeInput" value="50" min="10" max="150" style="width:70px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
+          <input type="range" id="rangeSlider" min="5" max="150" value="0" step="1" style="background-size: 12.5% 6px;">
+          <input type="number" id="rangeInput" value="0" min="5" max="150" style="width:70px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
         </div>
       </div>
     </div>
@@ -319,51 +340,96 @@ function calculateEstimatedFPS() {
   const silencerWt = parseFloat($('silencerWt').value) || 12;
   const nockWt = parseFloat($('nockWt').value) || 10;
   const totalStringAddons = peepWt + dloopWt + kisserWt + silencerWt + nockWt;
+
   const refDrawWt = 70;
   const refDrawLen = 30;
   const refArrowWt = 350;
   const refStringFree = 20;
+
   let est = ibo;
   est += (drawWt - refDrawWt) * 1.8;
   est += (drawLen - refDrawLen) * 10;
   est -= Math.max(0, (totalWt - refArrowWt) / 5);
   est -= Math.max(0, (totalStringAddons - refStringFree) / 10);
   est *= 0.97;
+
   const estimated = Math.max(150, Math.round(est * 10) / 10);
-  return { estimated };
+
+  return {
+    estimated: estimated,
+    breakdown: {
+      base: ibo,
+      adjDrawWt: (drawWt - refDrawWt) * 1.8,
+      adjDrawLen: (drawLen - refDrawLen) * 10,
+      adjArrowWt: -Math.max(0, (totalWt - refArrowWt) / 5),
+      adjString: -Math.max(0, (totalStringAddons - refStringFree) / 10),
+      correction: est * -0.03
+    }
+  };
 }
 
 function showFpsMathPopup() {
   const content = $('fpsMathPopupContent');
   const currentFps = parseFloat($('fpsSlider').value);
-  if (fpsWasRecalculated) {
-    const est = calculateEstimatedFPS();
-    content.innerHTML = `<p style="color:var(--success);font-weight:700;">✓ Speed updated to calculated estimate!</p><p><strong>New FPS:</strong> ${est.estimated.toFixed(1)}</p>`;
-    fpsWasRecalculated = false;
-    $('fpsMathModal').style.display = 'flex';
-    return;
-  }
-  content.innerHTML = hasManualFps = !isNaN(currentFps) && currentFps > 0 ?
-    `<p><strong>Using your chronographed speed:</strong> ${currentFps.toFixed(1)} FPS</p>` :
-    `<p><strong>Calculated estimate:</strong> ${calculateEstimatedFPS().estimated.toFixed(1)} FPS</p>`;
-  $('fpsMathModal').style.display = 'flex';
-}
+  const hasManualFps = !isNaN(currentFps) && currentFps > 0;
 
-function calculateEverything() {
-  // No calculations needed for this minimal version — just sync sliders
-  const windMph = parseFloat($('windSlider').value) || 5;
-  const rangeYd = parseFloat($('rangeSlider').value) || 50;
-  $('windInput').value = windMph;
-  $('rangeInput').value = rangeYd;
+  if (hasManualFps) {
+    content.innerHTML = `
+      <p><strong>Using your chronographed speed:</strong> ${currentFps.toFixed(1)} FPS</p>
+      <p style="margin-top:0.75rem;color:var(--light);">
+        Manual entry overrides estimate — this is the most accurate!
+      </p>
+    `;
+  } else {
+    const est = calculateEstimatedFPS();
+    content.innerHTML = `
+      <p><strong>Calculated estimate:</strong> ${est.estimated.toFixed(1)} FPS</p>
+      <p style="margin-top:0.75rem;color:var(--light);font-size:0.9rem;">
+        No manual FPS entered — using estimate.
+      </p>
+    `;
+  }
+  $('fpsMathModal').style.display = 'flex';
 }
 
 function recalculateAndShowMath() {
   const est = calculateEstimatedFPS();
+  const b = est.breakdown;
+
   $('fpsSlider').value = est.estimated;
   $('fpsInput').value = est.estimated;
-  fpsWasRecalculated = true;
-  calculateEverything();
-  showFpsMathPopup();
+
+  const content = $('fpsMathPopupContent');
+  content.innerHTML = `
+    <p style="color:var(--success);font-weight:700;">✓ Speed updated to calculated estimate!</p>
+    <p><strong>New FPS:</strong> ${est.estimated.toFixed(1)}</p>
+    <p style="margin-top:0.75rem;"><strong>Breakdown:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Base IBO: ${b.base.toFixed(0)} FPS</li>
+      <li>Draw weight: ${b.adjDrawWt > 0 ? '+' : ''}${b.adjDrawWt.toFixed(1)} FPS</li>
+      <li>Draw length: ${b.adjDrawLen > 0 ? '+' : ''}${b.adjDrawLen.toFixed(1)} FPS</li>
+      <li>Arrow weight: ${b.adjArrowWt.toFixed(1)} FPS</li>
+      <li>String add-ons: ${b.adjString.toFixed(1)} FPS</li>
+      <li>Real-world correction: ${b.correction.toFixed(1)} FPS</li>
+    </ul>
+    <p style="margin-top:0.75rem;color:var(--light);font-size:0.9rem;">
+      Your previous value has been replaced with the current estimate.
+    </p>
+  `;
+
+  $('fpsMathModal').style.display = 'flex';
+}
+
+function closeFpsMath() {
+  $('fpsMathModal').style.display = 'none';
+}
+
+function calculateEverything() {
+  // No calculations needed for this minimal version — just sync sliders
+  const windMph = parseFloat($('windSlider').value) || 0;
+  const rangeYd = parseFloat($('rangeSlider').value) || 50;
+  $('windInput').value = windMph;
+  $('rangeInput').value = rangeYd;
 }
 
 function closeFpsMath() {
@@ -445,6 +511,9 @@ function saveBuild() {
     vaneWt: $('vaneWt').value,
     vaneCount: $('vaneCount').value,
     glueWt: $('glueWt').value,
+    fpsSlider: $('fpsSlider').value,
+    windSlider: $('windSlider').value,
+    rangeSlider: $('rangeSlider').value,
   };
   let builds = JSON.parse(localStorage.getItem('arrowForgeBuilds') || '[]');
   builds = builds.filter(b => b.name !== buildName);
@@ -484,8 +553,14 @@ function loadBuild() {
   $('vaneWt').value = build.vaneWt || '8';
   $('vaneCount').value = build.vaneCount || '3';
   $('glueWt').value = build.glueWt || '5';
-  calculateEverything();
   alert(`Build "${build.name}" loaded!`);
+  $('fpsSlider').value = build.fpsSlider || '278';
+  $('fpsInput').value = build.fpsSlider || '278';
+  $('windSlider').value = build.windSlider || '5';
+  $('windInput').value = build.windSlider || '5';
+  $('rangeSlider').value = build.rangeSlider || '50';
+  $('rangeInput').value = build.rangeSlider || '50';
+  calculateEverything(); // to sync everything
 }
 
 function deleteBuild() {
@@ -520,6 +595,21 @@ function syncSlider(sliderId, inputId) {
     input.value = val;
     calculateEverything();
   });
+}
+
+// Capitalize Bow Model
+$('bowModel').addEventListener('input', e => {
+  e.target.value = toTitleCase(e.target.value);
+});
+
+// Capitalize Arrow Name
+$('arrowName').addEventListener('input', e => {
+  e.target.value = toTitleCase(e.target.value);
+});
+
+//Capitalize the first letter of each word
+function toTitleCase(str) {
+  return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
 }
 
 // Connect the sliders
