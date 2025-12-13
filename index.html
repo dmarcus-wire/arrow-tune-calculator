@@ -5,278 +5,172 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ArrowForge – Smart Arrow Tuner</title>
   <meta name="description" content="Offline-first archery calculator with AI advisor. Perfect arrow tuning made simple.">
-  <!-- PWA: makes it installable on phones -->
   <meta name="theme-color" content="#0ea5e9">
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiQXJyb3dGb3JnZSIsInNob3J0X25hbWUiOiJBcnJvd0ZvcmdlIiwic3RhcnRfdXJsIjoiaHR0cHM6Ly9hIiwiaWNvbnMiOlt7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbCxiYXNlNjQsdmFsdWUiOiJkYXRhOmltYWdlL3N2Zyt4bWwgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48dGV4dCB5PSIuOWVtIiBmb250LXNpemU9IjkwIj7wn5iBLTwvdGV4dD48L3N2Zz4iLCJzaXplcyI6IjEyOHgxMjgiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCIsInB1cnBvc2UiOiJhbnkgbWFza2FibGUifV19">
   <link href="https://rsms.me/inter/inter.css" rel="stylesheet">
   <style>
-  /* ===================================================================
-     COLOR THEME — light & dark mode
-     =================================================================== */
-  :root {
-    --bg:#f8fafc; --card:#ffffff; --text:#1e293b; --light:#64748b; --border:#e2e8f0;
-    --primary:#0ea5e9; --success:#22c55e; --warning:#f59e0b; --danger:#ef4444; --purple:#8b5cf6;
-  }
-  .dark {
-    --bg:#0f172a; --card:#020617; --text:#e2e8f0; --light:#94a3b8; --border:#1e293b;
-  }
-
-  /* ===================================================================
-     BASIC LAYOUT — 2-column on desktop, stacked on mobile
-     =================================================================== */
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    font-family:'Inter',sans-serif;
-    background:var(--bg);
-    color:var(--text);
-    padding:0.5rem;
-    min-height:100vh;
-  }
-  .container {
-    max-width:1600px;
-    margin:auto;
-    display:grid;
-    gap:1rem 1.5rem;
-  }
-  @media (max-width:1023px) { .container { grid-template-columns:1fr; } }
-  @media (min-width:1024px) {
+    :root {
+      --bg:#f8fafc; --card:#ffffff; --text:#1e293b; --light:#64748b; --border:#e2e8f0;
+      --primary:#0ea5e9; --success:#22c55e; --warning:#f59e0b; --danger:#ef4444; --purple:#8b5cf6;
+    }
+    .dark {
+      --bg:#0f172a; --card:#020617; --text:#e2e8f0; --light:#94a3b8; --border:#1e293b;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family:'Inter',sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      padding:0.5rem;
+      min-height:100vh;
+    }
     .container {
-      grid-template-columns: 460px 1fr;
+      max-width:1600px;
+      margin:auto;
+      display:grid;
+      gap:1rem 1.5rem;
     }
-  }
-
-  /* ===================================================================
-     CARD STYLES — inputs are tight, dashboard is spacious
-     =================================================================== */
-  .card {
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:1rem;
-    box-shadow:0 4px 12px rgba(15,23,42,0.08);
-  }
-  #inputs-column .card { padding:0.8rem; }
-  #inputs-column label { margin:0.5rem 0 0.2rem; font-size:0.9rem; }
-  #inputs-column input, #inputs-column select { padding:0.5rem; font-size:0.95rem; }
-  #outputs-column .card { padding:1.25rem; }
-  #outputs-column h2 { font-size:1.4rem; margin-bottom:1rem; }
-
-  /* ===================================================================
-     COMMON UI ELEMENTS
-     =================================================================== */
-  .card-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem; }
-  h1 { font-size:1.5rem; margin:0; }
-  input, select {
-    width:100%;
-    border:1px solid var(--border);
-    border-radius:8px;
-    background:var(--card);
-    color:var(--text);
-    padding:0.5rem;
-  }
-
-  /* ============================================================= */
-  /* UNIVERSAL INLINE LABELS – looks great on mobile AND desktop   */
-  /* ============================================================= */
-  .input-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 0.5rem 0;
-    gap: 0.75rem;
-  }
-  .input-row label {
-    margin: 0;
-    font-weight: 600;
-    font-size: 0.95rem;
-    white-space: nowrap;
-    color: var(--text);
-    flex-shrink: 0;
-  }
-  .input-row label::after {
-    content: ":";
-    margin-left: 0.25rem;
-    color: var(--light);
-  }
-  .input-row input,
-  .input-row select {
-    flex: 1;
-    min-width: 140px;
-    text-align: right;
-    font-size: 1rem;
-  }
-  @media (min-width: 769px) {
-    .input-row { gap: 1rem; }
+    @media (max-width:1023px) { .container { grid-template-columns:1fr; } }
+    @media (min-width:1024px) { .container { grid-template-columns:460px 1fr; } }
+    .card {
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:1rem;
+      box-shadow:0 4px 12px rgba(15,23,42,0.08);
+    }
+    #inputs-column .card { padding:0.8rem; }
+    #inputs-column input, #inputs-column select { padding:0.5rem; font-size:0.95rem; }
+    #outputs-column .card { padding:1.25rem; }
+    #outputs-column h2 { font-size:1.4rem; margin-bottom:1rem; }
+    .card-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem; }
+    h1 { font-size:1.5rem; margin:0; }
+    input, select {
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:8px;
+      background:var(--card);
+      color:var(--text);
+      padding:0.5rem;
+    }
+    .input-row {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin:0.5rem 0;
+      gap:0.75rem;
+    }
+    .input-row label {
+      margin:0;
+      font-weight:600;
+      font-size:0.95rem;
+      white-space:nowrap;
+      color:var(--text);
+      flex-shrink:0;
+    }
+    .input-row label::after { content:":"; margin-left:0.25rem; color:var(--light); }
     .input-row input, .input-row select {
-      max-width: 240px;
-      text-align: left;
-      font-size: 1.05rem;
+      flex:1;
+      min-width:140px;
+      text-align:right;
+      font-size:1rem;
     }
-    .input-row label { font-size: 1rem; }
-  }
-
-  /* ============================================================= */
-  /* COLLAPSIBLE SECTIONS – CLEAN & FINAL (no duplicates)           */
-  /* ============================================================= */
-
-  /* Inner collapsibles (String Details, Component Details) – work on all devices */
-  .collapsible-trigger {
-    cursor: pointer;
-    padding: 0.75rem 0 0.5rem 0;
-    margin-top: 0.75rem;
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 600;
-    color: var(--primary);
-  }
-  .collapsible-trigger .chevron {
-    font-size: 1.5rem;
-    transition: transform 0.25s ease;
-    color: var(--light);
-  }
-  .collapsible-trigger.open .chevron {
-    transform: rotate(90deg);
-  }
-  .collapsible-content {
-    display: none;
-    padding-top: 0.5rem;
-  }
-  .collapsible-trigger.open + .collapsible-content {
-    display: block;
-  }
-
-  /* Mobile-only collapse for Bow & Arrow cards */
-  @media (max-width: 768px) {
-    .collapsible-mobile .card-content {
-      display: none;
+    @media (min-width:769px) {
+      .input-row { gap:1rem; }
+      .input-row input, .input-row select { max-width:240px; text-align:left; font-size:1.05rem; }
+      .input-row label { font-size:1rem; }
     }
-    .collapsible-mobile.open .card-content {
-      display: block;
+    .collapsible-trigger {
+      cursor:pointer;
+      padding:0.75rem 0 0.5rem;
+      margin-top:0.75rem;
+      border-top:1px solid var(--border);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-weight:600;
+      color:var(--primary);
     }
-    .mobile-only-trigger {
-      display: flex !important;
-      cursor: pointer;
-      padding: 0.75rem 1rem;
-      background: var(--card);
-      border-top: 1px solid var(--border);
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 600;
-      color: var(--primary);
-      margin-top: 0.5rem;
-      border-radius: 0 0 14px 14px;
+    .collapsible-trigger .chevron {
+      font-size:1.5rem;
+      transition:transform 0.25s ease;
+      color:var(--light);
     }
-    .collapsible-mobile.open .mobile-only-trigger .chevron {
-      transform: rotate(90deg);
+    .collapsible-trigger.open .chevron { transform:rotate(90deg); }
+    .collapsible-content { display:none; padding-top:0.5rem; }
+    .collapsible-trigger.open + .collapsible-content { display:block; }
+    @media (max-width:768px) {
+      .collapsible-mobile .card-content { display:none; }
+      .collapsible-mobile.open .card-content { display:block; }
+      .mobile-only-trigger {
+        display:flex !important;
+        cursor:pointer;
+        padding:0.75rem 1rem;
+        background:var(--card);
+        border-top:1px solid var(--border);
+        justify-content:space-between;
+        align-items:center;
+        font-weight:600;
+        color:var(--primary);
+        margin-top:0.5rem;
+        border-radius:0 0 14px 14px;
+      }
+      .collapsible-mobile.open .mobile-only-trigger .chevron { transform:rotate(90deg); }
     }
-  }
-
-  /* Desktop: always show Bow/Arrow content, hide mobile trigger */
-  @media (min-width: 769px) {
-    .mobile-only-trigger {
-      display: none !important;
+    @media (min-width:769px) {
+      .mobile-only-trigger { display:none !important; }
+      .collapsible-mobile .card-content { display:block !important; }
     }
-    .collapsible-mobile .card-content {
-      display: block !important;
+    .mobile-only-trigger { display:none; }
+    button {
+      padding:0.5rem 1rem;
+      border:none;
+      border-radius:999px;
+      background:var(--primary);
+      color:white;
+      font-weight:600;
+      font-size:0.95rem;
+      line-height:1;
+      cursor:pointer;
+      min-height:44px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
     }
-  }
-
-  /* Default state for mobile trigger (hidden until media query overrides) */
-  .mobile-only-trigger {
-    display: none;
-  }
-
-  /* ============================================================= */
-  /* BUTTONS & OTHER UI                                            */
-  /* ============================================================= */
-  button {
-    padding:0.5rem 1rem;
-    border:none;
-    border-radius:999px;
-    background:var(--primary);
-    color:white;
-    font-weight:600;
-    font-size:0.95rem;
-    line-height:1;
-    cursor:pointer;
-  }
-  button, .btn-small {
-    min-height:44px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-  }
-  .btn-small { padding:0.35rem 0.7rem; font-size:0.85rem; }
-  .secondary { background:transparent; color:var(--primary); border:1px solid var(--primary); }
-  .flex { display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; }
-  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; }
-  @media (max-width:640px) { .grid-2 { grid-template-columns:1fr; } }
-
-  /* Dark mode toggle */
-  .toggle-switch { position:relative; width:50px; height:26px; }
-  .toggle-switch input { opacity:0; width:0; height:0; }
-  .slider { position:absolute; inset:0; background:#cbd5e1; border-radius:34px; transition:.3s; }
-  .slider:before { position:absolute; content:""; height:20px; width:20px; left:3px; bottom:3px; background:white; border-radius:50%; transition:.3s; }
-  input:checked + .slider { background:var(--primary); }
-  input:checked + .slider:before { transform:translateX(24px); }
-
-  /* Progress bars */
-  .bar { height:8px; border-radius:999px; background:var(--border); margin:0.4rem 0; position:relative; overflow:hidden; }
-  .bar-fill { height:100%; background:linear-gradient(to right,var(--success),var(--warning)); transition:width 0.3s ease; }
-
-  /* Dashboard tiles */
-  .dashboard-grid { display:grid; gap:0.75rem; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); }
-  .dash-tile { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:0.8rem; text-align:center; }
-  .dash-value { font-size:1.6rem; font-weight:800; margin:0.2rem 0; }
-  .dash-label { font-size:0.8rem; color:var(--light); }
-
-  /* Game table */
-  .game-table { width:100%; border-collapse:collapse; font-size:0.95rem; }
-  .game-table th, .game-table td { padding:0.4rem; text-align:left; border-bottom:1px solid var(--border); }
-  .send { color:var(--success); font-weight:700; }
-  .marginal { color:var(--warning); font-weight:700; }
-  .no { color:var(--danger); font-weight:700; }
-
-  /* Trajectory canvas */
-  canvas { width:100%; height:200px; margin:1rem 0; background:#00000004; border-radius:8px; }
-
-  /* AI Modal */
-  .info-overlay {
-    position:fixed; inset:0; background:rgba(0,0,0,0.5);
-    display:none; align-items:center; justify-content:center; z-index:1000;
-  }
-  .info-panel {
-    background:var(--card);
-    border-radius:12px;
-    max-width:600px;
-    width:90%;
-    max-height:90vh;
-    padding:1.5rem;
-    box-shadow:0 20px 40px rgba(0,0,0,0.3);
-    position:relative;
-    overflow-y:auto;
-  }
-  .info-close {
-    position:absolute; top:0.8rem; right:1rem;
-    background:none; border:none; font-size:1.8rem;
-    color:var(--light); cursor:pointer;
-  }
-
-</style>
+    .btn-small { padding:0.35rem 0.7rem; font-size:0.85rem; }
+    .secondary { background:transparent; color:var(--primary); border:1px solid var(--primary); }
+    .flex { display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; }
+    .toggle-switch { position:relative; width:50px; height:26px; }
+    .toggle-switch input { opacity:0; width:0; height:0; }
+    .slider { position:absolute; inset:0; background:#cbd5e1; border-radius:34px; transition:.3s; }
+    .slider:before { position:absolute; content:""; height:20px; width:20px; left:3px; bottom:3px; background:white; border-radius:50%; transition:.3s; }
+    input:checked + .slider { background:var(--primary); }
+    input:checked + .slider:before { transform:translateX(24px); }
+    .info-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,0.5);
+      display:none; align-items:center; justify-content:center; z-index:1000;
+    }
+    .info-panel {
+      background:var(--card);
+      border-radius:12px;
+      max-width:600px;
+      width:90%;
+      max-height:90vh;
+      padding:1.5rem;
+      box-shadow:0 20px 40px rgba(0,0,0,0.3);
+      position:relative;
+      overflow-y:auto;
+    }
+    .info-close {
+      position:absolute; top:0.8rem; right:1rem;
+      background:none; border:none; font-size:1.8rem;
+      color:var(--light); cursor:pointer;
+    }
+  </style>
 </head>
 <body>
-
-<!-- ============================================================= -->
-<!-- LEFT COLUMN – INPUTS (compact & efficient)                  -->
-<!-- ============================================================= -->
- 
 <div class="container">
-
   <div id="inputs-column">
-
-    <!-- Header -->
     <div class="card">
       <div class="card-header">
         <h1>ArrowForge</h1>
@@ -291,12 +185,6 @@
       </div>
       <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.4</p>
     </div>
-
-<!-- ============================================================= -->
-<!-- LEFT COLUMN – BUILD (compact & efficient)                  -->
-<!-- ============================================================= --> 
-
-    <!-- Build Card -->
     <div class="card">
       <h2>Build</h2>
       <div class="input-row">
@@ -312,17 +200,8 @@
         <button id="deleteBuild" style="background:var(--danger);">Delete</button>
       </div>
     </div>
-
-<!-- ============================================================= -->
-<!-- LEFT COLUMN – BOW (compact & efficient)                  -->
-<!-- ============================================================= --> 
-
-    <!-- BOW CARD – FIXED for mobile -->
     <div class="card collapsible-mobile" id="bowCard">
-      <!-- Header always visible -->
       <h2 style="margin:0 0 0.75rem 0;">Bow</h2>
-      
-      <!-- Content – hidden on mobile until opened -->
       <div class="card-content">
         <div class="input-row"><label for="appType">Application</label><select id="appType"><option>Target</option><option selected>Hunting</option><option>Other</option></select></div>
         <div class="input-row"><label for="bowModel">Model</label><input type="text" id="bowModel" placeholder="Hoyt RX-9"></div>
@@ -330,36 +209,23 @@
         <div class="input-row"><label for="drawWt">Draw wt lb</label><input type="number" id="drawWt" value="70" step="0.5"></div>
         <div class="input-row"><label for="drawLen">Draw length in</label><input type="number" id="drawLen" value="29" step="0.1"></div>
         <div class="input-row"><label for="stringWt">String add-ons gr</label><input type="number" id="stringWt" value="20"></div>
-
-        <!-- String Details – collapsible (unchanged) -->
-        <div class="collapsible-trigger" onclick="toggleSection('stringDetails')">
+        <div class="collapsible-trigger" onclick="this.classList.toggle('open'); this.nextElementSibling.style.display = this.classList.contains('open') ? 'block' : 'none';">
           <span>String Details</span>
           <span class="chevron">></span>
         </div>
-        <div id="stringDetails" class="collapsible-content">
-            <div class="input-row"><label for="peepWt">Peep weight gr</label><input type="number" id="peepWt" value="8" step="0.5"></div>
-            <div class="input-row"><label for="dloopWt">D-loop gr</label><input type="number" id="dloopWt" value="8" step="0.5"></div>
-            <div class="input-row"><label for="kisserWt">Kisser gr</label><input type="number" id="kisserWt" value="0" step="0.5"></div>
-            <div class="input-row"><label for="silencerWt">Silencers gr</label><input type="number" id="silencerWt" value="12" step="0.5"></div>
-            <div class="input-row"><label for="nockWt">Nock weight gr</label><input type="number" id="nockWt" value="10" step="0.5"></div>
-            <div style="margin-top:0.75rem;text-align:right;font-weight:600;color:var(--primary);">
-              Total string add-ons: <span id="totalStringDisplay">38</span> gr
-            </div>
+        <div class="collapsible-content">
+          <div class="input-row"><label for="peepWt">Peep weight gr</label><input type="number" id="peepWt" value="8" step="0.5"></div>
+          <div class="input-row"><label for="dloopWt">D-loop gr</label><input type="number" id="dloopWt" value="8" step="0.5"></div>
+          <div class="input-row"><label for="kisserWt">Kisser gr</label><input type="number" id="kisserWt" value="0" step="0.5"></div>
+          <div class="input-row"><label for="silencerWt">Silencers gr</label><input type="number" id="silencerWt" value="12" step="0.5"></div>
+          <div class="input-row"><label for="nockWt">Nock weight gr</label><input type="number" id="nockWt" value="10" step="0.5"></div>
         </div>
       </div>
-
-    <!-- MOBILE TRIGGER – always visible on mobile, hidden on desktop -->
-      <div class="mobile-only-trigger" onclick="toggleMobileCard('bowCard')">
+      <div class="mobile-only-trigger" onclick="this.parentElement.classList.toggle('open')">
         <span>Bow Details</span>
         <span class="chevron">></span>
       </div>
     </div>
-
-  <!-- ============================================================= -->
-  <!-- LEFT COLUMN – ARROW (compact & efficient)                  -->
-  <!-- ============================================================= --> 
-
-  <!-- ARROW CARD – FIXED similarly -->
     <div class="card collapsible-mobile" id="arrowCard">
       <h2 style="margin:0 0 0.75rem 0;">Arrow</h2>
       <div class="card-content">
@@ -369,162 +235,64 @@
         <div class="input-row"><label for="totalWt">Total weight gr</label><input type="number" id="totalWt" value="495" step="0.5"></div>
         <div class="input-row"><label for="pointWt">Point weight gr</label><input type="number" id="pointWt" value="125"></div>
         <div class="input-row"><label for="balancePt">Balance point in</label><input type="number" id="balancePt" value="17.2" step="0.05"></div>
-
-        <!-- Component Details – collapsible (unchanged) -->
-        <div class="collapsible-trigger" onclick="toggleSection('componentDetails')">
+        <div class="collapsible-trigger" onclick="this.classList.toggle('open'); this.nextElementSibling.style.display = this.classList.contains('open') ? 'block' : 'none';">
           <span>Component Details</span>
           <span class="chevron">></span>
         </div>
-        <div id="componentDetails" class="collapsible-content">
-            <div class="input-row"><label for="insertWt">Insert/Outsert gr</label><input type="number" id="insertWt" value="50" step="0.5"></div>
-            <div class="input-row"><label for="wrapWt">Wrap gr</label><input type="number" id="wrapWt" value="8" step="0.5"></div>
-            <div class="input-row"><label for="vaneWt">Vane weight (each) gr</label><input type="number" id="vaneWt" value="8" step="0.1"></div>
-            <div class="input-row"><label for="vaneCount">Vane count</label><input type="number" id="vaneCount" value="3"></div>
-            <div class="input-row"><label for="glueWt">Glue / Pin gr</label><input type="number" id="glueWt" value="5" step="0.5"></div>
-            <div style="margin-top:0.75rem;text-align:right;font-weight:600;color:var(--primary);">
-              Total components: <span id="totalCompDisplay">71</span> gr
-            </div>
+        <div class="collapsible-content">
+          <div class="input-row"><label for="insertWt">Insert/Outsert gr</label><input type="number" id="insertWt" value="50" step="0.5"></div>
+          <div class="input-row"><label for="wrapWt">Wrap gr</label><input type="number" id="wrapWt" value="8" step="0.5"></div>
+          <div class="input-row"><label for="vaneWt">Vane weight (each) gr</label><input type="number" id="vaneWt" value="8" step="0.1"></div>
+          <div class="input-row"><label for="vaneCount">Vane count</label><input type="number" id="vaneCount" value="3"></div>
+          <div class="input-row"><label for="glueWt">Glue / Pin gr</label><input type="number" id="glueWt" value="5" step="0.5"></div>
         </div>
       </div>
-
-      <div class="mobile-only-trigger" onclick="toggleMobileCard('arrowCard')">
+      <div class="mobile-only-trigger" onclick="this.parentElement.classList.toggle('open')">
         <span>Arrow Details</span>
         <span class="chevron">></span>
       </div>
     </div>
   </div>
-  <!-- ============================================================= -->
-  <!-- RIGHT COLUMN – DASHBOARD (big & bold)                       -->
-  <!-- ============================================================= -->
   <div id="outputs-column">
-
-    <!-- Live Settings – your original skinny sliders, fully working -->
     <div class="card">
       <h2>Live Settings</h2>
-
-      <!-- Actual Speed (fps) with info icon -->
       <div style="margin:1.2rem 0;">
         <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.6rem;">
           <label style="font-weight:600; margin:0;">Actual Speed (fps)</label>
           <button onclick="showFpsMathPopup()" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--primary);padding:0;" title="Show FPS estimate math">ⓘ</button>
           <button onclick="recalculateAndShowMath()" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--primary);padding:0;" title="Recalculate and show estimate">Calculate</button>
         </div>
-
         <div style="display:flex; align-items:center; gap:1rem;">
-          <input type="range" id="fpsSlider" min="150" max="400" value="278" step="1"
-                style="flex:1; height:6px; border-radius:3px; background:var(--border);">
-          <input type="number" id="fpsInput" value="278" min="150" max="400"
-                style="width:80px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
+          <input type="range" id="fpsSlider" min="150" max="400" value="278" step="1" style="flex:1; height:6px; border-radius:3px; background:var(--border);">
+          <input type="number" id="fpsInput" value="278" min="150" max="400" style="width:80px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
         </div>
       </div>
-
-      <!-- FPS Estimate Math panel – opens with info icon -->
-
-      <div id="fpsMath" class="collapsible-content">
-        <p id="fpsMathContent" style="font-size:0.95rem;">
-          Enter bow details to see estimated FPS when no chrono value is provided.
-        </p>
-      </div>
-
-      <!-- FPS Estimate Math Popup Modal -->
-      <div id="fpsMathModal" class="info-overlay">
-        <div class="info-panel" style="max-width:500px;">
-          <button class="info-close" onclick="closeFpsMath()">×</button>
-          <h2>FPS Estimate Breakdown</h2>
-          <div id="fpsMathPopupContent" style="font-size:0.95rem;line-height:1.5;">
-            Fill in bow details to see the estimate.
-          </div>
-        </div>
-      </div>
-
-
-      <!-- Crosswind (mph) -->
       <div style="margin:1.2rem 0;">
         <label style="display:block; margin-bottom:0.4rem; font-weight:600;">Crosswind (mph)</label>
         <div style="display:flex; align-items:center; gap:1rem;">
-          <input type="range" id="windSlider" min="0" max="40" value="5" step="0.5"
-                style="flex:1; height:6px; border-radius:3px; background:var(--border);">
-          <input type="number" id="windInput" value="5" min="0" max="40" step="0.5"
-                style="width:70px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
+          <input type="range" id="windSlider" min="0" max="40" value="5" step="0.5" style="flex:1; height:6px; border-radius:3px; background:var(--border);">
+          <input type="number" id="windInput" value="5" min="0" max="40" step="0.5" style="width:70px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
         </div>
       </div>
-
-      <!-- Range (yards) -->
       <div style="margin:1.2rem 0;">
         <label style="display:block; margin-bottom:0.4rem; font-weight:600;">Range (yards)</label>
         <div style="display:flex; align-items:center; gap:1rem;">
-          <input type="range" id="rangeSlider" min="10" max="150" value="50" step="1"
-                style="flex:1; height:6px; border-radius:3px; background:var(--border);">
-          <input type="number" id="rangeInput" value="50" min="10" max="150"
-                style="width:70px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
+          <input type="range" id="rangeSlider" min="10" max="150" value="50" step="1" style="flex:1; height:6px; border-radius:3px; background:var(--border);">
+          <input type="number" id="rangeInput" value="50" min="10" max="150" style="width:70px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
         </div>
       </div>
     </div>
-
-    <!-- Game effectiveness table -->
-    <div class="card">
-      <h2>Game Readiness @ <span id="gameDist">50</span> yd</h2>
-      <table class="game-table">
-        <thead><tr><th>Animal</th><th>Min KE</th><th>Min Mom</th><th>Result</th></tr></thead>
-        <tbody>
-          <tr><td>Small Game</td><td>15 ft-lbs</td><td>0.20</td><td id="smallRes" class="send">Send it</td></tr>
-          <tr><td>Deer</td><td>25 ft-lbs</td><td>0.30</td><td id="deerRes" class="send">Send it</td></tr>
-          <tr><td>Elk</td><td>42 ft-lbs</td><td>0.44</td><td id="elkRes" class="send">Send it</td></tr>
-          <tr><td>Moose/Tough</td><td>65 ft-lbs</td><td>0.65</td><td id="mooseRes" class="marginal">Marginal</td></tr>
-        </tbody>
-      </table>
+  </div>
+</div>
+<div id="fpsMathModal" class="info-overlay">
+  <div class="info-panel" style="max-width:500px;">
+    <button class="info-close" onclick="closeFpsMath()">×</button>
+    <h2>FPS Estimate Breakdown</h2>
+    <div id="fpsMathPopupContent" style="font-size:0.95rem;line-height:1.5;">
+      Fill in bow details to see the estimate.
     </div>
-
-    <!-- Launch → Impact bars -->
-    <div class="card">
-      <h2>Launch → @ <span id="barDist">50</span> yd</h2>
-
-      <label>Velocity</label>
-      <div class="bar"><div id="velFill" class="bar-fill"></div></div>
-      <div class="flex" style="justify-content:space-between;font-size:0.9rem;">
-        <span id="velLaunch">278</span> fps → <span id="velImpact">245</span> fps
-      </div>
-
-      <label style="margin-top:0.75rem;">Kinetic Energy</label>
-      <div class="bar"><div id="keFill" class="bar-fill"></div></div>
-      <div class="flex" style="justify-content:space-between;font-size:0.9rem;">
-        <span id="keLaunch">85</span> → <span id="keImpact">66</span> ft-lbs
-      </div>
-
-      <label style="margin-top:0.75rem;">Momentum</label>
-      <div class="bar"><div id="momFill" class="bar-fill"></div></div>
-      <div class="flex" style="justify-content:space-between;font-size:0.9rem;">
-        <span id="momLaunch">0.59</span> → <span id="momImpact">0.53</span> slug·ft/s
-      </div>
-    </div>
-
-    <!-- Trajectory graph -->
-    <div class="card">
-      <h2>Trajectory</h2>
-      <canvas id="trajChart"></canvas>
-      <p style="text-align:center;color:var(--light);font-size:0.85rem;">
-        Peak height: <span id="peakHt">4.2</span> ft • Flight time: <span id="flightTime">0.61</span> s
-      </p>
-    </div>
-
-    <!-- Quick stats grid -->
-    <div class="card">
-      <h2>Quick Stats</h2>
-      <div class="dashboard-grid">
-        <div class="dash-tile"><div class="dash-value" id="focVal">15.2</div><div class="dash-label">FOC %</div></div>
-        <div class="dash-tile"><div class="dash-value" id="gppVal">7.1</div><div class="dash-label">GPP</div></div>
-        <div class="dash-tile"><div class="dash-value" id="gpiVal">17.4</div><div class="dash-label">GPI</div></div>
-        <div class="dash-tile"><div class="dash-value" id="driftVal">4.1</div><div class="dash-label">Wind Drift in</div></div>
-        <div class="dash-tile"><div class="dash-value" id="stiffVal">Ideal</div><div class="dash-label">Forgiveness</div></div>
-      </div>
-    </div>
-
-  </div> <!-- end outputs-column -->
-</div> <!-- end container -->
-
-<!-- ============================================================= -->
-<!-- AI ADVISOR MODAL (hidden until clicked)                     -->
-<!-- ============================================================= -->
+  </div>
+</div>
 <div id="aiModal" class="info-overlay">
   <div class="info-panel">
     <button class="info-close" onclick="closeModal()">×</button>
@@ -536,56 +304,10 @@
     </div>
   </div>
 </div>
-
-<!-- ============================================================= -->
-<!-- SCRIPTS                     -->
-<!-- ============================================================= -->
-
 <script>
-/* ============================================================= */
-/* GLOBAL HELPERS                                               */
-/* ============================================================= */
 const $ = id => document.getElementById(id);
+let fpsWasRecalculated = false;
 
-// Add this global variable at the top of your script (after const $ = ...)
-let fpsWasRecalculated = false; // tracks if last change was from Recalculate
-
-/* ============================================================= */
-/* SLIDER SYNC — connects sliders to number inputs               */
-/* ============================================================= */
-function syncSlider(sliderId, inputId) {
-  const slider = $(sliderId);
-  const input = $(inputId);
-
-  if (!slider || !input) return;
-
-  slider.addEventListener('input', () => {
-    input.value = slider.value;
-    if (sliderId === 'rangeSlider') $('rangeVal').textContent = slider.value;
-    calculateEverything();
-  });
-
-  input.addEventListener('input', () => {
-    let val = parseFloat(input.value);
-    if (isNaN(val)) val = slider.min;
-    val = Math.max(slider.min, Math.min(slider.max, val));
-    slider.value = val;
-    input.value = val;
-    if (sliderId === 'rangeSlider') $('rangeVal').textContent = val;
-    calculateEverything();
-  });
-}
-
-// Connect FPS, Wind, Range sliders
-syncSlider('fpsSlider', 'fpsInput');
-syncSlider('windSlider', 'windInput');
-syncSlider('rangeSlider', 'rangeInput');
-
-/* ============================================================= */
-/* FPS CALCULATION BUTTON              */
-/* ============================================================= */
-
-// ROBUST FPS ESTIMATE (your v2 logic – tuned and accurate)
 function calculateEstimatedFPS() {
   const ibo = parseFloat($('ibo').value) || 340;
   const drawWt = parseFloat($('drawWt').value) || 70;
@@ -596,335 +318,62 @@ function calculateEstimatedFPS() {
   const kisserWt = parseFloat($('kisserWt').value) || 0;
   const silencerWt = parseFloat($('silencerWt').value) || 12;
   const nockWt = parseFloat($('nockWt').value) || 10;
-
   const totalStringAddons = peepWt + dloopWt + kisserWt + silencerWt + nockWt;
-
-  // Reference IBO conditions
   const refDrawWt = 70;
   const refDrawLen = 30;
   const refArrowWt = 350;
-  const refStringFree = 20; // first 20gr "free"
-
+  const refStringFree = 20;
   let est = ibo;
-
-  // Adjustments
-  est += (drawWt - refDrawWt) * 1.8;                    // ~1.8 FPS per lb
-  est += (drawLen - refDrawLen) * 10;                   // ~10 FPS per inch
-  est -= Math.max(0, (totalWt - refArrowWt) / 5);       // ~1 FPS loss per 5gr over 350
-  est -= Math.max(0, (totalStringAddons - refStringFree) / 10); // ~1 FPS loss per 10gr over 20
-
-  // Real-world correction (IBO is optimistic)
+  est += (drawWt - refDrawWt) * 1.8;
+  est += (drawLen - refDrawLen) * 10;
+  est -= Math.max(0, (totalWt - refArrowWt) / 5);
+  est -= Math.max(0, (totalStringAddons - refStringFree) / 10);
   est *= 0.97;
-
   const estimated = Math.max(150, Math.round(est * 10) / 10);
-
-  return {
-    estimated: estimated,
-    breakdown: {
-      base: ibo,
-      adjDrawWt: (drawWt - refDrawWt) * 1.8,
-      adjDrawLen: (drawLen - refDrawLen) * 10,
-      adjArrowWt: -Math.max(0, (totalWt - refArrowWt) / 5),
-      adjString: -Math.max(0, (totalStringAddons - refStringFree) / 10),
-      correction: est * -0.03
-    }
-  };
+  return { estimated };
 }
 
-
-// Updated popup function
 function showFpsMathPopup() {
   const content = $('fpsMathPopupContent');
   const currentFps = parseFloat($('fpsSlider').value);
-
-  // If we just recalculated — show "updated" message
   if (fpsWasRecalculated) {
     const est = calculateEstimatedFPS();
-    const b = est.breakdown;
-
-    content.innerHTML = `
-      <p style="color:var(--success);font-weight:700;">✓ Speed updated to calculated estimate!</p>
-      <p><strong>New FPS:</strong> ${est.estimated.toFixed(1)}</p>
-      <p style="margin-top:0.75rem;"><strong>Breakdown:</strong></p>
-      <ul style="margin-left:1.25rem;font-size:0.9rem;">
-        <li>Base IBO: ${b.base.toFixed(0)} FPS</li>
-        <li>Draw weight: ${b.adjDrawWt > 0 ? '+' : ''}${b.adjDrawWt.toFixed(1)} FPS</li>
-        <li>Draw length: ${b.adjDrawLen > 0 ? '+' : ''}${b.adjDrawLen.toFixed(1)} FPS</li>
-        <li>Arrow weight: ${b.adjArrowWt.toFixed(1)} FPS</li>
-        <li>String add-ons: ${b.adjString.toFixed(1)} FPS</li>
-        <li>Real-world correction: ${b.correction.toFixed(1)} FPS</li>
-      </ul>
-      <p style="margin-top:0.75rem;color:var(--light);font-size:0.9rem;">
-        Your previous value has been replaced with the current estimate.
-      </p>
-    `;
-
-    fpsWasRecalculated = false; // reset for next time
+    content.innerHTML = `<p style="color:var(--success);font-weight:700;">✓ Speed updated to calculated estimate!</p><p><strong>New FPS:</strong> ${est.estimated.toFixed(1)}</p>`;
+    fpsWasRecalculated = false;
     $('fpsMathModal').style.display = 'flex';
     return;
   }
-
-  // Normal view
-  const hasManualFps = !isNaN(currentFps) && currentFps > 0;
-  if (hasManualFps) {
-    content.innerHTML = `
-      <p><strong>Using your chronographed speed:</strong> ${currentFps.toFixed(1)} FPS</p>
-      <p style="margin-top:0.75rem;color:var(--light);">
-        Manual entry overrides estimate — this is the most accurate!
-      </p>
-    `;
-  } else {
-    const est = calculateEstimatedFPS();
-    const b = est.breakdown;
-    content.innerHTML = `
-      <p><strong>Calculated estimate:</strong> ${est.estimated.toFixed(1)} FPS</p>
-      <p style="margin-top:0.75rem;"><strong>Breakdown:</strong></p>
-      <ul style="margin-left:1.25rem;font-size:0.9rem;">
-        <li>Base IBO: ${b.base.toFixed(0)} FPS</li>
-        <li>Draw weight: ${b.adjDrawWt > 0 ? '+' : ''}${b.adjDrawWt.toFixed(1)} FPS</li>
-        <li>Draw length: ${b.adjDrawLen > 0 ? '+' : ''}${b.adjDrawLen.toFixed(1)} FPS</li>
-        <li>Arrow weight: ${b.adjArrowWt.toFixed(1)} FPS</li>
-        <li>String add-ons: ${b.adjString.toFixed(1)} FPS</li>
-        <li>Real-world correction: ${b.correction.toFixed(1)} FPS</li>
-      </ul>
-      <p style="margin-top:0.75rem;color:var(--light);font-size:0.9rem;">
-        No manual FPS entered — using estimate.
-      </p>
-    `;
-  }
+  content.innerHTML = hasManualFps = !isNaN(currentFps) && currentFps > 0 ?
+    `<p><strong>Using your chronographed speed:</strong> ${currentFps.toFixed(1)} FPS</p>` :
+    `<p><strong>Calculated estimate:</strong> ${calculateEstimatedFPS().estimated.toFixed(1)} FPS</p>`;
   $('fpsMathModal').style.display = 'flex';
 }
 
-/* ============================================================= */
-/* MAIN CALCULATION ENGINE – NOW USES SLIDER VALUES              */
-/* ============================================================= */
 function calculateEverything() {
-  // === INPUTS FROM FORM ===
-  const drawWt = parseFloat($('drawWt').value) || 70;
-  const drawLen = parseFloat($('drawLen').value) || 29;
-  const ibo = parseFloat($('ibo').value) || 340;
-  const totalWt = parseFloat($('totalWt').value) || 495;
-  const pointWt = parseFloat($('pointWt').value) || 125;
-  const arrowLen = parseFloat($('arrowLen').value) || 28.5;
-  const balancePt = parseFloat($('balancePt').value) || 17.2;
-  const stringBase = parseFloat($('stringWt').value) || 20;
-  const peepWt = parseFloat($('peepWt').value) || 8;
-  const dloopWt = parseFloat($('dloopWt').value) || 8;
-  const kisserWt = parseFloat($('kisserWt').value) || 0;
-  const silencerWt = parseFloat($('silencerWt').value) || 12;
-  const nockWt = parseFloat($('nockWt').value) || 10;
+  // No calculations needed for this minimal version — just sync sliders
   const windMph = parseFloat($('windSlider').value) || 5;
   const rangeYd = parseFloat($('rangeSlider').value) || 50;
-
-  const totalStringAddons = peepWt + dloopWt + kisserWt + silencerWt + nockWt;
-
-  // === FPS LOGIC – CHRONO OVERRIDES ESTIMATE ===
-  let userFps = parseFloat($('fpsSlider').value);
-  let fpsSource = 'chrono';
-  let estimatedFps = 0;
-  let fpsBreakdown = null;
-
-  if (isNaN(userFps) || userFps <= 0) {
-    // No chrono — calculate estimate
-    fpsSource = 'estimate';
-
-    // Reference IBO conditions
-    const refDrawWt = 70;
-    const refDrawLen = 30;
-    const refArrowWt = 350;
-    const refStringFree = 20; // first 20gr "included" in IBO
-
-    let est = ibo;
-
-    // Draw weight: ~1.8 FPS per lb over/under 70
-    est += (drawWt - refDrawWt) * 1.8;
-
-    // Draw length: ~10 FPS per inch over/under 30"
-    est += (drawLen - refDrawLen) * 10;
-
-    // Arrow weight: ~1 FPS loss per 5gr over 350
-    est -= Math.max(0, (totalWt - refArrowWt) / 5);
-
-    // String add-ons: ~1 FPS loss per 10gr over "free" 20gr
-    est -= Math.max(0, (totalStringAddons - refStringFree) / 10);
-
-    // Real-world correction (IBO is optimistic)
-    est *= 0.97;
-
-    estimatedFps = Math.max(150, Math.round(est * 10) / 10);
-
-    fpsBreakdown = {
-      base: ibo,
-      adjDrawWt: (drawWt - refDrawWt) * 1.8,
-      adjDrawLen: (drawLen - refDrawLen) * 10,
-      adjArrowWt: -Math.max(0, (totalWt - refArrowWt) / 5),
-      adjString: -Math.max(0, (totalStringAddons - refStringFree) / 10),
-      correction: est * -0.03
-    };
-
-    userFps = estimatedFps;
-  }
-
-  const fps = userFps;
-
-  // Sync sliders/inputs
-  $('windSlider').value = windMph;
   $('windInput').value = windMph;
-  $('rangeSlider').value = rangeYd;
   $('rangeInput').value = rangeYd;
-  $('rangeVal').textContent = rangeYd;
-  $('gameDist').textContent = rangeYd;
-  $('barDist').textContent = rangeYd;
-
-  // === CALCULATIONS ===
-  // FOC
-  const midPoint = arrowLen / 2;
-  const foc = ((balancePt - midPoint) / arrowLen) * 100;
-  $('focVal').textContent = foc.toFixed(1);
-
-  // GPP & GPI
-  $('gppVal').textContent = (totalWt / drawWt).toFixed(1);
-  $('gpiVal').textContent = (totalWt / arrowLen).toFixed(1);
-
-  // Velocity retention
-  const retention = Math.pow(0.985, rangeYd / 10);
-  const velImpact = Math.round(fps * retention);
-  $('velLaunch').textContent = fps;
-  $('velImpact').textContent = velImpact;
-  $('velFill').style.width = (retention * 100) + '%';
-
-  // Kinetic Energy
-  const keLaunch = Math.round(totalWt * fps * fps / 450240);
-  const keImpact = Math.round(totalWt * velImpact * velImpact / 450240);
-  $('keLaunch').textContent = keLaunch;
-  $('keImpact').textContent = keImpact;
-  $('keFill').style.width = (keImpact / keLaunch * 100) + '%';
-
-  // Momentum
-  const momLaunch = (totalWt * fps / 225400).toFixed(2);
-  const momImpact = (totalWt * velImpact / 225400).toFixed(2);
-  $('momLaunch').textContent = momLaunch;
-  $('momImpact').textContent = momImpact;
-  $('momFill').style.width = (momImpact / momLaunch * 100) + '%';
-
-  // Game Readiness
-  const gameBands = [
-    {id:'smallRes', ke:15, mom:0.20},
-    {id:'deerRes', ke:25, mom:0.30},
-    {id:'elkRes', ke:42, mom:0.44},
-    {id:'mooseRes', ke:65, mom:0.65}
-  ];
-  gameBands.forEach(b => {
-    const ok = keImpact >= b.ke && parseFloat(momImpact) >= b.mom;
-    const marginal = keImpact >= b.ke * 0.9 || parseFloat(momImpact) >= b.mom * 0.9;
-    $(b.id).textContent = ok ? 'Send it' : marginal ? 'Marginal' : 'No';
-    $(b.id).className = ok ? 'send' : marginal ? 'marginal' : 'no';
-  });
-
-  // Wind Drift
-  $('driftVal').textContent = (0.065 * rangeYd * rangeYd * windMph / totalWt).toFixed(1);
-
-  // Spine Forgiveness
-  const effectiveDw = drawWt + (pointWt / 25) + (arrowLen - 28);
-  const recSpine = Math.round(400 - effectiveDw * 5);
-  const delta = (parseFloat($('spine').value) || 300) - recSpine;
-  let stiffText = 'Ideal';
-  if (delta < -30) stiffText = 'Very Stiff';
-  else if (delta < -10) stiffText = 'Stiff';
-  else if (delta > 30) stiffText = 'Very Weak';
-  else if (delta > 10) stiffText = 'Weak';
-  $('stiffVal').textContent = stiffText;
-
-  // Flight time & peak height
-  const avgVel = (fps + velImpact) / 2;
-  const flightTime = ((rangeYd * 3) / avgVel).toFixed(2);
-  $('flightTime').textContent = flightTime;
-  const peakFt = (fps * fps * 0.5) / 64.4 / 12;
-  $('peakHt').textContent = peakFt.toFixed(1);
-
-  // Trajectory chart
-  const ctx = $('trajChart').getContext('2d');
-  const w = ctx.canvas.width = ctx.canvas.parentElement.clientWidth;
-  const h = ctx.canvas.height = 200;
-  ctx.clearRect(0,0,w,h);
-  ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary');
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.moveTo(0, h-20);
-  for (let x = 0; x <= w; x += 4) {
-    const t = (x / w) * flightTime;
-    const y = h - 20 - (fps * 0.707 * t - 16.1 * t * t) * 8;
-    ctx.lineTo(x, y);
-  }
-  ctx.stroke();
-
-  // Update FPS Estimate Math panel
-  updateFPSMath(fpsSource, estimatedFps, fpsBreakdown, fps);
 }
 
-/* ============================================================= */
-/* FPS MATH helper functions       */
-/* ============================================================= */
-
-
-
-/* EVENT LISTENERS */
-document.querySelectorAll('input, select').forEach(el => {
-  el.addEventListener('input', calculateEverything);
-});
-$('darkToggle').addEventListener('change', e => {
-  document.body.classList.toggle('dark', e.target.checked);
-});
-
-/* COLLAPSIBLE */
-function toggleSection(id) {
-  const trigger = document.querySelector(`[onclick="toggleSection('${id}')"]`);
-  if (trigger) trigger.classList.toggle('open');
-}
-
-/* MOBILE COLLAPSIBLE */
-function toggleMobileCard(cardId) {
-  if (window.innerWidth <= 768) {
-    document.getElementById(cardId).classList.toggle('open');
-  }
-}
-
-/* PWA */
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('data:,').catch(() => {});
-}
-
-/* ============================================================= */
-/* FPS Math Breakdown         */
-/* ============================================================= */
-
-// RECALCULATE + SHOW "updated" popup
 function recalculateAndShowMath() {
   const est = calculateEstimatedFPS();
-  const newFps = est.estimated;
-
-  $('fpsSlider').value = newFps;
-  $('fpsInput').value = newFps;
-
-  fpsWasRecalculated = true; // <-- remember we just recalculated
-
+  $('fpsSlider').value = est.estimated;
+  $('fpsInput').value = est.estimated;
+  fpsWasRecalculated = true;
   calculateEverything();
-
-  showFpsMathPopup(); // open popup — it will see the flag and show "updated" message
+  showFpsMathPopup();
 }
-
 
 function closeFpsMath() {
   $('fpsMathModal').style.display = 'none';
 }
 
-/* ============================================================= */
-/* AI / SAVE / LOAD / DELETE BUILDS – works offline forever           */
-/* ============================================================= */
+function closeModal() {
+  $('aiModal').style.display = 'none';
+}
 
-/* AI MODAL */
-$('aiButton').addEventListener('click', () => $('aiModal').style.display = 'flex');
-function closeModal() { $('aiModal').style.display = 'none'; }
 function sendAi() {
   const msg = $('aiIn').value.trim();
   if (!msg) return;
@@ -934,53 +383,46 @@ function sendAi() {
   $('chatHist').scrollTop = $('chatHist').scrollHeight;
 }
 
-// SUGGEST BUILD NAME BUTTON
-document.getElementById('saveBuild').addEventListener('click', saveBuild); // if not already there
-document.querySelector('.secondary').addEventListener('click', suggestBuildName); // the Suggest button
-
-// SUGGEST BUILD NAME – updated with date, application, and arrow weight
-function suggestBuildName() {
-  // Current date in YYYY-MM-DD
+// Suggest Build Name
+document.querySelector('.secondary').addEventListener('click', () => {
   const today = new Date();
-  const dateStr = today.toISOString().slice(0, 10); // e.g., 2025-12-12
-
-  // Application type
+  const dateStr = today.toISOString().slice(0, 10);
   const appType = $('appType').value.trim() || 'Hunting';
-
-  // Arrow weight
   const arrowWeight = $('totalWt').value.trim() || '???';
-
-  // Bow model and draw weight (for context)
   const bowModel = $('bowModel').value.trim() || 'Bow';
   const drawWt = $('drawWt').value || '??';
-
-  // Smart templates – prioritized by completeness
   const templates = [
     `${dateStr} ${appType} ${bowModel} ${drawWt}# ${arrowWeight}gr`,
     `${dateStr} ${bowModel} ${drawWt}lb ${appType} ${arrowWeight}gr`,
     `${dateStr} ${appType} Build ${arrowWeight}gr`,
     `${dateStr} ${bowModel} ${appType} Setup`
   ];
-
-  // Pick the best one (first without placeholders)
   const best = templates.find(t => !t.includes('??') && !t.includes('???')) || templates[0];
-
-  // Apply to the build name field
   $('buildName').value = best.trim();
+});
+
+// Save / Load / Delete Builds
+function updateLoadDropdown() {
+  const select = $('loadBuild');
+  const builds = JSON.parse(localStorage.getItem('arrowForgeBuilds') || '[]');
+  select.innerHTML = '<option>– Load Build –</option>';
+  builds.sort((a, b) => b.date.localeCompare(a.date)).forEach(build => {
+    const opt = document.createElement('option');
+    opt.value = build.name;
+    opt.textContent = `${build.date} – ${build.name}`;
+    select.appendChild(opt);
+  });
 }
 
-// Save current build
 function saveBuild() {
   const buildName = $('buildName').value.trim();
   if (!buildName) {
     alert('Please enter a Build Name first');
     return;
   }
-
   const buildData = {
     name: buildName,
     date: new Date().toISOString().slice(0,10),
-    // Grab every input value you care about
     appType: $('appType').value,
     bowModel: $('bowModel').value,
     ibo: $('ibo').value,
@@ -1004,29 +446,21 @@ function saveBuild() {
     vaneCount: $('vaneCount').value,
     glueWt: $('glueWt').value,
   };
-
   let builds = JSON.parse(localStorage.getItem('arrowForgeBuilds') || '[]');
-  // Remove old version if exists
   builds = builds.filter(b => b.name !== buildName);
-  // Add new
   builds.push(buildData);
   localStorage.setItem('arrowForgeBuilds', JSON.stringify(builds));
-
   updateLoadDropdown();
   alert(`Build "${buildName}" saved!`);
 }
 
-// Load selected build
 function loadBuild() {
   const select = $('loadBuild');
   const selectedName = select.value;
   if (!selectedName || selectedName === '– Load Build –') return;
-
   const builds = JSON.parse(localStorage.getItem('arrowForgeBuilds') || '[]');
   const build = builds.find(b => b.name === selectedName);
   if (!build) return;
-
-  // Populate all fields
   $('buildName').value = build.name;
   $('appType').value = build.appType || 'Hunting';
   $('bowModel').value = build.bowModel || '';
@@ -1050,12 +484,10 @@ function loadBuild() {
   $('vaneWt').value = build.vaneWt || '8';
   $('vaneCount').value = build.vaneCount || '3';
   $('glueWt').value = build.glueWt || '5';
-
   calculateEverything();
   alert(`Build "${build.name}" loaded!`);
 }
 
-// Delete selected build
 function deleteBuild() {
   const select = $('loadBuild');
   const selectedName = select.value;
@@ -1063,7 +495,6 @@ function deleteBuild() {
     alert('Select a build to delete');
     return;
   }
-
   if (confirm(`Delete "${selectedName}" forever?`)) {
     let builds = JSON.parse(localStorage.getItem('arrowForgeBuilds') || '[]');
     builds = builds.filter(b => b.name !== selectedName);
@@ -1073,34 +504,43 @@ function deleteBuild() {
   }
 }
 
-// Update the dropdown with saved builds
-function updateLoadDropdown() {
-  const select = $('loadBuild');
-  const builds = JSON.parse(localStorage.getItem('arrowForgeBuilds') || '[]');
-
-  // Clear except first option
-  select.innerHTML = '<option>– Load Build –</option>';
-
-  // Sort newest first
-  builds
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .forEach(build => {
-      const opt = document.createElement('option');
-      opt.value = build.name;
-      opt.textContent = `${build.date} – ${build.name}`;
-      select.appendChild(opt);
-    });
+function syncSlider(sliderId, inputId) {
+  const slider = $(sliderId);
+  const input = $(inputId);
+  if (!slider || !input) return;
+  slider.addEventListener('input', () => {
+    input.value = slider.value;
+    calculateEverything(); // optional, if you have calculations
+  });
+  input.addEventListener('input', () => {
+    let val = parseFloat(input.value);
+    if (isNaN(val)) val = slider.min;
+    val = Math.max(slider.min, Math.min(slider.max, val));
+    slider.value = val;
+    input.value = val;
+    calculateEverything();
+  });
 }
 
-// Connect buttons
+// Connect the sliders
+syncSlider('fpsSlider', 'fpsInput');
+syncSlider('windSlider', 'windInput');
+syncSlider('rangeSlider', 'rangeInput');
+
+// Event listeners
+document.querySelectorAll('input, select').forEach(el => {
+  el.addEventListener('input', calculateEverything);
+});
+$('darkToggle').addEventListener('change', e => {
+  document.body.classList.toggle('dark', e.target.checked);
+});
+$('aiButton').addEventListener('click', () => $('aiModal').style.display = 'flex');
 $('saveBuild').addEventListener('click', saveBuild);
 $('loadBuild').addEventListener('change', loadBuild);
 $('deleteBuild').addEventListener('click', deleteBuild);
 
-// Load saved builds into dropdown on page load
+// Init
 updateLoadDropdown();
-
-/* INIT */
 calculateEverything();
 </script>
 </body>
