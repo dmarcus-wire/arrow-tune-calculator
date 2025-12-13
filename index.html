@@ -264,34 +264,6 @@
     color:var(--light); cursor:pointer;
   }
 
-  /* ============================================================= */
-  /* GAME Effectiveness                                            */
-  /* ============================================================= */
-
-  .game-table td {
-  position: relative;
-}
-.game-table .send { font-weight:700; color:var(--success); }
-.game-table .marginal { font-weight:700; color:var(--warning); }
-.game-table .no { font-weight:700; color:var(--danger); }
-
-/* Tooltip on hover (desktop) / tap (mobile) */
-.game-table td:hover::after {
-  content: attr(data-tip);
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--card);
-  border: 1px solid var(--border);
-  padding: 0.5rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  white-space: nowrap;
-  z-index: 10;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
 </style>
 </head>
 <body>
@@ -489,60 +461,18 @@
       </div>
     </div>
 
-    <!-- Game effectiveness table – now with Your KE / Your Mom columns -->
+    <!-- Game effectiveness table -->
     <div class="card">
       <h2>Game Readiness @ <span id="gameDist">50</span> yd</h2>
-      <div style="overflow-x:auto;">
-        <table class="game-table">
-          <thead>
-            <tr>
-              <th>Animal</th>
-              <th style="text-align:center;">Min KE</th>
-              <th style="text-align:center;">Your KE</th>
-              <th style="text-align:center;">Min Mom</th>
-              <th style="text-align:center;">Your Mom</th>
-              <th style="text-align:center;">Result</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Small Game</td>
-              <td style="text-align:center;">15 ft-lbs</td>
-              <td style="text-align:center;" id="smallKE">-</td>
-              <td style="text-align:center;">0.20</td>
-              <td style="text-align:center;" id="smallMom">-</td>
-              <td id="smallRes" class="send">Send it</td>
-            </tr>
-            <tr>
-              <td>Deer / Medium</td>
-              <td style="text-align:center;">25 ft-lbs</td>
-              <td style="text-align:center;" id="deerKE">-</td>
-              <td style="text-align:center;">0.30</td>
-              <td style="text-align:center;" id="deerMom">-</td>
-              <td id="deerRes" class="send">Send it</td>
-            </tr>
-            <tr>
-              <td>Elk / Large</td>
-              <td style="text-align:center;">42 ft-lbs</td>
-              <td style="text-align:center;" id="elkKE">-</td>
-              <td style="text-align:center;">0.44</td>
-              <td style="text-align:center;" id="elkMom">-</td>
-              <td id="elkRes" class="send">Send it</td>
-            </tr>
-            <tr>
-              <td>Moose / Tough</td>
-              <td style="text-align:center;">65 ft-lbs</td>
-              <td style="text-align:center;" id="mooseKE">-</td>
-              <td style="text-align:center;">0.65</td>
-              <td style="text-align:center;" id="mooseMom">-</td>
-              <td id="mooseRes" class="marginal">Marginal</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p style="margin-top:0.75rem;font-size:0.9rem;color:var(--light);text-align:center;">
-        Based on kinetic energy and momentum at impact. Broadhead type and shot placement matter!
-      </p>
+      <table class="game-table">
+        <thead><tr><th>Animal</th><th>Min KE</th><th>Min Mom</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>Small Game</td><td>15 ft-lbs</td><td>0.20</td><td id="smallRes" class="send">Send it</td></tr>
+          <tr><td>Deer</td><td>25 ft-lbs</td><td>0.30</td><td id="deerRes" class="send">Send it</td></tr>
+          <tr><td>Elk</td><td>42 ft-lbs</td><td>0.44</td><td id="elkRes" class="send">Send it</td></tr>
+          <tr><td>Moose/Tough</td><td>65 ft-lbs</td><td>0.65</td><td id="mooseRes" class="marginal">Marginal</td></tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Launch → Impact bars -->
@@ -613,23 +543,28 @@
 
 <script>
 /* ============================================================= */
-/* GLOBAL HELPERS */
+/* GLOBAL HELPERS                                               */
 /* ============================================================= */
 const $ = id => document.getElementById(id);
-let fpsWasRecalculated = false;
+
+// Add this global variable at the top of your script (after const $ = ...)
+let fpsWasRecalculated = false; // tracks if last change was from Recalculate
 
 /* ============================================================= */
-/* SLIDER SYNC — connects sliders to number inputs */
+/* SLIDER SYNC — connects sliders to number inputs               */
 /* ============================================================= */
 function syncSlider(sliderId, inputId) {
   const slider = $(sliderId);
   const input = $(inputId);
+
   if (!slider || !input) return;
+
   slider.addEventListener('input', () => {
     input.value = slider.value;
     if (sliderId === 'rangeSlider') $('rangeVal').textContent = slider.value;
     calculateEverything();
   });
+
   input.addEventListener('input', () => {
     let val = parseFloat(input.value);
     if (isNaN(val)) val = slider.min;
@@ -640,16 +575,17 @@ function syncSlider(sliderId, inputId) {
     calculateEverything();
   });
 }
+
+// Connect FPS, Wind, Range sliders
 syncSlider('fpsSlider', 'fpsInput');
 syncSlider('windSlider', 'windInput');
 syncSlider('rangeSlider', 'rangeInput');
-$('fpsSlider').addEventListener('input', calculateEverything);
-$('windSlider').addEventListener('input', calculateEverything);
-$('rangeSlider').addEventListener('input', calculateEverything);
 
 /* ============================================================= */
-/* FPS ESTIMATE */
+/* FPS CALCULATION BUTTON              */
 /* ============================================================= */
+
+// ROBUST FPS ESTIMATE (your v2 logic – tuned and accurate)
 function calculateEstimatedFPS() {
   const ibo = parseFloat($('ibo').value) || 340;
   const drawWt = parseFloat($('drawWt').value) || 70;
@@ -660,18 +596,28 @@ function calculateEstimatedFPS() {
   const kisserWt = parseFloat($('kisserWt').value) || 0;
   const silencerWt = parseFloat($('silencerWt').value) || 12;
   const nockWt = parseFloat($('nockWt').value) || 10;
+
   const totalStringAddons = peepWt + dloopWt + kisserWt + silencerWt + nockWt;
+
+  // Reference IBO conditions
   const refDrawWt = 70;
   const refDrawLen = 30;
   const refArrowWt = 350;
-  const refStringFree = 20;
+  const refStringFree = 20; // first 20gr "free"
+
   let est = ibo;
-  est += (drawWt - refDrawWt) * 1.8;
-  est += (drawLen - refDrawLen) * 10;
-  est -= Math.max(0, (totalWt - refArrowWt) / 5);
-  est -= Math.max(0, (totalStringAddons - refStringFree) / 10);
+
+  // Adjustments
+  est += (drawWt - refDrawWt) * 1.8;                    // ~1.8 FPS per lb
+  est += (drawLen - refDrawLen) * 10;                   // ~10 FPS per inch
+  est -= Math.max(0, (totalWt - refArrowWt) / 5);       // ~1 FPS loss per 5gr over 350
+  est -= Math.max(0, (totalStringAddons - refStringFree) / 10); // ~1 FPS loss per 10gr over 20
+
+  // Real-world correction (IBO is optimistic)
   est *= 0.97;
+
   const estimated = Math.max(150, Math.round(est * 10) / 10);
+
   return {
     estimated: estimated,
     breakdown: {
@@ -685,15 +631,17 @@ function calculateEstimatedFPS() {
   };
 }
 
-/* ============================================================= */
-/* POPUP */
-/* ============================================================= */
+
+// Updated popup function
 function showFpsMathPopup() {
   const content = $('fpsMathPopupContent');
   const currentFps = parseFloat($('fpsSlider').value);
+
+  // If we just recalculated — show "updated" message
   if (fpsWasRecalculated) {
     const est = calculateEstimatedFPS();
     const b = est.breakdown;
+
     content.innerHTML = `
       <p style="color:var(--success);font-weight:700;">✓ Speed updated to calculated estimate!</p>
       <p><strong>New FPS:</strong> ${est.estimated.toFixed(1)}</p>
@@ -710,10 +658,13 @@ function showFpsMathPopup() {
         Your previous value has been replaced with the current estimate.
       </p>
     `;
-    fpsWasRecalculated = false;
+
+    fpsWasRecalculated = false; // reset for next time
     $('fpsMathModal').style.display = 'flex';
     return;
   }
+
+  // Normal view
   const hasManualFps = !isNaN(currentFps) && currentFps > 0;
   if (hasManualFps) {
     content.innerHTML = `
@@ -745,9 +696,10 @@ function showFpsMathPopup() {
 }
 
 /* ============================================================= */
-/* MAIN CALCULATION ENGINE */
+/* MAIN CALCULATION ENGINE – NOW USES SLIDER VALUES              */
 /* ============================================================= */
 function calculateEverything() {
+  // === INPUTS FROM FORM ===
   const drawWt = parseFloat($('drawWt').value) || 70;
   const drawLen = parseFloat($('drawLen').value) || 29;
   const ibo = parseFloat($('ibo').value) || 340;
@@ -755,6 +707,7 @@ function calculateEverything() {
   const pointWt = parseFloat($('pointWt').value) || 125;
   const arrowLen = parseFloat($('arrowLen').value) || 28.5;
   const balancePt = parseFloat($('balancePt').value) || 17.2;
+  const stringBase = parseFloat($('stringWt').value) || 20;
   const peepWt = parseFloat($('peepWt').value) || 8;
   const dloopWt = parseFloat($('dloopWt').value) || 8;
   const kisserWt = parseFloat($('kisserWt').value) || 0;
@@ -762,15 +715,59 @@ function calculateEverything() {
   const nockWt = parseFloat($('nockWt').value) || 10;
   const windMph = parseFloat($('windSlider').value) || 5;
   const rangeYd = parseFloat($('rangeSlider').value) || 50;
+
   const totalStringAddons = peepWt + dloopWt + kisserWt + silencerWt + nockWt;
 
+  // === FPS LOGIC – CHRONO OVERRIDES ESTIMATE ===
   let userFps = parseFloat($('fpsSlider').value);
+  let fpsSource = 'chrono';
+  let estimatedFps = 0;
+  let fpsBreakdown = null;
+
   if (isNaN(userFps) || userFps <= 0) {
-    const est = calculateEstimatedFPS();
-    userFps = est.estimated;
+    // No chrono — calculate estimate
+    fpsSource = 'estimate';
+
+    // Reference IBO conditions
+    const refDrawWt = 70;
+    const refDrawLen = 30;
+    const refArrowWt = 350;
+    const refStringFree = 20; // first 20gr "included" in IBO
+
+    let est = ibo;
+
+    // Draw weight: ~1.8 FPS per lb over/under 70
+    est += (drawWt - refDrawWt) * 1.8;
+
+    // Draw length: ~10 FPS per inch over/under 30"
+    est += (drawLen - refDrawLen) * 10;
+
+    // Arrow weight: ~1 FPS loss per 5gr over 350
+    est -= Math.max(0, (totalWt - refArrowWt) / 5);
+
+    // String add-ons: ~1 FPS loss per 10gr over "free" 20gr
+    est -= Math.max(0, (totalStringAddons - refStringFree) / 10);
+
+    // Real-world correction (IBO is optimistic)
+    est *= 0.97;
+
+    estimatedFps = Math.max(150, Math.round(est * 10) / 10);
+
+    fpsBreakdown = {
+      base: ibo,
+      adjDrawWt: (drawWt - refDrawWt) * 1.8,
+      adjDrawLen: (drawLen - refDrawLen) * 10,
+      adjArrowWt: -Math.max(0, (totalWt - refArrowWt) / 5),
+      adjString: -Math.max(0, (totalStringAddons - refStringFree) / 10),
+      correction: est * -0.03
+    };
+
+    userFps = estimatedFps;
   }
+
   const fps = userFps;
 
+  // Sync sliders/inputs
   $('windSlider').value = windMph;
   $('windInput').value = windMph;
   $('rangeSlider').value = rangeYd;
@@ -779,63 +776,55 @@ function calculateEverything() {
   $('gameDist').textContent = rangeYd;
   $('barDist').textContent = rangeYd;
 
+  // === CALCULATIONS ===
+  // FOC
   const midPoint = arrowLen / 2;
   const foc = ((balancePt - midPoint) / arrowLen) * 100;
   $('focVal').textContent = foc.toFixed(1);
 
+  // GPP & GPI
   $('gppVal').textContent = (totalWt / drawWt).toFixed(1);
   $('gpiVal').textContent = (totalWt / arrowLen).toFixed(1);
 
+  // Velocity retention
   const retention = Math.pow(0.985, rangeYd / 10);
   const velImpact = Math.round(fps * retention);
   $('velLaunch').textContent = fps;
   $('velImpact').textContent = velImpact;
   $('velFill').style.width = (retention * 100) + '%';
 
+  // Kinetic Energy
   const keLaunch = Math.round(totalWt * fps * fps / 450240);
   const keImpact = Math.round(totalWt * velImpact * velImpact / 450240);
   $('keLaunch').textContent = keLaunch;
   $('keImpact').textContent = keImpact;
   $('keFill').style.width = (keImpact / keLaunch * 100) + '%';
 
+  // Momentum
   const momLaunch = (totalWt * fps / 225400).toFixed(2);
   const momImpact = (totalWt * velImpact / 225400).toFixed(2);
   $('momLaunch').textContent = momLaunch;
   $('momImpact').textContent = momImpact;
   $('momFill').style.width = (momImpact / momLaunch * 100) + '%';
 
-  // Game Readiness — live update with Your KE / Your Mom
+  // Game Readiness
   const gameBands = [
-    {id: 'small', ke: 15, mom: 0.20},
-    {id: 'deer', ke: 25, mom: 0.30},
-    {id: 'elk', ke: 42, mom: 0.44},
-    {id: 'moose', ke: 65, mom: 0.65}
+    {id:'smallRes', ke:15, mom:0.20},
+    {id:'deerRes', ke:25, mom:0.30},
+    {id:'elkRes', ke:42, mom:0.44},
+    {id:'mooseRes', ke:65, mom:0.65}
   ];
-
   gameBands.forEach(b => {
-    const keOk = keImpact >= b.ke;
-    const momOk = parseFloat(momImpact) >= b.mom;
-    const keMarginal = keImpact >= b.ke * 0.9;
-    const momMarginal = parseFloat(momImpact) >= b.mom * 0.9;
-
-    const ok = keOk && momOk;
-    const marginal = (keMarginal && momMarginal) || (keOk && momMarginal) || (momOk && keMarginal);
-
-    const resCell = $(b.id + 'Res');
-    if (resCell) {
-      resCell.textContent = ok ? 'Send it' : marginal ? 'Marginal' : 'Adjust';
-      resCell.className = ok ? 'send' : marginal ? 'marginal' : 'adjust';
-    }
-
-    const keCell = $(b.id + 'KE');
-    if (keCell) keCell.textContent = keImpact.toFixed(1);
-
-    const momCell = $(b.id + 'Mom');
-    if (momCell) momCell.textContent = parseFloat(momImpact).toFixed(2);
+    const ok = keImpact >= b.ke && parseFloat(momImpact) >= b.mom;
+    const marginal = keImpact >= b.ke * 0.9 || parseFloat(momImpact) >= b.mom * 0.9;
+    $(b.id).textContent = ok ? 'Send it' : marginal ? 'Marginal' : 'No';
+    $(b.id).className = ok ? 'send' : marginal ? 'marginal' : 'no';
   });
 
+  // Wind Drift
   $('driftVal').textContent = (0.065 * rangeYd * rangeYd * windMph / totalWt).toFixed(1);
 
+  // Spine Forgiveness
   const effectiveDw = drawWt + (pointWt / 25) + (arrowLen - 28);
   const recSpine = Math.round(400 - effectiveDw * 5);
   const delta = (parseFloat($('spine').value) || 300) - recSpine;
@@ -846,12 +835,14 @@ function calculateEverything() {
   else if (delta > 10) stiffText = 'Weak';
   $('stiffVal').textContent = stiffText;
 
+  // Flight time & peak height
   const avgVel = (fps + velImpact) / 2;
   const flightTime = ((rangeYd * 3) / avgVel).toFixed(2);
   $('flightTime').textContent = flightTime;
   const peakFt = (fps * fps * 0.5) / 64.4 / 12;
   $('peakHt').textContent = peakFt.toFixed(1);
 
+  // Trajectory chart
   const ctx = $('trajChart').getContext('2d');
   const w = ctx.canvas.width = ctx.canvas.parentElement.clientWidth;
   const h = ctx.canvas.height = 200;
@@ -866,50 +857,130 @@ function calculateEverything() {
     ctx.lineTo(x, y);
   }
   ctx.stroke();
+
+  // Update FPS Estimate Math panel
+  updateFPSMath(fpsSource, estimatedFps, fpsBreakdown, fps);
 }
 
 /* ============================================================= */
-/* FPS Math Breakdown */
+/* FPS MATH helper functions       */
 /* ============================================================= */
+
+
+
+/* EVENT LISTENERS */
+document.querySelectorAll('input, select').forEach(el => {
+  el.addEventListener('input', calculateEverything);
+});
+$('darkToggle').addEventListener('change', e => {
+  document.body.classList.toggle('dark', e.target.checked);
+});
+
+/* COLLAPSIBLE */
+function toggleSection(id) {
+  const trigger = document.querySelector(`[onclick="toggleSection('${id}')"]`);
+  if (trigger) trigger.classList.toggle('open');
+}
+
+/* MOBILE COLLAPSIBLE */
+function toggleMobileCard(cardId) {
+  if (window.innerWidth <= 768) {
+    document.getElementById(cardId).classList.toggle('open');
+  }
+}
+
+/* PWA */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('data:,').catch(() => {});
+}
+
+/* ============================================================= */
+/* FPS Math Breakdown         */
+/* ============================================================= */
+
+// RECALCULATE + SHOW "updated" popup
 function recalculateAndShowMath() {
   const est = calculateEstimatedFPS();
   const newFps = est.estimated;
+
   $('fpsSlider').value = newFps;
   $('fpsInput').value = newFps;
-  fpsWasRecalculated = true;
+
+  fpsWasRecalculated = true; // <-- remember we just recalculated
+
   calculateEverything();
-  showFpsMathPopup();
+
+  showFpsMathPopup(); // open popup — it will see the flag and show "updated" message
 }
+
+
 function closeFpsMath() {
   $('fpsMathModal').style.display = 'none';
 }
 
 /* ============================================================= */
-/* AI / SAVE / LOAD / DELETE BUILDS – works offline forever */
+/* AI / SAVE / LOAD / DELETE BUILDS – works offline forever           */
 /* ============================================================= */
-function updateLoadDropdown() {
-  const select = $('loadBuild');
-  const builds = JSON.parse(localStorage.getItem('arrowForgeBuilds') || '[]');
-  select.innerHTML = '<option>– Load Build –</option>';
-  builds
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .forEach(build => {
-      const opt = document.createElement('option');
-      opt.value = build.name;
-      opt.textContent = `${build.date} – ${build.name}`;
-      select.appendChild(opt);
-    });
+
+/* AI MODAL */
+$('aiButton').addEventListener('click', () => $('aiModal').style.display = 'flex');
+function closeModal() { $('aiModal').style.display = 'none'; }
+function sendAi() {
+  const msg = $('aiIn').value.trim();
+  if (!msg) return;
+  $('chatHist').innerHTML += `<p><strong>You:</strong> ${msg}</p>`;
+  $('chatHist').innerHTML += `<p style="color:var(--purple);"><strong>AI:</strong> Got it! Example response...</p>`;
+  $('aiIn').value = '';
+  $('chatHist').scrollTop = $('chatHist').scrollHeight;
 }
 
+// SUGGEST BUILD NAME BUTTON
+document.getElementById('saveBuild').addEventListener('click', saveBuild); // if not already there
+document.querySelector('.secondary').addEventListener('click', suggestBuildName); // the Suggest button
+
+// SUGGEST BUILD NAME – updated with date, application, and arrow weight
+function suggestBuildName() {
+  // Current date in YYYY-MM-DD
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10); // e.g., 2025-12-12
+
+  // Application type
+  const appType = $('appType').value.trim() || 'Hunting';
+
+  // Arrow weight
+  const arrowWeight = $('totalWt').value.trim() || '???';
+
+  // Bow model and draw weight (for context)
+  const bowModel = $('bowModel').value.trim() || 'Bow';
+  const drawWt = $('drawWt').value || '??';
+
+  // Smart templates – prioritized by completeness
+  const templates = [
+    `${dateStr} ${appType} ${bowModel} ${drawWt}# ${arrowWeight}gr`,
+    `${dateStr} ${bowModel} ${drawWt}lb ${appType} ${arrowWeight}gr`,
+    `${dateStr} ${appType} Build ${arrowWeight}gr`,
+    `${dateStr} ${bowModel} ${appType} Setup`
+  ];
+
+  // Pick the best one (first without placeholders)
+  const best = templates.find(t => !t.includes('??') && !t.includes('???')) || templates[0];
+
+  // Apply to the build name field
+  $('buildName').value = best.trim();
+}
+
+// Save current build
 function saveBuild() {
   const buildName = $('buildName').value.trim();
   if (!buildName) {
     alert('Please enter a Build Name first');
     return;
   }
+
   const buildData = {
     name: buildName,
     date: new Date().toISOString().slice(0,10),
+    // Grab every input value you care about
     appType: $('appType').value,
     bowModel: $('bowModel').value,
     ibo: $('ibo').value,
@@ -933,21 +1004,29 @@ function saveBuild() {
     vaneCount: $('vaneCount').value,
     glueWt: $('glueWt').value,
   };
+
   let builds = JSON.parse(localStorage.getItem('arrowForgeBuilds') || '[]');
+  // Remove old version if exists
   builds = builds.filter(b => b.name !== buildName);
+  // Add new
   builds.push(buildData);
   localStorage.setItem('arrowForgeBuilds', JSON.stringify(builds));
+
   updateLoadDropdown();
   alert(`Build "${buildName}" saved!`);
 }
 
+// Load selected build
 function loadBuild() {
   const select = $('loadBuild');
   const selectedName = select.value;
   if (!selectedName || selectedName === '– Load Build –') return;
+
   const builds = JSON.parse(localStorage.getItem('arrowForgeBuilds') || '[]');
   const build = builds.find(b => b.name === selectedName);
   if (!build) return;
+
+  // Populate all fields
   $('buildName').value = build.name;
   $('appType').value = build.appType || 'Hunting';
   $('bowModel').value = build.bowModel || '';
@@ -971,10 +1050,12 @@ function loadBuild() {
   $('vaneWt').value = build.vaneWt || '8';
   $('vaneCount').value = build.vaneCount || '3';
   $('glueWt').value = build.glueWt || '5';
+
   calculateEverything();
   alert(`Build "${build.name}" loaded!`);
 }
 
+// Delete selected build
 function deleteBuild() {
   const select = $('loadBuild');
   const selectedName = select.value;
@@ -982,6 +1063,7 @@ function deleteBuild() {
     alert('Select a build to delete');
     return;
   }
+
   if (confirm(`Delete "${selectedName}" forever?`)) {
     let builds = JSON.parse(localStorage.getItem('arrowForgeBuilds') || '[]');
     builds = builds.filter(b => b.name !== selectedName);
@@ -991,43 +1073,34 @@ function deleteBuild() {
   }
 }
 
-/* ============================================================= */
-/* EVENT LISTENERS */
-/* ============================================================= */
-document.querySelectorAll('input, select').forEach(el => {
-  el.addEventListener('input', calculateEverything);
-  el.addEventListener('change', calculateEverything);
-});
-$('darkToggle').addEventListener('change', e => {
-  document.body.classList.toggle('dark', e.target.checked);
-});
-/* COLLAPSIBLE */
-function toggleSection(id) {
-  const trigger = document.querySelector(`[onclick="toggleSection('${id}')"]`);
-  if (trigger) trigger.classList.toggle('open');
-}
-/* MOBILE COLLAPSIBLE */
-function toggleMobileCard(cardId) {
-  if (window.innerWidth <= 768) {
-    document.getElementById(cardId).classList.toggle('open');
-  }
-}
-/* PWA */
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('data:,').catch(() => {});
+// Update the dropdown with saved builds
+function updateLoadDropdown() {
+  const select = $('loadBuild');
+  const builds = JSON.parse(localStorage.getItem('arrowForgeBuilds') || '[]');
+
+  // Clear except first option
+  select.innerHTML = '<option>– Load Build –</option>';
+
+  // Sort newest first
+  builds
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .forEach(build => {
+      const opt = document.createElement('option');
+      opt.value = build.name;
+      opt.textContent = `${build.date} – ${build.name}`;
+      select.appendChild(opt);
+    });
 }
 
-/* ============================================================= */
-/* BUTTONS */
-/* ============================================================= */
+// Connect buttons
 $('saveBuild').addEventListener('click', saveBuild);
 $('loadBuild').addEventListener('change', loadBuild);
 $('deleteBuild').addEventListener('click', deleteBuild);
 
-/* ============================================================= */
-/* INIT */
-/* ============================================================= */
+// Load saved builds into dropdown on page load
 updateLoadDropdown();
+
+/* INIT */
 calculateEverything();
 </script>
 </body>
