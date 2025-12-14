@@ -242,6 +242,15 @@
       background:rgba(34,197,94,0.25);
       border-radius:999px;
     }
+
+    .totalwt-sweet-spot {
+      position:absolute;
+      top:0; left:31.58%; /* 350 on 50-1000 scale = ~31.58% */
+      width:21.05%; /* 200 unit range (550-350) = ~21.05% of bar */
+      height:100%;
+      background:rgba(34,197,94,0.25);
+      border-radius:999px;
+    }
   </style>
 </head>
 <body>
@@ -471,6 +480,25 @@
               </div>
               <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-weight:700; font-size:1rem; color:var(--text); pointer-events:none;">
                 <span id="gpiValue">0.0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+                <!-- Total Arrow Weight -->
+        <div class="stat-item">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <strong>Total Wt</strong>
+              <button onclick="showTotalWtPopup()" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--primary);padding:0;" title="Explain Total Weight">ⓘ</button>
+            </div>
+            <div style="flex:1; position:relative;">
+              <div class="bar" style="height:16px;">
+                <div class="bar-fill" id="totalWtFill" style="width:0%; background:var(--primary); height:100%; transition:width 0.3s ease;"></div>
+                <div class="totalwt-sweet-spot"></div> <!-- 350–550 highlight -->
+              </div>
+              <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-weight:700; font-size:1rem; color:var(--text); pointer-events:none;">
+                <span id="totalWtValue">0</span> gr
               </div>
             </div>
           </div>
@@ -738,6 +766,33 @@ function showGpiPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+function showTotalWtPopup() {
+  const totalWt = parseFloat($('totalWt').value) || 495; // <-- add this line
+
+  const content = $('gameMathContent');
+  content.innerHTML = `
+    <p><strong>Total Arrow Weight (TW) Math</strong></p>
+    <p>TW is your finished arrow weight in grains — shaft, components, and point all added together. This is the number that drives almost every other output in the app.</p>
+    <p><strong>Your build:</strong></p>
+    <p>Total Arrow Weight = <strong>${totalWt.toFixed(1)} grains</strong></p>
+    <hr>
+    <p>This same TW value is reused in:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>GPP (grains per pound)</li>
+      <li>GPI (grains per inch)</li>
+      <li>Launch KE and Impact KE</li>
+      <li>Momentum and Game Effectiveness</li>
+      <li>The Arrow Weight Composition bar</li>
+    </ul>
+    <hr>
+    <p style="font-size:0.9rem;color:var(--light);">
+      If this number is off, every downstream calculation will be off with it — so TW is the most important value to get as close as possible to your real, finished arrow.
+    </p>
+  `;
+
+  $('gameMathModal').style.display = 'flex';
+}
+
 function calculateEverything() {
   // Parse all inputs first
   const drawWt = parseFloat($('drawWt').value) || 70;
@@ -781,6 +836,12 @@ function calculateEverything() {
   const gpiPercent = ((gpiClamped - 0) / 20 * 100); // 0 = 0%, 20 = 100%
   $('gpiFill').style.width = gpiPercent + '%';
   $('gpiValue').textContent = gpi.toFixed(1);
+
+  // === Total Arrow Weight Progress Bar ===
+  const totalWtClamped = Math.max(50, Math.min(1000, totalWt));
+  const totalWtPercent = ((totalWtClamped - 50) / 950 * 100); // 50 = 0%, 1000 = 100%
+  $('totalWtFill').style.width = totalWtPercent + '%';
+  $('totalWtValue').textContent = Math.round(totalWt);
 
   // === Game Effectiveness ===
   const k = 0.532;
