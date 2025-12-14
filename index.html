@@ -195,7 +195,7 @@
     .marginal { color:var(--warning); font-weight:700; }
     .adjust { color:var(--danger); font-weight:700; }
   
-  .stats-list { display:flex; flex-direction:column; gap:1.5rem; }
+  .stats-list { display:flex; flex-direction:column; gap:0.75rem; }
   .stat-item { }
     .bar {
       height:12px;
@@ -220,7 +220,7 @@
     .bar-labels {
       display:flex;
       justify-content:space-between;
-      margin-top:0.3rem;
+      margin-top:0.2rem;
       font-size:0.85rem;
       color:var(--light);
     }
@@ -247,6 +247,15 @@
       position:absolute;
       top:0; left:31.58%; /* 350 on 50-1000 scale = ~31.58% */
       width:21.05%; /* 200 unit range (550-350) = ~21.05% of bar */
+      height:100%;
+      background:rgba(34,197,94,0.25);
+      border-radius:999px;
+    }
+
+    .stiffness-sweet-spot {
+      position:absolute;
+      top:0; left:40%;
+      width:20%;
       height:100%;
       background:rgba(34,197,94,0.25);
       border-radius:999px;
@@ -315,7 +324,7 @@
       <h2 style="margin:0 0 0.75rem 0;">Arrow</h2>
       <div class="card-content">
         <div class="input-row"><label for="arrowName">Name</label><input type="text" id="arrowName" placeholder="Victory VAP TKO"></div>
-        <div class="input-row"><label for="spine">Spine</label><input type="number" id="spine" value="300"></div>
+        <div class="input-row"><label for="spine">Spine</label><input type="number" id="spine" value="300" min="100" max="600" step="50"></div>
         <div class="input-row"><label for="arrowLen">Length in</label><input type="number" id="arrowLen" value="28.5" step="0.1"></div>
         <div class="input-row"><label for="totalWt">Total weight gr</label><input type="number" id="totalWt" value="495" step="0.5"></div>
         <div class="input-row"><label for="pointWt">Point weight gr</label><input type="number" id="pointWt" value="125"></div>
@@ -499,6 +508,25 @@
               </div>
               <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-weight:700; font-size:1rem; color:var(--text); pointer-events:none;">
                 <span id="totalWtValue">0</span> gr
+              </div>
+            </div>
+          </div>
+        </div>
+
+                <!-- Stiffness / Forgiveness -->
+        <div class="stat-item">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <strong>Stiffness</strong>
+              <button onclick="showStiffnessPopup()" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--primary);padding:0;" title="Explain Stiffness / Forgiveness">ⓘ</button>
+            </div>
+            <div style="flex:1; position:relative;">
+              <div class="bar" style="height:16px;">
+                <div class="bar-fill" id="stiffnessFill" style="width:0%; background:var(--primary); height:100%; transition:width 0.3s ease;"></div>
+                <div class="stiffness-sweet-spot"></div> <!-- Good zone in center -->
+              </div>
+              <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-weight:700; font-size:1rem; color:var(--text); pointer-events:none;">
+                <span id="stiffnessValue">Good</span>
               </div>
             </div>
           </div>
@@ -793,6 +821,66 @@ function showTotalWtPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+function showStiffnessPopup() {
+  const drawWt = parseFloat($('drawWt').value) || 70;
+  const arrowLen = parseFloat($('arrowLen').value) || 28.5;
+  const pointWt = parseFloat($('pointWt').value) || 125;
+  const totalWt = parseFloat($('totalWt').value) || 495;
+  const actualSpine = parseFloat($('spine').value) || 300;
+
+  const lengthFactor = (arrowLen - 28) * 2.5;
+  const pointFactor = (pointWt - 100) * 0.15;
+  const weightFactor = (totalWt - 400) * 0.05;
+  const effectiveLoad = Math.round(drawWt + lengthFactor + pointFactor + weightFactor);
+
+  const recommendedCenter = Math.max(200, Math.min(500, 600 - effectiveLoad * 5));
+  const spineDiff = actualSpine - recommendedCenter;
+
+  let status = 'Good';
+  if (spineDiff > 50) status = 'Weak';
+  else if (spineDiff < -50) status = 'Stiff';
+
+  const content = $('gameMathContent');
+  content.innerHTML = `
+    <p><strong>Stiffness / Forgiveness Math</strong></p>
+    <p>This badge compares your actual arrow spine to a recommended spine band built from draw weight, arrow length, point weight, and finished arrow weight — similar in spirit to a modernized Easton-style chart.</p>
+    <hr>
+    <p><strong>1) Build an “effective draw weight”</strong></p>
+    <p>The calculator starts from your real draw weight and adds tuned bumps for:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Longer arrows (more leverage on the shaft)</li>
+      <li>Heavier points (more load out front)</li>
+      <li>Overall finished arrow weight</li>
+    </ul>
+    <p>Your inputs for this build are:</p>
+    <p>• Draw weight ≈ ${drawWt.toFixed(1)} lb</p>
+    <p>• Arrow length ≈ ${arrowLen.toFixed(2)} in</p>
+    <p>• Point weight ≈ ${pointWt} gr</p>
+    <p>• Total arrow weight ≈ ${totalWt.toFixed(1)} gr</p>
+    <p>Those are combined into a single load number the shaft “feels”:<br>
+    <strong>effective draw weight ≈ ${effectiveLoad} lb</strong></p>
+    <hr>
+    <p><strong>2) Map effective draw weight → spine band</strong></p>
+    <p>That effective load is then mapped to a static spine band — lighter loads want weaker shafts (higher spine numbers), heavier loads want stiffer shafts (lower spine numbers).</p>
+    <p>Recommended spine band center ≈ <strong>${recommendedCenter}</strong></p>
+    <hr>
+    <p><strong>3) Compare your spine to the chart recommendation</strong></p>
+    <p>• Your actual spine = ${actualSpine}</p>
+    <p>• Recommended center spine = ${recommendedCenter}</p>
+    <p>• Difference = ${actualSpine} − ${recommendedCenter} = ${spineDiff}</p>
+    <p><strong>Result: ${status}</strong></p>
+    <hr>
+    <p style="font-size:0.9rem;color:var(--light);">
+      <strong>Good</strong> — Your actual spine is very close to the recommended number. Tuning should be straightforward.<br>
+      <strong>Adjust (Stiff)</strong> — Arrow is too stiff (lower spine number than recommended). Add point weight or move to weaker spine.<br>
+      <strong>Adjust (Weak)</strong> — Arrow is too weak (higher spine number than recommended). Shorten arrow or move to stiffer spine.<br><br>
+      This doesn’t replace paper tuning or broadhead flight testing, but it gives a fast “does this shaft live in the right neighborhood?” sanity check.
+    </p>
+  `;
+
+  $('gameMathModal').style.display = 'flex';
+}
+
 function calculateEverything() {
   // Parse all inputs first
   const drawWt = parseFloat($('drawWt').value) || 70;
@@ -801,6 +889,8 @@ function calculateEverything() {
   const rangeYd = parseFloat($('rangeSlider').value) || 50;
   const arrowLen = parseFloat($('arrowLen').value) || 28.5;
   const balancePt = parseFloat($('balancePt').value) || 17.2;
+  // For the Total Weight
+  const pointWt = parseFloat($('pointWt').value) || 125;
 
   let userFps = parseFloat($('fpsSlider').value);
   if (isNaN(userFps) || userFps <= 0) {
@@ -877,8 +967,46 @@ function calculateEverything() {
       resCell.className = 'adjust';
     }
   });
-  console.log('GPP:', totalWt / drawWt, 'Width:', ((totalWt / drawWt - 5) / 5 * 100) + '%');
-  console.log('GPI:', totalWt / arrowLen, 'Width:', ((totalWt / arrowLen - 5) / 10 * 100) + '%');
+
+    // === Stiffness / Forgiveness ===
+  const actualSpine = parseFloat($('spine').value) || 300;
+
+  // Effective load calculation (tuned constants for Easton-style chart feel)
+  const baseLoad = drawWt;
+  const lengthFactor = (arrowLen - 28) * 2.5; // longer arrow = more load
+  const pointFactor = (pointWt - 100) * 0.15; // heavier point = more load
+  const weightFactor = (totalWt - 400) * 0.05; // heavier arrow = slight more load
+  const effectiveLoad = Math.round(baseLoad + lengthFactor + pointFactor + weightFactor);
+
+  // Map effective load to recommended spine center (tuned to match Easton charts)
+  const recommendedCenter = Math.max(200, Math.min(500, 600 - effectiveLoad * 5));
+
+  // Difference: positive = weak, negative = stiff
+  const spineDiff = actualSpine - recommendedCenter;
+
+  // Determine status and bar position
+  let status = 'Good';
+  let percent = 50; // center
+
+  if (spineDiff > 50) {
+    status = 'Weak';
+    percent = 75 + (spineDiff - 50) / 2; // push right
+  } else if (spineDiff < -50) {
+    status = 'Stiff';
+    percent = 25 + (spineDiff + 50) / 2; // push left
+  } else if (spineDiff > 0) {
+    status = 'Good';
+    percent = 50 + spineDiff / 2;
+  } else {
+    status = 'Good';
+    percent = 50 + spineDiff / 2;
+  }
+
+  percent = Math.max(0, Math.min(100, percent));
+
+  $('stiffnessFill').style.width = percent + '%';
+  $('stiffnessValue').textContent = status;
+  
 }
 
 function closeFpsMath() {
