@@ -483,17 +483,25 @@ function showGameMathPopup() {
     <p><strong>Arrow Weight:</strong> ${totalWt} gr</p>
     <p><strong>Range:</strong> ${rangeYd} yd</p>
     <hr>
-    <p><strong>Velocity Retention Model:</strong> exp(-k × range / weight)</p>
+    <p><strong>Velocity Retention Model:</strong></p>
+    <p>retention = e^(-k × range / weight)</p>
     <p>k = 0.532 (calibrated for typical hunting arrows)</p>
     <p>Retention = ${retention.toFixed(3)} (${(retention * 100).toFixed(1)}%)</p>
     <p><strong>Impact Velocity:</strong> ${velImpact} fps</p>
     <hr>
-    <p><strong>Impact KE:</strong> ${keImpact.toFixed(1)} ft-lbs<br>
-    KE = (weight × velocity²) / 450240</p>
-    <p><strong>Impact Momentum:</strong> ${momImpact.toFixed(3)} slug·ft/s<br>
-    Momentum = (weight × velocity) / 225400</p>
+    <p><strong>Impact KE:</strong> ${keImpact.toFixed(1)} ft-lbs</p>
+    <p>KE = (weight × velocity²) / 450240</p>
+    <p>KE = (${totalWt} × ${velImpact}²) / 450240</p>
+    <hr>
+    <p><strong>Impact Momentum:</strong> ${momImpact.toFixed(3)} slug·ft/s</p>
+    <p>Momentum = (weight × velocity) / 225400</p>
+    <p>Momentum = (${totalWt} × ${velImpact}) / 225400</p>
     <hr>
     <p style="font-size:0.9rem;color:var(--light);">
+      <strong>Where do the constants come from?</strong><br>
+      • 450240 = 2 × 32.174 × 7000 (converts grain·fps² to ft-lbs)<br>
+      • 225400 = 450240 / 2 (for momentum in slug·ft/s)<br>
+      • k = 0.532 is calibrated from real-world hunting arrow data (350–500gr arrows, typical shafts/broadheads).<br><br>
       This is an approximation using arrow mass for drag resistance.<br>
       Real-world results vary with arrow diameter, broadhead, fletching, and air density.
     </p>
