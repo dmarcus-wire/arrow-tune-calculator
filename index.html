@@ -260,6 +260,15 @@
       background:rgba(34,197,94,0.25);
       border-radius:999px;
     }
+
+    .flatness-sweet-spot {
+      position:absolute;
+      top:0; left:33.33%; /* Flat + Very Flat zone (33–100%) */
+      width:66.67%;
+      height:100%;
+      background:rgba(34,197,94,0.25);
+      border-radius:999px;
+    }
   </style>
 </head>
 <body>
@@ -513,7 +522,7 @@
           </div>
         </div>
 
-                <!-- Stiffness / Forgiveness -->
+        <!-- Stiffness / Forgiveness -->
         <div class="stat-item">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
             <div style="display:flex; align-items:center; gap:0.75rem;">
@@ -527,6 +536,28 @@
               </div>
               <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-weight:700; font-size:1rem; color:var(--text); pointer-events:none;">
                 <span id="stiffnessValue">Good</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Flatness Score -->
+        <div class="stat-item">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <strong>Flatness (20→60 yd)</strong>
+              <button onclick="showFlatnessPopup()" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--primary);padding:0;" title="Explain Flatness Score">ⓘ</button>
+            </div>
+            <div style="flex:1; position:relative;">
+              <!-- Bar + Labels container -->
+              <div style="position:relative;">
+                <div class="bar" style="height:16px;">
+                  <div class="bar-fill" id="flatnessFill" style="width:0%; background:var(--primary); height:100%; transition:width 0.3s ease;"></div>
+                  <div class="flatness-sweet-spot"></div>
+                </div>
+              </div>
+              <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-weight:700; font-size:1rem; color:var(--text); pointer-events:none;">
+                <span id="flatnessValue">Flat</span>
               </div>
             </div>
           </div>
@@ -881,6 +912,56 @@ function showStiffnessPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+function showFlatnessPopup() {
+  let currentFps = parseFloat($('fpsSlider').value);
+  if (isNaN(currentFps) || currentFps <= 0) {
+    const est = calculateEstimatedFPS();
+    currentFps = est.estimated;
+  }
+  const fps = currentFps; // now available
+
+  const g = 32.174;
+  const t20 = 20 * 3 / fps;
+  const t60 = 60 * 3 / fps;
+  const drop20 = 0.5 * g * t20 * t20 * 12;
+  const drop60 = 0.5 * g * t60 * t60 * 12;
+  const extraDropInches = drop60 - drop20;
+  const arcHeightFt = extraDropInches / 12;
+
+  let status = 'Curved';
+  if (arcHeightFt < 3) status = 'Very Flat';
+  else if (arcHeightFt <= 4.5) status = 'Flat';
+
+  const content = $('gameMathContent');
+  content.innerHTML = `
+    <p><strong>Flatness Score (20→60 yd) Math</strong></p>
+    <p>Flatness looks at how tall your arc needs to be by 60 yards when you are zeroed at 20 yards.</p>
+    <hr>
+    <p><strong>1) Compute gravity drop at 20 and 60 yd</strong></p>
+    <p>Using your launch FPS ≈ ${fps.toFixed(0)} fps</p>
+    <p>Drop at 20 yd ≈ ${drop20.toFixed(1)} in</p>
+    <p>Drop at 60 yd ≈ ${drop60.toFixed(1)} in</p>
+    <hr>
+    <p><strong>2) Re-anchor to your 20 yd zero</strong></p>
+    <p>Extra drop 20 → 60 yd = ${extraDropInches.toFixed(1)} in</p>
+    <hr>
+    <p><strong>3) Convert extra drop into effective arc height</strong></p>
+    <p>Height ≈ extra drop ÷ 12 = <strong>${arcHeightFt.toFixed(2)} ft</strong></p>
+    <hr>
+    <p><strong>4) Map height → Flatness label</strong></p>
+    <p>Your current build falls into: <strong>${status}</strong></p>
+    <p>• Very Flat → effective arc < ~3 ft</p>
+    <p>• Flat → ~3–4.5 ft</p>
+    <p>• Curved → > ~4.5 ft</p>
+    <hr>
+    <p style="font-size:0.9rem;color:var(--light);">
+      Use this to compare builds — it isn’t meant to be exact sight tape data, just a feel for how “flat” the rig is by 60 yards with your current FPS.
+    </p>
+  `;
+
+  $('gameMathModal').style.display = 'flex';
+}
+
 function calculateEverything() {
   // Parse all inputs first
   const drawWt = parseFloat($('drawWt').value) || 70;
@@ -1006,6 +1087,33 @@ function calculateEverything() {
 
   $('stiffnessFill').style.width = percent + '%';
   $('stiffnessValue').textContent = status;
+
+    // === Flatness Score (20→60 yd) ===
+  const g = 32.174; // gravity ft/s²
+  const t20 = 20 * 3 / fps; // time to 20 yd (yd to ft)
+  const t60 = 60 * 3 / fps; // time to 60 yd
+  const drop20 = 0.5 * g * t20 * t20 * 12; // inches
+  const drop60 = 0.5 * g * t60 * t60 * 12; // inches
+  const extraDropInches = drop60 - drop20;
+  const arcHeightFt = extraDropInches / 12;
+
+  let flatnessStatus = 'Curved';
+  let flatnessPercent = 100; // default Curved
+
+  if (arcHeightFt < 3) {
+    flatnessStatus = 'Very Flat';
+    flatnessPercent = 0;
+  } else if (arcHeightFt <= 4.5) {
+    flatnessStatus = 'Flat';
+    flatnessPercent = (arcHeightFt - 3) / 1.5 * 33.33 + 66.67; // map 3–4.5 ft to 66.67–100%
+  } else {
+    flatnessPercent = 100 - Math.min(66.67, (arcHeightFt - 4.5) / 3 * 66.67); // >4.5 ft pushes left from 66.67%
+  }
+
+  flatnessPercent = Math.max(0, Math.min(100, flatnessPercent));
+
+  $('flatnessFill').style.width = flatnessPercent + '%';
+  $('flatnessValue').textContent = flatnessStatus;
   
 }
 
