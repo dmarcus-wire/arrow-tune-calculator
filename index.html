@@ -506,13 +506,13 @@ function calculateEverything() {
   // Update game distance
   $('gameDist').textContent = rangeYd;
 
-  // Calculate impact values
-  const retention = Math.pow(0.985, rangeYd / 10);
+  // === Game Effectiveness ===
+  const k = 0.532; // Calibrated constant for hunting arrows (based on typical Cd, rho, A)
+  const retention = Math.exp(- (k * rangeYd) / totalWt); // Better model: retention depends on mass
   const velImpact = Math.round(fps * retention);
   const keImpact = Math.round(totalWt * velImpact * velImpact / 450240);
   const momImpact = parseFloat((totalWt * velImpact / 225400).toFixed(3));
 
-  // Game Effectiveness
   const classes = [
     {id: 'small', keMin: 15, momMin: 0.20},
     {id: 'deer', keMin: 25, momMin: 0.30},
