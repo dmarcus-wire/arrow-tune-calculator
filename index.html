@@ -188,6 +188,12 @@
       background:none; border:none; font-size:1.8rem;
       color:var(--light); cursor:pointer;
     }
+  .game-table { width:100%; border-collapse:collapse; font-size:0.95rem; margin-top:0.5rem; }
+    .game-table th, .game-table td { padding:0.5rem; text-align:center; border-bottom:1px solid var(--border); }
+    .game-table th { background:var(--border); font-weight:600; }
+    .send { color:var(--success); font-weight:700; }
+    .marginal { color:var(--warning); font-weight:700; }
+    .adjust { color:var(--danger); font-weight:700; }
   </style>
 </head>
 <body>
@@ -302,6 +308,61 @@
           <input type="number" id="rangeInput" value="0" min="5" max="150" style="width:70px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
         </div>
       </div>
+    </div>
+        <!-- Game Effectiveness card -->
+    <div class="card">
+      <h2>Game Effectiveness @ <span id="gameDist">50</span> yd</h2>
+      <div style="overflow-x:auto;">
+        <table class="game-table">
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>KE Min (ft-lbs)</th>
+              <th>Mom Min</th>
+              <th>Your KE</th>
+              <th>Your Mom</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Small Game</td>
+              <td>15+</td>
+              <td>0.20+</td>
+              <td id="smallKE">-</td>
+              <td id="smallMom">-</td>
+              <td id="smallRes" class="send">Send it</td>
+            </tr>
+            <tr>
+              <td>Deer / Antelope</td>
+              <td>25+</td>
+              <td>0.30+</td>
+              <td id="deerKE">-</td>
+              <td id="deerMom">-</td>
+              <td id="deerRes" class="send">Send it</td>
+            </tr>
+            <tr>
+              <td>Elk / Large Game</td>
+              <td>42+</td>
+              <td>0.45+</td>
+              <td id="elkKE">-</td>
+              <td id="elkMom">-</td>
+              <td id="elkRes" class="send">Send it</td>
+            </tr>
+            <tr>
+              <td>Toughest Game</td>
+              <td>65+</td>
+              <td>0.60+</td>
+              <td id="mooseKE">-</td>
+              <td id="mooseMom">-</td>
+              <td id="mooseRes" class="marginal">Marginal</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:0.75rem;font-size:0.9rem;color:var(--light);text-align:center;">
+        Based on kinetic energy and momentum at impact. Broadhead type and shot placement matter!
+      </p>
     </div>
   </div>
 </div>
@@ -425,11 +486,60 @@ function closeFpsMath() {
 }
 
 function calculateEverything() {
-  // No calculations needed for this minimal version — just sync sliders
+  const drawWt = parseFloat($('drawWt').value) || 70;
+  const totalWt = parseFloat($('totalWt').value) || 495;
   const windMph = parseFloat($('windSlider').value) || 0;
   const rangeYd = parseFloat($('rangeSlider').value) || 50;
+
+  let userFps = parseFloat($('fpsSlider').value);
+  if (isNaN(userFps) || userFps <= 0) {
+    const est = calculateEstimatedFPS();
+    userFps = est.estimated;
+  }
+  const fps = userFps;
+
+  // Sync number inputs
   $('windInput').value = windMph;
   $('rangeInput').value = rangeYd;
+  $('fpsInput').value = fps;
+
+  // Update game distance
+  $('gameDist').textContent = rangeYd;
+
+  // Calculate impact values
+  const retention = Math.pow(0.985, rangeYd / 10);
+  const velImpact = Math.round(fps * retention);
+  const keImpact = Math.round(totalWt * velImpact * velImpact / 450240);
+  const momImpact = parseFloat((totalWt * velImpact / 225400).toFixed(3));
+
+  // Game Effectiveness
+  const classes = [
+    {id: 'small', keMin: 15, momMin: 0.20},
+    {id: 'deer', keMin: 25, momMin: 0.30},
+    {id: 'elk', keMin: 42, momMin: 0.45},
+    {id: 'moose', keMin: 65, momMin: 0.60}
+  ];
+
+  classes.forEach(c => {
+    const keOk = keImpact >= c.keMin;
+    const momOk = momImpact >= c.momMin;
+    const bothOk = keOk && momOk;
+
+    $(`${c.id}KE`).textContent = `${keImpact.toFixed(1)} ${keOk ? '(✓)' : '(×)'}`;
+    $(`${c.id}Mom`).textContent = `${momImpact.toFixed(3)} ${momOk ? '(✓)' : '(×)'}`;
+
+    const resCell = $(`${c.id}Res`);
+    if (bothOk) {
+      resCell.textContent = 'Send it';
+      resCell.className = 'send';
+    } else if (keOk || momOk) {
+      resCell.textContent = 'Marginal';
+      resCell.className = 'marginal';
+    } else {
+      resCell.textContent = 'Adjust';
+      resCell.className = 'adjust';
+    }
+  });
 }
 
 function closeFpsMath() {
