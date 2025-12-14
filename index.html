@@ -194,6 +194,36 @@
     .send { color:var(--success); font-weight:700; }
     .marginal { color:var(--warning); font-weight:700; }
     .adjust { color:var(--danger); font-weight:700; }
+  
+    .stats-list { display:flex; flex-direction:column; gap:1.5rem; }
+  .stat-item { }
+  .bar {
+    height:12px;
+    border-radius:999px;
+    background:var(--border);
+    position:relative;
+    overflow:hidden;
+  }
+  .bar-fill {
+    height:100%;
+    border-radius:999px;
+    transition:width 0.3s ease;
+  }
+  .sweet-spot {
+    position:absolute;
+    top:0; left:40%; /* 12% of 30% scale = 40% position */
+    width:20%; /* 6% range (18-12) = 20% of bar */
+    height:100%;
+    background:rgba(34,197,94,0.25);
+    border-radius:999px;
+  }
+  .bar-labels {
+    display:flex;
+    justify-content:space-between;
+    margin-top:0.3rem;
+    font-size:0.85rem;
+    color:var(--light);
+  }
   </style>
 </head>
 <body>
@@ -211,7 +241,7 @@
           <button id="aiButton" class="btn-small" style="background:var(--purple);">AI Advisor</button>
         </div>
       </div>
-      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.4</p>
+      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.5</p>
     </div>
     <div class="card">
       <h2>Build</h2>
@@ -309,7 +339,7 @@
         </div>
       </div>
     </div>
-        <!-- Game Effectiveness card -->
+    <!-- Game Effectiveness card -->
     <div class="card">
       <h2 style="display:flex; align-items:center; gap:0.75rem;">
         Game Effectiveness @ <span id="gameDist">50</span> yd
@@ -366,6 +396,32 @@
       <p style="margin-top:0.75rem;font-size:0.9rem;color:var(--light);text-align:center;">
         Based on kinetic energy and momentum at impact. Broadhead type and shot placement matter!
       </p>
+    </div>
+    <!-- Quick Stats – Progress Bars -->
+    <div class="card">
+      <h2>Quick Stats</h2>
+      <div class="stats-list">
+        <!-- FOC -->
+        <div class="stat-item">
+          <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.5rem;">
+            <strong>FOC %</strong>
+            <button onclick="showFocPopup()" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--primary);padding:0;" title="Explain FOC">ⓘ</button>
+          </div>
+          <div class="bar" style="position:relative;">
+            <div class="bar-fill" id="focFill" style="width:0%; background:var(--primary);"></div>
+            <div class="sweet-spot"></div> <!-- 12–18% highlight -->
+          </div>
+          <div class="bar-labels">
+            <span>0%</span>
+            <span>12%</span>
+            <span>18%</span>
+            <span>30%</span>
+          </div>
+          <p style="text-align:center; margin-top:0.5rem;"><strong id="focValue">0.0%</strong></p>
+        </div>
+
+        <!-- Add more stats here later -->
+      </div>
     </div>
   </div>
 </div>
@@ -546,11 +602,52 @@ function closeFpsMath() {
   $('fpsMathModal').style.display = 'none';
 }
 
+function showFocPopup() {
+  const arrowLen = parseFloat($('arrowLen').value) || 28.5;
+  const balancePt = parseFloat($('balancePt').value) || 17.2;
+  const midPoint = arrowLen / 2;
+  const focPercent = ((balancePt - midPoint) / arrowLen) * 100;
+
+  const content = $('gameMathContent'); // reuse modal
+  content.innerHTML = `
+    <p><strong>FOC (Front of Center) Math</strong></p>
+    <p>FOC measures how far the arrow’s balance point sits in front of the midpoint. Higher FOC generally improves broadhead stability and penetration; lower FOC produces flatter trajectories and is more forgiving to shoot.</p>
+    <hr>
+    <p><strong>Formula:</strong></p>
+    <p>FOC = ((Balance Point − Midpoint) ÷ Arrow Length) × 100</p>
+    <hr>
+    <p><strong>Your inputs:</strong></p>
+    <p>• Arrow Length = ${arrowLen.toFixed(2)} in</p>
+    <p>• Midpoint = Arrow Length ÷ 2 = ${midPoint.toFixed(2)} in</p>
+    <p>• Balance Point = ${balancePt.toFixed(2)} in</p>
+    <hr>
+    <p><strong>Step-by-step:</strong></p>
+    <p>FOC = ((${balancePt.toFixed(2)} − ${midPoint.toFixed(2)}) ÷ ${arrowLen.toFixed(2)}) × 100</p>
+    <p>FOC = <strong>${focPercent.toFixed(1)}%</strong></p>
+    <hr>
+    <p style="font-size:0.9rem;color:var(--light);">
+      Typical hunting arrows fall between 10–18%. Higher FOC (18%+) is often preferred for fixed-blade broadheads and heavier setups, while moderate FOC (12–16%) gives a good blend of forgiveness and stability.
+    </p>
+  `;
+
+  $('gameMathModal').style.display = 'flex';
+}
+
 function calculateEverything() {
   const drawWt = parseFloat($('drawWt').value) || 70;
   const totalWt = parseFloat($('totalWt').value) || 495;
   const windMph = parseFloat($('windSlider').value) || 0;
   const rangeYd = parseFloat($('rangeSlider').value) || 50;
+
+  // === FOC Progress Bar ===
+  const arrowLen = parseFloat($('arrowLen').value) || 28.5;
+  const balancePt = parseFloat($('balancePt').value) || 17.2;
+  const midPoint = arrowLen / 2;
+  const foc = ((balancePt - midPoint) / arrowLen) * 100;
+
+  const focClamped = Math.max(0, Math.min(30, foc));
+  $('focFill').style.width = (focClamped / 30 * 100) + '%';
+  $('focValue').textContent = foc.toFixed(1) + '%';
 
   let userFps = parseFloat($('fpsSlider').value);
   if (isNaN(userFps) || userFps <= 0) {
@@ -568,8 +665,8 @@ function calculateEverything() {
   $('gameDist').textContent = rangeYd;
 
   // === Game Effectiveness ===
-  const k = 0.532; // Calibrated constant for hunting arrows (based on typical Cd, rho, A)
-  const retention = Math.exp(- (k * rangeYd) / totalWt); // Better model: retention depends on mass
+  const k = 0.532;
+  const retention = Math.exp(- (k * rangeYd) / totalWt);
   const velImpact = Math.round(fps * retention);
   const keImpact = Math.round(totalWt * velImpact * velImpact / 450240);
   const momImpact = parseFloat((totalWt * velImpact / 225400).toFixed(3));
