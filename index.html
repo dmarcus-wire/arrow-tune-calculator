@@ -269,6 +269,15 @@
       background:rgba(34,197,94,0.25);
       border-radius:999px;
     }
+
+    .group-stability-sweet-spot {
+      position:absolute;
+      top:0; left:40%;
+      width:20%;
+      height:100%;
+      background:rgba(34,197,94,0.25);
+      border-radius:999px;
+    }
   </style>
 </head>
 <body>
@@ -545,7 +554,7 @@
         <div class="stat-item">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
             <div style="display:flex; align-items:center; gap:0.75rem;">
-              <strong>Flatness (20→60 yd)</strong>
+              <strong>Flatness</strong>
               <button onclick="showFlatnessPopup()" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--primary);padding:0;" title="Explain Flatness Score">ⓘ</button>
             </div>
             <div style="flex:1; position:relative;">
@@ -558,6 +567,25 @@
               </div>
               <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-weight:700; font-size:1rem; color:var(--text); pointer-events:none;">
                 <span id="flatnessValue">Flat</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Group Stability (Target / 3D) -->
+        <div class="stat-item">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <strong>Group Stability</strong>
+              <button onclick="showGroupStabilityPopup()" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--primary);padding:0;" title="Explain Group Stability">ⓘ</button>
+            </div>
+            <div style="flex:1; position:relative;">
+              <div class="bar" style="height:16px;">
+                <div class="bar-fill" id="groupStabilityFill" style="width:0%; background:var(--primary); height:100%; transition:width 0.3s ease;"></div>
+                <div class="group-stability-sweet-spot"></div>
+              </div>
+              <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-weight:700; font-size:1rem; color:var(--text); pointer-events:none;">
+                <span id="groupStabilityValue">Average</span>
               </div>
             </div>
           </div>
@@ -962,6 +990,54 @@ function showFlatnessPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+function showGroupStabilityPopup() {
+  // Parse inputs and calculate needed values
+  const arrowLen = parseFloat($('arrowLen').value) || 28.5;
+  const balancePt = parseFloat($('balancePt').value) || 17.2;
+  const totalWt = parseFloat($('totalWt').value) || 495;
+  const fps = parseFloat($('fpsSlider').value) || 278;
+
+  const midPoint = arrowLen / 2;
+  const foc = ((balancePt - midPoint) / arrowLen) * 100;
+  const gpi = totalWt / arrowLen;
+
+  const focGood = foc >= 12 && foc <= 18;
+  const fpsGood = fps >= 270;
+  const gpiGood = gpi <= 9.5;
+
+  const allGood = fpsGood && focGood && gpiGood;
+  const status = allGood ? 'Tight' : 'Average';
+
+  const content = $('gameMathContent');
+  content.innerHTML = `
+    <p><strong>Group Stability (Target / 3D) Math</strong></p>
+    <p>This badge rolls three things together into a quick “how forgiving on paper is this setup?” indicator:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Launch FPS (how fast the arrow leaves the bow)</li>
+      <li>FOC% (how balanced the arrow is front-to-back)</li>
+      <li>GPI (finished grains per inch – how dense the shaft is)</li>
+    </ul>
+    <hr>
+    <p><strong>Your current numbers:</strong></p>
+    <p>• FPS = ${fps.toFixed(1)}</p>
+    <p>• FOC = ${foc.toFixed(1)}%</p>
+    <p>• GPI = ${gpi.toFixed(1)} gr/in</p>
+    <hr>
+    <p><strong>Badge result: ${status}</strong></p>
+    <p>“Tight” is awarded when all of these are true:</p>
+    <p>• Launch FPS ≳ 270 ${fpsGood ? '(✓)' : '(×)'}</p>
+    <p>• FOC between 12–18% ${focGood ? '(✓)' : '(×)'}</p>
+    <p>• GPI ≲ 9.5 gr/in ${gpiGood ? '(✓)' : '(×)'}</p>
+    <hr>
+    <p style="font-size:0.9rem;color:var(--light);">
+      When any of those are outside the target window, the badge shows Average — still fully usable, just not as theoretically optimized for small, forgiving groups on paper.<br><br>
+      Use this as a relative comparison between builds, not a hard rule. Clean form, broadhead tuning, and shot execution will always matter more than a single badge.
+    </p>
+  `;
+
+  $('gameMathModal').style.display = 'flex';
+}
+
 function calculateEverything() {
   // Parse all inputs first
   const drawWt = parseFloat($('drawWt').value) || 70;
@@ -1049,7 +1125,7 @@ function calculateEverything() {
     }
   });
 
-    // === Stiffness / Forgiveness ===
+  // === Stiffness / Forgiveness ===
   const actualSpine = parseFloat($('spine').value) || 300;
 
   // Effective load calculation (tuned constants for Easton-style chart feel)
@@ -1114,6 +1190,19 @@ function calculateEverything() {
 
   $('flatnessFill').style.width = flatnessPercent + '%';
   $('flatnessValue').textContent = flatnessStatus;
+
+// === Group Stability (Target / 3D) ===
+  const launchFps = fps;
+  const focGood = foc >= 12 && foc <= 18;
+  const fpsGood = launchFps >= 270;
+  const gpiGood = gpi <= 9.5;
+
+  const goodCount = (focGood ? 1 : 0) + (fpsGood ? 1 : 0) + (gpiGood ? 1 : 0);
+  const groupStatus = goodCount === 3 ? 'Tight' : 'Average';
+  const groupPercent = (goodCount / 3) * 100; // 0%, 33%, 66%, 100%
+
+  $('groupStabilityFill').style.width = groupPercent + '%';
+  $('groupStabilityValue').textContent = groupStatus;
   
 }
 
