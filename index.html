@@ -278,6 +278,22 @@
       background:rgba(34,197,94,0.25);
       border-radius:999px;
     }
+
+    .drop-table {
+      width:100%;
+      border-collapse:collapse;
+      margin-top:0.5rem;
+      font-size:0.95rem;
+    }
+    .drop-table th, .drop-table td {
+      padding:0.4rem;
+      text-align:center;
+      border:1px solid var(--border);
+    }
+    .drop-table th {
+      background:var(--border);
+      font-weight:600;
+    }
   </style>
 </head>
 <body>
@@ -590,6 +606,42 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+        <!-- Trajectory: Peak Height & Drop -->
+    <div class="card">
+      <h2>Trajectory (20 yd zero)</h2>
+      <div style="margin-bottom:1rem;">
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <strong>Peak Height</strong>
+          <button onclick="showTrajectoryPopup()" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--primary);padding:0;" title="Explain Trajectory">ⓘ</button>
+        </div>
+        <p style="margin:0.5rem 0; font-size:1.1rem; font-weight:700;">
+          <span id="peakHeightValue">0.0</span> ft at <span id="peakDistanceValue">0</span> yd
+        </p>
+      </div>
+      <div>
+        <strong>Downrange Drop (in)</strong>
+        <table class="drop-table">
+          <thead>
+            <tr>
+              <th>30 yd</th>
+              <th>40 yd</th>
+              <th>50 yd</th>
+              <th>60 yd</th>
+              <th>70 yd</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td id="drop30">-</td>
+              <td id="drop40">-</td>
+              <td id="drop50">-</td>
+              <td id="drop60">-</td>
+              <td id="drop70">-</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -1038,6 +1090,45 @@ function showGroupStabilityPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+function showTrajectoryPopup() {
+  let currentFps = parseFloat($('fpsSlider').value);
+  if (isNaN(currentFps) || currentFps <= 0) {
+    const est = calculateEstimatedFPS();
+    currentFps = est.estimated;
+  }
+  const v0 = currentFps;
+  const g = 32.174;
+
+  // Re-calculate trajectory for popup
+  const r20 = 20 * 3; // 60 ft
+  const sin2theta = (r20 * g) / (v0 * v0);
+  const theta = Math.asin(sin2theta) / 2;
+  const v0y = v0 * Math.sin(theta);
+  const peakHeightFt = (v0y * v0y) / (2 * g);
+  const peakDistanceYd = (v0 * Math.cos(theta) * (v0y / g)) / 3;
+
+  const content = $('gameMathContent');
+  content.innerHTML = `
+    <p><strong>Peak Height vs Downrange Drop</strong></p>
+    <p>Most archery charts talk about drop — how far the arrow is below your line of sight at longer distances. Peak Height uses a different reference: how high the arrow climbs above a horizontal launch line.</p>
+    <hr>
+    <p><strong>Peak Height</strong></p>
+    <p>Measures the highest point of the arc above a flat launch line.</p>
+    <p>Your peak: <strong>${peakHeightFt.toFixed(1)} ft at ${Math.round(peakDistanceYd)} yd</strong></p>
+    <p>Useful for clearance over brush, branches, or blind windows.</p>
+    <hr>
+    <p><strong>Downrange Drop</strong></p>
+    <p>Shows extra drop (in inches) beyond your 20 yd zero at longer ranges.</p>
+    <p>This is what your sight tape or pin gaps will feel like.</p>
+    <hr>
+    <p style="font-size:0.9rem;color:var(--light);">
+      These are simplified projectile estimates (no drag). Real flight is slightly flatter due to lift from fletching, but this gives a good relative comparison between builds.
+    </p>
+  `;
+
+  $('gameMathModal').style.display = 'flex';
+}
+
 function calculateEverything() {
   // Parse all inputs first
   const drawWt = parseFloat($('drawWt').value) || 70;
@@ -1164,46 +1255,66 @@ function calculateEverything() {
   $('stiffnessFill').style.width = percent + '%';
   $('stiffnessValue').textContent = status;
 
-    // === Flatness Score (20→60 yd) ===
-  const g = 32.174; // gravity ft/s²
-  const t20 = 20 * 3 / fps; // time to 20 yd (yd to ft)
-  const t60 = 60 * 3 / fps; // time to 60 yd
-  const drop20 = 0.5 * g * t20 * t20 * 12; // inches
-  const drop60 = 0.5 * g * t60 * t60 * 12; // inches
+// === Flatness Score (20→60 yd) ===
+  const g = 32.174; // <-- MOVE THIS HERE (or uncomment)
+  const t20 = 20 * 3 / fps;
+  const t60 = 60 * 3 / fps;
+  const drop20 = 0.5 * g * t20 * t20 * 12;
+  const drop60 = 0.5 * g * t60 * t60 * 12;
   const extraDropInches = drop60 - drop20;
   const arcHeightFt = extraDropInches / 12;
 
   let flatnessStatus = 'Curved';
-  let flatnessPercent = 100; // default Curved
-
+  let flatnessPercent = 100;
   if (arcHeightFt < 3) {
     flatnessStatus = 'Very Flat';
     flatnessPercent = 0;
   } else if (arcHeightFt <= 4.5) {
     flatnessStatus = 'Flat';
-    flatnessPercent = (arcHeightFt - 3) / 1.5 * 33.33 + 66.67; // map 3–4.5 ft to 66.67–100%
+    flatnessPercent = (arcHeightFt - 3) / 1.5 * 33.33 + 66.67;
   } else {
-    flatnessPercent = 100 - Math.min(66.67, (arcHeightFt - 4.5) / 3 * 66.67); // >4.5 ft pushes left from 66.67%
+    flatnessPercent = 100 - Math.min(66.67, (arcHeightFt - 4.5) / 3 * 66.67);
   }
-
   flatnessPercent = Math.max(0, Math.min(100, flatnessPercent));
-
   $('flatnessFill').style.width = flatnessPercent + '%';
   $('flatnessValue').textContent = flatnessStatus;
 
-// === Group Stability (Target / 3D) ===
+  // === Group Stability (Target / 3D) ===
   const launchFps = fps;
   const focGood = foc >= 12 && foc <= 18;
   const fpsGood = launchFps >= 270;
   const gpiGood = gpi <= 9.5;
-
   const goodCount = (focGood ? 1 : 0) + (fpsGood ? 1 : 0) + (gpiGood ? 1 : 0);
   const groupStatus = goodCount === 3 ? 'Tight' : 'Average';
-  const groupPercent = (goodCount / 3) * 100; // 0%, 33%, 66%, 100%
-
+  const groupPercent = (goodCount / 3) * 100;
   $('groupStabilityFill').style.width = groupPercent + '%';
   $('groupStabilityValue').textContent = groupStatus;
-  
+
+  // === Trajectory: Peak Height & Downrange Drop (approximation) ===
+  // Simple approximation: peak height ≈ (fps^2 * sin^2(approx_angle)) / (2g)
+  // Use a fixed reasonable launch angle of ~3 degrees for comparison
+  const approxThetaDeg = 3; // typical for 20 yd zero
+  const approxThetaRad = approxThetaDeg * Math.PI / 180;
+  const v0y = fps * Math.sin(approxThetaRad);
+  const peakHeightFt = (v0y * v0y) / (2 * 32.174);
+  const timeToPeak = v0y / 32.174;
+  const peakDistanceYd = (fps * Math.cos(approxThetaRad) * timeToPeak) / 3;
+
+  $('peakHeightValue').textContent = peakHeightFt.toFixed(1);
+  $('peakDistanceValue').textContent = Math.round(peakDistanceYd);
+
+  // Downrange drop relative to launch line (not zeroed)
+  const dropAtDistance = (distYd) => {
+    const distFt = distYd * 3;
+    const time = distFt / fps;
+    return 0.5 * 32.174 * time * time * 12; // inches
+  };
+
+  const distances = [30, 40, 50, 60, 70];
+  distances.forEach(d => {
+    const dropIn = dropAtDistance(d);
+    $(`drop${d}`).textContent = dropIn.toFixed(1);
+  });
 }
 
 function closeFpsMath() {
