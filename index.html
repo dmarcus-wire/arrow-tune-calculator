@@ -339,6 +339,20 @@
       transition: left 0.3s ease;
     }
 
+      /* Re-use your existing Quick Stats bar styles, just add fill */
+      .bar-fill {
+        height: 100%;
+        width: 0;
+        background: var(--primary);
+        border-radius: 999px;
+        transition: width 0.3s ease;
+      }
+
+      /* Green fill for effective load */
+      #effectiveLoadFill {
+        background: var(--success) !important;
+      }
+
     .stat-bar-container {
       width: 100%; /* takes full width of the flex item */
       min-width: 240px; /* minimum for small screens */
@@ -421,6 +435,15 @@
     #groupStabilityValue ~ .stat-bar-container .bar-labels span:nth-child(4) {
       transform: translateX(-100%); /* align "3" to the right edge */
     }
+
+    .effective-load-sweet-spot {
+      position:absolute;
+      top:0; left:30%;
+      width:50%;
+      height:100%;
+      background:rgba(34,197,94,0.25);
+      border-radius:999px;
+    }
   </style>
 </head>
 <body>
@@ -438,7 +461,7 @@
           <button id="aiButton" class="btn-small" style="background:var(--purple);">AI Advisor</button>
         </div>
       </div>
-      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.6</p>
+      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.7</p>
     </div>
     <div class="card">
       <h2>Build</h2>
@@ -536,6 +559,62 @@
         </div>
       </div>
     </div>
+
+        <!-- Effective Draw Weight Card -->
+    <div class="card">
+      <h2 style="display:flex; align-items:center; gap:0.75rem;">
+        Effective Draw Weight
+        <button onclick="showEffectiveLoadPopup()" class="info-btn" title="Explain Effective Draw Weight">ⓘ</button>
+      </h2>
+      <div class="stats-list">
+        <!-- Input Draw Weight -->
+        <div class="stat-item">
+          <div class="stat-row">
+            <div class="stat-title">
+              <strong>Input Draw Weight</strong>
+            </div>
+            <div class="stat-content">
+              <div class="stat-bar-container">
+                <div class="bar" style="height:16px;">
+                  <div class="bar-fill" id="inputDwFill" style="width:50%; background:var(--primary);"></div>
+                  <div class="bar-marker" id="inputDwMarker" style="left:50%;"></div>
+                </div>
+                <div class="bar-labels">
+                  <span>50 lb</span>
+                  <span>70 lb</span>
+                  <span>90 lb</span>
+                </div>
+                <span class="moving-value" id="inputDwValue">70 lb</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calculated Effective Draw Weight -->
+        <div class="stat-item">
+          <div class="stat-row">
+            <div class="stat-title">
+              <strong>Effective Load</strong>
+            </div>
+            <div class="stat-content">
+              <div class="stat-bar-container">
+                <div class="bar" style="height:16px;">
+                  <div class="bar-fill" id="effectiveLoadFill" style="width:50%; background:var(--success);"></div>
+                  <div class="bar-marker" id="effectiveLoadMarker" style="left:50%;"></div>
+                </div>
+                <div class="bar-labels">
+                  <span>50 lb</span>
+                  <span>70 lb</span>
+                  <span>90 lb</span>
+                </div>
+                <span class="moving-value" id="effectiveLoadValue">80 lb</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Game Effectiveness card -->
     <div class="card">
       <h2 style="display:flex; align-items:center; gap:0.75rem;">
@@ -926,6 +1005,49 @@ function showFpsMathPopup() {
     `;
   }
   $('fpsMathModal').style.display = 'flex';
+}
+
+function showEffectiveLoadPopup() {
+  // Recalculate everything needed (same as in calculateEverything)
+  const drawWt = parseFloat($('drawWt').value) || 70;
+  const arrowLen = parseFloat($('arrowLen').value) || 28.5;
+  const pointWt = parseFloat($('pointWt').value) || 125;
+  const totalWt = parseFloat($('totalWt').value) || 495;
+
+  const lengthFactor = (arrowLen - 28) * 2.5;
+  const pointFactor = (pointWt - 100) * 0.15;
+  const weightFactor = (totalWt - 400) * 0.05;
+  const effectiveLoad = Math.round(drawWt + lengthFactor + pointFactor + weightFactor);
+
+  const content = $('gameMathContent');
+  content.innerHTML = `
+    <p><strong>Effective Draw Weight Math</strong></p>
+    <p>The calculator starts from your real draw weight and adds tuned bumps for:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Longer arrows (more leverage on the shaft)</li>
+      <li>Heavier points (more load out front)</li>
+      <li>Overall finished arrow weight</li>
+    </ul>
+    <hr>
+    <p><strong>Your inputs:</strong></p>
+    <p>• Draw weight ≈ ${drawWt.toFixed(1)} lb</p>
+    <p>• Arrow length ≈ ${arrowLen.toFixed(2)} in</p>
+    <p>• Point weight ≈ ${pointWt} gr</p>
+    <p>• Total arrow weight ≈ ${totalWt.toFixed(1)} gr</p>
+    <hr>
+    <p><strong>Breakdown:</strong></p>
+    <p>Base: ${drawWt} lb</p>
+    <p>+ Length factor: +${lengthFactor.toFixed(2)}</p>
+    <p>+ Point factor: +${pointFactor.toFixed(2)}</p>
+    <p>+ Weight factor: +${weightFactor.toFixed(2)}</p>
+    <p><strong>Effective load ≈ ${effectiveLoad} lb</strong></p>
+    <hr>
+    <p style="font-size:0.9rem;color:var(--light);">
+      This is the "load" the shaft actually feels — used to recommend spine.
+    </p>
+  `;
+
+  $('gameMathModal').style.display = 'flex';
 }
 
 function showGameMathPopup() {
@@ -1414,6 +1536,23 @@ function calculateEverything() {
 
   stiffnessPercent = Math.max(0, Math.min(100, stiffnessPercent));
 
+   // Effective Draw Weight bars
+  const maxLoad = 100; // scale to 100 lb max for nice bar length
+  const inputDwPercent = (drawWt / maxLoad) * 100;
+  const effectivePercent = (effectiveLoad / maxLoad) * 100;
+
+  // Input Draw Weight
+  $('inputDwFill').style.width = `${inputDwPercent}%`;
+  $('inputDwMarker').style.left = `${inputDwPercent}%`;
+  $('inputDwValue').style.left = `${inputDwPercent}%`;
+  $('inputDwValue').textContent = drawWt + ' lb';
+
+  // Effective Load
+  $('effectiveLoadFill').style.width = `${effectivePercent}%`;
+  $('effectiveLoadMarker').style.left = `${effectivePercent}%`;
+  $('effectiveLoadValue').style.left = `${effectivePercent}%`;
+  $('effectiveLoadValue').textContent = effectiveLoad + ' lb';
+
   // Show spine + status
   let status = 'Good';
   if (spineDiff > 100) status = 'Weakest';
@@ -1524,6 +1663,8 @@ function calculateEverything() {
   addRow('FOC', foc.toFixed(1) + '%');
   addRow('GPP', gpp.toFixed(1));
   addRow('GPI', gpi.toFixed(1) + ' gr/in');
+
+  addRow('Effective Draw Weight', effectiveLoad + ' lb');
   
   // Add stiffness with status
   let stiffnessStatus = 'Good';
