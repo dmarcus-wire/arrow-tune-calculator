@@ -235,7 +235,8 @@
     }
     .sweet-spot {
       position:absolute;
-      top:0; left:40%; /* 12% of 30% scale = 40% position */
+      top:0; 
+      left:40%; /* 12% of 30% scale = 40% position */
       width:20%; /* 6% range (18-12) = 20% of bar */
       height:100%;
       background:rgba(34,197,94,0.25);
@@ -257,7 +258,8 @@
 
     .gpp-sweet-spot {
       position:absolute;
-      top:0; left:30%; /* 6.5 on 5-10 scale = 30% position */
+      top:0; 
+      left:30%; /* 6.5 on 5-10 scale = 30% position */
       width:20%; /* 1 unit range (7.5-6.5) = 20% of bar */
       height:100%;
       background:rgba(34,197,94,0.25);
@@ -266,7 +268,8 @@
 
     .gpi-sweet-spot {
       position:absolute;
-      top:0; left:35%; /* 7 GPI = 35% of 0–20 scale */
+      top:0; 
+      left:35%; /* 7 GPI = 35% of 0–20 scale */
       width:12.5%; /* 2.5 unit range (9.5-7) = 12.5% of bar */
       height:100%;
       background:rgba(34,197,94,0.25);
@@ -444,6 +447,13 @@
       background:rgba(34,197,94,0.25);
       border-radius:999px;
     }
+
+    /* Make Effective Draw Weight titles match Game Effectiveness class names */
+    .effective-dw-title {
+      font-weight: 400;
+      font-size: .95rem;
+      color: var(--text);
+    }
   </style>
 </head>
 <body>
@@ -571,18 +581,13 @@
         <div class="stat-item">
           <div class="stat-row">
             <div class="stat-title">
-              <strong>Input Draw Weight</strong>
+              <span class="effective-dw-title">Input Draw Wt.</span>
             </div>
             <div class="stat-content">
               <div class="stat-bar-container">
                 <div class="bar" style="height:16px;">
                   <div class="bar-fill" id="inputDwFill" style="width:50%; background:var(--primary);"></div>
                   <div class="bar-marker" id="inputDwMarker" style="left:50%;"></div>
-                </div>
-                <div class="bar-labels">
-                  <span>50 lb</span>
-                  <span>70 lb</span>
-                  <span>90 lb</span>
                 </div>
                 <span class="moving-value" id="inputDwValue">70 lb</span>
               </div>
@@ -594,18 +599,13 @@
         <div class="stat-item">
           <div class="stat-row">
             <div class="stat-title">
-              <strong>Effective Load</strong>
+              <span class="effective-dw-title">Effective Load</span>
             </div>
             <div class="stat-content">
               <div class="stat-bar-container">
                 <div class="bar" style="height:16px;">
                   <div class="bar-fill" id="effectiveLoadFill" style="width:50%; background:var(--success);"></div>
                   <div class="bar-marker" id="effectiveLoadMarker" style="left:50%;"></div>
-                </div>
-                <div class="bar-labels">
-                  <span>50 lb</span>
-                  <span>70 lb</span>
-                  <span>90 lb</span>
                 </div>
                 <span class="moving-value" id="effectiveLoadValue">80 lb</span>
               </div>
