@@ -766,7 +766,7 @@
         </div>
       </div>
     </div>
-        <!-- Trajectory: Peak Height & Drop -->
+    <!-- Trajectory: Peak Height & Drop -->
     <div class="card">
       <h2>Trajectory (20 yd zero)</h2>
       <div style="margin-bottom:1rem;">
@@ -802,6 +802,29 @@
         </table>
       </div>
     </div>
+    <!-- Build Summary Table (collapsible) -->
+    <div class="card collapsible-mobile" id="summaryCard">
+      <div class="collapsible-trigger" onclick="this.classList.toggle('open')">
+        <span>Build Summary & Export</span>
+        <span class="chevron">></span>
+      </div>
+      <div class="collapsible-content"> <!-- ← changed from card-content -->
+        <div style="margin-bottom:1rem;">
+          <button id="copyCsvBtn" class="secondary">Copy as CSV</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="game-table" id="summaryTable">
+            <tbody>
+              <!-- Rows will be filled by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="mobile-only-trigger" onclick="this.parentElement.classList.toggle('open')">
+        <span>Build Summary & Export</span>
+        <span class="chevron">></span>
+      </div>
+    </div>
   </div>
 </div>
 <div id="fpsMathModal" class="info-overlay">
@@ -834,6 +857,8 @@
     </div>
   </div>
 </div>
+
+<!---SCRIPTS-->
 <script>
 const $ = id => document.getElementById(id);
 let fpsWasRecalculated = false;
@@ -1278,6 +1303,61 @@ function showTrajectoryPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+function updateSummaryTable() {
+  const table = $('summaryTable').querySelector('tbody');
+  table.innerHTML = ''; // clear
+
+  const addRow = (label, value) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td style="font-weight:600;">${label}</td>
+      <td>${value}</td>
+    `;
+    table.appendChild(row);
+  };
+
+  // Inputs
+  addRow('Build Name', $('buildName').value || 'Unnamed');
+  addRow('Application', $('appType').value);
+  addRow('Bow Model', $('bowModel').value);
+  addRow('IBO Speed', $('ibo').value + ' fps');
+  addRow('Draw Weight', $('drawWt').value + ' lb');
+  addRow('Draw Length', $('drawLen').value + ' in');
+  addRow('Arrow Name', $('arrowName').value);
+  addRow('Spine', $('spine').value);
+  addRow('Arrow Length', $('arrowLen').value + ' in');
+  addRow('Total Arrow Weight', $('totalWt').value + ' gr');
+  addRow('Point Weight', $('pointWt').value + ' gr');
+  addRow('Balance Point', $('balancePt').value + ' in from throat');
+  addRow('Actual Speed', fps.toFixed(1) + ' fps');
+
+  // Calculated
+  addRow('FOC', foc.toFixed(1) + '%');
+  addRow('GPP', gpp.toFixed(1));
+  addRow('GPI', gpi.toFixed(1) + ' gr/in');
+  addRow('Stiffness Rating', actualSpine + ' spine');
+  addRow('Flatness (20→60 yd)', arcHeightFt.toFixed(1) + ' ft arc');
+  addRow('Group Stability', `${goodCount}/3 conditions met`);
+
+  // Trajectory
+  addRow('Peak Height', peakHeightFt.toFixed(1) + ' ft');
+  addRow('Peak Distance', Math.round(peakDistanceYd) + ' yd');
+
+  // Game Effectiveness at current range
+  addRow('Range for KE/Mom', rangeYd + ' yd');
+  addRow('Impact Velocity', velImpact + ' fps');
+  addRow('Impact KE', keImpact.toFixed(1) + ' ft-lbs');
+  addRow('Impact Momentum', momImpact.toFixed(3) + ' slug·ft/s');
+}
+
+function toggleSummaryCard() {
+  const trigger = $('summaryCard').querySelector('.collapsible-trigger');
+  trigger.classList.toggle('open');
+  // No need to manually toggle display — your existing CSS handles it:
+  // .collapsible-trigger.open + .card-content { display:block; }
+}
+
+
 function calculateEverything() {
   // Parse all inputs first
   const drawWt = parseFloat($('drawWt').value) || 70;
@@ -1455,7 +1535,27 @@ function calculateEverything() {
     const dropIn = dropAtDistance(d);
     $(`drop${d}`).textContent = dropIn.toFixed(1);
   });
+
+  // Update the summary table
+  updateSummaryTable();
 }
+
+// Move this outside calculateEverything()
+$('copyCsvBtn').addEventListener('click', () => {
+  let csv = 'Label,Value\n';
+  const rows = $('summaryTable').querySelectorAll('tr');
+  rows.forEach(row => {
+    const cells = row.querySelectorAll('td');
+    if (cells.length === 2) {
+      const label = cells[0].textContent.trim();
+      const value = cells[1].textContent.trim();
+      csv += `"${label}","${value}"\n`;
+    }
+  });
+  navigator.clipboard.writeText(csv).then(() => {
+    alert('Build summary copied to clipboard as CSV!');
+  });
+});
 
 function closeFpsMath() {
   $('fpsMathModal').style.display = 'none';
