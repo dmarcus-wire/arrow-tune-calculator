@@ -1394,16 +1394,15 @@ function showTrajectoryPopup() {
     const est = calculateEstimatedFPS();
     currentFps = est.estimated;
   }
-  const v0 = currentFps;
-  const g = 32.174;
+  const fps = currentFps;
 
-  // Re-calculate trajectory for popup
-  const r20 = 20 * 3; // 60 ft
-  const sin2theta = (r20 * g) / (v0 * v0);
-  const theta = Math.asin(sin2theta) / 2;
-  const v0y = v0 * Math.sin(theta);
-  const peakHeightFt = (v0y * v0y) / (2 * g);
-  const peakDistanceYd = (v0 * Math.cos(theta) * (v0y / g)) / 3;
+  // Use the same 3° approximation as the main display
+  const approxThetaDeg = 3;
+  const approxThetaRad = approxThetaDeg * Math.PI / 180;
+  const v0y = fps * Math.sin(approxThetaRad);
+  const peakHeightFt = (v0y * v0y) / (2 * 32.174);
+  const timeToPeak = v0y / 32.174;
+  const peakDistanceYd = (fps * Math.cos(approxThetaRad) * timeToPeak) / 3;
 
   const content = $('gameMathContent');
   content.innerHTML = `
@@ -1420,10 +1419,9 @@ function showTrajectoryPopup() {
     <p>This is what your sight tape or pin gaps will feel like.</p>
     <hr>
     <p style="font-size:0.9rem;color:var(--light);">
-      These are simplified projectile estimates (no drag). Real flight is slightly flatter due to lift from fletching, but this gives a good relative comparison between builds.
+      These are simplified projectile estimates using a typical ~3° launch angle for a 20 yd zero (no drag). Real flight is slightly flatter due to lift from fletching, but this gives a good relative comparison between builds.
     </p>
   `;
-
   $('gameMathModal').style.display = 'flex';
 }
 
