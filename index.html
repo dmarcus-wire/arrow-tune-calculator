@@ -341,7 +341,6 @@
       width: 100%; /* takes full width of the flex item */
       min-width: 240px; /* minimum for small screens */
       max-width: 1000px; /* maximum for large screens — adjust if you want wider */
-      margin-left: auto; /* pushes it to the right, aligning all bars on the right edge */
       margin-right: 0;
       position: relative;
     }
@@ -377,6 +376,48 @@
 
     .dark .info-btn:hover {
       opacity: 1;
+    }
+
+    .moving-value {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: .85rem;
+      font-weight: 400;
+      opacity: 0.9;
+      color: var(--text);
+      white-space: nowrap;
+      pointer-events: none;
+      transition: left 0.3s ease;
+      z-index: 10;
+    }
+
+    .bar-marker {
+      background: #ef4444; /* red */
+    }
+
+    /* Better spacing for Group Stability 0-1-2-3 labels */
+    #groupStabilityValue ~ .stat-bar-container .bar-labels {
+      justify-content: space-between;
+      width: 100%;
+      padding: 0 4px; /* small padding so labels don't touch edges */
+    }
+
+    #groupStabilityValue ~ .stat-bar-container .bar-labels span:nth-child(1) { left: 0%; }
+    #groupStabilityValue ~ .stat-bar-container .bar-labels span:nth-child(2) { left: 33.33%; }
+    #groupStabilityValue ~ .stat-bar-container .bar-labels span:nth-child(3) { left: 66.67%; }
+    #groupStabilityValue ~ .stat-bar-container .bar-labels span:nth-child(4) { left: 100%; }
+
+    #groupStabilityValue ~ .stat-bar-container .bar-labels span {
+      position: absolute;
+      transform: translateX(-50%);
+      font-size: 0.85rem;
+      color: var(--light);
+    }
+
+    #groupStabilityValue ~ .stat-bar-container .bar-labels span:nth-child(4) {
+      transform: translateX(-100%); /* align "3" to the right edge */
     }
   </style>
 </head>
@@ -551,7 +592,7 @@
         Based on kinetic energy and momentum at impact. Broadhead type and shot placement matter!
       </p>
     </div>
-    <!-- Quick Stats – Perfectly Aligned Bars -->
+    <!-- Quick Stats – Final Polished Version -->
     <div class="card">
       <h2>Quick Stats</h2>
       <div class="stats-list">
@@ -563,7 +604,6 @@
               <button onclick="showFocPopup()" class="info-btn" title="Explain FOC">ⓘ</button>
             </div>
             <div class="stat-content">
-              <div class="i-value" id="focValue">0.0%</div>
               <div class="stat-bar-container">
                 <div class="bar" style="height:16px;">
                   <div class="bar-marker" id="focMarker" style="left:50%;"></div>
@@ -574,6 +614,7 @@
                   <span>balanced</span>
                   <span>tip heavy</span>
                 </div>
+                <span class="moving-value" id="focValue">0.0%</span>
               </div>
             </div>
           </div>
@@ -587,7 +628,6 @@
               <button onclick="showGppPopup()" class="info-btn" title="Explain GPP">ⓘ</button>
             </div>
             <div class="stat-content">
-              <div class="i-value" id="gppValue">0.0</div>
               <div class="stat-bar-container">
                 <div class="bar" style="height:16px;">
                   <div class="bar-marker" id="gppMarker" style="left:50%;"></div>
@@ -598,6 +638,7 @@
                   <span>balanced</span>
                   <span>heavy</span>
                 </div>
+                <span class="moving-value" id="gppValue">0.0 gr</span>
               </div>
             </div>
           </div>
@@ -611,7 +652,6 @@
               <button onclick="showGpiPopup()" class="info-btn" title="Explain GPI">ⓘ</button>
             </div>
             <div class="stat-content">
-              <div class="i-value" id="gpiValue">0.0 gr/in</div>
               <div class="stat-bar-container">
                 <div class="bar" style="height:16px;">
                   <div class="bar-marker" id="gpiMarker" style="left:50%;"></div>
@@ -622,6 +662,7 @@
                   <span>balanced</span>
                   <span>heavy</span>
                 </div>
+                <span class="moving-value" id="gpiValue">0.0 gr/in</span>
               </div>
             </div>
           </div>
@@ -635,7 +676,6 @@
               <button onclick="showTotalWtPopup()" class="info-btn" title="Explain Total Weight">ⓘ</button>
             </div>
             <div class="stat-content">
-              <div class="i-value" id="totalWtValue">0 gr</div>
               <div class="stat-bar-container">
                 <div class="bar" style="height:16px;">
                   <div class="bar-marker" id="totalWtMarker" style="left:50%;"></div>
@@ -646,6 +686,7 @@
                   <span>medium</span>
                   <span>heavy</span>
                 </div>
+                <span class="moving-value" id="totalWtValue">0 gr</span>
               </div>
             </div>
           </div>
@@ -659,7 +700,6 @@
               <button onclick="showStiffnessPopup()" class="info-btn" title="Explain Stiffness">ⓘ</button>
             </div>
             <div class="stat-content">
-              <div class="i-value" id="stiffnessValue">300</div>
               <div class="stat-bar-container">
                 <div class="bar" style="height:16px;">
                   <div class="bar-marker" id="stiffnessMarker" style="left:50%;"></div>
@@ -670,6 +710,7 @@
                   <span>good</span>
                   <span>weak</span>
                 </div>
+                <span class="moving-value" id="stiffnessValue">300</span>
               </div>
             </div>
           </div>
@@ -683,7 +724,6 @@
               <button onclick="showFlatnessPopup()" class="info-btn" title="Explain Flatness">ⓘ</button>
             </div>
             <div class="stat-content">
-              <div class="i-value" id="flatnessValue">0.0 ft</div>
               <div class="stat-bar-container">
                 <div class="bar" style="height:16px;">
                   <div class="bar-marker" id="flatnessMarker" style="left:50%;"></div>
@@ -694,6 +734,7 @@
                   <span>flat</span>
                   <span>very flat</span>
                 </div>
+                <span class="moving-value" id="flatnessValue">0.0 ft</span>
               </div>
             </div>
           </div>
@@ -707,11 +748,10 @@
               <button onclick="showGroupStabilityPopup()" class="info-btn" title="Explain Group Stability">ⓘ</button>
             </div>
             <div class="stat-content">
-              <div class="i-value" id="groupStabilityValue">0/3</div>
               <div class="stat-bar-container">
                 <div class="bar" style="height:16px;">
-                  <div class="bar-marker" id="groupStabilityMarker" style="left:0%;"></div>
-                  <div class="group-stability-sweet-spot" style="left:100%; transform:translateX(-100%); width:33.33%;"></div>
+                  <div class="bar-marker" id="groupStabilityMarker" style="left:50%;"></div>
+                  <div class="group-stability-sweet-spot"></div>
                 </div>
                 <div class="bar-labels">
                   <span>0</span>
@@ -719,6 +759,7 @@
                   <span>2</span>
                   <span>3</span>
                 </div>
+                <span class="moving-value" id="groupStabilityValue">0/3</span>
               </div>
             </div>
           </div>
@@ -1268,26 +1309,28 @@ function calculateEverything() {
   const foc = ((balancePt - midPoint) / arrowLen) * 100;
   const focClamped = Math.max(0, Math.min(30, foc));
   $('focMarker').style.left = (focClamped / 30 * 100) + '%';
+  $('focValue').style.left = (focClamped / 30 * 100) + '%';
   $('focValue').textContent = foc.toFixed(1) + '%';
 
-  // === GPP Progress Bar ===
+  // GPP
   const gpp = totalWt / drawWt;
-  const gppPercent = (gpp - 5) / 5 * 100; // allow >100% if gpp >10
-  $('gppMarker').style.left = Math.max(0, gppPercent) + '%';
-  $('gppValue').textContent = gpp.toFixed(1);
+  const gppPercent = Math.max(0, Math.min(100, (gpp - 5) / 5 * 100));
+  $('gppMarker').style.left = `${gppPercent}%`;
+  $('gppValue').style.left = `${gppPercent}%`;
+  $('gppValue').textContent = gpp.toFixed(1) + ' gr';
 
-  // === GPI Progress Bar ===
+  // GPI
   const gpi = totalWt / arrowLen;
-  const gpiClamped = Math.max(0, Math.min(20, gpi)); // clamp to 5-15 scale
-  const gpiPercent = ((gpiClamped - 0) / 20 * 100); // 0 = 0%, 20 = 100%
-  $('gpiMarker').style.left = gpiPercent + '%';
-  $('gpiValue').textContent = gpi.toFixed(1);
+  const gpiPercent = (gpi / 20) * 100;
+  $('gpiMarker').style.left = `${gpiPercent}%`;
+  $('gpiValue').style.left = `${gpiPercent}%`;
+  $('gpiValue').textContent = gpi.toFixed(1) + ' gr/in';
 
-  // === Total Arrow Weight Progress Bar ===
-  const totalWtClamped = Math.max(50, Math.min(1000, totalWt));
-  const totalWtPercent = ((totalWtClamped - 50) / 950 * 100); // 50 = 0%, 1000 = 100%
-  $('totalWtMarker').style.left = totalWtPercent + '%';
-  $('totalWtValue').textContent = Math.round(totalWt);
+  // Total Wt
+  const totalWtPercent = ((totalWt - 50) / 950) * 100;
+  $('totalWtMarker').style.left = `${totalWtPercent}%`;
+  $('totalWtValue').style.left = `${totalWtPercent}%`;
+  $('totalWtValue').textContent = Math.round(totalWt) + ' gr';
 
   // === Game Effectiveness ===
   const k = 0.532;
@@ -1324,10 +1367,8 @@ function calculateEverything() {
     }
   });
 
-  // === Stiffness / Forgiveness ===
+    // === Stiffness / Forgiveness ===
   const actualSpine = parseFloat($('spine').value) || 300;
-
-  // Effective load calculation
   const baseLoad = drawWt;
   const lengthFactor = (arrowLen - 28) * 2.5;
   const pointFactor = (pointWt - 100) * 0.15;
@@ -1346,10 +1387,9 @@ function calculateEverything() {
   }
   stiffnessPercent = Math.max(0, Math.min(100, stiffnessPercent));
 
-  // Show actual spine value instead of "Good"/"Weak"
+  // Show actual spine value and move it with marker
   $('stiffnessValue').textContent = actualSpine;
-
-  // Position marker
+  $('stiffnessValue').style.left = `${stiffnessPercent}%`;
   $('stiffnessMarker').style.left = `${stiffnessPercent}%`;
 
 // === Flatness Score (20→60 yd) ===
@@ -1361,10 +1401,7 @@ function calculateEverything() {
   const extraDropInches = drop60 - drop20;
   const arcHeightFt = extraDropInches / 12;
 
-  // Show actual value in feet (rounded to 1 decimal)
-  $('flatnessValue').textContent = arcHeightFt.toFixed(1) + ' ft';
-
-  // Keep marker logic (right = flatter = better)
+  // Marker logic FIRST (right = flatter = better)
   let flatnessPercent = 0;
   if (arcHeightFt < 3) {
     flatnessPercent = 100;
@@ -1374,6 +1411,9 @@ function calculateEverything() {
     flatnessPercent = Math.max(0, 66.67 - ((arcHeightFt - 4.5) / 3) * 66.67);
   }
 
+  // Now update value and marker using the correct percent
+  $('flatnessValue').textContent = arcHeightFt.toFixed(1) + ' ft';
+  $('flatnessValue').style.left = `${flatnessPercent}%`;
   $('flatnessMarker').style.left = `${flatnessPercent}%`;
 
   // === Group Stability (Target / 3D) ===
