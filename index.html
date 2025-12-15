@@ -284,21 +284,23 @@
 
     .stiffness-sweet-spot {
       position:absolute;
-      top:0; left:40%;
-      width:20%;
+      top:0; 
+      left:25%;
+      width:50%;
       height:100%;
       background:rgba(34,197,94,0.25);
       border-radius:999px;
     }
 
     .flatness-sweet-spot {
-      position:absolute;
-      top:0; left:33.33%; /* Flat + Very Flat zone (33–100%) */
-      width:66.67%;
-      height:100%;
-      background:rgba(34,197,94,0.25);
-      border-radius:999px;
-    }
+        position: absolute;
+        top: 0;
+        left: 33.33%; /* starts at ~4.5 ft on the bar (right = flatter) */
+        width: 66.67%; /* covers from ~4.5 ft to 0 ft (Very Flat) */
+        height: 100%;
+        background: rgba(34,197,94,0.25);
+        border-radius: 999px;
+      }
 
     .group-stability-sweet-spot {
       position: absolute;
@@ -475,7 +477,7 @@
         </div>
       </div>
       <div class="mobile-only-trigger" onclick="this.parentElement.classList.toggle('open')">
-        <span>Bow Details</span>
+        <span>Details</span>
         <span class="chevron">></span>
       </div>
     </div>
@@ -483,7 +485,7 @@
       <h2 style="margin:0 0 0.75rem 0;">Arrow</h2>
       <div class="card-content">
         <div class="input-row"><label for="arrowName">Name</label><input type="text" id="arrowName" placeholder="Victory VAP TKO"></div>
-        <div class="input-row"><label for="spine">Spine</label><input type="number" id="spine" value="300" min="100" max="600" step="50"></div>
+        <div class="input-row"><label for="spine">Spine</label><input type="number" id="spine" value="300" min="100" max="600" step="10"></div>
         <div class="input-row"><label for="arrowLen">Length in</label><input type="number" id="arrowLen" value="28.5" step="0.1"></div>
         <div class="input-row"><label for="totalWt">Total weight gr</label><input type="number" id="totalWt" value="495" step="0.5"></div>
         <div class="input-row"><label for="pointWt">Point weight gr</label><input type="number" id="pointWt" value="125"></div>
@@ -501,7 +503,7 @@
         </div>
       </div>
       <div class="mobile-only-trigger" onclick="this.parentElement.classList.toggle('open')">
-        <span>Arrow Details</span>
+        <span>Details</span>
         <span class="chevron">></span>
       </div>
     </div>
@@ -821,7 +823,7 @@
         </div>
       </div>
       <div class="mobile-only-trigger" onclick="this.parentElement.classList.toggle('open')">
-        <span>Build Summary & Export</span>
+        <span>Details</span>
         <span class="chevron">></span>
       </div>
     </div>
@@ -1402,18 +1404,24 @@ function calculateEverything() {
   const recommendedCenter = Math.max(200, Math.min(500, 600 - effectiveLoad * 5));
   const spineDiff = actualSpine - recommendedCenter;
 
-  let stiffnessPercent = 50;
-  if (spineDiff > 50) {
-    stiffnessPercent = 75 + (spineDiff - 50) / 2;
-  } else if (spineDiff < -50) {
-    stiffnessPercent = 25 + (spineDiff + 50) / 2;
-  } else {
-    stiffnessPercent = 50 + spineDiff / 2;
+  let stiffnessPercent = 50 + spineDiff / 2;
+
+  if (spineDiff > 100) {
+    stiffnessPercent = 75 + (spineDiff - 100);
+  } else if (spineDiff < -100) {
+    stiffnessPercent = 25 + (spineDiff + 100);
   }
+
   stiffnessPercent = Math.max(0, Math.min(100, stiffnessPercent));
 
-  // Show actual spine value and move it with marker
-  $('stiffnessValue').textContent = actualSpine;
+  // Show spine + status
+  let status = 'Good';
+  if (spineDiff > 100) status = 'Weakest';
+  else if (spineDiff < -100) status = 'Stiffest';
+  else if (spineDiff > 60) status = 'Weaker)';
+  else if (spineDiff < -60) status = 'Stiffer)';
+
+  $('stiffnessValue').textContent = actualSpine + ' (' + status + ')';
   $('stiffnessValue').style.left = `${stiffnessPercent}%`;
   $('stiffnessMarker').style.left = `${stiffnessPercent}%`;
 
@@ -1516,7 +1524,17 @@ function calculateEverything() {
   addRow('FOC', foc.toFixed(1) + '%');
   addRow('GPP', gpp.toFixed(1));
   addRow('GPI', gpi.toFixed(1) + ' gr/in');
-  addRow('Stiffness Rating', actualSpine + ' spine');
+  
+  // Add stiffness with status
+  let stiffnessStatus = 'Good';
+  if (spineDiff > 100) stiffnessStatus = 'Weakest';
+  else if (spineDiff < -100) stiffnessStatus = 'Stiffest';
+  else if (spineDiff > 60) stiffnessStatus = 'Weaker';
+  else if (spineDiff < -60) stiffnessStatus = 'Stiffer';
+
+  addRow('Stiffness', actualSpine + ' (' + stiffnessStatus + ')');
+
+  // Calculated Outputs 
   addRow('Flatness (20→60 yd)', arcHeightFt.toFixed(1) + ' ft arc');
   addRow('Group Stability', `${goodCount}/3 conditions met`);
 
