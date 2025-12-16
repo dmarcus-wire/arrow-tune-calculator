@@ -2332,16 +2332,21 @@ function calculateEverything() {
   addRow('Cam System', $('camType').value || '-');
   addRow('String Add-ons', $('stringWt').value + ' gr');
 
-  // === Sight Pin Zeros in Summary ===
-  const pinCountSummary = parseInt($('pinCount').value) || 3;
-  if (pinCountSummary > 0) {
-    for (let i = 1; i <= pinCountSummary; i++) {
-      const pinZeroEl = $(`pin${i}Zero`);
-      const pinZero = pinZeroEl ? pinZeroEl.value : (i === 1 ? '20' : (i === 2 ? '30' : (i === 3 ? '40' : (i === 4 ? '50' : '60'))));
-      addRow(`Pin ${i} Zero`, pinZero + ' yd');
-    }
+  // === Sight Pin Zeros in Summary (100% safe) ===
+  const bowType = $('bowType')?.value || 'compound';
+  const pinCountSummary = Number($('pinCount')?.value || '3');
+
+  if (bowType === 'recurve' || bowType === 'longbow') {
+    addRow('Sight Pins', 'None / Instinctive (Traditional Bow)');
+  } else if (pinCountSummary === 0) {
+    addRow('Sight Pins', 'None (Slider or Custom)');
   } else {
-    addRow('Sight Pins', 'None / Instinctive');
+    for (let i = 1; i <= Math.min(pinCountSummary, 5); i++) {
+      const pinZeroEl = $(`pin${i}Zero`);
+      if (pinZeroEl) {
+        addRow(`Pin ${i} Zero`, pinZeroEl.value + ' yd');
+      }
+    }
   }
 
   // Arrow inputs continue...
@@ -2684,6 +2689,10 @@ function loadBuild() {
   $('appType').value = build.appType || 'Hunting';
   $('bowModel').value = build.bowModel || '';
   $('bowType').value = build.bowType || 'compound';
+  // Auto-set pins to "No Pins" if recurve or longbow
+  if (build.bowType === 'recurve' || build.bowType === 'longbow') {
+    $('pinCount').value = '0';
+  }
   $('letOff').value = build.letOff || '80';
   $('braceHeight').value = build.braceHeight || '6';
   $('camType').value = build.camType || 'hybrid';
@@ -2696,24 +2705,24 @@ function loadBuild() {
   $('kisserWt').value = build.kisserWt || '0';
   $('silencerWt').value = build.silencerWt || '12';
   $('nockWt').value = build.nockWt || '10';
-  $('pinCount').value = build.pinCount || '3';
+  //$('pinCount').value = build.pinCount || '3';
 
-// Rebuild pin inputs for correct count and values
-  const pinCountSelect = $('pinCount');
-  if (pinCountSelect) {
-    pinCountSelect.value = build.pinCount || '3';
-    pinCountSelect.dispatchEvent(new Event('change'));
+   // === Load pin count with bow type override ===
+  let pinCountValue = build.pinCount || '3';
+
+  if (build.bowType === 'recurve' || build.bowType === 'longbow') {
+    pinCountValue = '0';
   }
 
-  // Set pin zero values after inputs are rebuilt
+  $('pinCount').value = pinCountValue;
+
+  // First: rebuild pin inputs (clears old inputs for No Pins)
+  calculateEverything();
+
+  // Small delay to ensure DOM is updated, then final calculation with correct summary
   setTimeout(() => {
-    if ($('pin1Zero')) $('pin1Zero').value = build.pin1Zero || '20';
-    if ($('pin2Zero')) $('pin2Zero').value = build.pin2Zero || '30';
-    if ($('pin3Zero')) $('pin3Zero').value = build.pin3Zero || '40';
-    if ($('pin4Zero')) $('pin4Zero').value = build.pin4Zero || '50';
-    if ($('pin5Zero')) $('pin5Zero').value = build.pin5Zero || '60';
     calculateEverything();
-  }, 100); // small delay to ensure inputs exist
+  }, 100);
 
   $('arrowName').value = build.arrowName || '';
   $('spine').value = build.spine || '';
