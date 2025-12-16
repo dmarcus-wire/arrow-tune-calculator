@@ -481,38 +481,135 @@
       </div>
       <div class="collapsible-content">
         <div class="input-row"><label for="appType">Application</label><select id="appType"><option>Target</option><option selected>Hunting</option><option>Other</option></select></div>
-        <div class="input-row"><label for="bowModel">Model</label><input type="text" id="bowModel" placeholder="Hoyt RX-9"></div>
-        <div class="input-row"><label for="bowType">Bow Type</label>
-          <select id="bowType">
+        <!---Bow Model-->
+        <div class="input-row" style="align-items:center; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <label for="bowModel">Model</label>
+            <button type="button" onclick="showBowModelPopup()" class="info-btn" title="About Bow Model">ⓘ</button>
+          </div>
+          <input type="text" id="bowModel" placeholder="Hoyt RX-9" style="flex:1;">
+        </div>
+        <!---Bow Type-->
+        <div class="input-row" style="align-items:center; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <label for="bowType">Bow Type</label>
+            <button type="button" onclick="showBowTypePopup()" class="info-btn" title="About Bow Type">ⓘ</button>
+          </div>
+          <select id="bowType" style="flex:1;">
             <option value="compound" selected>Compound</option>
             <option value="recurve">Recurve</option>
             <option value="longbow">Longbow</option>
           </select>
         </div>
-        <div class="input-row"><label for="ibo">IBO fps</label><input type="number" id="ibo" value="340"></div>
-        <div class="input-row"><label for="drawWt">Draw wt lb</label><input type="number" id="drawWt" value="70" step="0.5"></div>
-        <div class="input-row"><label for="drawLen">Draw length in</label><input type="number" id="drawLen" value="29" step="0.1"></div>
-        <div class="input-row"><label for="stringWt">String add-ons gr</label><input type="number" id="stringWt" value="20"></div>
-        <div class="input-row"><label for="letOff">Let-off %</label><input type="number" id="letOff" value="80" min="65" max="90" step="1"></div>
-        <div class="input-row"><label for="braceHeight">Brace height in</label><input type="number" id="braceHeight" value="6" step="0.1"></div>
-        <div class="input-row"><label for="camType">Cam System</label>
-          <select id="camType">
+        <!---IBO fps-->
+        <div class="input-row" style="align-items:center; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <label for="ibo">IBO fps</label>
+            <button type="button" onclick="showIboPopup()" class="info-btn" title="About IBO Speed">ⓘ</button>
+          </div>
+          <input type="number" id="ibo" value="340" min="200" max="400" step="1" style="flex:1;">
+        </div>  
+        <!---Brace Height-->
+        <div class="input-row" style="align-items:center; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <label for="braceHeight">Brace height in</label>
+            <button type="button" onclick="showBraceHeightPopup()" class="info-btn" title="About Brace Height">ⓘ</button>
+          </div>
+          <input type="number" id="braceHeight" value="6" min="4" max="9" step="0.1" style="flex:1;">
+        </div>        
+        <!---Cam System-->
+        <div class="input-row" style="align-items:center; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <label for="camType">Cam System</label>
+            <button type="button" onclick="showCamTypePopup()" class="info-btn" title="About Cam System">ⓘ</button>
+          </div>
+          <select id="camType" style="flex:1;">
             <option value="hybrid">Hybrid / Binary</option>
             <option value="single">Single Cam</option>
             <option value="twin">Twin / Dual Cam</option>
             <option value="n/a">N/A (Recurve/Longbow)</option>
           </select>
         </div>
+        <!---Draw Weight-->
+        <div class="input-row" style="align-items:center; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <label for="drawWt">Draw wt lb</label>
+            <button type="button" onclick="showDrawWtPopup()" class="info-btn" title="About Draw Weight">ⓘ</button>
+          </div>
+          <input type="number" id="drawWt" value="70" min="30" max="100" step="0.5" style="flex:1;">
+        </div>
+        <!---Draw Length-->
+        <div class="input-row" style="align-items:center; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <label for="drawLen">Draw length in</label>
+            <button type="button" onclick="showDrawLenPopup()" class="info-btn" title="About Draw Length">ⓘ</button>
+          </div>
+          <input type="number" id="drawLen" value="29" min="24" max="34" step="0.1" style="flex:1;">
+        </div>
+        <!---Let off %--> 
+        <div class="input-row" style="align-items:center; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <label for="letOff">Let-off %</label>
+            <button type="button" onclick="showLetOffPopup()" class="info-btn" title="About Let-off">ⓘ</button>
+          </div>
+          <input type="number" id="letOff" value="80" min="65" max="90" step="1" style="flex:1;">
+        </div> 
+        <!---String Weight-->
+        <div class="input-row" style="align-items:center; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <label for="stringWt">String add-ons gr</label>
+            <button type="button" onclick="showStringAddonsPopup()" class="info-btn" title="About String Add-ons">ⓘ</button>
+          </div>
+          <input type="number" id="stringWt" value="20" min="0" step="0.5" style="flex:1;" data-manual="false">
+        </div>
+        <!---String Details-->
         <div class="collapsible-trigger" onclick="this.classList.toggle('open'); this.nextElementSibling.style.display = this.classList.contains('open') ? 'block' : 'none';">
           <span>String Details</span>
           <span class="chevron">></span>
         </div>
-        <div class="collapsible-content">
-          <div class="input-row"><label for="peepWt">Peep weight gr</label><input type="number" id="peepWt" value="0" step="0.5"></div>
-          <div class="input-row"><label for="dloopWt">D-loop gr</label><input type="number" id="dloopWt" value="0" step="0.5"></div>
-          <div class="input-row"><label for="kisserWt">Kisser gr</label><input type="number" id="kisserWt" value="0" step="0.5"></div>
-          <div class="input-row"><label for="silencerWt">Silencers gr</label><input type="number" id="silencerWt" value="0" step="0.5"></div>
-          <div class="input-row"><label for="nockWt">Nock weight gr</label><input type="number" id="nockWt" value="0" step="0.5"></div>
+          <div class="collapsible-content">
+          <div class="input-row" style="align-items:center; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+              <label for="peepWt">Peep weight gr</label>
+              <button type="button" onclick="showPeepWtPopup()" class="info-btn" title="About Peep Weight">ⓘ</button>
+            </div>
+            <input type="number" id="peepWt" value="0" step="0.5" style="flex:1;">
+          </div>
+          <div class="input-row" style="align-items:center; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+              <label for="dloopWt">D-loop gr</label>
+              <button type="button" onclick="showDloopWtPopup()" class="info-btn" title="About D-loop Weight">ⓘ</button>
+            </div>
+            <input type="number" id="dloopWt" value="0" step="0.5" style="flex:1;">
+          </div>
+          <div class="input-row" style="align-items:center; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+              <label for="kisserWt">Kisser gr</label>
+              <button type="button" onclick="showKisserWtPopup()" class="info-btn" title="About Kisser Weight">ⓘ</button>
+            </div>
+            <input type="number" id="kisserWt" value="0" step="0.5" style="flex:1;">
+          </div>
+          <div class="input-row" style="align-items:center; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+              <label for="silencerWt">Silencers gr</label>
+              <button type="button" onclick="showSilencerWtPopup()" class="info-btn" title="About Silencers Weight">ⓘ</button>
+            </div>
+            <input type="number" id="silencerWt" value="0" step="0.5" style="flex:1;">
+          </div>
+          <div class="input-row" style="align-items:center; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+              <label for="nockWt">Nock weight gr</label>
+              <button type="button" onclick="showNockWtPopup()" class="info-btn" title="About Nock Weight">ⓘ</button>
+            </div>
+            <input type="number" id="nockWt" value="0" step="0.5" style="flex:1;">
+          </div>
+          <!-- New total display -->
+          <div style="margin-top:1rem; padding:0.75rem; background:var(--border); border-radius:8px; text-align:center;">
+            <strong>Total String Add-ons: <span id="stringAddonsTotal">0</span> gr</strong>
+            <p style="font-size:0.85rem; color:var(--light); margin-top:0.5rem;">
+              Auto-calculated from details above. Edit main field to override.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -1001,6 +1098,255 @@
 <script>
 const $ = id => document.getElementById(id);
 let fpsWasRecalculated = false;
+
+/*Bow Model info icon*/
+function showBowModelPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Bow Model</strong></p>
+    <p>Enter your bow's make and model (e.g., Hoyt RX-9, Mathews Lift, PSE Supra).</p>
+    <p>Used for:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Build naming suggestions</li>
+      <li>Future pro sample matching</li>
+      <li>Personal reference</li>
+    </ul>
+    <p>No impact on calculations — purely for your records.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/*Bow Type info icon*/
+function showBowTypePopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Bow Type</strong></p>
+    <p>Select your bow style — affects future calculations.</p>
+    <hr>
+    <p><strong>Compound</strong>: Modern cam system — highest efficiency, used for most hunting/target bows.</p>
+    <p><strong>Recurve</strong>: Traditional limbs — lower efficiency, quieter, used in Olympic/traditional archery.</p>
+    <p><strong>Longbow</strong>: Classic straight limbs — lowest efficiency, most traditional.</p>
+    <hr>
+    <p>Currently used for:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Future speed estimate adjustments</li>
+      <li>Sample build filtering</li>
+      <li>Personal reference</li>
+    </ul>
+    <p>No direct impact yet — coming in future updates.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/*IBO FPS info icon*/
+function showIboPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>IBO Speed (fps)</strong></p>
+    <p>Manufacturer's advertised speed at standard specs:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>70 lb draw weight</li>
+      <li>30" draw length</li>
+      <li>350 grain arrow</li>
+      <li>No string add-ons</li>
+    </ul>
+    <hr>
+    <p>Used to estimate your real-world speed when you fill bow/arrow details.</p>
+    <p>Leave blank or adjust if you know your bow's actual IBO rating.</p>
+    <p>Higher IBO = faster potential — but real speed depends on your setup.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/*Brace Height info icon*/
+function showBraceHeightPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Brace Height (inches)</strong></p>
+    <p>Distance from bow grip throat to string at rest.</p>
+    <hr>
+    <p><strong>Typical Range:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>5–6 in: Faster, less forgiving (speed bows)</li>
+      <li>6–7 in: Balanced speed & forgiveness (most hunting bows)</li>
+      <li>7+ in: Slower, very forgiving (target/long-draw bows)</li>
+    </ul>
+    <hr>
+    <p>Used for:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Future speed estimate tuning</li>
+      <li>Build comparison & reference</li>
+    </ul>
+    <p>Shorter brace = more speed but harsher; longer = smoother & more forgiving.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/* Cam System info icon*/
+function showCamTypePopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Cam System</strong></p>
+    <p>Type of cam on your compound bow — affects efficiency, speed, and tuning.</p>
+    <hr>
+    <p><strong>Hybrid / Binary</strong>: Most efficient — smooth draw, high speed, level nock travel.</p>
+    <p>Examples: Hoyt HBX Xact, Bowtech DeadLock, Mathews Switchweight, PSE Evolve, Elite Enkore.</p>
+    <hr>
+    <p><strong>Single Cam</strong>: Simple, quiet, easy tuning — slightly less efficient, very reliable.</p>
+    <p>Examples: Older Mathews SoloCam, Bear Legit, Diamond Edge, some entry-level bows.</p>
+    <hr>
+    <p><strong>Twin / Dual Cam</strong>: Fast and aggressive — high speed, but harder to tune and more maintenance.</p>
+    <p>Examples: Classic PSE models, some high-performance speed bows, older aggressive designs.</p>
+    <hr>
+    <p><strong>N/A</strong>: For recurve/longbow (no cams).</p>
+    <hr>
+    <p>Used for:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Future speed estimate fine-tuning</li>
+      <li>Build comparison & reference</li>
+    </ul>
+    <p>Hybrid/binary cams dominate modern hunting bows for best performance and forgiveness.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/*Draw Weight info icon*/
+function showDrawWtPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Draw Weight (lb)</strong></p>
+    <p>Peak weight your bow is set to — the force needed to pull it back.</p>
+    <hr>
+    <p><strong>Typical Ranges:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>40–60 lb: Lighter — easier to draw, common for women/youth or long holds.</li>
+      <li>60–70 lb: Standard hunting — good balance of speed and penetration.</li>
+      <li>70–80+ lb: Heavy — max speed/momentum, popular for big game (elk, bear).</li>
+    </ul>
+    <hr>
+    <p>Used for:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>FPS estimate (higher = faster)</li>
+      <li>Effective Load & spine recommendation</li>
+      <li>GPP calculation</li>
+    </ul>
+    <p>Higher draw weight = more speed & penetration, but harder to shoot accurately.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/*Draw Length info icon*/
+function showDrawLenPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Draw Length (inches)</strong></p>
+    <p>Distance from nock point to grip pivot point (or anchor) at full draw.</p>
+    <hr>
+    <p><strong>Typical Ranges (All Bow Types):</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Short (24–27 in)</strong>: Youth, women, shorter adults, or compact styles (common in hunting recurves/longbows).</li>
+      <li><strong>Average (27–29 in)</strong>: Most adult archers — "standard" rating point (many bows rated at 28 in).</li>
+      <li><strong>Long (30–32+ in)</strong>: Taller archers, long arms, or deep anchors (e.g., target recurves or warbow-style).</li>
+    </ul>
+    <hr>
+    <p><strong>Compound Bows</strong>: Fixed by cam/draw stop — precise and repeatable.</p>
+    <p><strong>Recurve/Longbow</strong>: More variable due to form/anchor — often measured to corner of mouth or cheek.</p>
+    <hr>
+    <p>Used for:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>FPS estimate (longer = more energy = faster)</li>
+      <li>Effective Load & spine recommendation</li>
+      <li>Arrow tuning & stability</li>
+    </ul>
+    <p>Longer draw = more speed & power, but can reduce accuracy if form suffers.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+
+/*Let Off % info icon*/
+function showLetOffPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Let-off %</strong></p>
+    <p>Percentage of peak draw weight you hold at full draw (valley).</p>
+    <hr>
+    <p><strong>Typical Ranges:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>65–75%: Aggressive cams — faster, harder to hold (speed bows)</li>
+      <li>75–85%: Balanced — most hunting bows (smooth & fast)</li>
+      <li>85–90+%: High let-off — easier to hold, common in target/hunting hybrids</li>
+    </ul>
+    <hr>
+    <p>Used for:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Future speed estimate fine-tuning (higher let-off = slight speed gain)</li>
+      <li>Build comparison & reference</li>
+    </ul>
+    <p>Higher let-off = easier to hold steady for longer, great for hunting or target.</p>
+    <p><em>Recurve/Longbow: N/A (no let-off)</em></p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/*String weight*/
+function showStringAddonsPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>String Add-ons (grains)</strong></p>
+    <p>Total extra weight on the string (peep, D-loop, kisser, silencers, nock).</p>
+    <hr>
+    <p>Typical total: 20–40 gr (20 gr is a good average for basic setups).</p>
+    <p>Used for:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>FPS estimate — every ~10 gr slows ~1 fps</li>
+      <li>Real-world speed accuracy</li>
+    </ul>
+    <p>Fill individual fields below for auto-total, or enter total here directly.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+function showPeepWtPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Peep Weight (grains)</strong></p>
+    <p>Weight of your peep sight.</p>
+    <p>Typical: 8–25 gr (standard ~12–15 gr, large/ verifier ~20+ gr).</p>
+    <p>Adds to string weight — slows speed slightly but improves aiming.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+function showDloopWtPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>D-loop Weight (grains)</strong></p>
+    <p>Weight of your D-loop material + nocking point.</p>
+    <p>Typical: 5–15 gr (metal nock ~10 gr, tied string ~5 gr).</p>
+    <p>Protects string, improves nock fit — small speed impact.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+function showKisserWtPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Kisser Weight (grains)</strong></p>
+    <p>Weight of kisser button (anchor reference).</p>
+    <p>Typical: 3–8 gr.</p>
+    <p>Helps consistent anchor — minimal speed loss.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+function showSilencerWtPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Silencers Weight (grains)</strong></p>
+    <p>Weight of string silencers (cat whiskers, wool puffs, etc.).</p>
+    <p>Typical: 10–30 gr total (pair).</p>
+    <p>Quiets bow — noticeable speed reduction if heavy.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+function showNockWtPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Nock Weight (grains)</strong></p>
+    <p>Extra weight from brass nocking points or tie-on nocks.</p>
+    <p>Typical: 5–15 gr (brass ~10 gr).</p>
+    <p>Small impact on speed, improves nock fit.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
 
 function calculateEstimatedFPS() {
   const ibo = parseFloat($('ibo').value) || 340;
@@ -1612,6 +1958,32 @@ function calculateEverything() {
   // For the Total Weight
   const pointWt = parseFloat($('pointWt').value) || 125;
 
+  // === Auto-calculate String Add-ons from details ===
+  const peepWt = parseFloat($('peepWt').value) || 0;
+  const dloopWt = parseFloat($('dloopWt').value) || 0;
+  const kisserWt = parseFloat($('kisserWt').value) || 0;
+  const silencerWt = parseFloat($('silencerWt').value) || 0;
+  const nockWt = parseFloat($('nockWt').value) || 0;
+
+  const calculatedTotal = peepWt + dloopWt + kisserWt + silencerWt + nockWt;
+
+  // Declare stringWtInput first
+  const stringWtInput = $('stringWt');
+
+  // Update the display total
+  const totalEl = $('stringAddonsTotal');
+  if (totalEl) totalEl.textContent = calculatedTotal.toFixed(1);
+
+  // Only auto-update main field if user hasn't manually edited it
+  if (stringWtInput) {
+    const manualEdited = stringWtInput.dataset.manual === 'true';
+    if (!manualEdited) {
+      stringWtInput.value = calculatedTotal.toFixed(1);
+      stringWtInput.dataset.manual = 'false'; // reset flag
+    }
+  }
+
+  // FPS Slider
   let userFps = parseFloat($('fpsSlider').value);
   if (isNaN(userFps) || userFps <= 0) {
     const est = calculateEstimatedFPS();
@@ -1899,12 +2271,17 @@ function calculateEverything() {
   };
 
   // User Inputs
+  // === Bow Inputs ===
   addRow('Build Name', $('buildName').value || 'Unnamed');
   addRow('Application', $('appType').value);
-  addRow('Bow Model', $('bowModel').value);
+  addRow('Bow Model', $('bowModel').value || '-');
+  addRow('Bow Type', $('bowType').value || '-');
   addRow('IBO Speed', $('ibo').value ? $('ibo').value + ' fps' : '-');
   addRow('Draw Weight', drawWt + ' lb');
-  addRow('Draw Length', $('drawLen').value + ' in');
+  addRow('Draw Length', $('drawLen').value ? $('drawLen').value + ' in' : '-');
+  addRow('Let-off', $('letOff').value ? $('letOff').value + '%' : '-');
+  addRow('Brace Height', $('braceHeight').value ? $('braceHeight').value + ' in' : '-');
+  addRow('Cam System', $('camType').value || '-');
   addRow('String Add-ons', $('stringWt').value + ' gr');
 
   // === Sight Pin Zeros in Summary ===
@@ -2028,7 +2405,6 @@ function updateLoadDropdown() {
   });
 }
 
-// Preloaded Sample Profiles (prefixed with SAMPLE)
 // Preloaded Sample Profiles (prefixed with SAMPLE)
 const sampleProfiles = [
   {
@@ -2325,6 +2701,20 @@ function deleteBuild() {
     updateLoadDropdown();
     alert(`Build deleted`);
   }
+}
+
+// String weight listener 
+['peepWt', 'dloopWt', 'kisserWt', 'silencerWt', 'nockWt'].forEach(id => {
+  const el = $(id);
+  if (el) el.addEventListener('input', calculateEverything);
+});
+
+// Add this with other listeners (outside calculateEverything)
+const stringWtInput = $('stringWt');
+if (stringWtInput) {
+  stringWtInput.addEventListener('input', () => {
+    stringWtInput.dataset.manual = 'true';
+  });
 }
 
 function syncSlider(sliderId, inputId) {
