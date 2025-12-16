@@ -705,8 +705,7 @@
             <label for="totalWt">Total weight gr</label>
             <button type="button" onclick="showTotalWtPopup()" class="info-btn" title="About Total Arrow Weight">ⓘ</button>
           </div>
-          <input type="number" id="totalWt" value="495" min="200" max="1000" step="0.5" style="flex:1;">
-        </div>        
+          <input type="number" id="totalWt" value="495" min="200" max="1000" step="0.5" style="flex:1;" data-manual="false">        </div>        
         <!---Point Weight-->           
         <div class="input-row" style="align-items:center; gap:0.5rem;">
           <div style="display:flex; align-items:center; gap:0.4rem;">
@@ -730,7 +729,7 @@
           <span>Component Details</span>
           <span class="chevron">></span>
         </div>
-                <div class="collapsible-content">
+        <div class="collapsible-content">
           <!-- New: Bare Shaft Weight -->
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
@@ -801,6 +800,13 @@
             </div>
             <input type="number" id="glueWt" value="0" step="0.5" style="flex:1;">
           </div>
+        </div>
+        <!-- Arrow Components Total Display -->
+        <div style="margin-top:1rem; padding:0.75rem; background:var(--border); border-radius:8px; text-align:center;">
+          <strong>Total Arrow Weight: <span id="arrowComponentsTotal">0</span> gr</strong>
+          <p style="font-size:0.85rem; color:var(--light); margin-top:0.5rem;">
+            Auto-calculated from components. Edit main Total Weight field to override.
+          </p>
         </div>
       </div>
     </div>
@@ -2459,6 +2465,30 @@ function calculateEverything() {
     }
   }
 
+  // === Auto-calculate Arrow Components Total ===
+  const bareShaftWt = parseFloat($('bareShaftWt').value) || 0;
+  const insertWt = parseFloat($('insertWt').value) || 0;
+  const wrapWt = parseFloat($('wrapWt').value) || 0;
+  const vaneWtEach = parseFloat($('vaneWt').value) || 0;
+  const vaneCount = parseFloat($('vaneCount').value) || 0;
+  const glueWt = parseFloat($('glueWt').value) || 0;
+
+  const calculatedArrowTotal = bareShaftWt + insertWt + wrapWt + (vaneWtEach * vaneCount) + glueWt + pointWt;
+
+  // Update display total
+  const arrowTotalEl = $('arrowComponentsTotal');
+  if (arrowTotalEl) arrowTotalEl.textContent = calculatedArrowTotal.toFixed(1);
+
+  // Only auto-update main field if user hasn't manually edited it
+  const totalWtInput = $('totalWt');
+  if (totalWtInput) {
+    const manualEdited = totalWtInput.dataset.manual === 'true';
+    if (!manualEdited) {
+      totalWtInput.value = calculatedArrowTotal.toFixed(1);
+      totalWtInput.dataset.manual = 'false'; // reset after auto-update
+    }
+  }
+
   // FPS Slider
   let userFps = parseFloat($('fpsSlider').value);
   if (isNaN(userFps) || userFps <= 0) {
@@ -3218,6 +3248,20 @@ const pinCountSelect = $('pinCount');
 if (pinCountSelect) {
   pinCountSelect.addEventListener('change', () => {
     calculateEverything();
+  });
+}
+
+// Arrow components auto-sum listeners
+['bareShaftWt', 'insertWt', 'wrapWt', 'vaneWt', 'vaneCount', 'glueWt', 'pointWt'].forEach(id => {
+  const el = $(id);
+  if (el) el.addEventListener('input', calculateEverything);
+});
+
+// Manual override for Total Arrow Weight
+const totalWtInput = $('totalWt');
+if (totalWtInput) {
+  totalWtInput.addEventListener('input', () => {
+    totalWtInput.dataset.manual = 'true';
   });
 }
 
