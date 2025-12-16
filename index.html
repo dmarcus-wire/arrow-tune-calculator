@@ -614,33 +614,37 @@
       </div>
     </div>
 
-    <!-- Collapsible Sight Pin Zeros Card -->
-    <div class="card collapsible-mobile" id="sightCard">
+    <!-- Sight Pin Zeros Card - Collapsible on all devices -->
+    <div class="card" id="sightCard">
       <div class="collapsible-trigger" onclick="this.classList.toggle('open')">
         <span>Sight Pin Zeros</span>
         <span class="chevron">></span>
       </div>
       <div class="collapsible-content">
-        <div class="input-row">
-          <label for="pinCount">Number of Pins</label>
-          <select id="pinCount">
-            <option value="1">1-pin (Slider)</option>
+        <!-- Number of Pins with info icon next to label -->
+        <div class="input-row" style="align-items:center; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <label for="pinCount">Number of Pins</label>
+            <button type="button" onclick="showSightPinsPopup()" class="info-btn" title="About Sight Pin Zeros">ⓘ</button>
+          </div>
+          <select id="pinCount" style="flex:1;">
+            <option value="0">No Pins / Instinctive</option>
+            <option value="1">1-pin (Slider or Target)</option>
             <option value="2">2-pin</option>
             <option value="3" selected>3-pin</option>
             <option value="4">4-pin</option>
             <option value="5">5-pin</option>
           </select>
         </div>
+
+        <!-- Dynamic pin zero inputs -->
         <div id="pinInputs" style="margin-top:1rem; display:grid; gap:0.75rem;">
-          <!-- JS will fill individual pin inputs -->
+          <!-- JS fills this -->
         </div>
+
         <p style="font-size:0.9rem; color:var(--light); margin-top:0.75rem;">
           Set exact zero yardage for each pin — common for fixed pins or slider sights.
         </p>
-      </div>
-      <div class="mobile-only-trigger" onclick="this.parentElement.classList.toggle('open')">
-        <span>Details</span>
-        <span class="chevron">></span>
       </div>
     </div>
 
@@ -1344,6 +1348,27 @@ function showNockWtPopup() {
     <p>Extra weight from brass nocking points or tie-on nocks.</p>
     <p>Typical: 5–15 gr (brass ~10 gr).</p>
     <p>Small impact on speed, improves nock fit.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/*Sight pins info icon*/
+function showSightPinsPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Sight Pin Zeros</strong></p>
+    <p>Set the zero yardage for each pin on your bow sight.</p>
+    <hr>
+    <p><strong>Compound Bows</strong>: Most use multi-pin sights (e.g., 20/30/40/50 yd) or single-pin sliders.</p>
+    <p><strong>Target Recurve</strong>: Usually a single adjustable pin (aperture/dot).</p>
+    <p><strong>Traditional Recurve / Longbow</strong>: Typically <strong>no pins</strong> — instinctive, gap shooting, or string walking. Select "No Pins" for pure traditional.</p>
+    <hr>
+    <p><strong>How to Use:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Select number of pins (0 for instinctive)</li>
+      <li>Set exact zero for each (e.g., 20/30/50 yd for skipped pins)</li>
+      <li>Simulates moving sight housing or dialing a slider</li>
+    </ul>
+    <p>Used for build reference and future pin gap/drop analysis.</p>
   `;
   $('gameMathModal').style.display = 'flex';
 }
@@ -2193,20 +2218,25 @@ function calculateEverything() {
   if (groupStabilityValue) groupStabilityValue.textContent = `${goodCount}/3`;
   if (groupStabilityMarker) groupStabilityMarker.style.left = `${groupPercent}%`;
 
-    // === Custom Sight Pin Zeros ===
-  const pinCount = parseInt($('pinCount').value) || 3;
+  // === Custom Sight Pin Zeros ===
+  const pinCountSelect = $('pinCount');
+  const pinCount = pinCountSelect ? Number(pinCountSelect.value) : 3;
   const pinInputsContainer = $('pinInputs');
   if (pinInputsContainer) {
     pinInputsContainer.innerHTML = '';
-    for (let i = 1; i <= pinCount; i++) {
-      const defaultZero = i === 1 ? 20 : (i === 2 ? 30 : (i === 3 ? 40 : (i === 4 ? 50 : 60)));
-      const pinId = `pin${i}Zero`;
-      pinInputsContainer.innerHTML += `
-        <div class="input-row">
-          <label for="${pinId}">Pin ${i} Zero (yd)</label>
-          <input type="number" id="${pinId}" value="${defaultZero}" min="10" max="100" step="5">
-        </div>
-      `;
+    if (pinCount > 0) {
+      for (let i = 1; i <= pinCount; i++) {
+        const defaultZero = i === 1 ? 20 : (i === 2 ? 30 : (i === 3 ? 40 : (i === 4 ? 50 : 60)));
+        const pinId = `pin${i}Zero`;
+        pinInputsContainer.innerHTML += `
+          <div class="input-row">
+            <label for="${pinId}">Pin ${i} Zero (yd)</label>
+            <input type="number" id="${pinId}" value="${defaultZero}" min="10" max="100" step="5">
+          </div>
+        `;
+      }
+    } else {
+      pinInputsContainer.innerHTML = '<p style="font-size:0.9rem; color:var(--light); margin:0;">Instinctive shooting — no pins configured.</p>';
     }
   }
 
@@ -2286,10 +2316,14 @@ function calculateEverything() {
 
   // === Sight Pin Zeros in Summary ===
   const pinCountSummary = parseInt($('pinCount').value) || 3;
-  for (let i = 1; i <= pinCountSummary; i++) {
-    const pinZeroEl = $(`pin${i}Zero`);
-    const pinZero = pinZeroEl ? pinZeroEl.value : (i === 1 ? '20' : (i === 2 ? '30' : (i === 3 ? '40' : (i === 4 ? '50' : '60'))));
-    addRow(`Pin ${i} Zero`, pinZero + ' yd');
+  if (pinCountSummary > 0) {
+    for (let i = 1; i <= pinCountSummary; i++) {
+      const pinZeroEl = $(`pin${i}Zero`);
+      const pinZero = pinZeroEl ? pinZeroEl.value : (i === 1 ? '20' : (i === 2 ? '30' : (i === 3 ? '40' : (i === 4 ? '50' : '60'))));
+      addRow(`Pin ${i} Zero`, pinZero + ' yd');
+    }
+  } else {
+    addRow('Sight Pins', 'None / Instinctive');
   }
 
   // Arrow inputs continue...
@@ -2708,6 +2742,15 @@ function deleteBuild() {
   const el = $(id);
   if (el) el.addEventListener('input', calculateEverything);
 });
+
+// Sight Pin listener
+// Rebuild pin inputs when pinCount changes
+const pinCountSelect = $('pinCount');
+if (pinCountSelect) {
+  pinCountSelect.addEventListener('change', () => {
+    calculateEverything();
+  });
+}
 
 // Add this with other listeners (outside calculateEverything)
 const stringWtInput = $('stringWt');
