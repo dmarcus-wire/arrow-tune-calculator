@@ -531,7 +531,17 @@
           <div class="input-row"><label for="insertWt">Insert/Outsert gr</label><input type="number" id="insertWt" value="0" step="0.5"></div>
           <div class="input-row"><label for="wrapWt">Wrap gr</label><input type="number" id="wrapWt" value="0" step="0.5"></div>
           <div class="input-row"><label for="vaneWt">Vane weight (each) gr</label><input type="number" id="vaneWt" value="0" step="0.1"></div>
+                  <div class="input-row"><label for="vaneHeight">Vane Height (in)</label><input type="number" id="vaneHeight" value="0.5" min="0.2" max="0.8" step="0.05"></div>
           <div class="input-row"><label for="vaneCount">Vane count</label><input type="number" id="vaneCount" value="0"></div>
+          <div class="input-row"><label for="vaneHelical">Helical / Offset</label>
+            <select id="vaneHelical">
+              <option value="straight">Straight</option>
+              <option value="slight">Slight Offset</option>
+              <option value="moderate">Moderate Offset</option>
+              <option value="high">High Offset / Helical</option>
+              <option value="max" selected>Max Helical</option>
+            </select>
+          </div>
           <div class="input-row"><label for="glueWt">Glue / Pin gr</label><input type="number" id="glueWt" value="0" step="0.5"></div>
         </div>
       </div>
@@ -1936,7 +1946,9 @@ function saveBuild() {
     insertWt: $('insertWt').value,
     wrapWt: $('wrapWt').value,
     vaneWt: $('vaneWt').value,
+    vaneHeight: $('vaneHeight').value,
     vaneCount: $('vaneCount').value,
+    vaneHelical: $('vaneHelical').value,
     glueWt: $('glueWt').value,
     fpsSlider: $('fpsSlider').value,
     windSlider: $('windSlider').value,
@@ -1978,7 +1990,9 @@ function loadBuild() {
   $('insertWt').value = build.insertWt || '50';
   $('wrapWt').value = build.wrapWt || '8';
   $('vaneWt').value = build.vaneWt || '8';
+  $('vaneHeight').value = build.vaneHeight || '2';
   $('vaneCount').value = build.vaneCount || '3';
+  $('vaneHelical').value = build.vaneHelical || 'max';
   $('glueWt').value = build.glueWt || '5';
   alert(`Build "${build.name}" loaded!`);
   $('fpsSlider').value = build.fpsSlider || '278';
