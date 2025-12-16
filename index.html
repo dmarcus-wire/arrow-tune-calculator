@@ -493,9 +493,26 @@
       <div class="card-content">
         <div class="input-row"><label for="appType">Application</label><select id="appType"><option>Target</option><option selected>Hunting</option><option>Other</option></select></div>
         <div class="input-row"><label for="bowModel">Model</label><input type="text" id="bowModel" placeholder="Hoyt RX-9"></div>
+        <div class="input-row"><label for="bowType">Bow Type</label>
+          <select id="bowType">
+            <option value="compound" selected>Compound</option>
+            <option value="recurve">Recurve</option>
+            <option value="longbow">Longbow</option>
+          </select>
+        </div>
+        <div class="input-row"><label for="letOff">Let-off %</label><input type="number" id="letOff" value="80" min="65" max="90" step="1"></div>
         <div class="input-row"><label for="ibo">IBO fps</label><input type="number" id="ibo" value="340"></div>
         <div class="input-row"><label for="drawWt">Draw wt lb</label><input type="number" id="drawWt" value="70" step="0.5"></div>
         <div class="input-row"><label for="drawLen">Draw length in</label><input type="number" id="drawLen" value="29" step="0.1"></div>
+        <div class="input-row"><label for="braceHeight">Brace height in</label><input type="number" id="braceHeight" value="6" step="0.1"></div>
+          <div class="input-row"><label for="camType">Cam System</label>
+            <select id="camType">
+              <option value="hybrid">Hybrid / Binary</option>
+              <option value="single">Single Cam</option>
+              <option value="twin">Twin / Dual Cam</option>
+              <option value="n/a">N/A (Recurve/Longbow)</option>
+            </select>
+          </div>
         <div class="input-row"><label for="stringWt">String add-ons gr</label><input type="number" id="stringWt" value="20"></div>
         <div class="collapsible-trigger" onclick="this.classList.toggle('open'); this.nextElementSibling.style.display = this.classList.contains('open') ? 'block' : 'none';">
           <span>String Details</span>
@@ -1770,12 +1787,17 @@ function updateLoadDropdown() {
 }
 
 // Preloaded Sample Profiles (prefixed with SAMPLE)
+// Preloaded Sample Profiles (prefixed with SAMPLE)
 const sampleProfiles = [
   {
     name: "SAMPLE Cameron Hanes Heavy Hunter",
     date: "2025-01-01",
     appType: "Hunting",
-    bowModel: "Hoyt RX-8",
+    bowModel: "Hoyt RX-9 Ultra",
+    bowType: "compound",
+    letOff: "85",
+    braceHeight: "6.375",
+    camType: "hybrid",
     ibo: "340",
     drawWt: "80",
     drawLen: "27",
@@ -1793,6 +1815,10 @@ const sampleProfiles = [
     date: "2025-01-01",
     appType: "Hunting",
     bowModel: "PSE Evo NXT",
+    bowType: "compound",
+    letOff: "80",
+    braceHeight: "6.5",
+    camType: "hybrid",
     ibo: "342",
     drawWt: "90",
     drawLen: "29",
@@ -1809,7 +1835,11 @@ const sampleProfiles = [
     name: "SAMPLE John Dudley Nock On Pro",
     date: "2025-01-01",
     appType: "Hunting",
-    bowModel: "PSE Carbon Levitate",
+    bowModel: "PSE Nock On Unite",
+    bowType: "compound",
+    letOff: "85",
+    braceHeight: "7",
+    camType: "hybrid",
     ibo: "340",
     drawWt: "70",
     drawLen: "29",
@@ -1827,6 +1857,10 @@ const sampleProfiles = [
     date: "2025-01-01",
     appType: "Target",
     bowModel: "Mathews TRX",
+    bowType: "compound",
+    letOff: "80",
+    braceHeight: "7",
+    camType: "hybrid",
     ibo: "350",
     drawWt: "60",
     drawLen: "27.5",
@@ -1844,6 +1878,10 @@ const sampleProfiles = [
     date: "2025-01-01",
     appType: "Target",
     bowModel: "Bowtech Reckoning",
+    bowType: "compound",
+    letOff: "80",
+    braceHeight: "7",
+    camType: "hybrid",
     ibo: "340",
     drawWt: "65",
     drawLen: "28",
@@ -1860,7 +1898,11 @@ const sampleProfiles = [
     name: "SAMPLE James Yates Backcountry",
     date: "2025-01-01",
     appType: "Hunting",
-    bowModel: "Hoyt RX-8",
+    bowModel: "Hoyt RX-9",
+    bowType: "compound",
+    letOff: "85",
+    braceHeight: "6.125",
+    camType: "hybrid",
     ibo: "340",
     drawWt: "70",
     drawLen: "28",
@@ -1928,9 +1970,13 @@ function saveBuild() {
     date: new Date().toISOString().slice(0,10),
     appType: $('appType').value,
     bowModel: $('bowModel').value,
+    bowType: $('bowType').value,
     ibo: $('ibo').value,
     drawWt: $('drawWt').value,
     drawLen: $('drawLen').value,
+    letOff: $('letOff').value,
+    braceHeight: $('braceHeight').value,
+    camType: $('camType').value,
     stringWt: $('stringWt').value,
     peepWt: $('peepWt').value,
     dloopWt: $('dloopWt').value,
@@ -1972,6 +2018,10 @@ function loadBuild() {
   $('buildName').value = build.name;
   $('appType').value = build.appType || 'Hunting';
   $('bowModel').value = build.bowModel || '';
+  $('bowType').value = build.bowType || 'compound';
+  $('letOff').value = build.letOff || '80';
+  $('braceHeight').value = build.braceHeight || '6';
+  $('camType').value = build.camType || 'hybrid';
   $('ibo').value = build.ibo || '';
   $('drawWt').value = build.drawWt || '';
   $('drawLen').value = build.drawLen || '';
