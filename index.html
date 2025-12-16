@@ -455,7 +455,7 @@
           <button id="aiButton" class="btn-small" style="background:var(--purple);">AI Advisor</button>
         </div>
       </div>
-      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.9</p>
+      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.10</p>
     </div>
     <div class="card">
       <h2>Build</h2>
@@ -518,28 +518,34 @@
       </div>
     </div>
 
-    <!-- Custom Sight Pin Zeros Card -->
-    <div class="card">
-      <h2 style="display:flex; align-items:center; gap:0.75rem;">
-        Sight
-        <button onclick="showSightPopup()" class="info-btn" title="Explain Sight Pins">ⓘ</button>
-      </h2>
-      <div class="input-row">
-        <label for="pinCount">Number of Pins</label>
-        <select id="pinCount">
-          <option value="1">1-pin (Slider)</option>
-          <option value="2">2-pin</option>
-          <option value="3" selected>3-pin</option>
-          <option value="4">4-pin</option>
-          <option value="5">5-pin</option>
-        </select>
+    <!-- Collapsible Sight Pin Zeros Card -->
+    <div class="card collapsible-mobile" id="sightCard">
+      <div class="collapsible-trigger" onclick="this.classList.toggle('open')">
+        <span>Sight Pin Zeros</span>
+        <span class="chevron">></span>
       </div>
-      <div id="pinInputs" style="margin-top:1rem; display:grid; gap:0.75rem;">
-        <!-- JS will fill individual pin inputs -->
+      <div class="collapsible-content">
+        <div class="input-row">
+          <label for="pinCount">Number of Pins</label>
+          <select id="pinCount">
+            <option value="1">1-pin (Slider)</option>
+            <option value="2">2-pin</option>
+            <option value="3" selected>3-pin</option>
+            <option value="4">4-pin</option>
+            <option value="5">5-pin</option>
+          </select>
+        </div>
+        <div id="pinInputs" style="margin-top:1rem; display:grid; gap:0.75rem;">
+          <!-- JS will fill individual pin inputs -->
+        </div>
+        <p style="font-size:0.9rem; color:var(--light); margin-top:0.75rem;">
+          Set exact zero yardage for each pin — common for fixed pins or slider sights.
+        </p>
       </div>
-      <p style="font-size:0.9rem; color:var(--light); margin-top:0.75rem;">
-        Set exact zero yardage for each pin — common for fixed pins or slider sights.
-      </p>
+      <div class="mobile-only-trigger" onclick="this.parentElement.classList.toggle('open')">
+        <span>Details</span>
+        <span class="chevron">></span>
+      </div>
     </div>
 
     <!---ARROW INPUTS-->
@@ -900,7 +906,7 @@
         </h2>
         <p style="font-size:1.4rem; font-weight:700; margin:0.75rem 0;">
           <span id="peakHeightFt">0.0</span> ft / <span id="peakHeightIn">0.0</span> in
-          <br>to <span id="peakDistanceYd">0</span> yd
+          <br>at <span id="peakDistanceYd">0</span> yd
         </p>
         <p style="font-size:0.9rem; color:var(--light);">
           Max height above launch line — great for clearing brush or blind windows.
@@ -1461,44 +1467,139 @@ function showSightPopup() {
 }
 
 function showPeakHeightPopup() {
+  // Grab live user values for personalized display
+  const fps = parseFloat($('fpsSlider').value) || 278;
+
+  // Recalculate with current FPS
+  const approxThetaDeg = 3;
+  const approxThetaRad = approxThetaDeg * Math.PI / 180;
+  const v0y = fps * Math.sin(approxThetaRad);
+  const peakHeightFt = (v0y * v0y) / (2 * 32.174);
+  const timeToPeak = v0y / 32.174;
+  const peakDistanceYd = Math.round((fps * Math.cos(approxThetaRad) * timeToPeak) / 3);
+
   $('gameMathContent').innerHTML = `
-    <p><strong>Peak Height Math</strong></p>
-    <p>The maximum height the arrow reaches above the launch line (not line of sight).</p>
+    <p><strong>Peak Height Math & Usage</strong></p>
+    <p>The highest point your arrow reaches above the launch line (not line of sight).</p>
     <hr>
-    <p>Formula: h = (v₀ sinθ)² / (2g)</p>
-    <p>Where:</p>
+    <p><strong>Your Current Build:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>v₀ = launch speed (your FPS)</li>
-      <li>θ ≈ 3° (typical upward angle for 20 yd zero)</li>
-      <li>g = 32.174 ft/s²</li>
+      <li>Actual Speed: <strong>${fps.toFixed(1)} fps</strong></li>
+      <li>Peak Height: <strong>${peakHeightFt.toFixed(1)} ft / ${(peakHeightFt * 12).toFixed(1)} in</strong></li>
+      <li>Occurs at: <strong>${peakDistanceYd} yd</strong></li>
     </ul>
-    <p>Useful for clearing obstacles on angled shots (brush, branches, blind windows).</p>
+    <hr>
+    <p><strong>Why Doesn't This Change with the Range Slider?</strong></p>
+    <p>Peak height is a property of the <strong>entire trajectory arc</strong> — determined by launch speed and upward angle (fixed for 20 yd zero). It always occurs near the midpoint of the full flight path (~80–90 yd vacuum range), around 40–45 yd for hunting speeds.</p>
+    <p>The Range slider only changes where you're aiming — not the shape of the arc itself.</p>
+    <p>Example: At 50 yd range, your arrow is already <strong>past the peak</strong> and dropping (see Downrange Drop card).</p>
+    <hr>
+    <p><strong>Step-by-Step Calculation:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Upward velocity ≈ ${fps.toFixed(1)} × sin(3°) ≈ ${v0y.toFixed(1)} ft/s</li>
+      <li>Height = (v₀ sinθ)² / (2g) = <strong>${peakHeightFt.toFixed(1)} ft</strong></li>
+      <li>Distance to peak ≈ <strong>${peakDistanceYd} yd</strong></li>
+    </ul>
+    <hr>
+    <p><strong>How to Use It:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Brush/Branch Clearance:</strong> Must clear obstacles on steep shots.</li>
+      <li><strong>Blind Window Shots:</strong> Higher peak = safer over frame.</li>
+      <li><strong>Compare Builds:</strong> Faster arrows = higher/farther peak.</li>
+    </ul>
+    <p>Influenced by: <strong>Actual Speed (FPS)</strong> — primary factor.</p>
   `;
   $('gameMathModal').style.display = 'flex';
 }
 
 function showDropPopup() {
+  // Get current user values
+  const fps = parseFloat($('fpsSlider').value) || 278;
+  const totalWt = parseFloat($('totalWt').value) || 495;
+  const rangeYd = parseFloat($('rangeSlider').value) || 50;
+
+  // Calculate actual drop values (same as in cards)
+  const dropAtDistance = (distYd) => {
+    const distFt = distYd * 3;
+    const time = distFt / fps;
+    return 0.5 * 32.174 * time * time * 12; // inches total gravity drop
+  };
+  const dropInTarget = dropAtDistance(rangeYd);
+  const drop20 = dropAtDistance(20);
+  const relativeDropInTarget = dropInTarget - drop20;
+  const dropFtTarget = (relativeDropInTarget / 12).toFixed(1);
+  const dropInTargetRounded = relativeDropInTarget.toFixed(1);
+
   $('gameMathContent').innerHTML = `
-    <p><strong>Downrange Drop Math</strong></p>
-    <p>How far the arrow falls below your line of sight at the selected range.</p>
+    <p><strong>Downrange Drop Math & Usage</strong></p>
+    <p>How far the arrow impacts <strong>below your line of sight</strong> at the selected Range (with a 20 yd zero).</p>
     <hr>
-    <p>Calculated as extra gravity drop beyond your 20 yd zero.</p>
-    <p>Real-world values help set pin gaps or holdover.</p>
-    <p>Lower drop = flatter trajectory = easier long-range shots.</p>
+    <p><strong>Your Current Build:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Actual Speed: <strong>${fps.toFixed(1)} fps</strong></li>
+      <li>Total Arrow Weight: <strong>${totalWt} gr</strong></li>
+      <li>Current Range: <strong>${rangeYd} yd</strong></li>
+      <li>Downrange Drop: <strong>${dropFtTarget} ft / ${dropInTargetRounded} in</strong></li>
+    </ul>
+    <hr>
+    <p><strong>Calculation:</strong></p>
+    <p>Extra gravity drop beyond your 20 yd zero.</p>
+    <p>Step-by-step:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Total gravity drop at ${rangeYd} yd: ${(dropInTarget).toFixed(1)} in</li>
+      <li>Total gravity drop at 20 yd: ${(drop20).toFixed(1)} in</li>
+      <li>Extra drop = ${dropInTarget.toFixed(1)} − ${drop20.toFixed(1)} = <strong>${relativeDropInTarget.toFixed(1)} in</strong></li>
+      <li>= <strong>${dropFtTarget} ft</strong></li>
+    </ul>
+    <hr>
+    <p><strong>How to Use It:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Pin Gaps & Holdover:</strong> Aim this high above vitals with your last pin.</li>
+      <li><strong>Ethical Range:</strong> If drop > vital zone (~12–18 in), consider it your max accurate range.</li>
+      <li><strong>Compare Builds:</strong> Faster/lighter arrows = less drop = flatter trajectory.</li>
+    </ul>
+    <p>Influenced by: <strong>Actual Speed</strong> (biggest), <strong>Total Arrow Weight</strong> (retains speed), and <strong>Range</strong>.</p>
   `;
   $('gameMathModal').style.display = 'flex';
 }
 
 function showFlightTimePopup() {
+  // Grab live user values
+  const fps = parseFloat($('fpsSlider').value) || 278;
+  const rangeYd = parseFloat($('rangeSlider').value) || 50;
+  const totalWt = parseFloat($('totalWt').value) || 495;
+
+  // Calculate flight time (same as card)
+  const timeTarget = (rangeYd * 3) / fps;
+
   $('gameMathContent').innerHTML = `
-    <p><strong>Flight Time Math</strong></p>
-    <p>Time from release to impact — the animal's reaction window.</p>
+    <p><strong>Flight Time Math & Usage</strong></p>
+    <p>Time from release to impact — the animal's "reaction window".</p>
     <hr>
-    <p>Formula: t = distance / (FPS × cosθ)</p>
-    <p>Where θ is the small upward launch angle.</p>
-    <p>• Under 0.2 s = very fast (hard to jump string)</p>
-    <p>• 0.2–0.3 s = average</p>
-    <p>• Over 0.3 s = slower (more reaction time)</p>
+    <p><strong>Your Current Build:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Actual Speed: <strong>${fps.toFixed(1)} fps</strong></li>
+      <li>Total Arrow Weight: <strong>${totalWt} gr</strong></li>
+      <li>Current Range: <strong>${rangeYd} yd</strong></li>
+      <li>Flight Time: <strong>${timeTarget.toFixed(3)} sec</strong></li>
+    </ul>
+    <hr>
+    <p><strong>Step-by-Step Calculation:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Horizontal distance = ${rangeYd} yd × 3 = ${rangeYd * 3} ft</li>
+      <li>Horizontal velocity ≈ ${fps.toFixed(1)} fps (small upward angle ignored for approximation)</li>
+      <li>Time = distance / velocity = ${ (rangeYd * 3).toFixed(0) } / ${fps.toFixed(1)} ≈ <strong>${timeTarget.toFixed(3)} sec</strong></li>
+    </ul>
+    <hr>
+    <p><strong>How to Use It (Hunting Guide):</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Under 0.2 sec</strong>: Very fast — animal struggles to react ("string jump" rare)</li>
+      <li><strong>0.2–0.3 sec</strong>: Average — most hunting setups. Good with calm animals.</li>
+      <li><strong>Over 0.3 sec</strong>: Slower — higher risk of jump, especially alert game.</li>
+    </ul>
+    <p>Your ${timeTarget.toFixed(3)} sec at ${rangeYd} yd is solid for a heavy hunting arrow — great balance of quietness and penetration.</p>
+    <hr>
+    <p>Influenced by: <strong>Actual Speed (FPS)</strong> and <strong>Range</strong>. Heavier arrows slightly slower but quieter.</p>
   `;
   $('gameMathModal').style.display = 'flex';
 }
