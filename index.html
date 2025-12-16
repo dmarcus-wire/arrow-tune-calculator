@@ -21,7 +21,9 @@
       font-family:'Inter',sans-serif;
       background:var(--bg);
       color:var(--text);
-      padding:0.5rem;
+      padding:0.5rem; /* desktop */
+      padding-bottom: env(safe-area-inset-bottom, 1rem); /* extra bottom space for home bar */
+      padding-top: env(safe-area-inset-top, 0.5rem);
       min-height:100vh;
     }
     .container {
@@ -29,6 +31,12 @@
       margin:auto;
       display:grid;
       gap:1rem 1.5rem;
+    }
+    @media (max-width:768px) {
+      body {
+        padding:1rem;
+        padding-bottom: max(1rem, env(safe-area-inset-bottom));
+      }
     }
     @media (max-width:1023px) { .container { grid-template-columns:1fr; } }
     @media (min-width:1024px) { .container { grid-template-columns:460px 1fr; } }
@@ -649,7 +657,7 @@
     </div>
 
     <!---ARROW INPUTS-->
-        <div class="card" id="arrowCard">
+    <div class="card" id="arrowCard">
       <div class="collapsible-trigger" onclick="this.classList.toggle('open')">
         <span>Arrow Details</span>
         <span class="chevron">></span>
@@ -716,7 +724,7 @@
       </div>
     </div>
 
-        <!-- Effective Draw Weight Card -->
+    <!-- Effective Draw Weight Card -->
     <div class="card">
       <h2 style="display:flex; align-items:center; gap:0.75rem;">
         Effective Draw Weight
