@@ -455,7 +455,7 @@
           <button id="aiButton" class="btn-small" style="background:var(--purple);">AI Advisor</button>
         </div>
       </div>
-      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.10</p>
+      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.11</p>
     </div>
     <div class="card">
       <h2>Build</h2>
@@ -474,9 +474,12 @@
     </div>
 
     <!---BOW INPUTS-->
-    <div class="card collapsible-mobile" id="bowCard">
-      <h2 style="margin:0 0 0.75rem 0;">Bow</h2>
-      <div class="card-content">
+        <div class="card" id="bowCard">
+      <div class="collapsible-trigger" onclick="this.classList.toggle('open')">
+        <span>Bow Details</span>
+        <span class="chevron">></span>
+      </div>
+      <div class="collapsible-content">
         <div class="input-row"><label for="appType">Application</label><select id="appType"><option>Target</option><option selected>Hunting</option><option>Other</option></select></div>
         <div class="input-row"><label for="bowModel">Model</label><input type="text" id="bowModel" placeholder="Hoyt RX-9"></div>
         <div class="input-row"><label for="bowType">Bow Type</label>
@@ -486,20 +489,20 @@
             <option value="longbow">Longbow</option>
           </select>
         </div>
-        <div class="input-row"><label for="letOff">Let-off %</label><input type="number" id="letOff" value="80" min="65" max="90" step="1"></div>
         <div class="input-row"><label for="ibo">IBO fps</label><input type="number" id="ibo" value="340"></div>
         <div class="input-row"><label for="drawWt">Draw wt lb</label><input type="number" id="drawWt" value="70" step="0.5"></div>
         <div class="input-row"><label for="drawLen">Draw length in</label><input type="number" id="drawLen" value="29" step="0.1"></div>
-        <div class="input-row"><label for="braceHeight">Brace height in</label><input type="number" id="braceHeight" value="6" step="0.1"></div>
-          <div class="input-row"><label for="camType">Cam System</label>
-            <select id="camType">
-              <option value="hybrid">Hybrid / Binary</option>
-              <option value="single">Single Cam</option>
-              <option value="twin">Twin / Dual Cam</option>
-              <option value="n/a">N/A (Recurve/Longbow)</option>
-            </select>
-          </div>
         <div class="input-row"><label for="stringWt">String add-ons gr</label><input type="number" id="stringWt" value="20"></div>
+        <div class="input-row"><label for="letOff">Let-off %</label><input type="number" id="letOff" value="80" min="65" max="90" step="1"></div>
+        <div class="input-row"><label for="braceHeight">Brace height in</label><input type="number" id="braceHeight" value="6" step="0.1"></div>
+        <div class="input-row"><label for="camType">Cam System</label>
+          <select id="camType">
+            <option value="hybrid">Hybrid / Binary</option>
+            <option value="single">Single Cam</option>
+            <option value="twin">Twin / Dual Cam</option>
+            <option value="n/a">N/A (Recurve/Longbow)</option>
+          </select>
+        </div>
         <div class="collapsible-trigger" onclick="this.classList.toggle('open'); this.nextElementSibling.style.display = this.classList.contains('open') ? 'block' : 'none';">
           <span>String Details</span>
           <span class="chevron">></span>
@@ -511,10 +514,6 @@
           <div class="input-row"><label for="silencerWt">Silencers gr</label><input type="number" id="silencerWt" value="0" step="0.5"></div>
           <div class="input-row"><label for="nockWt">Nock weight gr</label><input type="number" id="nockWt" value="0" step="0.5"></div>
         </div>
-      </div>
-      <div class="mobile-only-trigger" onclick="this.parentElement.classList.toggle('open')">
-        <span>Details</span>
-        <span class="chevron">></span>
       </div>
     </div>
 
@@ -549,9 +548,12 @@
     </div>
 
     <!---ARROW INPUTS-->
-    <div class="card collapsible-mobile" id="arrowCard">
-      <h2 style="margin:0 0 0.75rem 0;">Arrow</h2>
-      <div class="card-content">
+        <div class="card" id="arrowCard">
+      <div class="collapsible-trigger" onclick="this.classList.toggle('open')">
+        <span>Arrow Details</span>
+        <span class="chevron">></span>
+      </div>
+      <div class="collapsible-content">
         <div class="input-row"><label for="arrowName">Name</label><input type="text" id="arrowName" placeholder="Victory VAP TKO"></div>
         <div class="input-row"><label for="spine">Spine</label><input type="number" id="spine" value="300" min="100" max="600" step="10"></div>
         <div class="input-row"><label for="arrowLen">Length in</label><input type="number" id="arrowLen" value="28.5" step="0.1"></div>
@@ -566,8 +568,8 @@
           <div class="input-row"><label for="insertWt">Insert/Outsert gr</label><input type="number" id="insertWt" value="0" step="0.5"></div>
           <div class="input-row"><label for="wrapWt">Wrap gr</label><input type="number" id="wrapWt" value="0" step="0.5"></div>
           <div class="input-row"><label for="vaneWt">Vane weight (each) gr</label><input type="number" id="vaneWt" value="0" step="0.1"></div>
-                  <div class="input-row"><label for="vaneHeight">Vane Height (in)</label><input type="number" id="vaneHeight" value="0.5" min="0.2" max="0.8" step="0.05"></div>
           <div class="input-row"><label for="vaneCount">Vane count</label><input type="number" id="vaneCount" value="0"></div>
+          <div class="input-row"><label for="vaneHeight">Vane Height (in)</label><input type="number" id="vaneHeight" value="0.5" min="0.2" max="0.8" step="0.05"></div>
           <div class="input-row"><label for="vaneHelical">Helical / Offset</label>
             <select id="vaneHelical">
               <option value="straight">Straight</option>
@@ -580,13 +582,8 @@
           <div class="input-row"><label for="glueWt">Glue / Pin gr</label><input type="number" id="glueWt" value="0" step="0.5"></div>
         </div>
       </div>
-      <div class="mobile-only-trigger" onclick="this.parentElement.classList.toggle('open')">
-        <span>Details</span>
-        <span class="chevron">></span>
-      </div>
     </div>
   </div>
-
 
   <!--OUTPUT COLUMN-->
   <div id="outputs-column">
