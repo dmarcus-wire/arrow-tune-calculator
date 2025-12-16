@@ -471,7 +471,7 @@
           <button id="aiButton" class="btn-small" style="background:var(--purple);">AI Advisor</button>
         </div>
       </div>
-      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.7</p>
+      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.8</p>
     </div>
     <div class="card">
       <h2>Build</h2>
@@ -1757,6 +1757,154 @@ function updateLoadDropdown() {
     opt.textContent = `${build.date} – ${build.name}`;
     select.appendChild(opt);
   });
+}
+
+// Preloaded Sample Profiles (prefixed with SAMPLE)
+const sampleProfiles = [
+  {
+    name: "SAMPLE Cameron Hanes Heavy Hunter",
+    date: "2025-01-01",
+    appType: "Hunting",
+    bowModel: "Hoyt RX-8",
+    ibo: "340",
+    drawWt: "80",
+    drawLen: "27",
+    stringWt: "20",
+    arrowName: "Easton FMJ",
+    spine: "300",
+    arrowLen: "27.5",
+    totalWt: "500",
+    pointWt: "125",
+    balancePt: "18",
+    fpsSlider: "290"
+  },
+  {
+    name: "SAMPLE Josh Bowmar Beast Mode",
+    date: "2025-01-01",
+    appType: "Hunting",
+    bowModel: "PSE Evo NXT",
+    ibo: "342",
+    drawWt: "90",
+    drawLen: "29",
+    stringWt: "20",
+    arrowName: "Victory VAP TKO",
+    spine: "200",
+    arrowLen: "29",
+    totalWt: "520",
+    pointWt: "200",
+    balancePt: "18.5",
+    fpsSlider: "280"
+  },
+  {
+    name: "SAMPLE John Dudley Nock On Pro",
+    date: "2025-01-01",
+    appType: "Hunting",
+    bowModel: "PSE Carbon Levitate",
+    ibo: "340",
+    drawWt: "70",
+    drawLen: "29",
+    stringWt: "15",
+    arrowName: "Easton Axis",
+    spine: "300",
+    arrowLen: "28",
+    totalWt: "450",
+    pointWt: "125",
+    balancePt: "17",
+    fpsSlider: "295"
+  },
+  {
+    name: "SAMPLE Levi Morgan Champion",
+    date: "2025-01-01",
+    appType: "Target",
+    bowModel: "Mathews TRX",
+    ibo: "350",
+    drawWt: "60",
+    drawLen: "27.5",
+    stringWt: "10",
+    arrowName: "Altra Centrum",
+    spine: "300",
+    arrowLen: "27",
+    totalWt: "420",
+    pointWt: "100",
+    balancePt: "16",
+    fpsSlider: "310"
+  },
+  {
+    name: "SAMPLE Tim Gillingham Gold Tip Pro",
+    date: "2025-01-01",
+    appType: "Target",
+    bowModel: "Bowtech Reckoning",
+    ibo: "340",
+    drawWt: "65",
+    drawLen: "28",
+    stringWt: "15",
+    arrowName: "Gold Tip Triple X",
+    spine: "250",
+    arrowLen: "28",
+    totalWt: "460",
+    pointWt: "140",
+    balancePt: "17",
+    fpsSlider: "295"
+  },
+  {
+    name: "SAMPLE James Yates Backcountry",
+    date: "2025-01-01",
+    appType: "Hunting",
+    bowModel: "Hoyt RX-8",
+    ibo: "340",
+    drawWt: "70",
+    drawLen: "28",
+    stringWt: "20",
+    arrowName: "Easton Axis",
+    spine: "250",
+    arrowLen: "28",
+    totalWt: "480",
+    pointWt: "125",
+    balancePt: "17",
+    fpsSlider: "285"
+  }
+];
+
+// Load samples on first run
+if (!localStorage.getItem('arrowForgeSamplesLoaded')) {
+  let builds = JSON.parse(localStorage.getItem('arrowForgeBuilds') || '[]');
+  sampleProfiles.forEach(sample => {
+    if (!builds.some(b => b.name === sample.name)) {
+      builds.push(sample);
+    }
+  });
+  localStorage.setItem('arrowForgeBuilds', JSON.stringify(builds));
+  localStorage.setItem('arrowForgeSamplesLoaded', 'true');
+}
+
+function updateLoadDropdown() {
+  const select = $('loadBuild');
+  const builds = JSON.parse(localStorage.getItem('arrowForgeBuilds') || '[]');
+  select.innerHTML = '<option>– Load Build –</option>';
+  builds
+    .sort((a, b) => {
+      const dateA = a.date || '0000-00-00';
+      const dateB = b.date || '0000-00-00';
+      return dateB.localeCompare(dateA); // newest first
+    })
+    .forEach(build => {
+      const opt = document.createElement('option');
+      opt.value = build.name;
+      opt.textContent = `${build.date ? build.date + ' – ' : ''}${build.name}`;
+      select.appendChild(opt);
+    });
+}
+
+// Load samples if none exist
+if (!localStorage.getItem('arrowForgeSamplesLoaded')) {
+  let builds = JSON.parse(localStorage.getItem('arrowForgeBuilds') || '[]');
+  sampleProfiles.forEach(sample => {
+    if (!builds.some(b => b.name === sample.name)) {
+      builds.push(sample);
+    }
+  });
+  localStorage.setItem('arrowForgeBuilds', JSON.stringify(builds));
+  localStorage.setItem('arrowForgeSamplesLoaded', 'true');
 }
 
 function saveBuild() {
