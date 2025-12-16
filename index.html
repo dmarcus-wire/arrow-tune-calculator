@@ -495,7 +495,7 @@
             <label for="bowType">Bow Type</label>
             <button type="button" onclick="showBowTypePopup()" class="info-btn" title="About Bow Type">ⓘ</button>
           </div>
-          <select id="bowType" style="flex:1;">
+          <select id="bowType" onchange="updatePinCountForTraditional()">
             <option value="compound" selected>Compound</option>
             <option value="recurve">Recurve</option>
             <option value="longbow">Longbow</option>
@@ -1138,6 +1138,24 @@ function showBowTypePopup() {
     <p>No direct impact yet — coming in future updates.</p>
   `;
   $('gameMathModal').style.display = 'flex';
+}
+
+/*Bow Type Update Pins*/
+function updatePinCountForTraditional() {
+  const bowType = $('bowType').value;
+  const pinCountSelect = $('pinCount');
+
+  if (bowType === 'recurve' || bowType === 'longbow') {
+    pinCountSelect.value = '0'; // No Pins / Instinctive
+  } else {
+    // Optional: reset to 3-pin for compound if desired
+    if (pinCountSelect.value === '0') {
+      pinCountSelect.value = '3';
+    }
+  }
+
+  // Rebuild pin inputs to reflect change
+  calculateEverything();
 }
 
 /*IBO FPS info icon*/
