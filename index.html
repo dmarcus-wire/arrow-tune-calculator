@@ -663,24 +663,129 @@
         <span class="chevron">></span>
       </div>
       <div class="collapsible-content">
-        <div class="input-row"><label for="arrowName">Name</label><input type="text" id="arrowName" placeholder="Victory VAP TKO"></div>
-        <div class="input-row"><label for="spine">Spine</label><input type="number" id="spine" value="300" min="100" max="600" step="10"></div>
-        <div class="input-row"><label for="arrowLen">Length in</label><input type="number" id="arrowLen" value="28.5" step="0.1"></div>
-        <div class="input-row"><label for="totalWt">Total weight gr</label><input type="number" id="totalWt" value="495" step="0.5"></div>
-        <div class="input-row"><label for="pointWt">Point weight gr</label><input type="number" id="pointWt" value="125"></div>
-        <div class="input-row"><label for="balancePt">Balance point in</label><input type="number" id="balancePt" value="17.2" step="0.05"></div>
+        <!---Arrow Name-->
+        <div class="input-row" style="align-items:center; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <label for="arrowName">Name</label>
+            <button type="button" onclick="showArrowNamePopup()" class="info-btn" title="About Arrow Name">ⓘ</button>
+          </div>
+          <input type="text" id="arrowName" placeholder="Victory VAP TKO" style="flex:1;">
+        </div>        
+        <!---Arrow Spine-->
+        <div class="input-row" style="align-items:center; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <label for="spine">Spine</label>
+            <button type="button" onclick="showSpinePopup()" class="info-btn" title="About Spine">ⓘ</button>
+          </div>
+          <input type="number" id="spine" value="300" min="100" max="600" step="10" style="flex:1;">
+        </div>
+        <!---Arrow Diameter-->       
+        <div class="input-row" style="align-items:center; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <label for="arrowDia">Diameter</label>
+            <button type="button" onclick="showArrowDiaPopup()" class="info-btn" title="About Arrow Diameter">ⓘ</button>
+          </div>
+          <select id="arrowDia" style="flex:1;">
+            <option value="standard">Standard (~6.5mm / .246")</option>
+            <option value="small">Small (~5mm / .204")</option>
+            <option value="micro" selected>Micro (~4mm / .166")</option>
+          </select>
+        </div>
+        <!---Arrow Length-->
+        <div class="input-row" style="align-items:center; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <label for="arrowLen">Length in</label>
+            <button type="button" onclick="showArrowLenPopup()" class="info-btn" title="About Arrow Length">ⓘ</button>
+          </div>
+          <input type="number" id="arrowLen" value="28.5" min="24" max="34" step="0.1" style="flex:1;">
+        </div>        
+        <!---Total Weight-->        
+        <div class="input-row" style="align-items:center; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <label for="totalWt">Total weight gr</label>
+            <button type="button" onclick="showTotalWtPopup()" class="info-btn" title="About Total Arrow Weight">ⓘ</button>
+          </div>
+          <input type="number" id="totalWt" value="495" min="200" max="1000" step="0.5" style="flex:1;">
+        </div>        
+        <!---Point Weight-->           
+        <div class="input-row" style="align-items:center; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <label for="pointWt">Point weight gr</label>
+            <button type="button" onclick="showPointWtPopup()" class="info-btn" title="About Point Weight">ⓘ</button>
+          </div>
+          <input type="number" id="pointWt" value="125" min="50" max="300" step="5" style="flex:1;">
+        </div>        
+        
+        <!---Balance Point-->          
+        <div class="input-row" style="align-items:center; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <label for="balancePt">Balance point in</label>
+            <button type="button" onclick="showBalancePtPopup()" class="info-btn" title="About Balance Point">ⓘ</button>
+          </div>
+          <input type="number" id="balancePt" value="17.2" min="10" max="30" step="0.05" style="flex:1;">
+        </div>        
+        
+        <!---Components-->    
         <div class="collapsible-trigger" onclick="this.classList.toggle('open'); this.nextElementSibling.style.display = this.classList.contains('open') ? 'block' : 'none';">
           <span>Component Details</span>
           <span class="chevron">></span>
         </div>
-        <div class="collapsible-content">
-          <div class="input-row"><label for="insertWt">Insert/Outsert gr</label><input type="number" id="insertWt" value="0" step="0.5"></div>
-          <div class="input-row"><label for="wrapWt">Wrap gr</label><input type="number" id="wrapWt" value="0" step="0.5"></div>
-          <div class="input-row"><label for="vaneWt">Vane weight (each) gr</label><input type="number" id="vaneWt" value="0" step="0.1"></div>
-          <div class="input-row"><label for="vaneCount">Vane count</label><input type="number" id="vaneCount" value="0"></div>
-          <div class="input-row"><label for="vaneHeight">Vane Height (in)</label><input type="number" id="vaneHeight" value="0.5" min="0.2" max="0.8" step="0.05"></div>
-          <div class="input-row"><label for="vaneHelical">Helical / Offset</label>
-            <select id="vaneHelical">
+                <div class="collapsible-content">
+          <!-- New: Bare Shaft Weight -->
+          <div class="input-row" style="align-items:center; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+              <label for="bareShaftWt">Bare shaft weight gr</label>
+              <button type="button" onclick="showBareShaftWtPopup()" class="info-btn" title="About Bare Shaft Weight">ⓘ</button>
+            </div>
+            <input type="number" id="bareShaftWt" value="0" min="0" step="0.5" style="flex:1;">
+          </div>
+
+          <div class="input-row" style="align-items:center; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+              <label for="insertWt">Insert/Outsert gr</label>
+              <button type="button" onclick="showInsertWtPopup()" class="info-btn" title="About Insert/Outsert">ⓘ</button>
+            </div>
+            <input type="number" id="insertWt" value="0" step="0.5" style="flex:1;">
+          </div>
+
+          <div class="input-row" style="align-items:center; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+              <label for="wrapWt">Wrap gr</label>
+              <button type="button" onclick="showWrapWtPopup()" class="info-btn" title="About Wrap">ⓘ</button>
+            </div>
+            <input type="number" id="wrapWt" value="0" step="0.5" style="flex:1;">
+          </div>
+
+          <div class="input-row" style="align-items:center; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+              <label for="vaneWt">Vane weight (each) gr</label>
+              <button type="button" onclick="showVaneWtPopup()" class="info-btn" title="About Vane Weight">ⓘ</button>
+            </div>
+            <input type="number" id="vaneWt" value="0" step="0.1" style="flex:1;">
+          </div>
+
+          <div class="input-row" style="align-items:center; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+              <label for="vaneCount">Vane count</label>
+              <button type="button" onclick="showVaneCountPopup()" class="info-btn" title="About Vane Count">ⓘ</button>
+            </div>
+            <input type="number" id="vaneCount" value="0" min="0" max="6" style="flex:1;">
+          </div>
+
+          <div class="input-row" style="align-items:center; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+              <label for="vaneHeight">Vane Height (in)</label>
+              <button type="button" onclick="showVaneHeightPopup()" class="info-btn" title="About Vane Height">ⓘ</button>
+            </div>
+            <input type="number" id="vaneHeight" value="0.5" min="0.2" max="0.8" step="0.05" style="flex:1;">
+          </div>
+
+          <div class="input-row" style="align-items:center; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+              <label for="vaneHelical">Helical / Offset</label>
+              <button type="button" onclick="showVaneHelicalPopup()" class="info-btn" title="About Helical/Offset">ⓘ</button>
+            </div>
+            <select id="vaneHelical" style="flex:1;">
               <option value="straight">Straight</option>
               <option value="slight">Slight Offset</option>
               <option value="moderate">Moderate Offset</option>
@@ -688,7 +793,14 @@
               <option value="max" selected>Max Helical</option>
             </select>
           </div>
-          <div class="input-row"><label for="glueWt">Glue / Pin gr</label><input type="number" id="glueWt" value="0" step="0.5"></div>
+
+          <div class="input-row" style="align-items:center; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+              <label for="glueWt">Glue / Pin gr</label>
+              <button type="button" onclick="showGlueWtPopup()" class="info-btn" title="About Glue/Pin">ⓘ</button>
+            </div>
+            <input type="number" id="glueWt" value="0" step="0.5" style="flex:1;">
+          </div>
         </div>
       </div>
     </div>
@@ -1328,6 +1440,7 @@ function showStringAddonsPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+/*Peep  weight info icon*/
 function showPeepWtPopup() {
   $('gameMathContent').innerHTML = `
     <p><strong>Peep Weight (grains)</strong></p>
@@ -1338,6 +1451,7 @@ function showPeepWtPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+/*DLoop  weight info icon*/
 function showDloopWtPopup() {
   $('gameMathContent').innerHTML = `
     <p><strong>D-loop Weight (grains)</strong></p>
@@ -1348,6 +1462,7 @@ function showDloopWtPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+/*Kisser  weight info icon*/
 function showKisserWtPopup() {
   $('gameMathContent').innerHTML = `
     <p><strong>Kisser Weight (grains)</strong></p>
@@ -1358,6 +1473,7 @@ function showKisserWtPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+/* Silencer weight info icon*/
 function showSilencerWtPopup() {
   $('gameMathContent').innerHTML = `
     <p><strong>Silencers Weight (grains)</strong></p>
@@ -1368,6 +1484,7 @@ function showSilencerWtPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+/*Nock weight info icon*/
 function showNockWtPopup() {
   $('gameMathContent').innerHTML = `
     <p><strong>Nock Weight (grains)</strong></p>
@@ -1395,6 +1512,314 @@ function showSightPinsPopup() {
       <li>Simulates moving sight housing or dialing a slider</li>
     </ul>
     <p>Used for build reference and future pin gap/drop analysis.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/*Arrow Name info icon*/
+function showArrowNamePopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Arrow Name</strong></p>
+    <p>Enter the make and model of your arrow shaft.</p>
+    <p>Examples:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Victory VAP TKO</li>
+      <li>Easton Axis 5mm</li>
+      <li>Gold Tip Hunter XT</li>
+      <li>Black Eagle Outlaw</li>
+    </ul>
+    <hr>
+    <p>Used for:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Build naming suggestions</li>
+      <li>Personal reference & organization</li>
+      <li>Future sample matching</li>
+    </ul>
+    <p>No impact on calculations — just for your records.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/* Arrow Spine info icon*/
+function showSpinePopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Spine (deflection rating)</strong></p>
+    <p>Arrow shaft stiffness — lower number = stiffer shaft.</p>
+    <hr>
+    <p><strong>Common Ranges:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>600–400: Light draw / long arrows — very flexible</li>
+      <li>400–300: Standard hunting (60–70 lb) — most popular</li>
+      <li>300–200: Heavy draw (70–80+ lb) — stiff for speed & penetration</li>
+      <li>200 and below: Extreme setups or micro-diameter shafts</li>
+    </ul>
+    <hr>
+    <p>Used for:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Stiffness / Forgiveness rating (matches your effective load)</li>
+      <li>Build comparison & tuning reference</li>
+    </ul>
+    <p>App recommends "Good" range based on your draw weight, arrow length, and point weight.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/*Arrow diameter*/
+function showArrowDiaPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Arrow Diameter</strong></p>
+    <p>Outside diameter of the shaft — affects wind drift and penetration.</p>
+    <hr>
+    <p><strong>Standard (~6.5mm / .246")</strong>: Most common — easiest components, durable.</p>
+    <p><strong>Small (~5mm / .204")</strong>: Balanced — good wind resistance, standard components.</p>
+    <p><strong>Micro (~4mm / .166")</strong>: Best wind drift & penetration — specialized components.</p>
+    <hr>
+    <p>Used for:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Future wind drift calculation</li>
+      <li>Build comparison & reference</li>
+    </ul>
+    <p>Smaller diameter = less wind drift + better penetration, but trickier components.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/*Arrow Length info icon*/
+function showArrowLenPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Arrow Length (inches)</strong></p>
+    <p>Carbon-to-carbon length (from nock throat to end of shaft, not including point).</p>
+    <hr>
+    <p><strong>Typical Ranges:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>26–28 in: Shorter draw or compact hunting setups</li>
+      <li>28–30 in: Most common — average adult male</li>
+      <li>30+ in: Long draw lengths or target arrows</li>
+    </ul>
+    <hr>
+    <p>Used for:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>FOC calculation (longer = easier high FOC)</li>
+      <li>GPI (grains per inch) calculation</li>
+      <li>Stiffness recommendation (longer arrows need stiffer spine)</li>
+      <li>Speed estimate (longer = slightly slower)</li>
+    </ul>
+    <p>Longer arrows = more stable, higher FOC, but slightly less speed.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/* Arrow Total Weight info icon*/
+function showTotalWtPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Total Arrow Weight (grains)</strong></p>
+    <p>Complete arrow weight including shaft, point, insert, nock, fletching, wrap, glue — everything.</p>
+    <hr>
+    <p><strong>Typical Hunting Ranges:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>350–450 gr: Light/fast — flatter trajectory, common for speed setups</li>
+      <li>450–550 gr: Heavy hunting — best penetration/momentum (most popular)</li>
+      <li>550+ gr: Extreme heavy — elk/moose or traditional bows</li>
+    </ul>
+    <hr>
+    <p>Used for:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>FOC, GPP, GPI calculations</li>
+      <li>Speed estimate (heavier = slower)</li>
+      <li>Game Effectiveness (KE & momentum)</li>
+      <li>Downrange drop & flight time</li>
+    </ul>
+    <p>Heavier arrows = more penetration & quieter, but slower and more drop.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/*Point Weight info icon*/
+function showPointWtPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Point Weight (grains)</strong></p>
+    <p>Total weight of broadhead or field point (including insert if used).</p>
+    <hr>
+    <p><strong>Common Hunting Weights:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>85–100 gr: Light/fast — flatter trajectory</li>
+      <li>100–125 gr: Most popular — balanced speed & penetration</li>
+      <li>125–150+ gr: Heavy — max momentum for big game</li>
+    </ul>
+    <hr>
+    <p>Used for:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>FOC calculation (heavier point = higher FOC)</li>
+      <li>Total arrow weight & GPP</li>
+      <li>Stiffness recommendation (heavier point weakens dynamic spine)</li>
+      <li>Speed estimate (heavier = slower)</li>
+    </ul>
+    <p>Heavier point = more FOC & penetration, but slightly slower and more drop.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/*Balance Point info icon*/
+function showBalancePtPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Balance Point (inches)</strong></p>
+    <p>Distance from nock throat to the arrow's physical balance point (center of gravity).</p>
+    <hr>
+    <p><strong>How to Measure:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Balance arrow on a finger or edge</li>
+      <li>Measure from nock throat to balance point</li>
+    </ul>
+    <hr>
+    <p><strong>Typical Values:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>16–17 in: Lower FOC (lighter point)</li>
+      <li>17–18 in: Good FOC (most hunting arrows)</li>
+      <li>18+ in: High FOC (heavy point/insert)</li>
+    </ul>
+    <hr>
+    <p>Used for:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Accurate FOC calculation</li>
+      <li>Build comparison & tuning reference</li>
+    </ul>
+    <p>Higher balance point = higher FOC = better stability & penetration.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/*Bare shaft weight info icon*/
+function showBareShaftWtPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Bare Shaft Weight (grains)</strong></p>
+    <p>Weight of the arrow shaft only — no point, insert, nock, or fletching.</p>
+    <hr>
+    <p>Used for:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Future advanced tuning (bare shaft testing)</li>
+      <li>Build reference & comparison</li>
+    </ul>
+    <p>Leave 0 if unknown — not required for current calculations.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/*Insert/Out  weight info icon*/
+function showInsertWtPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Insert / Outsert Weight (grains)</strong></p>
+    <p>Weight of internal insert or external outsert (half-out, ethics, etc.).</p>
+    <hr>
+    <p>Typical:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Aluminum half-out: 50–80 gr</li>
+      <li>Steel/titanium outsert: 75–125 gr</li>
+      <li>Ethics insert: ~100 gr</li>
+    </ul>
+    <p>Adds FOC and strengthens front end — popular for heavy points.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/*wrap  weight info icon*/
+function showWrapWtPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Wrap Weight (grains)</strong></p>
+    <p>Weight of arrow wrap (vinyl decal under vanes).</p>
+    <hr>
+    <p>Typical: 6–12 gr total (lighter = thinner material).</p>
+    <p>Adds custom look and slight FOC — minimal speed impact.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/*Vane  weight info icon*/
+function showVaneWtPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Vane Weight (each, grains)</strong></p>
+    <p>Weight of one individual vane/fletching.</p>
+    <hr>
+    <p>Typical:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Low-profile (2"): 5–8 gr each</li>
+      <li>Standard (3–4"): 8–12 gr each</li>
+      <li>Blazer-style: ~6 gr each</li>
+    </ul>
+    <p>Multiplied by vane count for total fletching weight.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/* Vane Count info icon*/
+function showVaneCountPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Vane Count</strong></p>
+    <p>Number of vanes/fletchings on the arrow.</p>
+    <hr>
+    <p>Common:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>3 vanes: Most popular — stable, common for hunting</li>
+      <li>4 vanes: Extra stability — popular for fixed broadheads</li>
+      <li>2 vanes: Rare — some target setups</li>
+    </ul>
+    <p>More vanes = faster stabilization, slightly more weight/drag.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/*Vane Height info icon*/
+function showVaneHeightPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Vane Height (inches)</strong></p>
+    <p>Height of the vane from shaft to top edge.</p>
+    <hr>
+    <p>Typical:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Low-profile (0.4–0.6"): Less wind drift, common for hunting</li>
+      <li>Medium (0.7–1"): Balanced — good for broadheads</li>
+      <li>High (2"+): Max stabilization — target or heavy broadheads</li>
+    </ul>
+    <p>Taller = faster arrow correction, more drag/wind effect.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/*Vane Helical info icon*/
+function showVaneHelicalPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Helical / Offset</strong></p>
+    <p>Angle of the vanes — causes arrow rotation for better stability and broadhead flight.</p>
+    <hr>
+    <p><strong>Options Explained:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Straight</strong>: No spin — minimal drag, fastest.</li>
+      <li><strong>Slight Offset</strong>: ~1–3° — gentle spin, good for field points.</li>
+      <li><strong>Moderate Offset</strong>: ~4–6° — balanced, common for hunting.</li>
+      <li><strong>High Offset / Helical</strong>: ~7–10° — strong spin, great for fixed broadheads.</li>
+      <li><strong>Max Helical</strong>: 11°+ (Bitzenburger right helical max) — fastest spin, best broadhead stabilization.</li>
+    </ul>
+    <hr>
+    <p><strong>Bitzenburger Users:</strong> Use the dial setting (in degrees) to match above — e.g., 3° = Slight, 6° = Moderate, 11–12° = Max.</p>
+    <hr>
+    <p><strong>How to Use:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>More helical/offset = faster arrow rotation = better broadhead flight & stability</li>
+      <li>Trade-off: slightly more drag = minor speed loss</li>
+      <li>Fixed-blade broadheads benefit most from high/max helical</li>
+    </ul>
+    <p>Most hunters use Moderate to Max for reliable broadhead tuning.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/*Gllue  weight info icon*/
+function showGlueWtPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Glue / Pin Weight (grains)</strong></p>
+    <p>Weight of fletching glue, hot melt, or pin nock adhesive.</p>
+    <hr>
+    <p>Typical: 3–8 gr total.</p>
+    <p>Minor contribution — included for maximum accuracy.</p>
   `;
   $('gameMathModal').style.display = 'flex';
 }
@@ -2360,6 +2785,11 @@ function calculateEverything() {
   // Arrow inputs continue...
   addRow('Arrow Name', $('arrowName').value);
   addRow('Spine', actualSpine);
+    addRow('Arrow Diameter', {
+    'standard': 'Standard (~6.5mm)',
+    'small': 'Small (~5mm)',
+    'micro': 'Micro (~4mm)'
+  }[$('arrowDia').value] || 'Micro (~4mm)');
   addRow('Arrow Length', arrowLen + ' in');
   addRow('Total Arrow Weight', totalWt + ' gr');
   addRow('Point Weight', pointWt + ' gr');
@@ -2662,10 +3092,12 @@ function saveBuild() {
     pin5Zero: $('pin5Zero')?.value || '60',
     arrowName: $('arrowName').value,
     spine: $('spine').value,
+    arrowDia: $('arrowDia').value,
     arrowLen: $('arrowLen').value,
     totalWt: $('totalWt').value,
     pointWt: $('pointWt').value,
     balancePt: $('balancePt').value,
+    bareShaftWt: $('bareShaftWt').value || '0',
     insertWt: $('insertWt').value,
     wrapWt: $('wrapWt').value,
     vaneWt: $('vaneWt').value,
@@ -2734,10 +3166,12 @@ function loadBuild() {
 
   $('arrowName').value = build.arrowName || '';
   $('spine').value = build.spine || '';
+  $('arrowDia').value = build.arrowDia || 'micro';
   $('arrowLen').value = build.arrowLen || '';
   $('totalWt').value = build.totalWt || '';
   $('pointWt').value = build.pointWt || '';
   $('balancePt').value = build.balancePt || '';
+  $('bareShaftWt').value = build.bareShaftWt || '0';
   $('insertWt').value = build.insertWt || '50';
   $('wrapWt').value = build.wrapWt || '8';
   $('vaneWt').value = build.vaneWt || '8';
