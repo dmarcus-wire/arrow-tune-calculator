@@ -3574,6 +3574,22 @@ $('saveBuild').addEventListener('click', saveBuild);
 $('loadBuild').addEventListener('change', loadBuild);
 $('deleteBuild').addEventListener('click', deleteBuild);
 
+// Close modal when clicking outside the content
+const modalOverlay = $('gameMathModal');
+if (modalOverlay) {
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) {
+      modalOverlay.style.display = 'none';
+    }
+  });
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && modalOverlay.style.display === 'flex') {
+    modalOverlay.style.display = 'none';
+  }
+});
+
 // set initial state
 updateLoadDropdown();
 calculateEverything();
