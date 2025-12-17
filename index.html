@@ -266,13 +266,36 @@
       pointer-events: none;
     }
 
+    /* GPP Sweet Spot — Green (balanced 6.5–7.5) */
     .gpp-sweet-spot {
       position:absolute;
-      top:0; 
-      left:30%; /* 6.5 on 5-10 scale = 30% position */
-      width:20%; /* 1 unit range (7.5-6.5) = 20% of bar */
+      top:0;
+      left:30%;     /* 6.5 on 5–10 scale = 30% */
+      width:20%;    /* 1 unit range = 20% of bar */
       height:100%;
-      background:rgba(34,197,94,0.25);
+      background:rgba(34,197,94,0.25); /* green */
+      border-radius:999px;
+    }
+
+    /* Low GPP — Yellow (<6.5) */
+    .gpp-low-zone {
+      position:absolute;
+      top:0;
+      left:0;
+      width:30%;
+      height:100%;
+      background:rgba(245,158,11,0.15); /* yellow */
+      border-radius:999px;
+    }
+
+    /* High GPP — Yellow (>7.5) */
+    .gpp-high-zone {
+      position:absolute;
+      top:0;
+      left:50%;     /* starts at 7.5 */
+      width:50%;
+      height:100%;
+      background:rgba(245,158,11,0.15); /* yellow */
       border-radius:999px;
     }
 
@@ -999,14 +1022,19 @@
             </div>
             <div class="stat-content">
               <div class="stat-bar-container">
-                <div class="bar" style="height:16px;">
-                  <div class="bar-marker" id="gppMarker" style="left:50%;"></div>
+                <div class="bar" style="height:16px; position:relative;">
+                  <!-- Yellow low zone (<6.5) -->
+                  <div class="gpp-low-zone"></div>
+                  <!-- Green sweet spot (6.5–7.5) -->
                   <div class="gpp-sweet-spot"></div>
+                  <!-- Yellow high zone (>7.5) -->
+                  <div class="gpp-high-zone"></div>
+                  <div class="bar-marker" id="gppMarker" style="left:50%;"></div>
                 </div>
                 <div class="bar-labels">
-                  <span>light</span>
+                  <span>fast/light</span>
                   <span>balanced</span>
-                  <span>heavy</span>
+                  <span>heavy/quiet</span>
                 </div>
                 <span class="moving-value" id="gppValue">0.0 gr</span>
               </div>
@@ -2151,25 +2179,37 @@ function showGppPopup() {
   const drawWt = parseFloat($('drawWt').value) || 70;
   const gpp = (totalWt / drawWt).toFixed(1);
 
-  const content = $('gameMathContent');
-  content.innerHTML = `
+  $('gameMathContent').innerHTML = `
+    <p><strong>Math Breakdown</strong></p>
     <p><strong>GPP (Grains Per Pound)</strong></p>
     <p>GPP is one of the simplest ways to express how heavy or light your arrow is relative to your bow’s draw weight.</p>
-    <p><strong>Formula:</strong> GPP = Total Arrow Weight ÷ Draw Weight</p>
+    <hr>
+    <p><strong>Formula</strong></p>
+    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.95rem;">
+      GPP = Total Arrow Weight ÷ Draw Weight
+    </p>
     <p>Your GPP = ${totalWt} gr ÷ ${drawWt} lb = <strong>${gpp}</strong></p>
     <hr>
     <p><strong>Interpretation:</strong></p>
-    <p>• Low GPP (≈5–6) → fast, flat, loud, lower momentum</p>
-    <p>• Mid GPP (≈6.5–7.5) → balanced speed + penetration (highlighted)</p>
-    <p>• High GPP (≈8–10+) → slower, quiet, higher momentum, bow-friendly</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>• Low GPP (≈5–6) → fast, flat, loud, lower momentum</li>
+      <li>• Mid GPP (≈6.5–7.5) → balanced speed + penetration (highlighted)</li>
+      <li>• High GPP (≈8–10+) → slower, quiet, higher momentum, bow-friendly</li>
+    </ul>
     <hr>
-    <p style="font-size:0.9rem;color:var(--light);">
-      GPP also influences velocity retention in this calculator:<br>
-      • Lighter arrows (low GPP) lose speed faster downrange.<br>
-      • Heavier arrows (high GPP) hold their speed longer.
-    </p>
+    <p>GPP also influences velocity retention in this calculator:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>• Lighter arrows (low GPP) lose speed faster downrange.</li>
+      <li>• Heavier arrows (high GPP) hold their speed longer.</li>
+    </ul>
+    <hr>
+    <p><strong>Influenced By:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Total Arrow Weight</strong> — biggest factor (heavier = higher GPP)</li>
+      <li><strong>Draw Weight</strong> — higher draw weight = lower GPP for same arrow</li>
+      <li>Indirect: point weight, inserts, fletching — all add to total weight</li>
+    </ul>
   `;
-
   $('gameMathModal').style.display = 'flex';
 }
 
