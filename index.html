@@ -406,14 +406,42 @@
       border-radius:999px;
     }
 
-    .group-stability-sweet-spot {
-      position: absolute;
-      top: 0;
-      left: 66.67%; /* starts at 2/3 mark */
-      width: 33.33%; /* covers 2 to 3 */
-      height: 100%;
-      background: rgba(34,197,94,0.25);
-      border-radius: 999px;
+    /* Group Stability Zones */
+    .group-zero-zone {
+      position:absolute;
+      top:0;
+      left:0;
+      width:25%; /* 0/3 */
+      height:100%;
+      background:rgba(156,163,175,0.25); /* grey */
+      border-radius:999px;
+    }
+    .group-one-zone {
+      position:absolute;
+      top:0;
+      left:25%;
+      width:25%;
+      height:100%;
+      background:rgba(251,191,36,0.3); /* amber yellow — more distinct from orange */
+      border-radius:999px;
+    }
+    .group-two-zone {
+      position:absolute;
+      top:0;
+      left:50%;
+      width:25%;
+      height:100%;
+      background:rgba(251,146,60,0.35); /* keep orange but slightly stronger */
+      border-radius:999px;
+    }
+    .group-three-zone {
+      position:absolute;
+      top:0;
+      left:75%;
+      width:25%; /* 3/3 */
+      height:100%;
+      background:rgba(34,197,94,0.25); /* green */
+      border-radius:999px;
     }
 
     .bar-marker {
@@ -923,7 +951,10 @@
   <!--OUTPUT COLUMN-->
   <div id="outputs-column">
     <div class="card">
-      <h2>Live Settings</h2>
+        <h2 style="display:flex; align-items:center; gap:0.75rem; font-size:1.3rem;">
+          Live Settings
+          <button type="button" onclick="showLiveSettingsPopup()" class="info-btn" title="Explain Live Settings">ⓘ</button>
+        </h2>
       <div style="margin:1.2rem 0;">
         <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.6rem;">
           <label style="font-weight:600; margin:0;">Actual Speed (fps)</label>
@@ -1231,24 +1262,31 @@
           </div>
         </div>
 
-        <!-- Group Stability -->
+        <!-- Group Stability (Target / 3D) -->
         <div class="stat-item">
           <div class="stat-row">
             <div class="stat-title">
-              <strong>Stability</strong>
+              <strong>Group Stability</strong>
               <button onclick="showGroupStabilityPopup()" class="info-btn" title="Explain Group Stability">ⓘ</button>
             </div>
             <div class="stat-content">
               <div class="stat-bar-container">
-                <div class="bar" style="height:16px;">
+                <div class="bar" style="height:16px; position:relative;">
+                  <!-- Grey for 0/3 -->
+                  <div class="group-zero-zone"></div>
+                  <!-- Yellow for 1/3 -->
+                  <div class="group-one-zone"></div>
+                  <!-- Orange for 2/3 -->
+                  <div class="group-two-zone"></div>
+                  <!-- Green for 3/3 -->
+                  <div class="group-three-zone"></div>
                   <div class="bar-marker" id="groupStabilityMarker" style="left:50%;"></div>
-                  <div class="group-stability-sweet-spot"></div>
                 </div>
                 <div class="bar-labels">
-                  <span>0</span>
-                  <span>1</span>
-                  <span>2</span>
-                  <span>3</span>
+                  <span>Challenging</span>
+                  <span>Average</span>
+                  <span>Very good</span>
+                  <span>Excellent</span>
                 </div>
                 <span class="moving-value" id="groupStabilityValue">0/3</span>
               </div>
@@ -2117,8 +2155,42 @@ function showFpsMathPopup() {
   $('fpsMathModal').style.display = 'flex';
 }
 
+function showLiveSettingsPopup() {
+  const fps = parseFloat($('fpsSlider').value) || 278;
+  const windMph = parseFloat($('windSlider').value) || 0;
+  const rangeYd = parseFloat($('rangeSlider').value) || 50;
+
+  $('gameMathContent').innerHTML = `
+    <p><strong>Live Settings Math & Usage</strong></p>
+    <p>These sliders let you test real-world conditions and see instant updates across the entire app — trajectory, wind drift, flight time, downrange energy, and more.</p>
+    <hr>
+    <p><strong>Your Current Settings:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Actual Speed: <strong>${fps.toFixed(1)} fps</strong></li>
+      <li>Crosswind: <strong>${windMph.toFixed(1)} mph</strong></li>
+      <li>Range: <strong>${rangeYd} yd</strong></li>
+    </ul>
+    <hr>
+    <p><strong>What They Affect:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Actual Speed (FPS)</strong> — changes launch velocity. Higher = flatter trajectory, faster flight time, less drop & drift</li>
+      <li><strong>Crosswind</strong> — adds sideways drift (full crosswind assumption). Use to test holdover needed</li>
+      <li><strong>Range</strong> — target distance. Changes drop, height, flight time, wind drift, and impact energy/momentum</li>
+    </ul>
+    <hr>
+    <p><strong>How to Use It:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Start with your real chronographed speed</li>
+      <li>Slide wind up to test worst-case holdover</li>
+      <li>Set range to your max ethical distance</li>
+      <li>Watch how cards and summary update live</li>
+    </ul>
+    <p>Perfect for comparing builds under identical field conditions.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
 function showEffectiveLoadPopup() {
-  // Recalculate everything needed (same as in calculateEverything)
   const drawWt = parseFloat($('drawWt').value) || 70;
   const arrowLen = parseFloat($('arrowLen').value) || 28.5;
   const pointWt = parseFloat($('pointWt').value) || 125;
@@ -2129,78 +2201,116 @@ function showEffectiveLoadPopup() {
   const weightFactor = (totalWt - 400) * 0.05;
   const effectiveLoad = Math.round(drawWt + lengthFactor + pointFactor + weightFactor);
 
-  const content = $('gameMathContent');
-  content.innerHTML = `
-    <p><strong>Effective Draw Weight Math</strong></p>
-    <p>The calculator starts from your real draw weight and adds tuned bumps for:</p>
+  $('gameMathContent').innerHTML = `
+    <p><strong>Effective Draw Weight Math & Usage</strong></p>
+    <p>This estimates the total "load" the arrow shaft actually feels — starting from your bow's draw weight and adding adjustments for arrow length, point weight, and total arrow weight. It's used to recommend spine.</p>
+    <hr>
+    <p><strong>Raw Equation</strong></p>
+    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.95rem;">
+      Effective Load = Draw Weight<br>
+      + (Arrow Length − 28) × 2.5<br>
+      + (Point Weight − 100) × 0.15<br>
+      + (Total Arrow Weight − 400) × 0.05
+    </p>
+    <hr>
+    <p><strong>Your Current Build:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>Longer arrows (more leverage on the shaft)</li>
-      <li>Heavier points (more load out front)</li>
-      <li>Overall finished arrow weight</li>
+      <li>Draw Weight: <strong>${drawWt} lb</strong></li>
+      <li>Arrow Length: <strong>${arrowLen.toFixed(2)} in</strong></li>
+      <li>Point Weight: <strong>${pointWt} gr</strong></li>
+      <li>Total Arrow Weight: <strong>${totalWt} gr</strong></li>
+      <li>Effective Load: <strong>${effectiveLoad} lb</strong></li>
     </ul>
     <hr>
-    <p><strong>Your inputs:</strong></p>
-    <p>• Draw weight ≈ ${drawWt.toFixed(1)} lb</p>
-    <p>• Arrow length ≈ ${arrowLen.toFixed(2)} in</p>
-    <p>• Point weight ≈ ${pointWt} gr</p>
-    <p>• Total arrow weight ≈ ${totalWt.toFixed(1)} gr</p>
+    <p><strong>Step-by-Step Calculation:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Base: <strong>${drawWt} lb</strong></li>
+      <li>Length factor: (${arrowLen.toFixed(2)} − 28) × 2.5 = <strong>${lengthFactor.toFixed(2)}</strong></li>
+      <li>Point factor: (${pointWt} − 100) × 0.15 = <strong>${pointFactor.toFixed(2)}</strong></li>
+      <li>Weight factor: (${totalWt} − 400) × 0.05 = <strong>${weightFactor.toFixed(2)}</strong></li>
+      <li>Effective Load = ${drawWt} + ${lengthFactor.toFixed(2)} + ${pointFactor.toFixed(2)} + ${weightFactor.toFixed(2)} = <strong>${effectiveLoad} lb</strong></li>
+    </ul>
     <hr>
-    <p><strong>Breakdown:</strong></p>
-    <p>Base: ${drawWt} lb</p>
-    <p>+ Length factor: +${lengthFactor.toFixed(2)}</p>
-    <p>+ Point factor: +${pointFactor.toFixed(2)}</p>
-    <p>+ Weight factor: +${weightFactor.toFixed(2)}</p>
-    <p><strong>Effective load ≈ ${effectiveLoad} lb</strong></p>
+    <p>This "effective load" is then mapped to a recommended spine range — similar to modern Easton-style charts.</p>
     <hr>
-    <p style="font-size:0.9rem;color:var(--light);">
-      This is the "load" the shaft actually feels — used to recommend spine.
-    </p>
+    <p><strong>Influenced By:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Draw Weight</strong> — biggest factor</li>
+      <li><strong>Arrow Length</strong> — longer = higher load</li>
+      <li><strong>Point Weight</strong> — heavier = higher load</li>
+      <li><strong>Total Arrow Weight</strong> — heavier = higher load</li>
+    </ul>
+    <p>A higher effective load requires a stiffer spine for optimal tuning.</p>
   `;
-
   $('gameMathModal').style.display = 'flex';
 }
 
 function showGameMathPopup() {
-  const rangeYd = parseFloat($('rangeSlider').value) || 50;
   const fps = parseFloat($('fpsSlider').value) || 278;
   const totalWt = parseFloat($('totalWt').value) || 495;
+  const rangeYd = parseFloat($('rangeSlider').value) || 50;
 
   const k = 0.532;
-  const retention = Math.exp(- (k * rangeYd) / totalWt);
+  const retention = Math.exp(-(k * rangeYd) / totalWt);
   const velImpact = Math.round(fps * retention);
   const keImpact = Math.round(totalWt * velImpact * velImpact / 450240);
   const momImpact = parseFloat((totalWt * velImpact / 225400).toFixed(3));
 
-  const content = $('gameMathContent');
-  content.innerHTML = `
-    <p><strong>Launch Speed:</strong> ${fps} fps</p>
-    <p><strong>Arrow Weight:</strong> ${totalWt} gr</p>
-    <p><strong>Range:</strong> ${rangeYd} yd</p>
+  $('gameMathContent').innerHTML = `
+    <p><strong>Game Effectiveness Math & Usage</strong></p>
+    <p>Estimates downrange velocity, kinetic energy, and momentum — key indicators of terminal performance on game.</p>
     <hr>
-    <p><strong>Velocity Retention Model:</strong></p>
-    <p>retention = e^(-k × range / weight)</p>
-    <p>k = 0.532 (calibrated for typical hunting arrows)</p>
-    <p>Retention = ${retention.toFixed(3)} (${(retention * 100).toFixed(1)}%)</p>
-    <p><strong>Impact Velocity:</strong> ${velImpact} fps</p>
-    <hr>
-    <p><strong>Impact KE:</strong> ${keImpact.toFixed(1)} ft-lbs</p>
-    <p>KE = (weight × velocity²) / 450240</p>
-    <p>KE = (${totalWt} × ${velImpact}²) / 450240</p>
-    <hr>
-    <p><strong>Impact Momentum:</strong> ${momImpact.toFixed(3)} slug·ft/s</p>
-    <p>Momentum = (weight × velocity) / 225400</p>
-    <p>Momentum = (${totalWt} × ${velImpact}) / 225400</p>
-    <hr>
-    <p style="font-size:0.9rem;color:var(--light);">
-      <strong>Where do the constants come from?</strong><br>
-      • 450240 = 2 × 32.174 × 7000 (converts grain·fps² to ft-lbs)<br>
-      • 225400 = 450240 / 2 (for momentum in slug·ft/s)<br>
-      • k = 0.532 is calibrated from real-world hunting arrow data (350–500gr arrows, typical shafts/broadheads).<br><br>
-      This is an approximation using arrow mass for drag resistance.<br>
-      Real-world results vary with arrow diameter, broadhead, fletching, and air density.
+    <p><strong>Raw Equations</strong></p>
+    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.95rem;">
+      Retention = e^(-k × range / weight)<br>
+      Impact Velocity = Launch FPS × Retention<br>
+      KE (ft-lbs) = (weight × velocity²) / 450240<br>
+      Momentum (slug·ft/s) = (weight × velocity) / 225400
     </p>
+    <hr>
+    <p><strong>Your Current Build:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Launch Speed: <strong>${fps.toFixed(1)} fps</strong></li>
+      <li>Arrow Weight: <strong>${totalWt} gr</strong></li>
+      <li>Range: <strong>${rangeYd} yd</strong></li>
+      <li>Impact Velocity: <strong>${velImpact} fps</strong></li>
+      <li>Impact KE: <strong>${keImpact.toFixed(1)} ft-lbs</strong></li>
+      <li>Impact Momentum: <strong>${momImpact.toFixed(3)} slug·ft/s</strong></li>
+    </ul>
+    <hr>
+    <p><strong>Step-by-Step Calculation:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Retention = e^(-0.532 × ${rangeYd} / ${totalWt}) ≈ <strong>${retention.toFixed(3)}</strong> (${(retention * 100).toFixed(1)}%)</li>
+      <li>Impact Velocity = ${fps.toFixed(1)} × ${retention.toFixed(3)} ≈ <strong>${velImpact} fps</strong></li>
+      <li>KE = (${totalWt} × ${velImpact}²) / 450240 ≈ <strong>${keImpact.toFixed(1)} ft-lbs</strong></li>
+      <li>Momentum = (${totalWt} × ${velImpact}) / 225400 ≈ <strong>${momImpact.toFixed(3)} slug·ft/s</strong></li>
+    </ul>
+    <hr>
+    <p><strong>Where do the constants come from?</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>450240</strong> = 2 × gravity × grains per pound (converts grain·fps² to ft-lbs)</li>
+      <li><strong>225400</strong> = 450240 / 2 (for momentum in slug·ft/s)</li>
+      <li><strong>k = 0.532</strong> — calibrated from real-world hunting arrow data (350–500 gr, typical shafts/broadheads)</li>
+    </ul>
+    <hr>
+    <p><strong>How to Use It (Hunting Guide):</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Small Game</strong>: ≥15 ft-lbs KE, ≥0.20 momentum</li>
+      <li><strong>Deer</strong>: ≥25 ft-lbs KE, ≥0.30 momentum</li>
+      <li><strong>Elk</strong>: ≥42 ft-lbs KE, ≥0.45 momentum</li>
+      <li><strong>Moose</strong>: ≥65 ft-lbs KE, ≥0.60 momentum</li>
+    </ul>
+    <p>Heavier arrows retain energy better downrange. Faster arrows start higher but bleed off faster.</p>
+    <hr>
+    <p><strong>Influenced By:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Launch Speed (FPS)</strong> — biggest starting factor</li>
+      <li><strong>Total Arrow Weight</strong> — heavier = better retention, more KE/momentum</li>
+      <li><strong>Range</strong> — longer = more velocity loss</li>
+      <li>Indirect: arrow diameter, broadhead design, fletching (affect drag)</li>
+    </ul>
+    <p>This is an approximation — real-world results vary with shot placement and animal size.</p>
   `;
-
   $('gameMathModal').style.display = 'flex';
 }
 
@@ -2628,15 +2738,9 @@ function showFlatnessPopup() {
 }
 
 function showGroupStabilityPopup() {
-  // Recalculate everything needed for the popup
-  const arrowLen = parseFloat($('arrowLen').value) || 28.5;
-  const balancePt = parseFloat($('balancePt').value) || 17.2;
-  const totalWt = parseFloat($('totalWt').value) || 495;
   const fps = parseFloat($('fpsSlider').value) || 278;
-
-  const midPoint = arrowLen / 2;
-  const foc = ((balancePt - midPoint) / arrowLen) * 100;
-  const gpi = totalWt / arrowLen;
+  const foc = parseFloat($('focValue').textContent) || 0;
+  const gpi = parseFloat($('gpiValue').textContent) || 0;
 
   const fpsGood = fps >= 270;
   const focGood = foc >= 12 && foc <= 18;
@@ -2644,25 +2748,47 @@ function showGroupStabilityPopup() {
 
   const goodCount = (fpsGood ? 1 : 0) + (focGood ? 1 : 0) + (gpiGood ? 1 : 0);
 
-  const content = $('gameMathContent');
-  content.innerHTML = `
-    <p><strong>Group Stability (Target / 3D)</strong></p>
-    <p>This rates how optimized your setup is for tight groups in target/3D shooting.</p>
+  $('gameMathContent').innerHTML = `
+    <p><strong>Group Stability (Target / 3D) Math & Usage</strong></p>
+    <p>This rates how optimized your setup is for tight groups in target/3D shooting based on three key factors known to affect in-flight stability and forgiveness.</p>
     <hr>
-    <p><strong>Current score: ${goodCount}/3</strong></p>
-    <p>• FPS ≥ 270: ${fpsGood ? '✓' : '✗'} (${fps.toFixed(0)} fps)</p>
-    <p>• FOC 12–18%: ${focGood ? '✓' : '✗'} (${foc.toFixed(1)}%)</p>
-    <p>• GPI ≤ 9.5: ${gpiGood ? '✓' : '✗'} (${gpi.toFixed(1)} gr/in)</p>
+    <p><strong>Your Current Build:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Actual Speed: <strong>${fps.toFixed(1)} fps</strong> ${fpsGood ? '✓' : '✗'} (≥270 = good)</li>
+      <li>FOC: <strong>${foc.toFixed(1)}%</strong> ${focGood ? '✓' : '✗'} (12–18% = good)</li>
+      <li>GPI: <strong>${gpi.toFixed(1)} gr/in</strong> ${gpiGood ? '✓' : '✗'} (≤9.5 = good)</li>
+      <li><strong>Score: ${goodCount}/3</strong></li>
+    </ul>
     <hr>
-    <p>3/3 = Tight groups likely with good tuning<br>
-       2/3 = Close — small tweaks help<br>
-       0–1/3 = Average — more forgiveness trade-offs</p>
-    <hr>
-    <p style="font-size:0.9rem;color:var(--light);">
-      Execution and tuning always matter most — this is just a starting point.
+    <p><strong>Raw Logic</strong></p>
+    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.95rem;">
+      Score = (FPS ≥ 270 ? 1 : 0) + (FOC 12–18% ? 1 : 0) + (GPI ≤ 9.5 ? 1 : 0)
     </p>
+    <hr>
+    <p><strong>Step-by-Step Scoring:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>FPS ≥ 270: ${fpsGood ? 'Yes' : 'No'} → ${fpsGood ? '+1' : '+0'}</li>
+      <li>FOC 12–18%: ${focGood ? 'Yes' : 'No'} → ${focGood ? '+1' : '+0'}</li>
+      <li>GPI ≤ 9.5: ${gpiGood ? 'Yes' : 'No'} → ${gpiGood ? '+1' : '+0'}</li>
+      <li>Total: <strong>${goodCount}/3</strong></li>
+    </ul>
+    <hr>
+    <p><strong>Interpretation:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>3/3</strong> = Excellent — tight groups likely with good tuning</li>
+      <li><strong>2/3</strong> = Very good — small tweaks help</li>
+      <li><strong>1/3</strong> = Average — more forgiveness trade-offs</li>
+      <li><strong>0/3</strong> = Challenging — expect larger groups until optimized</li>
+    </ul>
+    <p>Execution and tuning always matter most — this is just a starting point based on proven target/3D principles.</p>
+    <hr>
+    <p><strong>Influenced By:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Actual Speed (FPS)</strong> — faster = more stable flight</li>
+      <li><strong>FOC</strong> — 12–18% = optimal aerodynamic stability</li>
+      <li><strong>GPI</strong> — lighter shafts (≤9.5) = better recovery & forgiveness</li>
+    </ul>
   `;
-
   $('gameMathModal').style.display = 'flex';
 }
 
@@ -3364,13 +3490,30 @@ function calculateEverything() {
   }
   if (flatnessMarker) flatnessMarker.style.left = `${flatnessPercent}%`;
 
-  // === Group Stability (Target / 3D) ===
-  const fpsGood = fps >= 270;
-  const focGood = foc >= 12 && foc <= 18;
-  const gpiGood = gpi <= 9.5;
+  // === Dynamic Group Stability Criteria ===
+  const groupBowType = $('bowType')?.value || 'compound';  // ← unique name
+  const groupAppType = $('appType')?.value || 'Hunting';
 
+  let fpsThreshold = 270;
+  let focMin = 12;
+  let focMax = 18;
+  let gpiThreshold = 9.5;
+
+  if (groupBowType === 'recurve' || groupBowType === 'longbow') {
+    fpsThreshold = 220;
+    focMin = 15;
+    focMax = 22;
+    gpiThreshold = 12;
+  } else if (groupAppType === 'Target') {
+    fpsThreshold = 280;
+    gpiThreshold = 8.5;
+  }
+
+  const fpsGood = fps >= fpsThreshold;
+  const focGood = foc >= focMin && foc <= focMax;
+  const gpiGood = gpi <= gpiThreshold;
   const goodCount = (fpsGood ? 1 : 0) + (focGood ? 1 : 0) + (gpiGood ? 1 : 0);
-  const groupPercent = (goodCount / 3) * 100; // 0, 33.33, 66.67, 100
+  const groupPercent = (goodCount / 3) * 100;
 
   // DELETE DEBUG
   console.log('goodCount:', goodCount, 'percent:', groupPercent);
