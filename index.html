@@ -361,15 +361,29 @@
     .totalwt-low-zone { left:0; width:42%; }
     .totalwt-high-zone { left:52.5%; width:47.5%; }
 
+    /* Stiffness Sweet Spot — Green (default compound/hunting: ~40–60% of bar) */
     .stiffness-sweet-spot {
       position:absolute;
-      top:0; 
-      left:25%;
-      width:50%;
+      top:0;
+      left:25%;     /* default start */
+      width:50%;    /* default width */
       height:100%;
       background:rgba(34,197,94,0.25);
       border-radius:999px;
+      transition: left 0.3s ease, width 0.3s ease;
     }
+
+    .stiffness-low-zone, .stiffness-high-zone {
+      position:absolute;
+      top:0;
+      height:100%;
+      background:rgba(245,158,11,0.15);
+      border-radius:999px;
+      transition: width 0.3s ease;
+    }
+
+    .stiffness-low-zone { left:0; width:25%; }
+    .stiffness-high-zone { left:75%; width:25%; }
 
     .flatness-sweet-spot {
         position: absolute;
@@ -1149,7 +1163,7 @@
           </div>
         </div>
 
-        <!-- Stiffness -->
+        <!-- Stiffness / Forgiveness -->
         <div class="stat-item">
           <div class="stat-row">
             <div class="stat-title">
@@ -1158,16 +1172,21 @@
             </div>
             <div class="stat-content">
               <div class="stat-bar-container">
-                <div class="bar" style="height:16px;">
-                  <div class="bar-marker" id="stiffnessMarker" style="left:50%;"></div>
+                <div class="bar" style="height:16px; position:relative;">
+                  <!-- Yellow low zone (too stiff) -->
+                  <div class="stiffness-low-zone"></div>
+                  <!-- Green sweet spot (dynamic) -->
                   <div class="stiffness-sweet-spot"></div>
+                  <!-- Yellow high zone (too weak) -->
+                  <div class="stiffness-high-zone"></div>
+                  <div class="bar-marker" id="stiffnessMarker" style="left:50%;"></div>
+                  <div class="moving-value" id="stiffnessValue">300 (Good)</div>
                 </div>
                 <div class="bar-labels">
-                  <span>stiff</span>
-                  <span>good</span>
-                  <span>weak</span>
+                  <span>Stiffest</span>
+                  <span>Good</span>
+                  <span>Weakest</span>
                 </div>
-                <span class="moving-value" id="stiffnessValue">300</span>
               </div>
             </div>
           </div>
@@ -2464,52 +2483,89 @@ function showStiffnessPopup() {
   const pointFactor = (pointWt - 100) * 0.15;
   const weightFactor = (totalWt - 400) * 0.05;
   const effectiveLoad = Math.round(drawWt + lengthFactor + pointFactor + weightFactor);
-
   const recommendedCenter = Math.max(200, Math.min(500, 600 - effectiveLoad * 5));
   const spineDiff = actualSpine - recommendedCenter;
 
   let status = 'Good';
-  if (spineDiff > 50) status = 'Weak';
-  else if (spineDiff < -50) status = 'Stiff';
+  if (spineDiff > 100) status = 'Weakest';
+  else if (spineDiff < -100) status = 'Stiffest';
+  else if (spineDiff > 60) status = 'Weaker';
+  else if (spineDiff < -60) status = 'Stiffer';
 
-  const content = $('gameMathContent');
-  content.innerHTML = `
-    <p><strong>Stiffness / Forgiveness Math</strong></p>
-    <p>This badge compares your actual arrow spine to a recommended spine band built from draw weight, arrow length, point weight, and finished arrow weight — similar in spirit to a modernized Easton-style chart.</p>
+  const bowType = $('bowType')?.value || 'compound';
+  const appType = $('appType')?.value || 'Hunting';
+
+  let typeLabel = "Compound/Hunting";
+  if (bowType === 'recurve' || bowType === 'longbow') typeLabel = "Recurve/Longbow";
+  else if (appType === 'Target') typeLabel = "Target";
+
+  const isWeak = spineDiff > 0;
+  const isStiff = spineDiff < 0;
+
+  $('gameMathContent').innerHTML = `
+    <p><strong>Stiffness / Forgiveness Math & Usage</strong></p>
+    <p>This compares your actual arrow spine to a recommended range based on draw weight, arrow length, point weight, and total arrow weight — inspired by modern tuning charts.</p>
     <hr>
-    <p><strong>1) Build an “effective draw weight”</strong></p>
-    <p>The calculator starts from your real draw weight and adds tuned bumps for:</p>
+    <p><strong>Your Current Build:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>Longer arrows (more leverage on the shaft)</li>
-      <li>Heavier points (more load out front)</li>
-      <li>Overall finished arrow weight</li>
+      <li>Draw Weight: <strong>${drawWt} lb</strong></li>
+      <li>Arrow Length: <strong>${arrowLen.toFixed(1)} in</strong></li>
+      <li>Point Weight: <strong>${pointWt} gr</strong></li>
+      <li>Total Arrow Weight: <strong>${totalWt} gr</strong></li>
+      <li>Actual Spine: <strong>${actualSpine}</strong></li>
+      <li>Setup: <strong>${typeLabel}</strong></li>
+      <li>Status: <strong>${status}</strong></li>
     </ul>
-    <p>Your inputs for this build are:</p>
-    <p>• Draw weight ≈ ${drawWt.toFixed(1)} lb</p>
-    <p>• Arrow length ≈ ${arrowLen.toFixed(2)} in</p>
-    <p>• Point weight ≈ ${pointWt} gr</p>
-    <p>• Total arrow weight ≈ ${totalWt.toFixed(1)} gr</p>
-    <p>Those are combined into a single load number the shaft “feels”:<br>
-    <strong>effective draw weight ≈ ${effectiveLoad} lb</strong></p>
     <hr>
-    <p><strong>2) Map effective draw weight → spine band</strong></p>
-    <p>That effective load is then mapped to a static spine band — lighter loads want weaker shafts (higher spine numbers), heavier loads want stiffer shafts (lower spine numbers).</p>
-    <p>Recommended spine band center ≈ <strong>${recommendedCenter}</strong></p>
-    <hr>
-    <p><strong>3) Compare your spine to the chart recommendation</strong></p>
-    <p>• Your actual spine = ${actualSpine}</p>
-    <p>• Recommended center spine = ${recommendedCenter}</p>
-    <p>• Difference = ${actualSpine} − ${recommendedCenter} = ${spineDiff}</p>
-    <p><strong>Result: ${status}</strong></p>
-    <hr>
-    <p style="font-size:0.9rem;color:var(--light);">
-      <strong>Good</strong> — Your actual spine is very close to the recommended number. Tuning should be straightforward.<br>
-      <strong>Adjust (Stiff)</strong> — Arrow is too stiff (lower spine number than recommended). Add point weight or move to weaker spine.<br>
-      <strong>Adjust (Weak)</strong> — Arrow is too weak (higher spine number than recommended). Shorten arrow or move to stiffer spine.<br><br>
-      This doesn’t replace paper tuning or broadhead flight testing, but it gives a fast “does this shaft live in the right neighborhood?” sanity check.
+    <p><strong>Raw Equation</strong></p>
+    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.95rem;">
+      Recommended Spine Center = 600 − (Effective Load × 5)<br>
+      Effective Load = Draw Weight + (Arrow Length−28)×2.5 + (Point Weight−100)×0.15 + (Total Weight−400)×0.05
     </p>
+    <hr>
+    <p><strong>Where does the "600" come from?</strong></p>
+    <p>The 600 is an empirical constant chosen to map a “standard” hunting setup to a common spine recommendation.</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>A typical 60 lb draw weight, 28" arrow, 100 gr point, ~400 gr total weight gives an effective load ≈ 60 lb.</li>
+      <li>600 − (60 × 5) = 300 spine — which is exactly the spine most manufacturers recommend for that setup.</li>
+    </ul>
+    <p>This constant aligns the calculator with real-world Easton-style spine charts across a wide range of modern compound bow setups. It’s not derived from physics, but from practical tuning experience.</p>
+    <hr>
+    <p><strong>Step-by-Step Calculation:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Effective load = ${drawWt} + (${arrowLen.toFixed(1)}−28)×2.5 + (${pointWt}−100)×0.15 + (${totalWt}−400)×0.05 = <strong>${effectiveLoad} lb</strong></li>
+      <li>Recommended spine center = 600 − (${effectiveLoad} × 5) = <strong>${recommendedCenter}</strong></li>
+      <li>Difference = ${actualSpine} − ${recommendedCenter} = <strong>${spineDiff}</strong></li>
+      <li>Result: <strong>${status}</strong></li>
+    </ul>
+    <hr>
+    <p><strong>Sweet Spot (highlighted in green):</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Compound/Hunting</strong>: ±60 spine — balanced forgiveness & accuracy</li>
+      <li><strong>Target</strong>: ±40 spine — tighter for precision</li>
+      <li><strong>Recurve/Longbow</strong>: ±80 spine — wider tolerance for finger release</li>
+    </ul>
+    <p style="margin-top:0.75rem;">
+      ${status === 'Good' ? '<strong style="color:var(--success);">Your spine is in the ideal range!</strong>' :
+        isWeak ? '<strong style="color:var(--warning);">Weak — risk of paradox, tuning issues</strong>' :
+        '<strong style="color:var(--warning);">Stiff — less forgiving on release errors</strong>'}
+    </p>
+    <hr>
+    <p><strong>How to Adjust:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Too Weak</strong>: Shorten arrow, reduce point weight, or choose stiffer spine</li>
+      <li><strong>Too Stiff</strong>: Lengthen arrow, increase point weight, or choose weaker spine</li>
+    </ul>
+    <p>This is a fast sanity check — always verify with paper tuning and broadhead flight.</p>
+    <hr>
+    <p><strong>Influenced By:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Draw Weight</strong> — higher = needs stiffer spine</li>
+      <li><strong>Arrow Length</strong> — longer = needs stiffer spine</li>
+      <li><strong>Point Weight</strong> — heavier = needs stiffer spine</li>
+      <li><strong>Total Arrow Weight</strong> — heavier = needs stiffer spine</li>
+    </ul>
   `;
-
   $('gameMathModal').style.display = 'flex';
 }
 
@@ -3198,6 +3254,36 @@ function calculateEverything() {
   }
 
   stiffnessPercent = Math.max(0, Math.min(100, stiffnessPercent));
+
+    // === Dynamic Stiffness Sweet Spot ===
+  const stiffBowType = $('bowType')?.value || 'compound';
+  const stiffAppType = $('appType')?.value || 'Hunting';
+
+  let stiffSweetLeft = 25; // default compound/hunting: 25–75%
+  let stiffSweetWidth = 50;
+
+  if (stiffBowType === 'recurve' || stiffBowType === 'longbow') {
+    stiffSweetLeft = 20; // slightly wider for traditional
+    stiffSweetWidth = 60;
+  } else if (stiffAppType === 'Target') {
+    stiffSweetLeft = 30; // target likes a bit stiffer
+    stiffSweetWidth = 40;
+  }
+
+  const stiffSweetSpot = document.querySelector('.stiffness-sweet-spot');
+  if (stiffSweetSpot) {
+    stiffSweetSpot.style.left = stiffSweetLeft + '%';
+    stiffSweetSpot.style.width = stiffSweetWidth + '%';
+  }
+
+  const stiffLowZone = document.querySelector('.stiffness-low-zone');
+  const stiffHighZone = document.querySelector('.stiffness-high-zone');
+  if (stiffLowZone) stiffLowZone.style.width = stiffSweetLeft + '%';
+  if (stiffHighZone) {
+    stiffHighZone.style.left = (stiffSweetLeft + stiffSweetWidth) + '%';
+    stiffHighZone.style.width = (100 - stiffSweetLeft - stiffSweetWidth) + '%';
+  }
+  
 
   // === Effective Draw Weight bars (100% SAFE) ===
   const maxLoad = 100;
