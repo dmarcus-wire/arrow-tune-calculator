@@ -242,17 +242,31 @@
       transition:width 0.3s ease;
     }
 
-    /* FOC Sweet Spot green threshold*/
+    /* FOC Sweet Spot — Green (default for compound/hunting: 12–18%) */
     .foc-sweet-spot {
       position:absolute;
       top:0;
-      left:33.33%; /* 10% on 0–30% scale = 33.33% position */
-      width:26.67%; /* 8% range (18-10) = 26.67% of bar */
+      left:40%;     /* 12% on 0–30 scale = 40% */
+      width:20%;    /* 6% range = 20% of bar */
       height:100%;
       background:rgba(34,197,94,0.25);
       border-radius:999px;
+      transition: left 0.3s ease, width 0.3s ease;
     }
 
+    .foc-low-zone, .foc-high-zone {
+      position:absolute;
+      top:0;
+      height:100%;
+      background:rgba(245,158,11,0.15); /* yellow */
+      border-radius:999px;
+      transition: width 0.3s ease;
+    }
+
+    .foc-low-zone { left:0; width:40%; }
+    .foc-high-zone { left:60%; width:40%; }
+
+    /* bar labels*/
     .bar-labels {
       position: absolute;
       left: 0;
@@ -1007,21 +1021,26 @@
         <div class="stat-item">
           <div class="stat-row">
             <div class="stat-title">
-              <strong>FOC %</strong>
+              <strong>FOC</strong>
               <button onclick="showFocPopup()" class="info-btn" title="Explain FOC">ⓘ</button>
             </div>
             <div class="stat-content">
               <div class="stat-bar-container">
-                <div class="bar" style="height:16px;">
-                  <div class="bar-marker" id="focMarker" style="left:50%;"></div>
+                <div class="bar" style="height:16px; position:relative;">
+                  <!-- Yellow low zone -->
+                  <div class="foc-low-zone"></div>
+                  <!-- Green sweet spot (dynamic) -->
                   <div class="foc-sweet-spot"></div>
+                  <!-- Yellow high zone -->
+                  <div class="foc-high-zone"></div>
+                  <div class="bar-marker" id="focMarker" style="left:50%;"></div>
+                  <div class="moving-value" id="focValue">0.0%</div>
                 </div>
                 <div class="bar-labels">
-                  <span>tail heavy</span>
-                  <span>balanced</span>
-                  <span>tip heavy</span>
+                  <span>low</span>
+                  <span>ideal</span>
+                  <span>high</span>
                 </div>
-                <span class="moving-value" id="focValue">0.0%</span>
               </div>
             </div>
           </div>
@@ -1046,7 +1065,7 @@
                   <div class="bar-marker" id="gppMarker" style="left:50%;"></div>
                 </div>
                 <div class="bar-labels">
-                  <span>fast/light</span>
+                  <span>light/fast</span>
                   <span>balanced</span>
                   <span>heavy/quiet</span>
                 </div>
@@ -2156,33 +2175,63 @@ function closeFpsMath() {
 function showFocPopup() {
   const arrowLen = parseFloat($('arrowLen').value) || 28.5;
   const balancePt = parseFloat($('balancePt').value) || 17.2;
-
   const midPoint = arrowLen / 2;
   const foc = ((balancePt - midPoint) / arrowLen) * 100;
 
+  const bowType = $('bowType')?.value || 'compound';
+  const appType = $('appType')?.value || 'Hunting';
+
+  let sweetMin = 12;
+  let sweetMax = 18;
+  let typeLabel = "Compound/Hunting";
+
+  if (bowType === 'recurve' || bowType === 'longbow') {
+    sweetMin = 15;
+    sweetMax = 22;
+    typeLabel = "Recurve/Longbow";
+  } else if (appType === 'Target') {
+    sweetMin = 10;
+    sweetMax = 14;
+    typeLabel = "Target";
+  }
+
+  const isSweet = foc >= sweetMin && foc <= sweetMax;
+
   $('gameMathContent').innerHTML = `
-    <p><strong>FOC (Front of Center) Math</strong></p>
+    <p><strong>FOC (Front of Center) Math & Usage</strong></p>
     <p>FOC measures how far the arrow’s balance point sits in front of the midpoint. Higher FOC generally improves broadhead stability and penetration; lower FOC produces flatter trajectories and is more forgiving to shoot.</p>
     <hr>
-    <p><strong>Formula:</strong></p>
+    <p><strong>Raw Equation</strong></p>
     <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.95rem;">
-      FOC = ((Balance Point − Midpoint) ÷ Arrow Length) × 100
+      FOC = ((Balance Point − Midpoint) ÷ Arrow Length) × 100<br>
+      Midpoint = Arrow Length ÷ 2
     </p>
     <hr>
-    <p><strong>Your inputs:</strong></p>
+    <p><strong>Your Current Build:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>Arrow Length = <strong>${arrowLen.toFixed(2)} in</strong></li>
-      <li>Midpoint = Arrow Length ÷ 2 = <strong>${midPoint.toFixed(2)} in</strong></li>
-      <li>Balance Point = <strong>${balancePt.toFixed(2)} in</strong></li>
+      <li>Arrow Length: <strong>${arrowLen.toFixed(2)} in</strong></li>
+      <li>Balance Point: <strong>${balancePt.toFixed(2)} in</strong></li>
+      <li>Setup: <strong>${typeLabel}</strong></li>
+      <li>FOC: <strong>${foc.toFixed(1)}%</strong></li>
     </ul>
     <hr>
-    <p><strong>Step-by-step:</strong></p>
+    <p><strong>Step-by-Step Calculation:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>FOC = ((${balancePt.toFixed(2)} − ${midPoint.toFixed(2)}) ÷ ${arrowLen.toFixed(2)}) × 100</li>
-      <li>FOC = <strong>${foc.toFixed(1)}%</strong></li>
+      <li>Midpoint = ${arrowLen.toFixed(2)} ÷ 2 = <strong>${midPoint.toFixed(2)} in</strong></li>
+      <li>FOC = ((${balancePt.toFixed(2)} − ${midPoint.toFixed(2)}) ÷ ${arrowLen.toFixed(2)}) × 100 = <strong>${foc.toFixed(1)}%</strong></li>
     </ul>
     <hr>
-    <p>Typical hunting arrows fall between 10–18%. Higher FOC (18%+) is often preferred for fixed-blade broadheads and heavier setups, while moderate FOC (12–16%) gives a good blend of forgiveness and stability.</p>
+    <p><strong>Sweet Spot (highlighted in green):</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Compound/Hunting</strong>: 12–18% — good for broadheads & penetration</li>
+      <li><strong>Target</strong>: 10–14% — flatter & more forgiving</li>
+      <li><strong>Recurve/Longbow</strong>: 15–22% — stability with fingers & heavy arrows</li>
+    </ul>
+    <p style="margin-top:0.75rem;">
+      ${isSweet ? '<strong style="color:var(--success);">Your FOC is in the ideal range for your setup!</strong>' : 
+        foc < sweetMin ? '<strong style="color:var(--warning);">Low — flatter but less stable</strong>' : 
+        '<strong style="color:var(--warning);">High — very stable but more drop</strong>'}
+    </p>
     <hr>
     <p><strong>Influenced By:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
@@ -2902,6 +2951,35 @@ function calculateEverything() {
   if (focValue) {
     focValue.style.left = (focClamped / 30 * 100) + '%';
     focValue.textContent = foc.toFixed(1) + '%';
+  }
+
+  // === Dynamic FOC Sweet Spot ===
+  const focBowType = $('bowType')?.value || 'compound';
+  const focAppType = $('appType')?.value || 'Hunting';
+
+  let focSweetLeft = 40;   // default compound/hunting: 12% FOC
+  let focSweetWidth = 20;  // 6% range (12–18%)
+
+  if (focBowType === 'recurve' || focBowType === 'longbow') {
+    focSweetLeft = 50;     // 15% FOC
+    focSweetWidth = 23.33; // ~7% range (15–22%)
+  } else if (focAppType === 'Target') {
+    focSweetLeft = 33.33;  // 10% FOC
+    focSweetWidth = 13.33; // 4% range (10–14%)
+  }
+
+  const focSweetSpot = document.querySelector('.foc-sweet-spot');
+  if (focSweetSpot) {
+    focSweetSpot.style.left = focSweetLeft + '%';
+    focSweetSpot.style.width = focSweetWidth + '%';
+  }
+
+  const focLowZone = document.querySelector('.foc-low-zone');
+  const focHighZone = document.querySelector('.foc-high-zone');
+  if (focLowZone) focLowZone.style.width = focSweetLeft + '%';
+  if (focHighZone) {
+    focHighZone.style.left = (focSweetLeft + focSweetWidth) + '%';
+    focHighZone.style.width = (100 - focSweetLeft - focSweetWidth) + '%';
   }
 
   // === GPP (SAFE) ===
