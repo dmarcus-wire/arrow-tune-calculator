@@ -2108,31 +2108,41 @@ function closeFpsMath() {
 function showFocPopup() {
   const arrowLen = parseFloat($('arrowLen').value) || 28.5;
   const balancePt = parseFloat($('balancePt').value) || 17.2;
-  const midPoint = arrowLen / 2;
-  const focPercent = ((balancePt - midPoint) / arrowLen) * 100;
 
-  const content = $('gameMathContent'); // reuse modal
-  content.innerHTML = `
+  const midPoint = arrowLen / 2;
+  const foc = ((balancePt - midPoint) / arrowLen) * 100;
+
+  $('gameMathContent').innerHTML = `
     <p><strong>FOC (Front of Center) Math</strong></p>
     <p>FOC measures how far the arrow’s balance point sits in front of the midpoint. Higher FOC generally improves broadhead stability and penetration; lower FOC produces flatter trajectories and is more forgiving to shoot.</p>
     <hr>
     <p><strong>Formula:</strong></p>
-    <p>FOC = ((Balance Point − Midpoint) ÷ Arrow Length) × 100</p>
+    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.95rem;">
+      FOC = ((Balance Point − Midpoint) ÷ Arrow Length) × 100
+    </p>
     <hr>
     <p><strong>Your inputs:</strong></p>
-    <p>• Arrow Length = ${arrowLen.toFixed(2)} in</p>
-    <p>• Midpoint = Arrow Length ÷ 2 = ${midPoint.toFixed(2)} in</p>
-    <p>• Balance Point = ${balancePt.toFixed(2)} in</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Arrow Length = <strong>${arrowLen.toFixed(2)} in</strong></li>
+      <li>Midpoint = Arrow Length ÷ 2 = <strong>${midPoint.toFixed(2)} in</strong></li>
+      <li>Balance Point = <strong>${balancePt.toFixed(2)} in</strong></li>
+    </ul>
     <hr>
     <p><strong>Step-by-step:</strong></p>
-    <p>FOC = ((${balancePt.toFixed(2)} − ${midPoint.toFixed(2)}) ÷ ${arrowLen.toFixed(2)}) × 100</p>
-    <p>FOC = <strong>${focPercent.toFixed(1)}%</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>FOC = ((${balancePt.toFixed(2)} − ${midPoint.toFixed(2)}) ÷ ${arrowLen.toFixed(2)}) × 100</li>
+      <li>FOC = <strong>${foc.toFixed(1)}%</strong></li>
+    </ul>
     <hr>
-    <p style="font-size:0.9rem;color:var(--light);">
-      Typical hunting arrows fall between 10–18%. Higher FOC (18%+) is often preferred for fixed-blade broadheads and heavier setups, while moderate FOC (12–16%) gives a good blend of forgiveness and stability.
-    </p>
+    <p>Typical hunting arrows fall between 10–18%. Higher FOC (18%+) is often preferred for fixed-blade broadheads and heavier setups, while moderate FOC (12–16%) gives a good blend of forgiveness and stability.</p>
+    <hr>
+    <p><strong>Influenced By:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Balance Point</strong> — biggest factor (move forward = higher FOC)</li>
+      <li><strong>Arrow Length</strong> — longer = slightly lower FOC for same balance point</li>
+      <li>Indirect: heavier point/insert/outsert moves balance point forward</li>
+    </ul>
   `;
-
   $('gameMathModal').style.display = 'flex';
 }
 
