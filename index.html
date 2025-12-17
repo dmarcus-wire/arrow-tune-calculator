@@ -3327,7 +3327,7 @@ function calculateEverything() {
     twHighZone.style.left = (twSweetLeft + twSweetWidth) + '%';
     twHighZone.style.width = (100 - twSweetLeft - twSweetWidth) + '%';
   }
-
+  
   // === Game Effectiveness (100% SAFE) ===
   const k = 0.532;
   const retention = Math.exp(- (k * rangeYd) / totalWt);
@@ -3364,7 +3364,7 @@ function calculateEverything() {
       }
     }
   });
-
+  
   // === Stiffness / Forgiveness ===
   const actualSpine = parseFloat($('spine').value) || 300;
   const baseLoad = drawWt;
@@ -3626,7 +3626,7 @@ function calculateEverything() {
 
   // === Update Build Summary Table ===
   const table = $('summaryTable').querySelector('tbody');
-  table.innerHTML = ''; // clear
+  table.innerHTML = '';
 
   const addRow = (label, value) => {
     const row = document.createElement('tr');
@@ -3637,8 +3637,7 @@ function calculateEverything() {
     table.appendChild(row);
   };
 
-  // User Inputs
-  // === Bow Inputs ===
+  // === 1. Build & Bow ===
   addRow('Build Name', $('buildName').value || 'Unnamed');
   addRow('Application', $('appType').value);
   addRow('Bow Model', $('bowModel').value || '-');
@@ -3651,10 +3650,9 @@ function calculateEverything() {
   addRow('Cam System', $('camType').value || '-');
   addRow('String Add-ons', $('stringWt').value + ' gr');
 
-  // === Sight Pin Zeros in Summary (100% safe) ===
+  // === 2. Sight Pins ===
   const bowType = $('bowType')?.value || 'compound';
   const pinCountSummary = Number($('pinCount')?.value || '3');
-
   if (bowType === 'recurve' || bowType === 'longbow') {
     addRow('Sight Pins', 'None / Instinctive (Traditional Bow)');
   } else if (pinCountSummary === 0) {
@@ -3668,10 +3666,10 @@ function calculateEverything() {
     }
   }
 
-  // Arrow inputs continue...
-  addRow('Arrow Name', $('arrowName').value);
+  // === 3. Arrow Specs ===
+  addRow('Arrow Name', $('arrowName').value || '-');
   addRow('Spine', actualSpine);
-    addRow('Arrow Diameter', {
+  addRow('Arrow Diameter', {
     'standard': 'Standard (~6.5mm)',
     'small': 'Small (~5mm)',
     'micro': 'Micro (~4mm)'
@@ -3680,49 +3678,31 @@ function calculateEverything() {
   addRow('Total Arrow Weight', totalWt + ' gr');
   addRow('Point Weight', pointWt + ' gr');
   addRow('Balance Point', balancePt + ' in');
+
+  // === 4. Live Settings ===
   addRow('Actual Speed', fps.toFixed(1) + ' fps');
   addRow('Crosswind', windMph.toFixed(1) + ' mph');
   addRow('Range', rangeYd + ' yd');
 
-  // Calculated Outputs
+  // === 5. Core Calculated Stats ===
   addRow('FOC', foc.toFixed(1) + '%');
   addRow('GPP', gpp.toFixed(1));
   addRow('GPI', gpi.toFixed(1) + ' gr/in');
-
   addRow('Effective Draw Weight', effectiveLoad + ' lb');
-  
-  // Add stiffness with status
-  let stiffnessStatus = 'Good';
-  if (spineDiff > 100) stiffnessStatus = 'Weakest';
-  else if (spineDiff < -100) stiffnessStatus = 'Stiffest';
-  else if (spineDiff > 60) stiffnessStatus = 'Weaker';
-  else if (spineDiff < -60) stiffnessStatus = 'Stiffer';
-
   addRow('Stiffness', actualSpine + ' (' + stiffnessStatus + ')');
-
-  // Calculated Outputs 
   addRow('Flatness (20→60 yd)', arcHeightFt.toFixed(1) + ' ft arc');
   addRow('Group Stability', `${goodCount}/3 conditions met`);
 
-  // Max Height
-  //addRow('Max Height at Range', maxHeightAtRangeFt.toFixed(1) + ' ft');
+  // === 6. Trajectory at Current Range ===
   addRow('Max Height at Range', maxHeightFtRounded + ' ft at ' + maxHeightDistYd + ' yd');
-  // === Additional Trajectory Stats in Summary ===
-  addRow('Flight Time @ ' + rangeYd + ' yd', timeTarget.toFixed(3) + ' sec');
-  addRow('Downrange Drop @ ' + rangeYd + ' yd', dropFtTarget + ' ft / ' + dropInTargetRounded + ' in');
-  addRow('Wind Drift @ ' + rangeYd + ' yd', $('windDriftIn').textContent + ' in (' + windMphValue.toFixed(1) + ' mph crosswind)');
+  addRow('Flight Time', timeTarget.toFixed(3) + ' sec');
+  addRow('Downrange Drop', dropFtTarget + ' ft / ' + dropInTargetRounded + ' in');
+  addRow('Wind Drift', $('windDriftIn').textContent + ' in');
 
-  // Downrange Drop
-  addRow('Drop at 30 yd', $(`drop30`).textContent);
-  addRow('Drop at 40 yd', $(`drop40`).textContent);
-  addRow('Drop at 50 yd', $(`drop50`).textContent);
-  addRow('Drop at 60 yd', $(`drop60`).textContent);
-  addRow('Drop at 70 yd', $(`drop70`).textContent);
-
-  // Game Effectiveness
-  addRow('Impact Velocity @ ' + rangeYd + ' yd', velImpact + ' fps');
-  addRow('Impact KE @ ' + rangeYd + ' yd', keImpact.toFixed(1) + ' ft-lbs');
-  addRow('Impact Momentum @ ' + rangeYd + ' yd', momImpact.toFixed(3) + ' slug·ft/s');
+  // === 7. Game Effectiveness at Current Range ===
+  addRow('Impact Velocity', velImpact + ' fps');
+  addRow('Impact KE', keImpact.toFixed(1) + ' ft-lbs');
+  addRow('Impact Momentum', momImpact.toFixed(3) + ' slug·ft/s');
 }
 
 // Move this outside calculateEverything()
@@ -4232,19 +4212,17 @@ $('saveBuild').addEventListener('click', saveBuild);
 $('loadBuild').addEventListener('change', loadBuild);
 $('deleteBuild').addEventListener('click', deleteBuild);
 
-// Close modal when clicking outside the content
-const modalOverlay = $('gameMathModal');
-if (modalOverlay) {
-  modalOverlay.addEventListener('click', (e) => {
-    if (e.target === modalOverlay) {
-      modalOverlay.style.display = 'none';
-    }
-  });
-}
+// Close modal when clicking outside the content panel
+document.getElementById('gameMathModal').addEventListener('click', function(e) {
+  if (e.target === this) {  // clicked the overlay, not the panel
+    this.style.display = 'none';
+  }
+});
 
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && modalOverlay.style.display === 'flex') {
-    modalOverlay.style.display = 'none';
+// Optional: Also close with Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && $('gameMathModal').style.display === 'flex') {
+    $('gameMathModal').style.display = 'none';
   }
 });
 
