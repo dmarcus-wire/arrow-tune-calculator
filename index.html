@@ -463,7 +463,7 @@
           <button id="aiButton" class="btn-small" style="background:var(--purple);">AI Advisor</button>
         </div>
       </div>
-      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.11</p>
+      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.12</p>
     </div>
     <div class="card">
       <h2>Build</h2>
@@ -1181,7 +1181,22 @@
           Animal reaction window — under 0.2 s is very fast.
         </p>
       </div>
-    </div>
+
+       <!-- Wind Drift Card -->
+      <div class="card">
+        <h2 style="display:flex; align-items:center; gap:0.75rem; font-size:1.3rem;">
+          Wind Drift
+          <button onclick="showWindDriftPopup()" class="info-btn" title="Explain Wind Drift">ⓘ</button>
+        </h2>
+        <p style="font-size:1.4rem; font-weight:700; margin:0.75rem 0;">
+          <span id="windDriftIn">0.0</span> in
+          <br>at <span id="windDriftDistanceYd">0</span> yd (<span id="windDriftMph">0</span> mph crosswind)
+        </p>
+        <p style="font-size:0.9rem; color:var(--light);">
+          Sideways drift in full crosswind — aim this far into wind for compensation.
+        </p>
+      </div>
+    </div>   
 
     <!-- Build Summary Table (collapsible) -->
     <div class="card collapsible-mobile" id="summaryCard">
@@ -1889,7 +1904,7 @@ function showVaneHelicalPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
-/*Gllue  weight info icon*/
+/*Glue  weight info icon*/
 function showGlueWtPopup() {
   $('gameMathContent').innerHTML = `
     <p><strong>Glue / Pin Weight (grains)</strong></p>
@@ -2500,6 +2515,65 @@ function showFlightTimePopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+function showWindDriftPopup() {
+  // Grab live values
+  const fps = parseFloat($('fpsSlider').value) || 278;
+  const totalWt = parseFloat($('totalWt').value) || 495;
+  const rangeYd = parseFloat($('rangeSlider').value) || 50;
+  const windMphValue = windMph || 0;
+
+  // Recalculate drift (same as card)
+  let driftIn = 0;
+  if (windMphValue > 0 && rangeTarget > 0) {
+    const tof = (rangeYd * 3) / fps;
+    const windFps = windMphValue * 1.467;
+    let driftFt = windFps * tof * 0.9;
+
+    const diaFactor = $('arrowDia')?.value;
+    if (diaFactor === 'micro') driftFt *= 0.85;
+    else if (diaFactor === 'small') driftFt *= 0.92;
+
+    driftIn = (driftFt * 12).toFixed(1);
+  }
+
+  $('gameMathContent').innerHTML = `
+    <p><strong>Wind Drift Math & Usage</strong></p>
+    <p>Estimated sideways drift in a full crosswind at current range.</p>
+    <hr>
+    <p><strong>Your Current Build:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Actual Speed: <strong>${fps.toFixed(1)} fps</strong></li>
+      <li>Total Arrow Weight: <strong>${totalWt} gr</strong></li>
+      <li>Arrow Diameter: <strong>${{
+        'standard': 'Standard (~6.5mm)',
+        'small': 'Small (~5mm)',
+        'micro': 'Micro (~4mm)'
+      }[$('arrowDia')?.value || 'micro']}</strong></li>
+      <li>Current Range: <strong>${rangeYd} yd</strong></li>
+      <li>Crosswind: <strong>${windMphValue.toFixed(1)} mph</strong></li>
+      <li>Wind Drift: <strong>${driftIn} in</strong></li>
+    </ul>
+    <hr>
+    <p><strong>Step-by-Step Calculation:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Flight time to target ≈ ${((rangeYd * 3) / fps).toFixed(3)} sec</li>
+      <li>Wind speed = ${windMphValue.toFixed(1)} mph ≈ ${(windMphValue * 1.467).toFixed(1)} fps</li>
+      <li>Base drift ≈ wind fps × flight time × 0.9 (arrow lag) ≈ ${(driftFt * 12).toFixed(1)} in</li>
+      <li>Diameter adjustment applied → <strong>${driftIn} in drift</strong></li>
+    </ul>
+    <hr>
+    <p><strong>How to Use It (Hunting Guide):</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Aim this far <strong>into the wind</strong> to compensate</li>
+      <li>Under 6 in at 50 yd = excellent wind performance</li>
+      <li>6–12 in = manageable with practice</li>
+      <li>Over 12 in = significant holdover needed</li>
+    </ul>
+    <p>Smaller diameter + faster arrow = least drift. Micro-diameter arrows shine in wind.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
 function calculateEverything() {
   // Parse all inputs first
   const drawWt = parseFloat($('drawWt').value) || 70;
@@ -2626,7 +2700,7 @@ function calculateEverything() {
     totalWtValue.textContent = Math.round(totalWt) + ' gr';
   }
 
-    // === Game Effectiveness (100% SAFE) ===
+  // === Game Effectiveness (100% SAFE) ===
   const k = 0.532;
   const retention = Math.exp(- (k * rangeYd) / totalWt);
   const velImpact = Math.round(fps * retention);
@@ -2663,7 +2737,7 @@ function calculateEverything() {
     }
   });
 
-    // === Stiffness / Forgiveness ===
+  // === Stiffness / Forgiveness ===
   const actualSpine = parseFloat($('spine').value) || 300;
   const baseLoad = drawWt;
   const lengthFactor = (arrowLen - 28) * 2.5;
@@ -2683,7 +2757,7 @@ function calculateEverything() {
 
   stiffnessPercent = Math.max(0, Math.min(100, stiffnessPercent));
 
-    // === Effective Draw Weight bars (100% SAFE) ===
+  // === Effective Draw Weight bars (100% SAFE) ===
   const maxLoad = 100;
   const inputDwPercent = (drawWt / maxLoad) * 100;
   const effectivePercent = (effectiveLoad / maxLoad) * 100;
@@ -2841,7 +2915,33 @@ function calculateEverything() {
   if (flightTimeSecEl) flightTimeSecEl.textContent = timeTarget.toFixed(3);
   if (flightDistanceYdEl) flightDistanceYdEl.textContent = rangeTarget;
 
-    // === Update Build Summary Table ===
+  // === Wind Drift Calculation ===
+  const windMphValue = windMph || 0;
+  if (windMphValue > 0 && rangeTarget > 0) {
+    // Simple approximation: drift ≈ (wind_fps * tof) * lag factor
+    // Lag factor ~0.8-1.0 for arrows (they lag behind wind)
+    const tof = timeTarget; // reuse flight time
+    const windFps = windMphValue * 1.467; // mph to fps
+    let driftFt = windFps * tof * 0.9; // ~10% less than full wind (typical arrow lag)
+
+    // Adjust slightly by arrow diameter (smaller = less drift)
+    const diaFactor = $('arrowDia')?.value;
+    if (diaFactor === 'micro') driftFt *= 0.85;
+    else if (diaFactor === 'small') driftFt *= 0.92;
+    // standard = 1.0
+
+    const driftIn = (driftFt * 12).toFixed(1);
+
+    $('windDriftIn').textContent = driftIn;
+    $('windDriftDistanceYd').textContent = rangeTarget;
+    $('windDriftMph').textContent = windMphValue.toFixed(1);
+  } else {
+    $('windDriftIn').textContent = '0.0';
+    $('windDriftDistanceYd').textContent = rangeTarget;
+    $('windDriftMph').textContent = '0';
+  }
+
+  // === Update Build Summary Table ===
   const table = $('summaryTable').querySelector('tbody');
   table.innerHTML = ''; // clear
 
