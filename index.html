@@ -570,12 +570,19 @@
           </div>
           <input type="number" id="stringWt" value="20" min="0" step="0.5" style="flex:1;" data-manual="false">
         </div>
+
         <!---String Details-->
         <div class="collapsible-trigger" onclick="this.classList.toggle('open'); this.nextElementSibling.style.display = this.classList.contains('open') ? 'block' : 'none';">
           <span>String Details</span>
           <span class="chevron">></span>
         </div>
           <div class="collapsible-content">
+          <!-- Checkbox to enable detailed string components -->
+          <div class="input-row" style="align-items:center; gap:0.5rem;">
+            <label for="useStringDetails">Use detailed components</label>
+            <input type="checkbox" id="useStringDetails" onchange="toggleStringDetailsMode()">
+          </div>
+
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="peepWt">Peep weight gr</label>
@@ -729,8 +736,16 @@
           <span>Component Details</span>
           <span class="chevron">></span>
         </div>
+
         <div class="collapsible-content">
           <!-- New: Bare Shaft Weight -->
+
+          <!-- Checkbox to enable detailed arrow components -->
+          <div class="input-row" style="align-items:center; gap:0.5rem;">
+            <label for="useArrowDetails">Use detailed components</label>
+            <input type="checkbox" id="useArrowDetails" onchange="toggleArrowDetailsMode()">
+          </div>
+
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="bareShaftWt">Bare shaft weight gr</label>
@@ -800,13 +815,13 @@
             </div>
             <input type="number" id="glueWt" value="0" step="0.5" style="flex:1;">
           </div>
-        </div>
-        <!-- Arrow Components Total Display -->
-        <div style="margin-top:1rem; padding:0.75rem; background:var(--border); border-radius:8px; text-align:center;">
+          <!-- Arrow Components Total Display -->
+          <div style="margin-top:1rem; padding:0.75rem; background:var(--border); border-radius:8px; text-align:center;">
           <strong>Total Arrow Weight: <span id="arrowComponentsTotal">0</span> gr</strong>
           <p style="font-size:0.85rem; color:var(--light); margin-top:0.5rem;">
             Auto-calculated from components. Edit main Total Weight field to override.
           </p>
+        </div>
         </div>
       </div>
     </div>
@@ -1446,6 +1461,32 @@ function showStringAddonsPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+/* String add-on checkbox*/
+function toggleStringDetailsMode() {
+  const checkbox = $('useStringDetails');
+  const checked = checkbox?.checked ?? false;
+
+  const detailIds = ['peepWt', 'dloopWt', 'kisserWt', 'silencerWt', 'nockWt'];
+  const mainInput = $('stringWt');
+
+  detailIds.forEach(id => {
+    const input = $(id);
+    if (input) {
+      input.readOnly = !checked;
+      input.style.backgroundColor = checked ? '' : 'var(--border)';
+      input.style.opacity = checked ? '' : '0.6';
+    }
+  });
+
+  if (mainInput) {
+    mainInput.readOnly = checked;
+    mainInput.style.backgroundColor = checked ? 'var(--border)' : '';
+    mainInput.style.opacity = checked ? '0.6' : '';
+  }
+
+  calculateEverything(); // update total and display
+}
+
 /*Peep  weight info icon*/
 function showPeepWtPopup() {
   $('gameMathContent').innerHTML = `
@@ -1692,6 +1733,36 @@ function showBalancePtPopup() {
     <p>Higher balance point = higher FOC = better stability & penetration.</p>
   `;
   $('gameMathModal').style.display = 'flex';
+}
+
+/*Checkbox behavior*/
+function toggleArrowDetailsMode() {
+  const checkbox = $('useArrowDetails');
+  const checked = checkbox?.checked ?? false;
+
+  const detailIds = ['bareShaftWt', 'insertWt', 'wrapWt', 'vaneWt', 'vaneCount', 'vaneHeight', 'vaneHelical', 'glueWt'];
+  const mainInput = $('totalWt');
+
+  detailIds.forEach(id => {
+    const input = $(id);
+    if (input) {
+      if (id === 'vaneHelical') {
+        input.disabled = !checked; // select uses disabled
+      } else {
+        input.readOnly = !checked;
+      }
+      input.style.backgroundColor = checked ? '' : 'var(--border)';
+      input.style.opacity = checked ? '' : '0.6';
+    }
+  });
+
+  if (mainInput) {
+    mainInput.readOnly = checked;
+    mainInput.style.backgroundColor = checked ? 'var(--border)' : '';
+    mainInput.style.opacity = checked ? '0.6' : '';
+  }
+
+  calculateEverything(); // update total and display
 }
 
 /*Bare shaft weight info icon*/
@@ -2945,12 +3016,32 @@ const sampleProfiles = [
     drawWt: "80",
     drawLen: "27",
     stringWt: "20",
+    peepWt: "15",
+    dloopWt: "8",
+    kisserWt: "0",
+    silencerWt: "12",
+    nockWt: "10",
+    pinCount: "3",
+    pin1Zero: "20",
+    pin2Zero: "30",
+    pin3Zero: "50",
     arrowName: "Easton FMJ",
     spine: "300",
+    arrowDia: "standard",
     arrowLen: "27.5",
     totalWt: "500",
     pointWt: "125",
     balancePt: "18",
+    bareShaftWt: "360",  // 500 - 125 point - 15 minor = ~360 shaft
+    insertWt: "0",
+    wrapWt: "0",
+    vaneWt: "8",
+    vaneCount: "3",
+    vaneHeight: "0.5",
+    vaneHelical: "max",
+    glueWt: "5",
+    useStringDetails: false, 
+    useArrowDetails: false, 
     fpsSlider: "290"
   },
   {
@@ -2966,12 +3057,32 @@ const sampleProfiles = [
     drawWt: "90",
     drawLen: "29",
     stringWt: "20",
+    peepWt: "15",
+    dloopWt: "8",
+    kisserWt: "0",
+    silencerWt: "12",
+    nockWt: "10",
+    pinCount: "3",
+    pin1Zero: "20",
+    pin2Zero: "30",
+    pin3Zero: "50",
     arrowName: "Victory VAP TKO",
     spine: "200",
+    arrowDia: "micro",
     arrowLen: "29",
     totalWt: "520",
     pointWt: "200",
     balancePt: "18.5",
+    bareShaftWt: "300",  // 520 - 200 point - 20 minor = ~300 shaft
+    insertWt: "0",
+    wrapWt: "8",
+    vaneWt: "9",
+    vaneCount: "4",
+    vaneHeight: "0.6",
+    vaneHelical: "high",
+    glueWt: "5",
+    useStringDetails: false, 
+    useArrowDetails: false, 
     fpsSlider: "280"
   },
   {
@@ -2987,12 +3098,32 @@ const sampleProfiles = [
     drawWt: "70",
     drawLen: "29",
     stringWt: "15",
+    peepWt: "12",
+    dloopWt: "8",
+    kisserWt: "5",
+    silencerWt: "0",
+    nockWt: "8",
+    pinCount: "3",
+    pin1Zero: "20",
+    pin2Zero: "30",
+    pin3Zero: "40",
     arrowName: "Easton Axis",
     spine: "300",
+    arrowDia: "small",
     arrowLen: "28",
     totalWt: "450",
     pointWt: "125",
     balancePt: "17",
+    bareShaftWt: "300",  // 450 - 125 point - 25 minor = ~300 shaft
+    insertWt: "0",
+    wrapWt: "0",
+    vaneWt: "7",
+    vaneCount: "3",
+    vaneHeight: "0.4",
+    vaneHelical: "moderate",
+    glueWt: "5",
+    useStringDetails: false, 
+    useArrowDetails: false, 
     fpsSlider: "295"
   },
   {
@@ -3008,12 +3139,30 @@ const sampleProfiles = [
     drawWt: "60",
     drawLen: "27.5",
     stringWt: "10",
+    peepWt: "20",
+    dloopWt: "0",
+    kisserWt: "0",
+    silencerWt: "0",
+    nockWt: "8",
+    pinCount: "1",
+    pin1Zero: "20",
     arrowName: "Altra Centrum",
     spine: "300",
+    arrowDia: "micro",
     arrowLen: "27",
     totalWt: "420",
     pointWt: "100",
     balancePt: "16",
+    bareShaftWt: "280",  // 420 - 100 point - 40 minor = ~280 shaft
+    insertWt: "0",
+    wrapWt: "0",
+    vaneWt: "6",
+    vaneCount: "4",
+    vaneHeight: "0.5",
+    vaneHelical: "high",
+    glueWt: "5",
+    useStringDetails: false, 
+    useArrowDetails: false, 
     fpsSlider: "310"
   },
   {
@@ -3029,12 +3178,34 @@ const sampleProfiles = [
     drawWt: "65",
     drawLen: "28",
     stringWt: "15",
+    peepWt: "18",
+    dloopWt: "0",
+    kisserWt: "0",
+    silencerWt: "0",
+    nockWt: "10",
+    pinCount: "5",
+    pin1Zero: "20",
+    pin2Zero: "30",
+    pin3Zero: "40",
+    pin4Zero: "50",
+    pin5Zero: "60",
     arrowName: "Gold Tip Triple X",
     spine: "250",
+    arrowDia: "small",
     arrowLen: "28",
     totalWt: "460",
     pointWt: "140",
     balancePt: "17",
+    bareShaftWt: "290",  // 460 - 140 point - 30 minor = ~290 shaft
+    insertWt: "0",
+    wrapWt: "0",
+    vaneWt: "8",
+    vaneCount: "4",
+    vaneHeight: "0.6",
+    vaneHelical: "high",
+    glueWt: "5",
+    useStringDetails: false, 
+    useArrowDetails: false, 
     fpsSlider: "295"
   },
   {
@@ -3050,12 +3221,32 @@ const sampleProfiles = [
     drawWt: "70",
     drawLen: "28",
     stringWt: "20",
+    peepWt: "15",
+    dloopWt: "8",
+    kisserWt: "0",
+    silencerWt: "15",
+    nockWt: "10",
+    pinCount: "3",
+    pin1Zero: "20",
+    pin2Zero: "30",
+    pin3Zero: "50",
     arrowName: "Easton Axis",
     spine: "250",
+    arrowDia: "small",
     arrowLen: "28",
     totalWt: "480",
     pointWt: "125",
     balancePt: "17",
+    bareShaftWt: "330",  // 480 - 125 point - 25 minor = ~330 shaft
+    insertWt: "0",
+    wrapWt: "0",
+    vaneWt: "8",
+    vaneCount: "3",
+    vaneHeight: "0.5",
+    vaneHelical: "max",
+    glueWt: "5",
+    useStringDetails: false, 
+    useArrowDetails: false, 
     fpsSlider: "285"
   }
 ];
@@ -3159,10 +3350,6 @@ function loadBuild() {
   $('appType').value = build.appType || 'Hunting';
   $('bowModel').value = build.bowModel || '';
   $('bowType').value = build.bowType || 'compound';
-  // Auto-set pins to "No Pins" if recurve or longbow
-  if (build.bowType === 'recurve' || build.bowType === 'longbow') {
-    $('pinCount').value = '0';
-  }
   $('letOff').value = build.letOff || '80';
   $('braceHeight').value = build.braceHeight || '6';
   $('camType').value = build.camType || 'hybrid';
@@ -3175,25 +3362,22 @@ function loadBuild() {
   $('kisserWt').value = build.kisserWt || '0';
   $('silencerWt').value = build.silencerWt || '12';
   $('nockWt').value = build.nockWt || '10';
-  //$('pinCount').value = build.pinCount || '3';
 
-   // === Load pin count with bow type override ===
+  // === Load pin count with bow type override ===
   let pinCountValue = build.pinCount || '3';
-
   if (build.bowType === 'recurve' || build.bowType === 'longbow') {
     pinCountValue = '0';
   }
-
   $('pinCount').value = pinCountValue;
 
-  // First: rebuild pin inputs (clears old inputs for No Pins)
+  // Rebuild pin inputs
   calculateEverything();
 
-  // Small delay to ensure DOM is updated, then final calculation with correct summary
-  setTimeout(() => {
-    calculateEverything();
-  }, 100);
+  // Restore checkbox states (important for samples)
+  if ($('useStringDetails')) $('useStringDetails').checked = build.useStringDetails ?? false;
+  if ($('useArrowDetails')) $('useArrowDetails').checked = build.useArrowDetails ?? false;
 
+  // Arrow fields
   $('arrowName').value = build.arrowName || '';
   $('spine').value = build.spine || '';
   $('arrowDia').value = build.arrowDia || 'micro';
@@ -3202,13 +3386,13 @@ function loadBuild() {
   $('pointWt').value = build.pointWt || '';
   $('balancePt').value = build.balancePt || '';
   $('bareShaftWt').value = build.bareShaftWt || '0';
-  $('insertWt').value = build.insertWt || '50';
-  $('wrapWt').value = build.wrapWt || '8';
-  $('vaneWt').value = build.vaneWt || '8';
+  $('insertWt').value = build.insertWt || '0';
+  $('wrapWt').value = build.wrapWt || '0';
+  $('vaneWt').value = build.vaneWt || '0';
+  $('vaneCount').value = build.vaneCount || '0';
   $('vaneHeight').value = build.vaneHeight || '0.5';
-  $('vaneCount').value = build.vaneCount || '3';
   $('vaneHelical').value = build.vaneHelical || 'max';
-  $('glueWt').value = build.glueWt || '5';
+  $('glueWt').value = build.glueWt || '0';
 
   alert(`Build "${build.name}" loaded!`);
 
@@ -3218,6 +3402,9 @@ function loadBuild() {
   $('windInput').value = build.windSlider || '5';
   $('rangeSlider').value = build.rangeSlider || '50';
   $('rangeInput').value = build.rangeSlider || '50';
+
+  // Final calculation — summary now correct
+  calculateEverything();
 }
 
 function deleteBuild() {
@@ -3323,9 +3510,11 @@ $('saveBuild').addEventListener('click', saveBuild);
 $('loadBuild').addEventListener('change', loadBuild);
 $('deleteBuild').addEventListener('click', deleteBuild);
 
-// Init
+// set initial state
 updateLoadDropdown();
 calculateEverything();
+toggleStringDetailsMode(); 
+toggleArrowDetailsMode();
 </script>
 </body>
 </html>
