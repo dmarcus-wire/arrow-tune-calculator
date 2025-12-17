@@ -241,11 +241,13 @@
       border-radius:999px;
       transition:width 0.3s ease;
     }
-    .sweet-spot {
+
+    /* FOC Sweet Spot green threshold*/
+    .foc-sweet-spot {
       position:absolute;
-      top:0; 
-      left:40%; /* 12% of 30% scale = 40% position */
-      width:20%; /* 6% range (18-12) = 20% of bar */
+      top:0;
+      left:33.33%; /* 10% on 0–30% scale = 33.33% position */
+      width:26.67%; /* 8% range (18-10) = 26.67% of bar */
       height:100%;
       background:rgba(34,197,94,0.25);
       border-radius:999px;
@@ -874,7 +876,7 @@
               <div class="stat-bar-container">
                 <div class="bar" style="height:16px;">
                   <div class="bar-fill" id="inputDwFill" style="width:50%; background:var(--primary);"></div>
-                  <div class="bar-marker" id="inputDwMarker" style="left:50%;"></div>
+                  <!--<div class="bar-marker" id="inputDwMarker" style="left:50%;"></div>-->
                 </div>
                 <span class="moving-value" id="inputDwValue">70 lb</span>
               </div>
@@ -892,7 +894,7 @@
               <div class="stat-bar-container">
                 <div class="bar" style="height:16px;">
                   <div class="bar-fill" id="effectiveLoadFill" style="width:50%; background:var(--success);"></div>
-                  <div class="bar-marker" id="effectiveLoadMarker" style="left:50%;"></div>
+                  <!--<div class="bar-marker" id="effectiveLoadMarker" style="left:50%;"></div>-->
                 </div>
                 <span class="moving-value" id="effectiveLoadValue">80 lb</span>
               </div>
@@ -975,7 +977,7 @@
               <div class="stat-bar-container">
                 <div class="bar" style="height:16px;">
                   <div class="bar-marker" id="focMarker" style="left:50%;"></div>
-                  <div class="sweet-spot"></div>
+                  <div class="foc-sweet-spot"></div>
                 </div>
                 <div class="bar-labels">
                   <span>tail heavy</span>
