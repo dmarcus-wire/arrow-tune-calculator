@@ -463,7 +463,7 @@
           <button id="aiButton" class="btn-small" style="background:var(--purple);">AI Advisor</button>
         </div>
       </div>
-      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.12</p>
+      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.13</p>
     </div>
     <div class="card">
       <h2>Build</h2>
@@ -1137,18 +1137,19 @@
 
     <!-- New Summary Cards Row -->
     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
-      <!-- Peak Height Card -->
+
+      <!-- Max Height at Range Card -->
       <div class="card">
-        <h2 style="display:flex; align-items:center; gap:0.75rem; font-size:1.3rem;">
-          Peak Height
-          <button onclick="showPeakHeightPopup()" class="info-btn" title="Explain Peak Height">ⓘ</button>
-        </h2>
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <h2 style="font-size:1.3rem; margin:0;">Max Height at Range</h2>
+          <button type="button" onclick="showMaxHeightPopup()" class="info-btn" title="Explain Max Height at Range">ⓘ</button>
+        </div>
         <p style="font-size:1.4rem; font-weight:700; margin:0.75rem 0;">
-          <span id="peakHeightFt">0.0</span> ft / <span id="peakHeightIn">0.0</span> in
-          <br>at <span id="peakDistanceYd">0</span> yd
+          <span id="maxHeightFt">0.0</span> ft / <span id="maxHeightIn">0.0</span> in
+          <br>at <span id="maxHeightDistanceYd">0</span> yd (of <span id="maxHeightRangeYd">50</span> yd)
         </p>
         <p style="font-size:0.9rem; color:var(--light);">
-          Max height above launch line — great for clearing brush or blind windows.
+          Highest point above line of sight up to your current range — useful for pin gaps and obstacle clearance.
         </p>
       </div>
 
@@ -2377,99 +2378,140 @@ function showSightPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
-function showPeakHeightPopup() {
-  // Grab live user values for personalized display
+function showMaxHeightPopup() {
   const fps = parseFloat($('fpsSlider').value) || 278;
+  const rangeYd = parseFloat($('rangeSlider').value) || 50;
 
-  // Recalculate with current FPS
+  // Recalculate for popup
   const approxThetaDeg = 3;
   const approxThetaRad = approxThetaDeg * Math.PI / 180;
   const v0y = fps * Math.sin(approxThetaRad);
-  const peakHeightFt = (v0y * v0y) / (2 * 32.174);
+  const v0x = fps * Math.cos(approxThetaRad);
+  const timeToRange = (rangeYd * 3) / v0x;
   const timeToPeak = v0y / 32.174;
-  const peakDistanceYd = Math.round((fps * Math.cos(approxThetaRad) * timeToPeak) / 3);
+  const actualTime = Math.min(timeToRange, timeToPeak);
+  const maxHeightFt = Math.max(0, v0y * actualTime - 0.5 * 32.174 * actualTime * actualTime);
+  const maxHeightIn = (maxHeightFt * 12).toFixed(1);
+
+  const maxHeightDistYd = Math.round(v0x * actualTime / 3);
 
   $('gameMathContent').innerHTML = `
-    <p><strong>Peak Height Math & Usage</strong></p>
-    <p>The highest point your arrow reaches above the launch line (not line of sight).</p>
+    <p><strong>Max Height at Range Math & Usage</strong></p>
+    <p>Highest point the arrow reaches above the line of sight between launch and your current range.</p>
     <hr>
     <p><strong>Your Current Build:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
       <li>Actual Speed: <strong>${fps.toFixed(1)} fps</strong></li>
-      <li>Peak Height: <strong>${peakHeightFt.toFixed(1)} ft / ${(peakHeightFt * 12).toFixed(1)} in</strong></li>
-      <li>Occurs at: <strong>${peakDistanceYd} yd</strong></li>
+      <li>Current Range: <strong>${rangeYd} yd</strong></li>
+      <li>Max Height at Range: <strong>${maxHeightFt.toFixed(1)} ft / ${maxHeightIn} in</strong></li>
+      <li>Occurs at: <strong>${maxHeightDistYd} yd</strong></li>
     </ul>
     <hr>
-    <p><strong>Why Doesn't This Change with the Range Slider?</strong></p>
-    <p>Peak height is a property of the <strong>entire trajectory arc</strong> — determined by launch speed and upward angle (fixed for 20 yd zero). It always occurs near the midpoint of the full flight path (~80–90 yd vacuum range), around 40–45 yd for hunting speeds.</p>
-    <p>The Range slider only changes where you're aiming — not the shape of the arc itself.</p>
-    <p>Example: At 50 yd range, your arrow is already <strong>past the peak</strong> and dropping (see Downrange Drop card).</p>
+    <p><strong>Raw Equation</strong></p>
+    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.9rem;">
+      Height (ft) = v₀y × t − 0.5 × g × t²<br>
+      where:<br>
+      • v₀y = fps × sin(3°) (upward velocity)<br>
+      • t = min(time to range, time to peak)<br>
+      • g = 32.174 ft/s²
+    </p>
     <hr>
-    <p><strong>Step-by-Step Calculation:</strong></p>
+    <p><strong>Step-by-Step Calculation (with your values):</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>Upward velocity ≈ ${fps.toFixed(1)} × sin(3°) ≈ ${v0y.toFixed(1)} ft/s</li>
-      <li>Height = (v₀ sinθ)² / (2g) = <strong>${peakHeightFt.toFixed(1)} ft</strong></li>
-      <li>Distance to peak ≈ <strong>${peakDistanceYd} yd</strong></li>
+      <li>Upward velocity = ${fps.toFixed(1)} × sin(3°) ≈ <strong>${v0y.toFixed(1)} ft/s</strong></li>
+      <li>Horizontal velocity ≈ ${v0x.toFixed(1)} ft/s</li>
+      <li>Time to ${rangeYd} yd = (${rangeYd} × 3) / ${v0x.toFixed(1)} ≈ <strong>${timeToRange.toFixed(3)} sec</strong></li>
+      <li>Time to absolute peak = ${v0y.toFixed(1)} / 32.174 ≈ <strong>${timeToPeak.toFixed(3)} sec</strong></li>
+      <li>Actual time used = min(${timeToRange.toFixed(3)}, ${timeToPeak.toFixed(3)}) = <strong>${actualTime.toFixed(3)} sec</strong></li>
+      <li>Max height = ${v0y.toFixed(1)} × ${actualTime.toFixed(3)} − 0.5 × 32.174 × (${actualTime.toFixed(3)})² = <strong>${maxHeightFt.toFixed(1)} ft</strong></li>
     </ul>
     <hr>
     <p><strong>How to Use It:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li><strong>Brush/Branch Clearance:</strong> Must clear obstacles on steep shots.</li>
-      <li><strong>Blind Window Shots:</strong> Higher peak = safer over frame.</li>
-      <li><strong>Compare Builds:</strong> Faster arrows = higher/farther peak.</li>
+      <li>Pin gaps & holdover: higher = more curved trajectory</li>
+      <li>Obstacle clearance at your shot distance</li>
+      <li>Compare builds: lower height = flatter trajectory</li>
     </ul>
-    <p>Influenced by: <strong>Actual Speed (FPS)</strong> — primary factor.</p>
+    <hr>
+    <p><strong>Influenced By:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Actual Speed (FPS)</strong> — biggest factor (faster = lower height at same range)</li>
+      <li><strong>Current Range</strong> — longer range = higher max height (until ~40–45 yd absolute peak)</li>
+      <li>Indirect: anything that affects FPS (bow power, arrow weight, string add-ons)</li>
+    </ul>
+    <p>Note: Uses fixed ~3° launch angle for typical 20 yd zero. Real trajectory may vary slightly with sight setup.</p>
   `;
   $('gameMathModal').style.display = 'flex';
 }
 
 function showDropPopup() {
-  // Get current user values
   const fps = parseFloat($('fpsSlider').value) || 278;
-  const totalWt = parseFloat($('totalWt').value) || 495;
   const rangeYd = parseFloat($('rangeSlider').value) || 50;
 
-  // Calculate actual drop values (same as in cards)
+  // Recalculate drop (same as card)
   const dropAtDistance = (distYd) => {
     const distFt = distYd * 3;
     const time = distFt / fps;
     return 0.5 * 32.174 * time * time * 12; // inches total gravity drop
   };
+
   const dropInTarget = dropAtDistance(rangeYd);
   const drop20 = dropAtDistance(20);
   const relativeDropInTarget = dropInTarget - drop20;
   const dropFtTarget = (relativeDropInTarget / 12).toFixed(1);
   const dropInTargetRounded = relativeDropInTarget.toFixed(1);
 
+  // For step-by-step
+  const timeToRange = (rangeYd * 3) / fps;
+  const timeTo20 = (20 * 3) / fps;
+  const totalDropTarget = dropInTarget.toFixed(1);
+  const totalDrop20 = drop20.toFixed(1);
+
   $('gameMathContent').innerHTML = `
     <p><strong>Downrange Drop Math & Usage</strong></p>
-    <p>How far the arrow impacts <strong>below your line of sight</strong> at the selected Range (with a 20 yd zero).</p>
+    <p>How far the arrow impacts below your line of sight at the selected range (with a 20 yd zero).</p>
     <hr>
     <p><strong>Your Current Build:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
       <li>Actual Speed: <strong>${fps.toFixed(1)} fps</strong></li>
-      <li>Total Arrow Weight: <strong>${totalWt} gr</strong></li>
       <li>Current Range: <strong>${rangeYd} yd</strong></li>
       <li>Downrange Drop: <strong>${dropFtTarget} ft / ${dropInTargetRounded} in</strong></li>
     </ul>
     <hr>
-    <p><strong>Calculation:</strong></p>
-    <p>Extra gravity drop beyond your 20 yd zero.</p>
-    <p>Step-by-step:</p>
+    <p><strong>Raw Equation</strong></p>
+    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.9rem;">
+      Drop (in) = [0.5 × g × t² × 12] at range − [0.5 × g × t² × 12] at 20 yd<br>
+      where:<br>
+      • g = 32.174 ft/s²<br>
+      • t = distance in feet / fps<br>
+      • × 12 = convert feet to inches
+    </p>
+    <hr>
+    <p><strong>Step-by-Step Calculation (with your values):</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>Total gravity drop at ${rangeYd} yd: ${(dropInTarget).toFixed(1)} in</li>
-      <li>Total gravity drop at 20 yd: ${(drop20).toFixed(1)} in</li>
-      <li>Extra drop = ${dropInTarget.toFixed(1)} − ${drop20.toFixed(1)} = <strong>${relativeDropInTarget.toFixed(1)} in</strong></li>
+      <li>Time to ${rangeYd} yd = (${rangeYd} × 3) / ${fps.toFixed(1)} = <strong>${timeToRange.toFixed(3)} sec</strong></li>
+      <li>Total drop at ${rangeYd} yd = 0.5 × 32.174 × (${timeToRange.toFixed(3)})² × 12 = <strong>${totalDropTarget} in</strong></li>
+      <li>Time to 20 yd = (20 × 3) / ${fps.toFixed(1)} = <strong>${timeTo20.toFixed(3)} sec</strong></li>
+      <li>Total drop at 20 yd = 0.5 × 32.174 × (${timeTo20.toFixed(3)})² × 12 = <strong>${totalDrop20} in</strong></li>
+      <li>Relative drop = ${totalDropTarget} − ${totalDrop20} = <strong>${dropInTargetRounded} in</strong></li>
       <li>= <strong>${dropFtTarget} ft</strong></li>
     </ul>
     <hr>
-    <p><strong>How to Use It:</strong></p>
+    <p><strong>How to Use It (Hunting Guide):</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li><strong>Pin Gaps & Holdover:</strong> Aim this high above vitals with your last pin.</li>
-      <li><strong>Ethical Range:</strong> If drop > vital zone (~12–18 in), consider it your max accurate range.</li>
-      <li><strong>Compare Builds:</strong> Faster/lighter arrows = less drop = flatter trajectory.</li>
+      <li>Aim this high with your last pin for holdover</li>
+      <li>Under 12 in at 50 yd = very flat — easy ranging</li>
+      <li>12–24 in = manageable with practice</li>
+      <li>Over 36 in = significant drop — limit range or use slider/dial</li>
     </ul>
-    <p>Influenced by: <strong>Actual Speed</strong> (biggest), <strong>Total Arrow Weight</strong> (retains speed), and <strong>Range</strong>.</p>
+    <p>Faster arrow + lighter weight = less drop = flatter trajectory.</p>
+    <hr>
+    <p><strong>Influenced By:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Actual Speed (FPS)</strong> — biggest factor (faster = less drop)</li>
+      <li><strong>Current Range</strong> — drop increases with distance squared</li>
+      <li>Indirect: anything that affects FPS (bow power, arrow weight, string add-ons)</li>
+    </ul>
   `;
   $('gameMathModal').style.display = 'flex';
 }
@@ -2477,8 +2519,8 @@ function showDropPopup() {
 function showFlightTimePopup() {
   // Grab live user values
   const fps = parseFloat($('fpsSlider').value) || 278;
-  const rangeYd = parseFloat($('rangeSlider').value) || 50;
   const totalWt = parseFloat($('totalWt').value) || 495;
+  const rangeYd = parseFloat($('rangeSlider').value) || 50;
 
   // Calculate flight time (same as card)
   const timeTarget = (rangeYd * 3) / fps;
@@ -2495,11 +2537,17 @@ function showFlightTimePopup() {
       <li>Flight Time: <strong>${timeTarget.toFixed(3)} sec</strong></li>
     </ul>
     <hr>
-    <p><strong>Step-by-Step Calculation:</strong></p>
+    <p><strong>Raw Equation</strong></p>
+    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.9rem;">
+      Time (sec) = (Range in yards × 3) / Arrow Speed in fps<br>
+      (small upward launch angle ignored for horizontal approximation)
+    </p>
+    <hr>
+    <p><strong>Step-by-Step Calculation (with your values):</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>Horizontal distance = ${rangeYd} yd × 3 = ${rangeYd * 3} ft</li>
-      <li>Horizontal velocity ≈ ${fps.toFixed(1)} fps (small upward angle ignored for approximation)</li>
-      <li>Time = distance / velocity = ${ (rangeYd * 3).toFixed(0) } / ${fps.toFixed(1)} ≈ <strong>${timeTarget.toFixed(3)} sec</strong></li>
+      <li>Horizontal distance = ${rangeYd} yd × 3 = <strong>${(rangeYd * 3)} ft</strong></li>
+      <li>Horizontal velocity ≈ <strong>${fps.toFixed(1)} fps</strong> (upward angle ~3° ignored)</li>
+      <li>Flight time = ${ (rangeYd * 3) } / ${fps.toFixed(1)} = <strong>${timeTarget.toFixed(3)} sec</strong></li>
     </ul>
     <hr>
     <p><strong>How to Use It (Hunting Guide):</strong></p>
@@ -2510,7 +2558,13 @@ function showFlightTimePopup() {
     </ul>
     <p>Your ${timeTarget.toFixed(3)} sec at ${rangeYd} yd is solid for a heavy hunting arrow — great balance of quietness and penetration.</p>
     <hr>
-    <p>Influenced by: <strong>Actual Speed (FPS)</strong> and <strong>Range</strong>. Heavier arrows slightly slower but quieter.</p>
+    <p><strong>Influenced By:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Actual Speed (FPS)</strong> — biggest factor (faster = shorter time)</li>
+      <li><strong>Current Range</strong> — longer = more time in flight</li>
+      <li>Indirect: anything that affects FPS (bow power, arrow weight, string add-ons)</li>
+    </ul>
+    <p>Heavier arrows are slightly slower but quieter — small trade-off for better penetration.</p>
   `;
   $('gameMathModal').style.display = 'flex';
 }
@@ -2561,15 +2615,17 @@ function showWindDriftPopup() {
       <li>Wind Drift: <strong>${finalDriftIn} in</strong></li>
     </ul>
     <hr>
-    <p><strong>Algorithm</strong></p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li><strong>Drift (in)</strong> = (V_wind × t_flight × 0.9) × D_factor × 12</li>
-      <li><strong>V_wind</strong> = crosswind speed in feet per second (mph × 1.467)</li>
-      <li><strong>t_flight</strong> = flight time to target in seconds ≈ (range in yards × 3) / arrow speed in fps</li>
-      <li><strong>0.9</strong> = arrow lag factor (arrows don’t fully move with the wind — typically ~90% of full drift)</li>
-      <li><strong>D_factor</strong> = diameter adjustment (1.0 for standard, 0.92 for small, 0.85 for micro)</li>
-      <li><strong>× 12</strong> = convert feet of drift to inches</li>
-    </ul>
+    <p><strong>Raw Equation</strong></p>
+    <div style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.9rem;">
+      <ul style="margin-left:1.25rem;">
+        <li><strong>Drift (in)</strong> = (V_wind × t_flight × 0.9) × D_factor × 12</li>
+        <li><strong>V_wind</strong> = crosswind speed in feet per second (mph × 1.467)</li>
+        <li><strong>t_flight</strong> = flight time to target in seconds ≈ (range in yards × 3) / arrow speed in fps</li>
+        <li><strong>0.9</strong> = arrow lag factor (arrows don’t fully move with the wind — typically ~90% of full drift)</li>
+        <li><strong>D_factor</strong> = diameter adjustment (1.0 for standard, 0.92 for small, 0.85 for micro)</li>
+        <li><strong>× 12</strong> = convert feet of drift to inches</li>
+      </ul>
+    </div>
     <hr>
     <p><strong>Step-by-Step Calculation:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
@@ -2897,13 +2953,34 @@ function calculateEverything() {
     }
   }
 
-  // === Trajectory Calculations for New Cards ===
-  const approxThetaDeg = 3; // typical upward angle for 20 yd zero
+  // === Max Height at Range (up to current range slider) ===
+  const rangeTarget = rangeYd || 50;
+
+  // Approximate launch angle for 20 yd zero (~3°)
+  const approxThetaDeg = 3;
   const approxThetaRad = approxThetaDeg * Math.PI / 180;
   const v0y = fps * Math.sin(approxThetaRad);
-  const peakHeightFt = (v0y * v0y) / (2 * 32.174);
-  const timeToPeak = v0y / 32.174;
-  const peakDistanceYd = (fps * Math.cos(approxThetaRad) * timeToPeak) / 3;
+  const v0x = fps * Math.cos(approxThetaRad);
+
+  // Time to reach current range
+  const timeToRange = (rangeTarget * 3) / v0x;
+
+  // Find max height between 0 and current range
+  const timeToPeak = v0y / 32.174; // time to absolute peak
+  const actualTime = Math.min(timeToRange, timeToPeak);
+  const maxHeightAtRangeFt = Math.max(0, v0y * actualTime - 0.5 * 32.174 * actualTime * actualTime);
+
+  const maxHeightIn = (maxHeightAtRangeFt * 12).toFixed(1);
+  const maxHeightFtRounded = maxHeightAtRangeFt.toFixed(1);
+
+  // Distance where max height occurs (within range)
+  const maxHeightDistYd = Math.round(v0x * actualTime / 3);
+
+  // Update the card elements
+  $('maxHeightFt').textContent = maxHeightFtRounded;
+  $('maxHeightIn').textContent = maxHeightIn;
+  $('maxHeightDistanceYd').textContent = maxHeightDistYd;
+  $('maxHeightRangeYd').textContent = rangeTarget;
 
   // Downrange drop function (for target range)
   const dropAtDistance = (distYd) => {
@@ -2911,19 +2988,6 @@ function calculateEverything() {
     const time = distFt / fps;
     return 0.5 * 32.174 * time * time * 12; // inches total gravity drop
   };
-
-  // Update the 3 new summary cards (SAFE)
-  const rangeTarget = rangeYd || 50;
-
-  // Peak Height
-  const peakFt = peakHeightFt.toFixed(1);
-  const peakIn = (peakHeightFt * 12).toFixed(1);
-  const peakHeightFtEl = $('peakHeightFt');
-  const peakHeightInEl = $('peakHeightIn');
-  const peakDistanceYdEl = $('peakDistanceYd');
-  if (peakHeightFtEl) peakHeightFtEl.textContent = peakFt;
-  if (peakHeightInEl) peakHeightInEl.textContent = peakIn;
-  if (peakDistanceYdEl) peakDistanceYdEl.textContent = Math.round(peakDistanceYd);
 
   // Downrange Drop at target range
   const dropInTarget = dropAtDistance(rangeTarget);
@@ -3050,9 +3114,13 @@ function calculateEverything() {
   addRow('Flatness (20→60 yd)', arcHeightFt.toFixed(1) + ' ft arc');
   addRow('Group Stability', `${goodCount}/3 conditions met`);
 
-  // Trajectory
-  addRow('Peak Height', peakHeightFt.toFixed(1) + ' ft');
-  addRow('Peak Distance', Math.round(peakDistanceYd) + ' yd');
+  // Max Height
+  //addRow('Max Height at Range', maxHeightAtRangeFt.toFixed(1) + ' ft');
+  addRow('Max Height at Range', maxHeightFtRounded + ' ft at ' + maxHeightDistYd + ' yd');
+  // === Additional Trajectory Stats in Summary ===
+  addRow('Flight Time @ ' + rangeYd + ' yd', timeTarget.toFixed(3) + ' sec');
+  addRow('Downrange Drop @ ' + rangeYd + ' yd', dropFtTarget + ' ft / ' + dropInTargetRounded + ' in');
+  addRow('Wind Drift @ ' + rangeYd + ' yd', $('windDriftIn').textContent + ' in (' + windMphValue.toFixed(1) + ' mph crosswind)');
 
   // Downrange Drop
   addRow('Drop at 30 yd', $(`drop30`).textContent);
