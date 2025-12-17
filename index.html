@@ -299,15 +299,29 @@
       border-radius:999px;
     }
 
+    /* GPI Sweet Spot — Green (default for compound/hunting: 7–9.5) */
     .gpi-sweet-spot {
       position:absolute;
-      top:0; 
-      left:35%; /* 7 GPI = 35% of 0–20 scale */
-      width:12.5%; /* 2.5 unit range (9.5-7) = 12.5% of bar */
+      top:0;
+      left:35%;     /* 7 on 0–20 scale = 35% */
+      width:12.5%;  /* 2.5 unit range = 12.5% */
       height:100%;
       background:rgba(34,197,94,0.25);
       border-radius:999px;
+      transition: left 0.3s ease, width 0.3s ease;
     }
+
+    .gpi-low-zone, .gpi-high-zone {
+      position:absolute;
+      top:0;
+      height:100%;
+      background:rgba(245,158,11,0.15);
+      border-radius:999px;
+      transition: width 0.3s ease;
+    }
+
+    .gpi-low-zone { left:0; width:35%; }
+    .gpi-high-zone { left:47.5%; width:52.5%; }
 
     .totalwt-sweet-spot {
       position:absolute;
@@ -1051,9 +1065,15 @@
             </div>
             <div class="stat-content">
               <div class="stat-bar-container">
-                <div class="bar" style="height:16px;">
-                  <div class="bar-marker" id="gpiMarker" style="left:50%;"></div>
+                <div class="bar" style="height:16px; position:relative;">
+                  <!-- Yellow low zone -->
+                  <div class="gpi-low-zone"></div>
+                  <!-- Green sweet spot (dynamic) -->
                   <div class="gpi-sweet-spot"></div>
+                  <!-- Yellow high zone -->
+                  <div class="gpi-high-zone"></div>
+                  <!-- Bar marker -->
+                  <div class="bar-marker" id="gpiMarker" style="left:50%;"></div>
                 </div>
                 <div class="bar-labels">
                   <span>light</span>
@@ -2218,22 +2238,69 @@ function showGpiPopup() {
   const arrowLen = parseFloat($('arrowLen').value) || 28.5;
   const gpi = (totalWt / arrowLen).toFixed(1);
 
-  const content = $('gameMathContent');
-  content.innerHTML = `
-    <p><strong>GPI (Grains Per Inch)</strong></p>
-    <p>GPI tells you how much of your arrow’s finished weight comes from the shaft itself. It is simply your total arrow weight divided by your arrow length.</p>
-    <p><strong>Formula:</strong> GPI = Total Arrow Weight ÷ Arrow Length</p>
-    <p>Your GPI = ${totalWt} gr ÷ ${arrowLen.toFixed(1)} in = <strong>${gpi}</strong></p>
-    <hr>
-    <p>A lower GPI generally means a lighter, faster shaft (often thinner-walled or smaller diameter). A higher GPI usually indicates a heavier, more robust shaft that can boost momentum and stability, especially for broadheads.</p>
-    <p>Unlike spine, GPI is not a stiffness rating — it’s purely a mass-per-inch measurement.</p>
-    <p>Sweet spot (highlighted): 7–9.5 — good balance of speed and momentum for most hunting setups.</p>
-    <hr>
-    <p style="font-size:0.9rem;color:var(--light);">
-      GPI helps inform group stability, velocity retention, and downrange KE/momentum in this calculator.
-    </p>
-  `;
+  const bowType = $('bowType')?.value || 'compound';
+  const appType = $('appType')?.value || 'Hunting';
 
+  let sweetMin = 7;
+  let sweetMax = 9.5;
+  let label = "Compound/Hunting";
+
+  if (bowType === 'recurve' || bowType === 'longbow') {
+    sweetMin = 9;
+    sweetMax = 12;
+    label = "Recurve/Longbow (traditional)";
+  } else if (appType === 'Target') {
+    sweetMin = 6;
+    sweetMax = 8.5;
+    label = "Target";
+  }
+
+  const isSweet = parseFloat(gpi) >= sweetMin && parseFloat(gpi) <= sweetMax;
+
+  $('gameMathContent').innerHTML = `
+    <p><strong>GPI (Grains Per Inch) Math & Usage</strong></p>
+    <p>GPI is the finished arrow weight per inch of shaft length — a measure of shaft density.</p>
+    <hr>
+    <p><strong>Raw Equation</strong></p>
+    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.95rem;">
+      GPI = Total Arrow Weight ÷ Arrow Length
+    </p>
+    <hr>
+    <p><strong>Your Current Build:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Total Arrow Weight: <strong>${totalWt} gr</strong></li>
+      <li>Arrow Length: <strong>${arrowLen.toFixed(1)} in</strong></li>
+      <li>GPI: <strong>${gpi} gr/in</strong></li>
+      <li>Setup: <strong>${label}</strong></li>
+    </ul>
+    <hr>
+    <p><strong>Step-by-Step Calculation:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>GPI = ${totalWt} ÷ ${arrowLen.toFixed(1)} = <strong>${gpi} gr/in</strong></li>
+    </ul>
+    <hr>
+    <p><strong>Sweet Spot (highlighted in green):</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Compound/Hunting</strong>: 7–9.5 — good balance of speed and momentum</li>
+      <li><strong>Target</strong>: 6–8.5 — lighter for speed & forgiveness</li>
+      <li><strong>Recurve/Longbow</strong>: 9–12 — heavier for momentum & quietness</li>
+    </ul>
+    <p style="margin-top:0.75rem;">
+      ${isSweet ? '<strong style="color:var(--success);">Your GPI is in the ideal range for your setup!</strong>' : 
+        parseFloat(gpi) < sweetMin ? '<strong style="color:var(--warning);">Light — faster but less momentum</strong>' : 
+        '<strong style="color:var(--warning);">Heavy — more penetration but slower</strong>'}
+    </p>
+    <hr>
+    <p>A lower GPI generally means a lighter, faster shaft. A higher GPI usually indicates a heavier, more robust shaft that boosts momentum and stability, especially for broadheads.</p>
+    <hr>
+    <p><strong>Influenced By:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Total Arrow Weight</strong> — biggest factor (heavier = higher GPI)</li>
+      <li><strong>Arrow Length</strong> — longer = lower GPI for same weight</li>
+      <li>Indirect: shaft material, wall thickness, diameter, point/insert weight</li>
+    </ul>
+    <p>GPI helps inform group stability, velocity retention, and downrange KE/momentum in this calculator.</p>
+  `;
   $('gameMathModal').style.display = 'flex';
 }
 
@@ -2824,6 +2891,35 @@ function calculateEverything() {
   if (gpiValue) {
     gpiValue.style.left = `${gpiPercent}%`;
     gpiValue.textContent = gpi.toFixed(1) + ' gr/in';
+  }
+
+  // === Dynamic GPI Sweet Spot ===
+  const currentBowType = $('bowType')?.value || 'compound';  // ← renamed
+  const appType = $('appType')?.value || 'Hunting';
+
+  let gpiSweetLeft = 35;   // default compound/hunting: 7 GPI
+  let gpiSweetWidth = 12.5; // 2.5 GPI range
+
+  if (currentBowType === 'recurve' || currentBowType === 'longbow') {  // ← use new name
+    gpiSweetLeft = 45;     // 9 GPI
+    gpiSweetWidth = 15;    // 3 GPI range (9–12)
+  } else if (appType === 'Target') {
+    gpiSweetLeft = 30;     // 6 GPI
+    gpiSweetWidth = 12.5;  // 2.5 GPI range (6–8.5)
+  }
+
+  const gpiSweetSpot = document.querySelector('.gpi-sweet-spot');
+  if (gpiSweetSpot) {
+    gpiSweetSpot.style.left = gpiSweetLeft + '%';
+    gpiSweetSpot.style.width = gpiSweetWidth + '%';
+  }
+
+  const gpiLowZone = document.querySelector('.gpi-low-zone');
+  const gpiHighZone = document.querySelector('.gpi-high-zone');
+  if (gpiLowZone) gpiLowZone.style.width = gpiSweetLeft + '%';
+  if (gpiHighZone) {
+    gpiHighZone.style.left = (gpiSweetLeft + gpiSweetWidth) + '%';
+    gpiHighZone.style.width = (100 - gpiSweetLeft - gpiSweetWidth) + '%';
   }
 
   // === Total Wt (SAFE) ===
