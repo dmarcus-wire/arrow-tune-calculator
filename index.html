@@ -482,7 +482,7 @@
     </div>
 
     <!---BOW INPUTS-->
-        <div class="card" id="bowCard">
+    <div class="card" id="bowCard">
       <div class="collapsible-trigger" onclick="this.classList.toggle('open')">
         <span>Bow Details</span>
         <span class="chevron">></span>
@@ -2516,25 +2516,36 @@ function showFlightTimePopup() {
 }
 
 function showWindDriftPopup() {
-  // Grab live values
   const fps = parseFloat($('fpsSlider').value) || 278;
   const totalWt = parseFloat($('totalWt').value) || 495;
   const rangeYd = parseFloat($('rangeSlider').value) || 50;
-  const windMphValue = windMph || 0;
+  const windMphValue = parseFloat($('windSlider').value) || 0;
 
-  // Recalculate drift (same as card)
   let driftIn = 0;
-  if (windMphValue > 0 && rangeTarget > 0) {
-    const tof = (rangeYd * 3) / fps;
-    const windFps = windMphValue * 1.467;
-    let driftFt = windFps * tof * 0.9;
+  let tof = 0;
+  let windFps = 0;
+  let baseDriftFt = 0;
+  let diameterFactor = 1.0;
+  let finalDriftIn = "0.0";
+
+  if (windMphValue > 0 && rangeYd > 0) {
+    tof = (rangeYd * 3) / fps;
+    windFps = windMphValue * 1.467;
+    baseDriftFt = windFps * tof * 0.9;
 
     const diaFactor = $('arrowDia')?.value;
-    if (diaFactor === 'micro') driftFt *= 0.85;
-    else if (diaFactor === 'small') driftFt *= 0.92;
+    if (diaFactor === 'micro') diameterFactor = 0.85;
+    else if (diaFactor === 'small') diameterFactor = 0.92;
 
-    driftIn = (driftFt * 12).toFixed(1);
+    driftIn = baseDriftFt * diameterFactor * 12;
+    finalDriftIn = driftIn.toFixed(1);
   }
+
+  const diaLabel = {
+    'standard': 'Standard (~6.5mm)',
+    'small': 'Small (~5mm)',
+    'micro': 'Micro (~4mm)'
+  }[$('arrowDia')?.value || 'micro'];
 
   $('gameMathContent').innerHTML = `
     <p><strong>Wind Drift Math & Usage</strong></p>
@@ -2544,22 +2555,31 @@ function showWindDriftPopup() {
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
       <li>Actual Speed: <strong>${fps.toFixed(1)} fps</strong></li>
       <li>Total Arrow Weight: <strong>${totalWt} gr</strong></li>
-      <li>Arrow Diameter: <strong>${{
-        'standard': 'Standard (~6.5mm)',
-        'small': 'Small (~5mm)',
-        'micro': 'Micro (~4mm)'
-      }[$('arrowDia')?.value || 'micro']}</strong></li>
+      <li>Arrow Diameter: <strong>${diaLabel}</strong></li>
       <li>Current Range: <strong>${rangeYd} yd</strong></li>
       <li>Crosswind: <strong>${windMphValue.toFixed(1)} mph</strong></li>
-      <li>Wind Drift: <strong>${driftIn} in</strong></li>
+      <li>Wind Drift: <strong>${finalDriftIn} in</strong></li>
+    </ul>
+    <hr>
+    <p><strong>Algorithm</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Drift (in)</strong> = (V_wind × t_flight × 0.9) × D_factor × 12</li>
+      <li><strong>V_wind</strong> = crosswind speed in feet per second (mph × 1.467)</li>
+      <li><strong>t_flight</strong> = flight time to target in seconds ≈ (range in yards × 3) / arrow speed in fps</li>
+      <li><strong>0.9</strong> = arrow lag factor (arrows don’t fully move with the wind — typically ~90% of full drift)</li>
+      <li><strong>D_factor</strong> = diameter adjustment (1.0 for standard, 0.92 for small, 0.85 for micro)</li>
+      <li><strong>× 12</strong> = convert feet of drift to inches</li>
     </ul>
     <hr>
     <p><strong>Step-by-Step Calculation:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>Flight time to target ≈ ${((rangeYd * 3) / fps).toFixed(3)} sec</li>
-      <li>Wind speed = ${windMphValue.toFixed(1)} mph ≈ ${(windMphValue * 1.467).toFixed(1)} fps</li>
-      <li>Base drift ≈ wind fps × flight time × 0.9 (arrow lag) ≈ ${(driftFt * 12).toFixed(1)} in</li>
-      <li>Diameter adjustment applied → <strong>${driftIn} in drift</strong></li>
+      <li>Flight time = ${rangeYd} × 3 / ${fps.toFixed(1)} = <strong>${tof.toFixed(3)} sec</strong></li>
+      <li>Wind speed = ${windMphValue.toFixed(1)} × 1.467 = <strong>${windFps.toFixed(1)} fps</strong></li>
+      <li>Base drift = Wind speed × Flight time × arrow lag factor</li>
+      <li>Base drift = ${windFps.toFixed(1)} × ${tof.toFixed(3)} × 0.9 = <strong>${baseDriftFt.toFixed(2)} ft</strong></li>
+      <li>Diameter factor = <strong>${diameterFactor.toFixed(2)}</strong></li>
+      <li>Final drift = Base drift × Diameter factor × ft to in. conversion</li>
+      <li>Final drift = ${baseDriftFt.toFixed(2)} × ${diameterFactor.toFixed(2)} × 12 = <strong>${finalDriftIn} in</strong></li>
     </ul>
     <hr>
     <p><strong>How to Use It (Hunting Guide):</strong></p>
@@ -2570,6 +2590,15 @@ function showWindDriftPopup() {
       <li>Over 12 in = significant holdover needed</li>
     </ul>
     <p>Smaller diameter + faster arrow = least drift. Micro-diameter arrows shine in wind.</p>
+    <hr>
+    <p><strong>Influenced By:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Crosswind Speed</strong> — biggest factor (linear impact)</li>
+      <li><strong>Range</strong> — longer range = more time in wind = more drift</li>
+      <li><strong>Actual Speed (FPS)</strong> — faster arrow = less flight time = less drift</li>
+      <li><strong>Arrow Diameter</strong> — smaller = less surface area = less drift</li>
+      <li>Indirect: anything that affects FPS (bow power, arrow weight)</li>
+    </ul>
   `;
   $('gameMathModal').style.display = 'flex';
 }
