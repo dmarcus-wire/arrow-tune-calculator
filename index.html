@@ -1075,11 +1075,11 @@
                   <!-- Bar marker -->
                   <div class="bar-marker" id="gpiMarker" style="left:50%;"></div>
                 </div>
-                <div class="bar-labels">
-                  <span>light</span>
-                  <span>balanced</span>
-                  <span>heavy</span>
-                </div>
+                  <div class="bar-labels">
+                    <span>light/fast</span>
+                    <span>ideal</span>
+                    <span>heavy/stable</span>
+                  </div>
                 <span class="moving-value" id="gpiValue">0.0 gr/in</span>
               </div>
             </div>
@@ -2199,28 +2199,63 @@ function showGppPopup() {
   const drawWt = parseFloat($('drawWt').value) || 70;
   const gpp = (totalWt / drawWt).toFixed(1);
 
+  const bowType = $('bowType')?.value || 'compound';
+  const appType = $('appType')?.value || 'Hunting';
+
+  let sweetMin = 6.5;
+  let sweetMax = 7.5;
+  let typeLabel = "Compound/Hunting";
+
+  if (bowType === 'recurve' || bowType === 'longbow') {
+    sweetMin = 7.5;
+    sweetMax = 9.5;
+    typeLabel = "Recurve/Longbow";
+  } else if (appType === 'Target') {
+    sweetMin = 6.0;
+    sweetMax = 8.0;
+    typeLabel = "Target";
+  }
+
+  const isSweet = parseFloat(gpp) >= sweetMin && parseFloat(gpp) <= sweetMax;
+
   $('gameMathContent').innerHTML = `
-    <p><strong>Math Breakdown</strong></p>
-    <p><strong>GPP (Grains Per Pound)</strong></p>
+    <p><strong>GPP (Grains Per Pound) Math & Usage</strong></p>
     <p>GPP is one of the simplest ways to express how heavy or light your arrow is relative to your bow’s draw weight.</p>
     <hr>
-    <p><strong>Formula</strong></p>
+    <p><strong>Raw Equation</strong></p>
     <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.95rem;">
       GPP = Total Arrow Weight ÷ Draw Weight
     </p>
-    <p>Your GPP = ${totalWt} gr ÷ ${drawWt} lb = <strong>${gpp}</strong></p>
     <hr>
-    <p><strong>Interpretation:</strong></p>
+    <p><strong>Your Current Build:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>• Low GPP (≈5–6) → fast, flat, loud, lower momentum</li>
-      <li>• Mid GPP (≈6.5–7.5) → balanced speed + penetration (highlighted)</li>
-      <li>• High GPP (≈8–10+) → slower, quiet, higher momentum, bow-friendly</li>
+      <li>Total Arrow Weight: <strong>${totalWt} gr</strong></li>
+      <li>Draw Weight: <strong>${drawWt} lb</strong></li>
+      <li>Setup: <strong>${typeLabel}</strong></li>
+      <li>GPP: <strong>${gpp}</strong></li>
     </ul>
+    <hr>
+    <p><strong>Step-by-Step Calculation:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>GPP = ${totalWt} ÷ ${drawWt} = <strong>${gpp}</strong></li>
+    </ul>
+    <hr>
+    <p><strong>Sweet Spot (highlighted in green):</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Compound/Hunting</strong>: 6.5–7.5 — balanced speed + penetration</li>
+      <li><strong>Target</strong>: 6.0–8.0 — lighter for speed & forgiveness</li>
+      <li><strong>Recurve/Longbow</strong>: 7.5–9.5 — heavier for momentum & quietness</li>
+    </ul>
+    <p style="margin-top:0.75rem;">
+      ${isSweet ? '<strong style="color:var(--success);">Your GPP is in the ideal range for your setup!</strong>' : 
+        parseFloat(gpp) < sweetMin ? '<strong style="color:var(--warning);">Light — faster but less momentum</strong>' : 
+        '<strong style="color:var(--warning);">Heavy — more penetration but slower</strong>'}
+    </p>
     <hr>
     <p>GPP also influences velocity retention in this calculator:</p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>• Lighter arrows (low GPP) lose speed faster downrange.</li>
-      <li>• Heavier arrows (high GPP) hold their speed longer.</li>
+      <li>Lighter arrows (low GPP) lose speed faster downrange.</li>
+      <li>Heavier arrows (high GPP) hold their speed longer.</li>
     </ul>
     <hr>
     <p><strong>Influenced By:</strong></p>
@@ -2243,16 +2278,16 @@ function showGpiPopup() {
 
   let sweetMin = 7;
   let sweetMax = 9.5;
-  let label = "Compound/Hunting";
+  let typeLabel = "Compound/Hunting";
 
   if (bowType === 'recurve' || bowType === 'longbow') {
     sweetMin = 9;
     sweetMax = 12;
-    label = "Recurve/Longbow (traditional)";
+    typeLabel = "Recurve/Longbow";
   } else if (appType === 'Target') {
     sweetMin = 6;
     sweetMax = 8.5;
-    label = "Target";
+    typeLabel = "Target";
   }
 
   const isSweet = parseFloat(gpi) >= sweetMin && parseFloat(gpi) <= sweetMax;
@@ -2270,8 +2305,8 @@ function showGpiPopup() {
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
       <li>Total Arrow Weight: <strong>${totalWt} gr</strong></li>
       <li>Arrow Length: <strong>${arrowLen.toFixed(1)} in</strong></li>
+      <li>Setup: <strong>${typeLabel}</strong></li>
       <li>GPI: <strong>${gpi} gr/in</strong></li>
-      <li>Setup: <strong>${label}</strong></li>
     </ul>
     <hr>
     <p><strong>Step-by-Step Calculation:</strong></p>
@@ -2881,6 +2916,35 @@ function calculateEverything() {
     gppValue.textContent = gpp.toFixed(1) + ' gr';
   }
 
+    // === Dynamic GPP Sweet Spot ===
+  const currentBowType = $('bowType')?.value || 'compound';
+  const currentAppType = $('appType')?.value || 'Hunting';
+
+  let gppSweetLeft = 30;   // default compound/hunting: 6.5 GPP
+  let gppSweetWidth = 20;  // 1 unit range (6.5–7.5) = 20% of 5–10 bar
+
+  if (currentBowType === 'recurve' || currentBowType === 'longbow') {
+    gppSweetLeft = 50;     // 7.5 GPP (higher for traditional)
+    gppSweetWidth = 25;    // wider range ~7–9+ (traditional arrows are heavier)
+  } else if (currentAppType === 'Target') {
+    gppSweetLeft = 20;     // 6.0 GPP (lighter for target)
+    gppSweetWidth = 20;    // 6.0–8.0 range
+  }
+
+  const gppSweetSpot = document.querySelector('.gpp-sweet-spot');
+  if (gppSweetSpot) {
+    gppSweetSpot.style.left = gppSweetLeft + '%';
+    gppSweetSpot.style.width = gppSweetWidth + '%';
+  }
+
+  const gppLowZone = document.querySelector('.gpp-low-zone');
+  const gppHighZone = document.querySelector('.gpp-high-zone');
+  if (gppLowZone) gppLowZone.style.width = gppSweetLeft + '%';
+  if (gppHighZone) {
+    gppHighZone.style.left = (gppSweetLeft + gppSweetWidth) + '%';
+    gppHighZone.style.width = (100 - gppSweetLeft - gppSweetWidth) + '%';
+  }
+
   // === GPI (SAFE) ===
   const gpi = totalWt / arrowLen;
   const gpiPercent = (gpi / 20) * 100;
@@ -2894,18 +2958,18 @@ function calculateEverything() {
   }
 
   // === Dynamic GPI Sweet Spot ===
-  const currentBowType = $('bowType')?.value || 'compound';  // ← renamed
+  const bowTypeForGPI = $('bowType')?.value || 'compound';  // ← unique name
   const appType = $('appType')?.value || 'Hunting';
 
-  let gpiSweetLeft = 35;   // default compound/hunting: 7 GPI
-  let gpiSweetWidth = 12.5; // 2.5 GPI range
+  let gpiSweetLeft = 35;
+  let gpiSweetWidth = 12.5;
 
-  if (currentBowType === 'recurve' || currentBowType === 'longbow') {  // ← use new name
-    gpiSweetLeft = 45;     // 9 GPI
-    gpiSweetWidth = 15;    // 3 GPI range (9–12)
+  if (bowTypeForGPI === 'recurve' || bowTypeForGPI === 'longbow') {
+    gpiSweetLeft = 45;
+    gpiSweetWidth = 15;
   } else if (appType === 'Target') {
-    gpiSweetLeft = 30;     // 6 GPI
-    gpiSweetWidth = 12.5;  // 2.5 GPI range (6–8.5)
+    gpiSweetLeft = 30;
+    gpiSweetWidth = 12.5;
   }
 
   const gpiSweetSpot = document.querySelector('.gpi-sweet-spot');
