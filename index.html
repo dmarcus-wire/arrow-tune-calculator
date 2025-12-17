@@ -385,15 +385,26 @@
     .stiffness-low-zone { left:0; width:25%; }
     .stiffness-high-zone { left:75%; width:25%; }
 
+    /* Flatness Sweet Spot — Green (under 4.5 ft drop = flat) */
     .flatness-sweet-spot {
-        position: absolute;
-        top: 0;
-        left: 33.33%; /* starts at ~4.5 ft on the bar (right = flatter) */
-        width: 66.67%; /* covers from ~4.5 ft to 0 ft (Very Flat) */
-        height: 100%;
-        background: rgba(34,197,94,0.25);
-        border-radius: 999px;
-      }
+      position:absolute;
+      top:0;
+      left:33.33%;     /* 4.5 ft on ~0–6 ft scale */
+      width:66.67%;    /* covers 0–4.5 ft */
+      height:100%;
+      background:rgba(34,197,94,0.25);
+      border-radius:999px;
+    }
+
+    .flatness-high-zone {
+      position:absolute;
+      top:0;
+      left:0;
+      width:33.33%;
+      height:100%;
+      background:rgba(245,158,11,0.15); /* yellow for curved */
+      border-radius:999px;
+    }
 
     .group-stability-sweet-spot {
       position: absolute;
@@ -1192,18 +1203,22 @@
           </div>
         </div>
 
-        <!-- Flatness -->
+        <!-- Flatness (20→60 yd) -->
         <div class="stat-item">
           <div class="stat-row">
             <div class="stat-title">
-              <strong>Flatness</strong>
+              <strong>Flatness (20→60 yd)</strong>
               <button onclick="showFlatnessPopup()" class="info-btn" title="Explain Flatness">ⓘ</button>
             </div>
             <div class="stat-content">
               <div class="stat-bar-container">
-                <div class="bar" style="height:16px;">
-                  <div class="bar-marker" id="flatnessMarker" style="left:50%;"></div>
+                <div class="bar" style="height:16px; position:relative;">
+                  <!-- Yellow high drop zone (>4.5 ft) -->
+                  <div class="flatness-high-zone"></div>
+                  <!-- Green sweet spot (<4.5 ft) -->
                   <div class="flatness-sweet-spot"></div>
+                  <!-- Bar marker -->
+                  <div class="bar-marker" id="flatnessMarker" style="left:50%;"></div>
                 </div>
                 <div class="bar-labels">
                   <span>curved</span>
@@ -2570,52 +2585,45 @@ function showStiffnessPopup() {
 }
 
 function showFlatnessPopup() {
-  let currentFps = parseFloat($('fpsSlider').value);
-  if (isNaN(currentFps) || currentFps <= 0) {
-    const est = calculateEstimatedFPS();
-    currentFps = est.estimated;
-  }
-  const fps = currentFps; // now available
+  const fps = parseFloat($('fpsSlider').value) || 278;
+  const arcHeightFt = parseFloat($('flatnessValue').textContent) || 0;
 
-  const g = 32.174;
-  const t20 = 20 * 3 / fps;
-  const t60 = 60 * 3 / fps;
-  const drop20 = 0.5 * g * t20 * t20 * 12;
-  const drop60 = 0.5 * g * t60 * t60 * 12;
-  const extraDropInches = drop60 - drop20;
-  const arcHeightFt = extraDropInches / 12;
-
-  let status = 'Curved';
-  if (arcHeightFt < 3) status = 'Very Flat';
-  else if (arcHeightFt <= 4.5) status = 'Flat';
-
-  const content = $('gameMathContent');
-  content.innerHTML = `
-    <p><strong>Flatness Score (20→60 yd) Math</strong></p>
-    <p>Flatness looks at how tall your arc needs to be by 60 yards when you are zeroed at 20 yards.</p>
+  $('gameMathContent').innerHTML = `
+    <p><strong>Flatness (20→60 yd) Math & Usage</strong></p>
+    <p>Measures how much extra drop occurs between 20 yd and 60 yd — lower = flatter trajectory.</p>
     <hr>
-    <p><strong>1) Compute gravity drop at 20 and 60 yd</strong></p>
-    <p>Using your launch FPS ≈ ${fps.toFixed(0)} fps</p>
-    <p>Drop at 20 yd ≈ ${drop20.toFixed(1)} in</p>
-    <p>Drop at 60 yd ≈ ${drop60.toFixed(1)} in</p>
-    <hr>
-    <p><strong>2) Re-anchor to your 20 yd zero</strong></p>
-    <p>Extra drop 20 → 60 yd = ${extraDropInches.toFixed(1)} in</p>
-    <hr>
-    <p><strong>3) Convert extra drop into effective arc height</strong></p>
-    <p>Height ≈ extra drop ÷ 12 = <strong>${arcHeightFt.toFixed(2)} ft</strong></p>
-    <hr>
-    <p><strong>4) Map height → Flatness label</strong></p>
-    <p>Your current build falls into: <strong>${status}</strong></p>
-    <p>• Very Flat → effective arc < ~3 ft</p>
-    <p>• Flat → ~3–4.5 ft</p>
-    <p>• Curved → > ~4.5 ft</p>
-    <hr>
-    <p style="font-size:0.9rem;color:var(--light);">
-      Use this to compare builds — it isn’t meant to be exact sight tape data, just a feel for how “flat” the rig is by 60 yards with your current FPS.
+    <p><strong>Raw Equation</strong></p>
+    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.95rem;">
+      Extra Drop (ft) = [0.5 × g × (t₆₀² − t₂₀²)] / 12<br>
+      where t = distance (ft) / fps, g = 32.174 ft/s²
     </p>
+    <hr>
+    <p><strong>Your Current Build:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Actual Speed: <strong>${fps.toFixed(1)} fps</strong></li>
+      <li>Extra Drop (20→60 yd): <strong>${arcHeightFt.toFixed(1)} ft</strong></li>
+    </ul>
+    <hr>
+    <p><strong>Step-by-Step Calculation:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Time to 60 yd = 180 / ${fps.toFixed(1)} ≈ ${(180/fps).toFixed(3)} sec</li>
+      <li>Time to 20 yd = 60 / ${fps.toFixed(1)} ≈ ${(60/fps).toFixed(3)} sec</li>
+      <li>Extra drop = 0.5 × 32.174 × [(${ (180/fps).toFixed(3) })² − (${ (60/fps).toFixed(3) })²] × 12 / 12 = <strong>${arcHeightFt.toFixed(1)} ft</strong></li>
+    </ul>
+    <hr>
+    <p><strong>How to Use It (Hunting Guide):</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Under 3 ft = very flat — easy ranging</li>
+      <li>3–4.5 ft = good hunting trajectory</li>
+      <li>Over 4.5 ft = more drop — limit range or use slider</li>
+    </ul>
+    <hr>
+    <p><strong>Influenced By:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Actual Speed (FPS)</strong> — biggest factor (faster = flatter)</li>
+      <li>Indirect: anything that affects FPS (bow power, arrow weight)</li>
+    </ul>
   `;
-
   $('gameMathModal').style.display = 'flex';
 }
 
