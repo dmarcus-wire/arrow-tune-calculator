@@ -2537,6 +2537,8 @@ function calculateEverything() {
   }
 
   // === Auto-calculate Arrow Components Total ===
+  const useArrowDetails = $('useArrowDetails')?.checked ?? true;
+
   const bareShaftWt = parseFloat($('bareShaftWt').value) || 0;
   const insertWt = parseFloat($('insertWt').value) || 0;
   const wrapWt = parseFloat($('wrapWt').value) || 0;
@@ -2546,17 +2548,17 @@ function calculateEverything() {
 
   const calculatedArrowTotal = bareShaftWt + insertWt + wrapWt + (vaneWtEach * vaneCount) + glueWt + pointWt;
 
-  // Update display total
+  // Always update display total
   const arrowTotalEl = $('arrowComponentsTotal');
   if (arrowTotalEl) arrowTotalEl.textContent = calculatedArrowTotal.toFixed(1);
 
-  // Only auto-update main field if user hasn't manually edited it
+  // Only auto-update main field if useArrowDetails is checked and not manually edited
   const totalWtInput = $('totalWt');
-  if (totalWtInput) {
+  if (totalWtInput && useArrowDetails) {
     const manualEdited = totalWtInput.dataset.manual === 'true';
     if (!manualEdited) {
       totalWtInput.value = calculatedArrowTotal.toFixed(1);
-      totalWtInput.dataset.manual = 'false'; // reset after auto-update
+      totalWtInput.dataset.manual = 'false';
     }
   }
 
@@ -3016,11 +3018,6 @@ const sampleProfiles = [
     drawWt: "80",
     drawLen: "27",
     stringWt: "20",
-    peepWt: "15",
-    dloopWt: "8",
-    kisserWt: "0",
-    silencerWt: "12",
-    nockWt: "10",
     pinCount: "3",
     pin1Zero: "20",
     pin2Zero: "30",
@@ -3032,17 +3029,9 @@ const sampleProfiles = [
     totalWt: "500",
     pointWt: "125",
     balancePt: "18",
-    bareShaftWt: "360",  // 500 - 125 point - 15 minor = ~360 shaft
-    insertWt: "0",
-    wrapWt: "0",
-    vaneWt: "8",
-    vaneCount: "3",
-    vaneHeight: "0.5",
-    vaneHelical: "max",
-    glueWt: "5",
-    useStringDetails: false, 
-    useArrowDetails: false, 
-    fpsSlider: "290"
+    fpsSlider: "290",
+    useStringDetails: false,
+    useArrowDetails: false
   },
   {
     name: "SAMPLE Josh Bowmar Beast Mode",
@@ -3057,11 +3046,6 @@ const sampleProfiles = [
     drawWt: "90",
     drawLen: "29",
     stringWt: "20",
-    peepWt: "15",
-    dloopWt: "8",
-    kisserWt: "0",
-    silencerWt: "12",
-    nockWt: "10",
     pinCount: "3",
     pin1Zero: "20",
     pin2Zero: "30",
@@ -3073,17 +3057,9 @@ const sampleProfiles = [
     totalWt: "520",
     pointWt: "200",
     balancePt: "18.5",
-    bareShaftWt: "300",  // 520 - 200 point - 20 minor = ~300 shaft
-    insertWt: "0",
-    wrapWt: "8",
-    vaneWt: "9",
-    vaneCount: "4",
-    vaneHeight: "0.6",
-    vaneHelical: "high",
-    glueWt: "5",
-    useStringDetails: false, 
-    useArrowDetails: false, 
-    fpsSlider: "280"
+    fpsSlider: "280",
+    useStringDetails: false,
+    useArrowDetails: false
   },
   {
     name: "SAMPLE John Dudley Nock On Pro",
@@ -3098,11 +3074,6 @@ const sampleProfiles = [
     drawWt: "70",
     drawLen: "29",
     stringWt: "15",
-    peepWt: "12",
-    dloopWt: "8",
-    kisserWt: "5",
-    silencerWt: "0",
-    nockWt: "8",
     pinCount: "3",
     pin1Zero: "20",
     pin2Zero: "30",
@@ -3114,17 +3085,9 @@ const sampleProfiles = [
     totalWt: "450",
     pointWt: "125",
     balancePt: "17",
-    bareShaftWt: "300",  // 450 - 125 point - 25 minor = ~300 shaft
-    insertWt: "0",
-    wrapWt: "0",
-    vaneWt: "7",
-    vaneCount: "3",
-    vaneHeight: "0.4",
-    vaneHelical: "moderate",
-    glueWt: "5",
-    useStringDetails: false, 
-    useArrowDetails: false, 
-    fpsSlider: "295"
+    fpsSlider: "295",
+    useStringDetails: false,
+    useArrowDetails: false
   },
   {
     name: "SAMPLE Levi Morgan Champion",
@@ -3139,11 +3102,6 @@ const sampleProfiles = [
     drawWt: "60",
     drawLen: "27.5",
     stringWt: "10",
-    peepWt: "20",
-    dloopWt: "0",
-    kisserWt: "0",
-    silencerWt: "0",
-    nockWt: "8",
     pinCount: "1",
     pin1Zero: "20",
     arrowName: "Altra Centrum",
@@ -3153,17 +3111,9 @@ const sampleProfiles = [
     totalWt: "420",
     pointWt: "100",
     balancePt: "16",
-    bareShaftWt: "280",  // 420 - 100 point - 40 minor = ~280 shaft
-    insertWt: "0",
-    wrapWt: "0",
-    vaneWt: "6",
-    vaneCount: "4",
-    vaneHeight: "0.5",
-    vaneHelical: "high",
-    glueWt: "5",
-    useStringDetails: false, 
-    useArrowDetails: false, 
-    fpsSlider: "310"
+    fpsSlider: "310",
+    useStringDetails: false,
+    useArrowDetails: false
   },
   {
     name: "SAMPLE Tim Gillingham Gold Tip Pro",
@@ -3178,11 +3128,6 @@ const sampleProfiles = [
     drawWt: "65",
     drawLen: "28",
     stringWt: "15",
-    peepWt: "18",
-    dloopWt: "0",
-    kisserWt: "0",
-    silencerWt: "0",
-    nockWt: "10",
     pinCount: "5",
     pin1Zero: "20",
     pin2Zero: "30",
@@ -3196,17 +3141,9 @@ const sampleProfiles = [
     totalWt: "460",
     pointWt: "140",
     balancePt: "17",
-    bareShaftWt: "290",  // 460 - 140 point - 30 minor = ~290 shaft
-    insertWt: "0",
-    wrapWt: "0",
-    vaneWt: "8",
-    vaneCount: "4",
-    vaneHeight: "0.6",
-    vaneHelical: "high",
-    glueWt: "5",
-    useStringDetails: false, 
-    useArrowDetails: false, 
-    fpsSlider: "295"
+    fpsSlider: "295",
+    useStringDetails: false,
+    useArrowDetails: false
   },
   {
     name: "SAMPLE James Yates Backcountry",
@@ -3221,11 +3158,6 @@ const sampleProfiles = [
     drawWt: "70",
     drawLen: "28",
     stringWt: "20",
-    peepWt: "15",
-    dloopWt: "8",
-    kisserWt: "0",
-    silencerWt: "15",
-    nockWt: "10",
     pinCount: "3",
     pin1Zero: "20",
     pin2Zero: "30",
@@ -3237,17 +3169,9 @@ const sampleProfiles = [
     totalWt: "480",
     pointWt: "125",
     balancePt: "17",
-    bareShaftWt: "330",  // 480 - 125 point - 25 minor = ~330 shaft
-    insertWt: "0",
-    wrapWt: "0",
-    vaneWt: "8",
-    vaneCount: "3",
-    vaneHeight: "0.5",
-    vaneHelical: "max",
-    glueWt: "5",
-    useStringDetails: false, 
-    useArrowDetails: false, 
-    fpsSlider: "285"
+    fpsSlider: "285",
+    useStringDetails: false,
+    useArrowDetails: false
   }
 ];
 
@@ -3346,6 +3270,7 @@ function loadBuild() {
   const build = builds.find(b => b.name === selectedName);
   if (!build) return;
 
+  // Set all fields first
   $('buildName').value = build.name;
   $('appType').value = build.appType || 'Hunting';
   $('bowModel').value = build.bowModel || '';
@@ -3363,17 +3288,14 @@ function loadBuild() {
   $('silencerWt').value = build.silencerWt || '12';
   $('nockWt').value = build.nockWt || '10';
 
-  // === Load pin count with bow type override ===
+  // Pin count with override
   let pinCountValue = build.pinCount || '3';
   if (build.bowType === 'recurve' || build.bowType === 'longbow') {
     pinCountValue = '0';
   }
   $('pinCount').value = pinCountValue;
 
-  // Rebuild pin inputs
-  calculateEverything();
-
-  // Restore checkbox states (important for samples)
+  // Restore checkbox states
   if ($('useStringDetails')) $('useStringDetails').checked = build.useStringDetails ?? false;
   if ($('useArrowDetails')) $('useArrowDetails').checked = build.useArrowDetails ?? false;
 
@@ -3394,8 +3316,7 @@ function loadBuild() {
   $('vaneHelical').value = build.vaneHelical || 'max';
   $('glueWt').value = build.glueWt || '0';
 
-  alert(`Build "${build.name}" loaded!`);
-
+  // Sliders
   $('fpsSlider').value = build.fpsSlider || '278';
   $('fpsInput').value = build.fpsSlider || '278';
   $('windSlider').value = build.windSlider || '5';
@@ -3403,7 +3324,9 @@ function loadBuild() {
   $('rangeSlider').value = build.rangeSlider || '50';
   $('rangeInput').value = build.rangeSlider || '50';
 
-  // Final calculation — summary now correct
+  alert(`Build "${build.name}" loaded!`);
+
+  // ONLY ONE call at the end — after all fields are set
   calculateEverything();
 }
 
