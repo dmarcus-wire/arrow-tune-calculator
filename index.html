@@ -596,9 +596,19 @@
 <div class="container">
   <div id="inputs-column">
     <div class="card">
-      <div class="card-header">
-        <h1>ArrowForge</h1>
-        <div class="flex">
+      <div class="card-header" style="display:flex; align-items:center; justify-content:space-between;">
+        <!-- Larger logo + text
+         height:125px — your requested size.
+          src="icon-512.png" — uses high-res icon for crispness at larger size.
+          font-size:2.5rem on <h1> — balances the bigger logo.
+          gap:1rem — good spacing between logo and text.-->
+        <div style="display:flex; align-items:center; gap:1rem;">
+          <img src="icon-512.png" alt="ArrowForge Logo" style="height:125px; width:auto; border-radius:12px;">
+          <h1 style="margin:0; font-size:2.5rem;">ArrowForge</h1>
+        </div>
+
+        <!-- Right side controls -->
+        <div class="flex" style="align-items:center; gap:1rem;">
           <span style="color:var(--light);">Light</span>
           <label class="toggle-switch">
             <input type="checkbox" id="darkToggle"><span class="slider"></span>
@@ -607,8 +617,9 @@
           <button id="aiButton" class="btn-small" style="background:var(--purple);">AI Advisor</button>
         </div>
       </div>
-      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.14</p>
+      <p style="color:var(--light);font-size:0.85rem; margin-top:0.5rem;">Offline • Live • v0.0.15</p>
     </div>
+    
     <div class="card">
       <h2>Build</h2>
       
@@ -4448,7 +4459,7 @@ toggleArrowDetailsMode();
 <!--contact information-->
 <footer style="text-align:center; padding:1rem; color:var(--light); font-size:0.9rem;">
   Questions? Feedback? Email <a href="mailto:arrowforgeapp@tuta.io" style="color:var(--purple);">arrowforgeapp@tuta.io</a><br>
-  ArrowForge v0.0.14 — Built for archers, by archers 🏹
+  ArrowForge v0.0.15 — Built for archers, by archers 🏹
 </footer>
 
 </body>
