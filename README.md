@@ -1,106 +1,84 @@
-# 🎯 Arrow Tune Calculator  
-**Offline • Fast • Mobile-Friendly Bow & Arrow Tuning Tool**
+# ArrowForge — Bow & Arrow Tuning Calculator
 
-https://dmarcus-wire.github.io/arrow-tune-calculator/ 
+**Offline • Instant • Mobile-First**  
+The ultimate archery tuning tool for hunters and target shooters.
 
-The **Arrow Tune Calculator** is an all-in-one bowhunting and archery performance tool designed to help archers build, tune, and analyze arrow setups with clarity — entirely offline.
+Live at: https://arrowforge.app
 
-Whether you're experimenting with point weights, arrow components, FOC, trajectory, or kinetic energy, this calculator provides instant, accurate results through live calculations and clean, intuitive visuals.
+ArrowForge is a completely offline, single-page web app that helps you build, analyze, and perfect your arrow setups — no login, no tracking, no bloat.
 
----
-
-## 🌟 Key Features
-
-### 🔧 Bow & Arrow Setup
-- Enter full bow specs: **IBO/ATA rating**, **draw weight**, **draw length**, **string components**, and more.  
-- Choose **Simple** or **Advanced** modes for arrow weight input.  
-- Smart **build name auto-suggestion** for organizing setups.
+Whether you're dialing in a deer rig, optimizing for elk, or chasing X-ring accuracy, ArrowForge gives you pro-level data in real time.
 
 ---
 
-### 📐 Arrow Efficiency Metrics
-- **FPS (launch speed)** — estimated from bow specs or manually entered  
-- **GPP** (grains per pound)  
-- **GPI** (grains per inch)  
-- **TW** (Total Weight)  
-- **FOC** with a compact visual bar  
-- **Arrow Weight Composition** (shaft vs point vs components)
+## Why ArrowForge?
 
-All metrics use unified colors and centered card layouts for readability.
-
----
-
-### 🎯 Performance at Distance
-Dynamic arrow behavior at any distance (0–120 yards):
-
-- **Velocity @ distance**
-- **Peak flight height** (calculated using projectile physics)
-- **Launch & Impact KE**
-- **Impact Momentum**
-- **Time to Impact**
-
-Set a distance with the slider and all metrics update instantly.
+- Works **100% offline** — save it to your phone's home screen
+- **Zero tracking** — no cookies, no analytics, no data collection
+- **Lightning fast** — pure HTML/JS/CSS, no framework bloat
+- **Mobile-first** design — perfect for the range or treestand
+- **Save unlimited builds** locally
+- **AI Advisor** (paid) — get personalized tuning recommendations
 
 ---
 
-### 🦌 Game Effectiveness (Impact-Based)
-Instant classification of ethical shot potential using KE and momentum:
+## Core Features
 
-- Small / Thin-skinned  
-- Medium Game  
-- Large / Tough  
-- Dangerous / Extreme  
+### Bow & Arrow Builder
+- Full bow specs: IBO, draw weight/length, brace height, cam system
+- Simple or Advanced arrow weight modes
+- Smart build name suggestions
 
-Each category displays **Send it** (green) or **Don’t** (red) based on widely-used KE & momentum thresholds.
+### Key Metrics
+- FOC with dynamic sweet spot (varies by bow type)
+- GPP & GPI with bow-specific ideal ranges
+- Total Arrow Weight composition breakdown
+- Effective Draw Weight (for spine selection)
+- Stiffness/Forgiveness rating
 
----
+### Live Performance at Distance
+Adjust range slider (0–150 yd) and instantly see:
+- Max height & location
+- Flight time
+- Downrange drop
+- Wind drift
+- Impact velocity, KE, and momentum
 
-### 💾 Build Management
-- Save unlimited builds locally  
-- Load or delete builds instantly  
-- Automatically restores:
-  - Simple/Advanced modes  
-  - All bow & arrow inputs  
-  - Notes  
-- One-click **Build Summary Copy** for sharing or logging
+### Game Effectiveness Ratings
+Instant ethical shot assessment for:
+- Small Game • Deer • Elk • Moose
+Clear "Send it", "Marginal", or "Adjust" verdict
 
----
+### Group Stability Score (Target/3D)
+3-point system based on speed, FOC, and GPI — optimized per discipline
 
-### 📝 Notes
-Record tuning steps, broadhead flight, chrono strings, and field results. Notes save per build.
-
----
-
-### 🌗 Light & Dark Modes
-Fully theme-aware and mobile-ready.
-
----
-
-## 📸 Screenshots  
-*(Optional placeholders — add your own images later)*
-/assets/screenshot-light.png
-/assets/screenshot-dark.png
-/assets/screenshot-performance.png
+### Build Management
+- Save/load/delete unlimited builds
+- Full notes section per build
+- One-click CSV export
+- Collapsible sections for clean mobile experience
 
 ---
 
-## 🧮 How Calculations Work
+## Sample Pro Builds Included
+Try setups from:
+- Cameron Hanes
+- Josh Bowmar
+- John Dudley
+- Levi Morgan
+- Tim Gillingham
+- James Yates
+- Paige Pearce (female pro hunter)
+- Ella Gibson (world #1 compound)
+- Adam Greentree (heavy elk killer)
 
-# 🏹 Summary of Formulas
+---
 
-| Metric | Formula |
-|-------|---------|
-| GPP | W / DW |
-| GPI | W / L |
-| FOC | ((BP – L/2) / L) × 100 |
-| Launch KE | (W × FPS²) / 450240 |
-| Launch Momentum | (W × FPS) / 225400 |
-| Velocity @ Distance | FPS × e^(–d/300) |
-| Impact KE | (W × V²) / 450240 |
-| Impact Momentum | (W × V) / 225400 |
-| Time to Impact | distance_ft / (FPS × 0.8) |
-| Peak Height | (FPS² × sin²θ) / (2g) |
-| Launch Angle θ | θ = ½ arcsin((R × g) / FPS²) |
+## Tech Stack
+- Pure HTML/CSS/JavaScript (no frameworks)
+- LocalStorage for saves
+- Progressive Web App (PWA) — installable on phone
+- Vercel hosting — blazing fast global CDN
 
 ---
 
