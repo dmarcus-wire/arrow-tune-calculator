@@ -590,6 +590,22 @@
       word-break: break-word;    /* breaks long words if needed */
       max-width: 300px;          /* optional: limit width on desktop for better layout */
     }
+
+    /* Raw Equation Box — light mode default */
+    .raw-equation {
+      font-family: monospace;
+      background: #f1f5f9;
+      color: #333;
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+
+    /* Dark mode override */
+    .dark .raw-equation {
+      background: #1e293b;  /* dark slate */
+      color: #e2e8f0;       /* light text */
+    }
   </style>
 </head>
 <body>
@@ -2301,12 +2317,12 @@ function showEffectiveLoadPopup() {
     <p>This estimates the total "load" the arrow shaft actually feels — starting from your bow's draw weight and adding adjustments for arrow length, point weight, and total arrow weight. It's used to recommend spine.</p>
     <hr>
     <p><strong>Raw Equation</strong></p>
-    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.95rem;">
-      Effective Load = Draw Weight<br>
+    <div class="raw-equation">
+        Effective Load = Draw Weight<br>
       + (Arrow Length − 28) × 2.5<br>
       + (Point Weight − 100) × 0.15<br>
       + (Total Arrow Weight − 400) × 0.05
-    </p>
+    </div>
     <hr>
     <p><strong>Your Current Build:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
@@ -2356,12 +2372,12 @@ function showGameMathPopup() {
     <p>Estimates downrange velocity, kinetic energy, and momentum — key indicators of terminal performance on game.</p>
     <hr>
     <p><strong>Raw Equations</strong></p>
-    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.95rem;">
+    <div class="raw-equation">
       Retention = e^(-k × range / weight)<br>
       Impact Velocity = Launch FPS × Retention<br>
       KE (ft-lbs) = (weight × velocity²) / 450240<br>
       Momentum (slug·ft/s) = (weight × velocity) / 225400
-    </p>
+    </div>
     <hr>
     <p><strong>Your Current Build:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
@@ -2475,10 +2491,10 @@ function showFocPopup() {
     <p>FOC measures how far the arrow’s balance point sits in front of the midpoint. Higher FOC generally improves broadhead stability and penetration; lower FOC produces flatter trajectories and is more forgiving to shoot.</p>
     <hr>
     <p><strong>Raw Equation</strong></p>
-    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.95rem;">
+    <div class="raw-equation">      
       FOC = ((Balance Point − Midpoint) ÷ Arrow Length) × 100<br>
       Midpoint = Arrow Length ÷ 2
-    </p>
+    </div>
     <hr>
     <p><strong>Your Current Build:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
@@ -2545,9 +2561,9 @@ function showGppPopup() {
     <p>GPP is one of the simplest ways to express how heavy or light your arrow is relative to your bow’s draw weight.</p>
     <hr>
     <p><strong>Raw Equation</strong></p>
-    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.95rem;">
+    <div class="raw-equation">
       GPP = Total Arrow Weight ÷ Draw Weight
-    </p>
+    </div>
     <hr>
     <p><strong>Your Current Build:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
@@ -2619,9 +2635,9 @@ function showGpiPopup() {
     <p>GPI is the finished arrow weight per inch of shaft length — a measure of shaft density.</p>
     <hr>
     <p><strong>Raw Equation</strong></p>
-    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.95rem;">
-      GPI = Total Arrow Weight ÷ Arrow Length
-    </p>
+    <div class="raw-equation">
+        GPI = Total Arrow Weight ÷ Arrow Length
+    </div>
     <hr>
     <p><strong>Your Current Build:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
@@ -2738,10 +2754,10 @@ function showStiffnessPopup() {
     </ul>
     <hr>
     <p><strong>Raw Equation</strong></p>
-    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.95rem;">
-      Recommended Spine Center = 600 − (Effective Load × 5)<br>
+    <div class="raw-equation">
+        Recommended Spine Center = 600 − (Effective Load × 5)<br>
       Effective Load = Draw Weight + (Arrow Length−28)×2.5 + (Point Weight−100)×0.15 + (Total Weight−400)×0.05
-    </p>
+    </div>
     <hr>
     <p><strong>Where does the "600" come from?</strong></p>
     <p>The 600 is an empirical constant chosen to map a “standard” hunting setup to a common spine recommendation.</p>
@@ -2798,10 +2814,10 @@ function showFlatnessPopup() {
     <p>Measures how much extra drop occurs between 20 yd and 60 yd — lower = flatter trajectory.</p>
     <hr>
     <p><strong>Raw Equation</strong></p>
-    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.95rem;">
+    <div class="raw-equation">
       Extra Drop (ft) = [0.5 × g × (t₆₀² − t₂₀²)] / 12<br>
       where t = distance (ft) / fps, g = 32.174 ft/s²
-    </p>
+    </div>
     <hr>
     <p><strong>Your Current Build:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
@@ -2856,9 +2872,9 @@ function showGroupStabilityPopup() {
     </ul>
     <hr>
     <p><strong>Raw Logic</strong></p>
-    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.95rem;">
+    <div class="raw-equation">
       Score = (FPS ≥ 270 ? 1 : 0) + (FOC 12–18% ? 1 : 0) + (GPI ≤ 9.5 ? 1 : 0)
-    </p>
+    </div>
     <hr>
     <p><strong>Step-by-Step Scoring:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
@@ -2934,13 +2950,13 @@ function showMaxHeightPopup() {
     </ul>
     <hr>
     <p><strong>Raw Equation</strong></p>
-    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.9rem;">
+    <div class="raw-equation">
       Height (ft) = v₀y × t − 0.5 × g × t²<br>
       where:<br>
       • v₀y = fps × sin(3°) (upward velocity)<br>
       • t = min(time to range, time to peak)<br>
       • g = 32.174 ft/s²
-    </p>
+    </div>
     <hr>
     <p><strong>Step-by-Step Calculation (with your values):</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
@@ -3005,13 +3021,13 @@ function showDropPopup() {
     </ul>
     <hr>
     <p><strong>Raw Equation</strong></p>
-    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.9rem;">
+    <div class="raw-equation">
       Drop (in) = [0.5 × g × t² × 12] at range − [0.5 × g × t² × 12] at 20 yd<br>
       where:<br>
       • g = 32.174 ft/s²<br>
       • t = distance in feet / fps<br>
       • × 12 = convert feet to inches
-    </p>
+    </div>
     <hr>
     <p><strong>Step-by-Step Calculation (with your values):</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
@@ -3064,10 +3080,10 @@ function showFlightTimePopup() {
     </ul>
     <hr>
     <p><strong>Raw Equation</strong></p>
-    <p style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.9rem;">
+    <div class="raw-equation">
       Time (sec) = (Range in yards × 3) / Arrow Speed in fps<br>
       (small upward launch angle ignored for horizontal approximation)
-    </p>
+    </div>
     <hr>
     <p><strong>Step-by-Step Calculation (with your values):</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
@@ -3142,7 +3158,7 @@ function showWindDriftPopup() {
     </ul>
     <hr>
     <p><strong>Raw Equation</strong></p>
-    <div style="font-family:monospace; background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.9rem;">
+    <div class="raw-equation">
       <ul style="margin-left:1.25rem;">
         <li><strong>Drift (in)</strong> = (V_wind × t_flight × 0.9) × D_factor × 12</li>
         <li><strong>V_wind</strong> = crosswind speed in feet per second (mph × 1.467)</li>
