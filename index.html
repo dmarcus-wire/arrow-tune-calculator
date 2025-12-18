@@ -3626,7 +3626,7 @@ function calculateEverything() {
 
   // === Update Build Summary Table ===
   const table = $('summaryTable').querySelector('tbody');
-  table.innerHTML = '';
+  table.innerHTML = ''; // clear
 
   const addRow = (label, value) => {
     const row = document.createElement('tr');
@@ -3652,7 +3652,7 @@ function calculateEverything() {
 
   // === 2. Sight Pins ===
   const bowType = $('bowType')?.value || 'compound';
-  const pinCountSummary = Number($('pinCount')?.value || '3');
+  const pinCountSummary = Number($('pinCount').value || '3');
   if (bowType === 'recurve' || bowType === 'longbow') {
     addRow('Sight Pins', 'None / Instinctive (Traditional Bow)');
   } else if (pinCountSummary === 0) {
@@ -3689,7 +3689,7 @@ function calculateEverything() {
   addRow('GPP', gpp.toFixed(1));
   addRow('GPI', gpi.toFixed(1) + ' gr/in');
   addRow('Effective Draw Weight', effectiveLoad + ' lb');
-  addRow('Stiffness', actualSpine + ' (' + stiffnessStatus + ')');
+  addRow('Stiffness', actualSpine + ' (' + status + ')');
   addRow('Flatness (20→60 yd)', arcHeightFt.toFixed(1) + ' ft arc');
   addRow('Group Stability', `${goodCount}/3 conditions met`);
 
