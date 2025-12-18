@@ -4302,12 +4302,29 @@ $('saveBuild').addEventListener('click', saveBuild);
 $('loadBuild').addEventListener('change', loadBuild);
 $('deleteBuild').addEventListener('click', deleteBuild);
 
-// Close modal when clicking outside the content panel
+// Close modal when clicking/tapping outside the content
 document.getElementById('gameMathModal').addEventListener('click', function(e) {
-  if (e.target === this) {  // clicked the overlay, not the panel
+  if (e.target === this) {  // clicked the overlay itself
     this.style.display = 'none';
   }
 });
+
+document.getElementById('gameMathModal').addEventListener('touchend', function(e) {
+  if (e.target === this) {
+    this.style.display = 'none';
+  }
+});
+
+// Prevent clicks/touches inside the modal content from closing it
+const modalContent = document.querySelector('#gameMathModal .info-panel'); // adjust selector if needed
+if (modalContent) {
+  modalContent.addEventListener('click', function(e) {
+    e.stopPropagation();
+  });
+  modalContent.addEventListener('touchend', function(e) {
+    e.stopPropagation();
+  });
+}
 
 // Optional: Also close with Escape key
 document.addEventListener('keydown', function(e) {
