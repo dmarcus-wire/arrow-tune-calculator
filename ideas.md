@@ -1,5 +1,28 @@
 # Arrow Tune Calculator – Complete Feature Roadmap (v2.0+)
 
+                     10.4% 
+                      |
+FOC % (i)     [tail heavy][balanced][tip heavy]
+                        7.1 gr
+                         |
+GPP (i)       [light][balanced][heavy]
+                                 17.4 gr
+                                   |
+GPI (i)       [light][balanced][heavy]
+                           495 gr
+                              |
+Total Wt      [light][medium][heavy]
+                            Adjust
+                              |
+Stiffness (i) [stiff][good][weak]
+                                5.99 ft
+                                  |
+Flatness (i)  [very flat][flat][curved]
+
+                        |
+Stability (i) [tight][average][unstable]
+
+
 ## 1. Mobile-First / PWA (Highest immediate ROI)
 - Add `<meta name="apple-mobile-web-app-capable" content="yes">` + basic `manifest.json` → instantly installable as a home-screen app
 - Larger touch targets on mobile (`font-size: 1rem`, `padding: 12px 16px`, `min-height: 48px`)

@@ -1,110 +1,118 @@
-# Arrow Tune Calculator
+# 🎯 Arrow Tune Calculator  
+**Offline • Fast • Mobile-Friendly Bow & Arrow Tuning Tool**
 
-Arrow Tune Calculator is a lightweight, browser-based tool that helps archers calculate important arrow characteristics such as total arrow weight, FOC (Front of Center), grains per pound, grains per inch, and more. The tool works completely locally in your browser — no installs, no accounts, no tracking — and is easy to modify for future features.
+https://dmarcus-wire.github.io/arrow-tune-calculator/ 
 
-> **Tagline:** *Understand your arrow, trust your shot.*
+The **Arrow Tune Calculator** is an all-in-one bowhunting and archery performance tool designed to help archers build, tune, and analyze arrow setups with clarity — entirely offline.
 
----
-
-## 🔗 Live App
-
-Use the calculator here:
-
-👉 **https://dmarcus-wire.github.io/arrow-tune-calculator/**
-
-(Open in your browser on desktop or mobile. It works on iOS, Android, and desktop browsers.)
+Whether you're experimenting with point weights, arrow components, FOC, trajectory, or kinetic energy, this calculator provides instant, accurate results through live calculations and clean, intuitive visuals.
 
 ---
 
-## 💡 What it does
+## 🌟 Key Features
 
-Arrow Tune Calculator lets you:
-
-- Enter basic bow and arrow setup:
-  - Bow draw weight & draw length  
-  - Arrow length  
-  - Total arrow weight (or detailed component breakdown)  
-  - Balance point (for FOC)  
-- See live calculations as you type:
-  - **Total arrow weight (grains)**
-  - **FOC (Front of Center)** with band tags (e.g., typical hunting ranges)
-  - **Grains per pound (GPP)**
-  - **Arrow GPI (full arrow) bands**
-  - **Momentum estimates** (slug·ft/s)
-- Visualize your setup:
-  - Arrow balance (nock → point)
-  - FOC shift gauge
-  - Weight composition (shaft vs. point vs. fletching cluster)
-  - Simple trajectory arc (distance vs. height)
-  - Game momentum band at your farthest distance
-
-All calculations run locally in the browser — nothing is uploaded.
+### 🔧 Bow & Arrow Setup
+- Enter full bow specs: **IBO/ATA rating**, **draw weight**, **draw length**, **string components**, and more.  
+- Choose **Simple** or **Advanced** modes for arrow weight input.  
+- Smart **build name auto-suggestion** for organizing setups.
 
 ---
 
-## ✅ Current Features
+### 📐 Arrow Efficiency Metrics
+- **FPS (launch speed)** — estimated from bow specs or manually entered  
+- **GPP** (grains per pound)  
+- **GPI** (grains per inch)  
+- **TW** (Total Weight)  
+- **FOC** with a compact visual bar  
+- **Arrow Weight Composition** (shaft vs point vs components)
 
-- Instant live calculations while you type
-- FOC (Front of Center) with visual indicator and “band” labels
-- Total arrow weight (grains), driven by:
-  - Advanced component breakdown **or**
-  - Simple total arrow weight field
-- Grains per Pound (GPP) with hunting-oriented bands
-- Arrow GPI (full arrow) with simple classification
-- Momentum calculation (slug·ft/s) plus game band interpretation  
-- Weight distribution bar:
-  - Shaft vs. point system vs. nock/wrap/vanes + glue
-- Kinetics section:
-  - Launch FPS (editable)
-  - Speed loss per 10 yards (FPS)
-  - Game momentum band at farthest distance
-- Trajectory Arc (Distance vs Height):
-  - Editable arc range
-  - Labeled peak height
-  - Impact momentum indicator
-- Data Table:
-  - Captures timestamp, bow/arrow labels, FOC/GPP/GPI bands, momentum band, and more
-- Info (“i”) panels:
-  - Optional explanations for each section so the UI stays clean but still beginner-friendly
-- Mobile-friendly layout
-- Light / dark theme toggle
+All metrics use unified colors and centered card layouts for readability.
 
 ---
 
-## ❤️ Support the project on Patreon
+### 🎯 Performance at Distance
+Dynamic arrow behavior at any distance (0–120 yards):
 
-I’m building Arrow Tune Calculator as a free, privacy-friendly tool for archers and bowhunters. If you’ve found it useful and want to support future development — including:
+- **Velocity @ distance**
+- **Peak flight height** (calculated using projectile physics)
+- **Launch & Impact KE**
+- **Impact Momentum**
+- **Time to Impact**
 
-- Smarter **AI-powered build summaries** (e.g., “best for elk up to ~60 yards”)
-- **Bow-model-aware FPS estimates** pulled from manufacturer specs
-- More advanced visualizations and comparison tools
-- Ongoing tweaks and tuning based on community feedback
-
-you can support the project here:
-
-👉 **Patreon:** https://patreon.com/ArrowTuneCalculator
-
-Patreon supporters will help cover hosting, future AI costs, and unlock the time needed to keep improving the calculator.
+Set a distance with the slider and all metrics update instantly.
 
 ---
 
-## 🧪 Feedback & Ideas
+### 🦌 Game Effectiveness (Impact-Based)
+Instant classification of ethical shot potential using KE and momentum:
 
-If you’re testing Arrow Tune Calculator and have ideas, bug reports, or tuning thoughts, you can:
+- Small / Thin-skinned  
+- Medium Game  
+- Large / Tough  
+- Dangerous / Extreme  
 
-- Open an issue on GitHub, or  
-- Send feedback via the in-app feedback panel (if enabled), or  
-- Email: **arrow-tune-calculator@tuta.io**
-
-Suggestions are very welcome — especially from bowhunters, target archers, and coaches.
+Each category displays **Send it** (green) or **Don’t** (red) based on widely-used KE & momentum thresholds.
 
 ---
 
-## 🛠 Getting Started (for developers)
+### 💾 Build Management
+- Save unlimited builds locally  
+- Load or delete builds instantly  
+- Automatically restores:
+  - Simple/Advanced modes  
+  - All bow & arrow inputs  
+  - Notes  
+- One-click **Build Summary Copy** for sharing or logging
 
-You only need a modern browser.
+---
 
-1. Clone or download this repo:
-   ```bash
-   git clone https://github.com/dmarcus-wire/arrow-tune-calculator.git
-   cd arrow-tune-calculator
+### 📝 Notes
+Record tuning steps, broadhead flight, chrono strings, and field results. Notes save per build.
+
+---
+
+### 🌗 Light & Dark Modes
+Fully theme-aware and mobile-ready.
+
+---
+
+## 📸 Screenshots  
+*(Optional placeholders — add your own images later)*
+/assets/screenshot-light.png
+/assets/screenshot-dark.png
+/assets/screenshot-performance.png
+
+---
+
+## 🧮 How Calculations Work
+
+# 🏹 Summary of Formulas
+
+| Metric | Formula |
+|-------|---------|
+| GPP | W / DW |
+| GPI | W / L |
+| FOC | ((BP – L/2) / L) × 100 |
+| Launch KE | (W × FPS²) / 450240 |
+| Launch Momentum | (W × FPS) / 225400 |
+| Velocity @ Distance | FPS × e^(–d/300) |
+| Impact KE | (W × V²) / 450240 |
+| Impact Momentum | (W × V) / 225400 |
+| Time to Impact | distance_ft / (FPS × 0.8) |
+| Peak Height | (FPS² × sin²θ) / (2g) |
+| Launch Angle θ | θ = ½ arcsin((R × g) / FPS²) |
+
+---
+
+❤️ Support the Project
+
+If this tool helps you tune better arrows or shoot more confidently, consider supporting development:
+
+👉 https://patreon.com/ArrowTuneCalculator
+
+Your support helps fund:
+	•	New features
+	•	Physics modeling improvements
+	•	UI refinements
+	•	Mobile optimizations
+	•	Archery testing
