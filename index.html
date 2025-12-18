@@ -567,6 +567,12 @@
       font-size: .95rem;
       color: var(--text);
     }
+
+    #summaryTable td:nth-child(2) {
+      white-space: pre-wrap;     /* preserves line breaks and wraps long text */
+      word-break: break-word;    /* breaks long words if needed */
+      max-width: 300px;          /* optional: limit width on desktop for better layout */
+    }
   </style>
 </head>
 <body>
@@ -653,7 +659,7 @@
             <button type="button" onclick="showCamTypePopup()" class="info-btn" title="About Cam System">ⓘ</button>
           </div>
           <select id="camType" style="flex:1;">
-            <option value="hybrid">Hybrid / Binary</option>
+            <option value="hybrid">Hybrid</option>
             <option value="single">Single Cam</option>
             <option value="twin">Twin / Dual Cam</option>
             <option value="n/a">N/A (Recurve/Longbow)</option>
@@ -753,7 +759,7 @@
     <!-- Sight Pin Zeros Card - Collapsible on all devices -->
     <div class="card" id="sightCard">
       <div class="collapsible-trigger" onclick="this.classList.toggle('open')">
-        <span>Sight Pin Zeros</span>
+        <span>Sight</span>
         <span class="chevron">></span>
       </div>
       <div class="collapsible-content">
@@ -1530,7 +1536,7 @@ function showCamTypePopup() {
     <p><strong>Cam System</strong></p>
     <p>Type of cam on your compound bow — affects efficiency, speed, and tuning.</p>
     <hr>
-    <p><strong>Hybrid / Binary</strong>: Most efficient — smooth draw, high speed, level nock travel.</p>
+    <p><strong>Hybrid</strong>: Most efficient — smooth draw, high speed, level nock travel.</p>
     <p>Examples: Hoyt HBX Xact, Bowtech DeadLock, Mathews Switchweight, PSE Evolve, Elite Enkore.</p>
     <hr>
     <p><strong>Single Cam</strong>: Simple, quiet, easy tuning — slightly less efficient, very reliable.</p>
@@ -1546,7 +1552,7 @@ function showCamTypePopup() {
       <li>Future speed estimate fine-tuning</li>
       <li>Build comparison & reference</li>
     </ul>
-    <p>Hybrid/binary cams dominate modern hunting bows for best performance and forgiveness.</p>
+    <p>Hybrid cams dominate modern hunting bows for best performance and forgiveness.</p>
   `;
   $('gameMathModal').style.display = 'flex';
 }
@@ -3694,7 +3700,13 @@ function calculateEverything() {
   addRow('Crosswind', windMph.toFixed(1) + ' mph');
   addRow('Range', rangeYd + ' yd');
 
-  // === 5. Core Calculated Stats ===
+
+  // === 5. Game Effectiveness at Current Range ===
+  addRow('Impact Velocity', velImpact + ' fps');
+  addRow('Impact KE', keImpact.toFixed(1) + ' ft-lbs');
+  addRow('Impact Momentum', momImpact.toFixed(3) + ' slug·ft/s');
+
+  // === 6. Core Calculated Stats ===
   addRow('FOC', foc.toFixed(1) + '%');
   addRow('GPP', gpp.toFixed(1));
   addRow('GPI', gpi.toFixed(1) + ' gr/in');
@@ -3703,16 +3715,22 @@ function calculateEverything() {
   addRow('Flatness (20→60 yd)', arcHeightFt.toFixed(1) + ' ft arc');
   addRow('Group Stability', `${goodCount}/3 conditions met`);
 
-  // === 6. Trajectory at Current Range ===
+  // === 7. Trajectory at Current Range ===
   addRow('Max Height at Range', maxHeightFtRounded + ' ft at ' + maxHeightDistYd + ' yd');
   addRow('Flight Time', timeTarget.toFixed(3) + ' sec');
   addRow('Downrange Drop', dropFtTarget + ' ft / ' + dropInTargetRounded + ' in');
   addRow('Wind Drift', $('windDriftIn').textContent + ' in');
 
-  // === 7. Game Effectiveness at Current Range ===
-  addRow('Impact Velocity', velImpact + ' fps');
-  addRow('Impact KE', keImpact.toFixed(1) + ' ft-lbs');
-  addRow('Impact Momentum', momImpact.toFixed(3) + ' slug·ft/s');
+  // === Notes (only if they exist, at the very bottom) ===
+  const notes = $('buildNotes')?.value.trim();
+  if (notes) {
+    // Separator line for visual separation
+    addRow('────────────────────', '────────────────────');
+    
+    // Notes row — preserve line breaks as bullets, wrap nicely
+    addRow('Notes', notes.replace(/\n/g, ' • '));
+  }
+
 }
 
 // Move this outside calculateEverything()
