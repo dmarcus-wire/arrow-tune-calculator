@@ -1476,6 +1476,12 @@ function clearBuildFields() {
   $('rangeSlider').value = '50';
   $('rangeInput').value = '50';
 
+  // Reset Load dropdown to default
+  const loadSelect = $('loadBuild');
+  if (loadSelect) {
+    loadSelect.selectedIndex = 0;  // selects the first option ("– Load Build –")
+  }
+
   calculateEverything();
   alert('All fields cleared!');
 }
