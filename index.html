@@ -584,7 +584,7 @@
           <button id="aiButton" class="btn-small" style="background:var(--purple);">AI Advisor</button>
         </div>
       </div>
-      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.13</p>
+      <p style="color:var(--light);font-size:0.85rem;">Offline • Live • v0.0.14</p>
     </div>
     <div class="card">
       <h2>Build</h2>
@@ -944,6 +944,16 @@
           </p>
         </div>
         </div>
+      </div>
+    </div>
+    <!-- Notes Section (collapsible) -->
+    <div class="card collapsible-mobile">
+      <div class="collapsible-trigger" onclick="this.classList.toggle('open')">
+        <span>Notes</span>
+        <span class="chevron">></span>
+      </div>
+      <div class="collapsible-content">
+        <textarea id="buildNotes" placeholder="Add any notes about this build... (e.g., tuning tips, broadhead choice, shot results)" style="width:100%; height:120px; padding:0.75rem; border:1px solid var(--border); border-radius:8px; background:var(--card-bg); color:var(--text); font-size:0.95rem; resize:vertical;"></textarea>
       </div>
     </div>
   </div>
@@ -4119,6 +4129,7 @@ function saveBuild() {
     vaneCount: $('vaneCount').value,
     vaneHelical: $('vaneHelical').value,
     glueWt: $('glueWt').value,
+    buildNotes: $('buildNotes') ? $('buildNotes').value : '',
     fpsSlider: $('fpsSlider').value,
     windSlider: $('windSlider').value,
     rangeSlider: $('rangeSlider').value,
@@ -4184,6 +4195,11 @@ function loadBuild() {
   $('vaneHeight').value = build.vaneHeight || '0.5';
   $('vaneHelical').value = build.vaneHelical || 'max';
   $('glueWt').value = build.glueWt || '0';
+
+  // notes
+  if ($('buildNotes')) {
+    $('buildNotes').value = build.buildNotes || '';
+  }
 
   // Sliders
   $('fpsSlider').value = build.fpsSlider || '278';
@@ -4344,7 +4360,7 @@ toggleArrowDetailsMode();
 <!--contact information-->
 <footer style="text-align:center; padding:1rem; color:var(--light); font-size:0.9rem;">
   Questions? Feedback? Email <a href="mailto:arrowforgeapp@tuta.io" style="color:var(--purple);">arrowforgeapp@tuta.io</a><br>
-  ArrowForge v0.0.13 — Built for archers, by archers 🏹
+  ArrowForge v0.0.14 — Built for archers, by archers 🏹
 </footer>
 
 </body>
