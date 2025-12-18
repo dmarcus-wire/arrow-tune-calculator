@@ -594,16 +594,23 @@
     </div>
     <div class="card">
       <h2>Build</h2>
-      <div class="input-row" style="align-items:center; gap:0.5rem;">
-        <label for="buildName">Build Name</label>
-        <div class="flex" style="flex:1; gap:0.5rem;">
-          <input type="text" id="buildName" placeholder="e.g. 2025 Elk Slayer" style="flex:1;">
-          <button class="btn-small secondary">Suggest</button>
-        </div>
+      
+      <!-- Build Name input -->
+      <div class="input-row" style="align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
+        <label for="buildName" style="min-width:100px;">Build Name</label>
+        <input type="text" id="buildName" placeholder="e.g. 2025 Hoyt RX-9 70lb 500gr Elk Heavy" style="flex:1; width:100%; max-width:none;">
       </div>
-      <div class="flex" style="margin-top:0.75rem; gap:0.5rem;">
+
+      <!-- Load dropdown on its own row -->
+      <div style="margin-top:0.75rem;">
+        <select id="loadBuild" style="width:100%;"><option>– Load Build –</option></select>
+      </div>
+
+      <!-- All four buttons on one row below -->
+      <div style="margin-top:0.75rem; display:flex; justify-content:center; gap:0.5rem; flex-wrap:wrap;">
+        <button class="btn-small secondary" onclick="suggestBuildName()">Suggest Name</button>
         <button id="saveBuild">Save</button>
-        <select id="loadBuild" style="flex:1;"><option>– Load Build –</option></select>
+        <button onclick="clearBuildFields()" class="secondary">Clear</button>
         <button id="deleteBuild" style="background:var(--danger);">Delete</button>
       </div>
     </div>
@@ -1432,6 +1439,46 @@
 <script>
 const $ = id => document.getElementById(id);
 let fpsWasRecalculated = false;
+
+function clearBuildFields() {
+  if (!confirm('Clear all input fields? This resets everything to defaults (saved builds are safe).')) {
+    return;
+  }
+
+  // Reset Build Name
+  $('buildName').value = '';
+
+  // Reset all other inputs to defaults (add more as needed)
+  $('appType').value = 'Hunting';
+  $('bowModel').value = '';
+  $('bowType').value = 'compound';
+  $('ibo').value = '';
+  $('drawWt').value = '70';
+  $('drawLen').value = '';
+  $('letOff').value = '80';
+  $('braceHeight').value = '';
+  $('camType').value = 'hybrid';
+  $('stringWt').value = '0';
+  // Arrow fields
+  $('arrowName').value = '';
+  $('spine').value = '';
+  $('arrowDia').value = 'micro';
+  $('arrowLen').value = '';
+  $('totalWt').value = '';
+  $('pointWt').value = '';
+  $('balancePt').value = '';
+  $('buildNotes').value = '';
+  // Sliders
+  $('fpsSlider').value = '278';
+  $('fpsInput').value = '278';
+  $('windSlider').value = '0';
+  $('windInput').value = '0';
+  $('rangeSlider').value = '50';
+  $('rangeInput').value = '50';
+
+  calculateEverything();
+  alert('All fields cleared!');
+}
 
 /*Bow Model info icon*/
 function showBowModelPopup() {
