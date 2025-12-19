@@ -808,7 +808,7 @@
         <button onclick="clearBuildFields()" class="secondary">Clear</button>
         <button id="saveBuild">Save</button>
         <button id="deleteBuild" style="background:var(--danger);">Delete</button>
-        <button id="aiButton" class="btn-small" style="background:var(--purple);">AI Advisor</button>
+        <!--REMOVE <button id="aiButton" class="btn-small" style="background:var(--purple);">AI Advisor</button>-->
       </div>
     </div>
 
@@ -816,6 +816,13 @@
     <div class="card" id="bowCard">
       <div class="collapsible-trigger" onclick="this.classList.toggle('open')">
         <span>Bow Details</span>
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <button onclick="event.stopPropagation(); promptBowLookup()" 
+                  class="btn-small" 
+                  style="background:var(--purple); padding:0.4rem 0.8rem;">
+            AI Lookup ✨
+          </button>
+        </div>
         <span class="chevron">></span>
       </div>
       <div class="collapsible-content">
@@ -862,12 +869,7 @@
             <label for="camType">Cam System</label>
             <button type="button" onclick="showCamTypePopup()" class="info-btn" title="About Cam System">ⓘ</button>
           </div>
-          <select id="camType" style="flex:1;">
-            <option value="hybrid">Hybrid</option>
-            <option value="single">Single Cam</option>
-            <option value="twin">Twin / Dual Cam</option>
-            <option value="n/a">N/A (Recurve/Longbow)</option>
-          </select>
+          <input type="text" id="camType" placeholder="e.g. Hybrid, SwitchWeight" class="left-align" style="flex:1;">
         </div>
         <!---Draw Weight-->
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -1903,6 +1905,45 @@ function showBowModelPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+// AI Hard Coded Button
+function promptBowLookup() {
+  const model = prompt('Hard Coded samples - Enter bow model in lower case (e.g., "2025 hoyt rx-9")');
+  if (!model) return; // user cancelled
+
+  const normalized = model.toLowerCase().trim();
+
+  // Hard-coded bow data
+  const knownBows = {
+    "2025 hoyt rx-9": { type: "compound", ibo: 342, brace: 6.125, cam: "hbx gen 4" },
+    "2025 hoyt rx-8": { type: "compound", ibo: 342, brace: 6.125, cam: "hbx xact" },
+    "mathews lift": { type: "compound", ibo: 348, brace: 6, cam: "switchweight x" },
+    "bowtech carbon one": { type: "compound", ibo: 335, brace: 6.63, cam: "deadlock" },
+    "elite verdict": { type: "compound", ibo: 332, brace: 7.125, cam: "spx" },
+    "2014 mathews chill r": { type: "compound", ibo: 342, brace: 6.125, cam: "dyad avs" }
+    // Add more bows here as needed
+  };
+
+  let matched = null;
+  for (const key in knownBows) {
+    if (normalized.includes(key)) {
+      matched = knownBows[key];
+      break;
+    }
+  }
+
+  if (matched) {
+    $('bowType').value = matched.type;
+    $('ibo').value = matched.ibo;
+    $('braceHeight').value = matched.brace;
+    $('camType').value = matched.cam;
+
+    alert(`Found specs for ${model}!\n\nIBO: ${matched.ibo} fps\nBrace: ${matched.brace}"\nCam: ${matched.cam}\n\nFields updated.`);
+    calculateEverything();
+  } else {
+    alert(`"${model}" not found in database yet.\n\nEnter specs manually or try a known model like "2025 Hoyt RX-9".`);
+  }
+}
+
 /*Bow Type info icon*/
 function showBowTypePopup() {
   $('gameMathContent').innerHTML = `
@@ -2011,25 +2052,16 @@ function showBraceHeightPopup() {
 function showCamTypePopup() {
   $('gameMathContent').innerHTML = `
     <p><strong>Cam System</strong></p>
-    <p>Type of cam on your compound bow — affects efficiency, speed, and tuning.</p>
+    <p>Type of cam design on your compound bow — affects let-off, speed, and tuning.</p>
     <hr>
-    <p><strong>Hybrid</strong>: Most efficient — smooth draw, high speed, level nock travel.</p>
-    <p>Examples: Hoyt HBX Xact, Bowtech DeadLock, Mathews Switchweight, PSE Evolve, Elite Enkore.</p>
-    <hr>
-    <p><strong>Single Cam</strong>: Simple, quiet, easy tuning — slightly less efficient, very reliable.</p>
-    <p>Examples: Older Mathews SoloCam, Bear Legit, Diamond Edge, some entry-level bows.</p>
-    <hr>
-    <p><strong>Twin / Dual Cam</strong>: Fast and aggressive — high speed, but harder to tune and more maintenance.</p>
-    <p>Examples: Classic PSE models, some high-performance speed bows, older aggressive designs.</p>
-    <hr>
-    <p><strong>N/A</strong>: For recurve/longbow (no cams).</p>
-    <hr>
-    <p>Used for:</p>
+    <p><strong>Common Types:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>Future speed estimate fine-tuning</li>
-      <li>Build comparison & reference</li>
+      <li><strong>Hybrid</strong>: Smooth draw, high let-off (Hoyt HBX, PSE Evolve)</li>
+      <li><strong>Twin/Dual</strong>: Aggressive, fast (older Bowtech, some Mathews)</li>
+      <li><strong>Single</strong>: Smooth, forgiving (Solo cams)</li>
+      <li><strong>SwitchWeight/DeadLock</strong>: Modular draw length/let-off</li>
     </ul>
-    <p>Hybrid cams dominate modern hunting bows for best performance and forgiveness.</p>
+    <p>Used for future AI tuning suggestions and performance estimates.</p>
   `;
   $('gameMathModal').style.display = 'flex';
 }
@@ -4987,7 +5019,7 @@ $('darkToggle').addEventListener('change', e => {
     logoImg.src = isDark ? 'logo-dark.png' : 'logo-light.png';
   }
 });
-$('aiButton').addEventListener('click', () => $('aiModal').style.display = 'flex');
+//REMOVE $('aiButton').addEventListener('click', () => $('aiModal').style.display = 'flex');
 $('saveBuild').addEventListener('click', saveBuild);
 $('loadBuild').addEventListener('change', loadBuild);
 $('deleteBuild').addEventListener('click', deleteBuild);
