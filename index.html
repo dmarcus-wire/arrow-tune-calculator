@@ -2281,6 +2281,66 @@ function showTotalWtPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+/* Point Weight info icon */
+function showPointWtPopup() {
+  const pointWt = parseFloat($('pointWt').value) || 125;
+  const bowType = $('bowType')?.value || 'compound';
+  const appType = $('appType')?.value || 'Hunting';
+
+  let sweetMin = 100;
+  let sweetMax = 175;
+  let typeLabel = "Compound/Hunting";
+
+  if (bowType === 'recurve' || bowType === 'longbow') {
+    sweetMin = 125;
+    sweetMax = 200;
+    typeLabel = "Recurve/Longbow";
+  } else if (appType === 'Target') {
+    sweetMin = 90;
+    sweetMax = 120;
+    typeLabel = "Target";
+  }
+
+  const isHeavy = pointWt > sweetMax;
+  const isLight = pointWt < sweetMin;
+
+  $('gameMathContent').innerHTML = `
+    <p><strong>Point Weight Math & Usage</strong></p>
+    <p>Point weight (broadhead + insert/outsert) is one of the most powerful tuning levers — it dramatically affects FOC, total arrow weight, trajectory, and penetration.</p>
+    <hr>
+    <p><strong>Your Current Build:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Point Weight: <strong>${pointWt.toFixed(1)} gr</strong></li>
+      <li>Setup: <strong>${typeLabel}</strong></li>
+    </ul>
+    <hr>
+    <p><strong>Sweet Spot (highlighted in green):</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Compound/Hunting</strong>: 100–175 gr — balanced FOC & speed</li>
+      <li><strong>Target</strong>: 90–120 gr — lower FOC for forgiveness</li>
+      <li><strong>Recurve/Longbow</strong>: 125–200 gr — higher FOC for stability</li>
+    </ul>
+    <p style="margin-top:0.75rem;">
+      ${isHeavy ? '<strong>Heavy point — higher FOC & penetration, slower speed</strong>' :
+        isLight ? '<strong>Light point — lower FOC, flatter trajectory</strong>' :
+        '<strong>Your point weight is in the ideal range!</strong>'}
+    </p>
+    <hr>
+    <p>This value directly influences:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Total Arrow Weight (adds to shaft + components)</li>
+      <li>FOC (heavier point = higher FOC)</li>
+      <li>Spine recommendation (heavier point = effectively stiffer draw)</li>
+      <li>Trajectory & drop</li>
+      <li>Kinetic Energy & Momentum</li>
+      <li>Game Effectiveness ratings</li>
+    </ul>
+    <hr>
+    <p><strong>Pro Tip:</strong> Changing point weight by even 25 gr can noticeably shift FOC, speed, and penetration — experiment here before buying new heads!</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
 /*Balance Point info icon*/
 function showBalancePtPopup() {
   $('gameMathContent').innerHTML = `
