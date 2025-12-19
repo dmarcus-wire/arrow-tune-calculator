@@ -224,6 +224,7 @@
       color:var(--text);
       padding:0.5rem;
     }
+
     .input-row {
       display:flex;
       align-items:center;
@@ -231,6 +232,7 @@
       margin:0.5rem 0;
       gap:0.75rem;
     }
+
     .input-row label {
       margin:0;
       font-weight:600;
@@ -239,17 +241,35 @@
       color:var(--text);
       flex-shrink:0;
     }
-    .input-row label::after { content:":"; margin-left:0.25rem; color:var(--light); }
-    .input-row input, .input-row select {
+
+    .input-row label::after {
+      content:":";
+      margin-left:0.25rem;
+      color:var(--light);
+    }
+
+    /* Left-aligned inputs on all screens */
+    .input-row input,
+    .input-row select {
       flex:1;
       min-width:140px;
-      text-align:right;
+      text-align:left;     /* ← left-aligned everywhere */
       font-size:1rem;
     }
+
     @media (min-width:769px) {
-      .input-row { gap:1rem; }
-      .input-row input, .input-row select { max-width:240px; text-align:left; font-size:1.05rem; }
-      .input-row label { font-size:1rem; }
+      .input-row {
+        gap:1rem;
+      }
+      .input-row input,
+      .input-row select {
+        max-width:240px;
+        text-align:left;   /* ← keep left on desktop too */
+        font-size:1.05rem;
+      }
+      .input-row label {
+        font-size:1rem;
+      }
     }
     .collapsible-trigger {
       cursor:pointer;
