@@ -942,13 +942,6 @@
             </div>
             <input type="number" id="silencerWt" value="0" step="0.5" class="left-align" style="flex:1;">
           </div>
-          <div class="input-row" style="align-items:center; gap:0.5rem;">
-            <div style="display:flex; align-items:center; gap:0.4rem;">
-              <label for="nockWt">Nock weight gr</label>
-              <button type="button" onclick="showNockWtPopup()" class="info-btn" title="About Nock Weight">ⓘ</button>
-            </div>
-            <input type="number" id="nockWt" value="0" step="0.5" class="left-align" style="flex:1;">
-          </div>
           <!-- New total display -->
           <div style="margin-top:1rem; padding:0.75rem; background:var(--border); border-radius:8px; text-align:center;">
             <strong>Total String Add-ons: <span id="stringAddonsTotal">0</span> gr</strong>
@@ -1115,6 +1108,7 @@
             <input type="number" id="inFlightDia" placeholder="e.g. 1.25" step="0.01" class="left-align" style="flex:1;">
           </div>
 
+          <!--wrap weight-->
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="wrapWt">Wrap gr</label>
@@ -1123,6 +1117,7 @@
             <input type="number" id="wrapWt" value="0" step="0.5" class="left-align" style="flex:1;">
           </div>
 
+          <!--vane weight each-->
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="vaneWt">Vane weight (each) gr</label>
@@ -1131,6 +1126,7 @@
             <input type="number" id="vaneWt" value="0" step="0.1" class="left-align" style="flex:1;">
           </div>
 
+          <!--vane count-->
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="vaneCount">Vane count</label>
@@ -1139,6 +1135,7 @@
             <input type="number" id="vaneCount" value="0" min="0" max="6" class="left-align" style="flex:1;">
           </div>
 
+          <!--vane height-->
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="vaneHeight">Vane Height (in)</label>
@@ -1147,6 +1144,7 @@
             <input type="number" id="vaneHeight" value="0.5" min="0.2" max="0.8" step="0.05" class="left-align" style="flex:1;">
           </div>
 
+          <!--helical-->
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="vaneHelical">Helical / Offset</label>
@@ -1159,6 +1157,15 @@
               <option value="high">High Offset / Helical</option>
               <option value="max" selected>Max Helical</option>
             </select>
+          </div>
+
+          <!--nock weight-->
+          <div class="input-row" style="align-items:center; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+              <label for="nockWt">Nock weight gr</label>
+              <button type="button" onclick="showNockWtPopup()" class="info-btn" title="About Nock Weight">ⓘ</button>
+            </div>
+            <input type="number" id="nockWt" value="0" step="0.5" class="left-align" style="flex:1;">
           </div>
 
           <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -2099,7 +2106,7 @@ function toggleStringDetailsMode() {
   const checkbox = $('useStringDetails');
   const checked = checkbox?.checked ?? false;
 
-  const detailIds = ['peepWt', 'dloopWt', 'kisserWt', 'silencerWt', 'nockWt'];
+  const detailIds = ['peepWt', 'dloopWt', 'kisserWt', 'silencerWt'];
   const mainInput = $('stringWt');
 
   detailIds.forEach(id => {
@@ -2447,7 +2454,7 @@ function toggleArrowDetailsMode() {
   const checkbox = $('useArrowDetails');
   const checked = checkbox?.checked ?? false;
 
-  const detailIds = ['bareShaftWt', 'insertWt', 'wrapWt', 'vaneWt', 'vaneCount', 'vaneHeight', 'vaneHelical', 'glueWt'];
+  const detailIds = ['bareShaftWt', 'insertWt', 'pointType', 'inFlightDia','wrapWt', 'vaneWt', 'vaneCount', 'vaneHeight', 'vaneHelical', 'glueWt','nockWt'];
   const mainInput = $('totalWt');
 
   detailIds.forEach(id => {
@@ -3710,9 +3717,9 @@ function calculateEverything() {
   const dloopWt = parseFloat($('dloopWt').value) || 0;
   const kisserWt = parseFloat($('kisserWt').value) || 0;
   const silencerWt = parseFloat($('silencerWt').value) || 0;
-  const nockWt = parseFloat($('nockWt').value) || 0;
 
-  const calculatedTotal = peepWt + dloopWt + kisserWt + silencerWt + nockWt;
+
+  const calculatedTotal = peepWt + dloopWt + kisserWt + silencerWt;
 
   // Declare stringWtInput first
   const stringWtInput = $('stringWt');
@@ -3739,8 +3746,9 @@ function calculateEverything() {
   const vaneWtEach = parseFloat($('vaneWt').value) || 0;
   const vaneCount = parseFloat($('vaneCount').value) || 0;
   const glueWt = parseFloat($('glueWt').value) || 0;
+  const nockWt = parseFloat($('nockWt').value) || 0;
 
-  const calculatedArrowTotal = bareShaftWt + insertWt + wrapWt + (vaneWtEach * vaneCount) + glueWt + pointWt;
+  const calculatedArrowTotal = bareShaftWt + insertWt + wrapWt + (vaneWtEach * vaneCount) + glueWt + pointWt + nockWt;
 
   // Always update display total
   const arrowTotalEl = $('arrowComponentsTotal');
