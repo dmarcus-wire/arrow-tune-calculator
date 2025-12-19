@@ -1135,7 +1135,7 @@
   <div id="outputs-column">
     <div class="card">
         <h2 style="display:flex; align-items:center; gap:0.75rem; font-size:1.3rem;">
-          Live Settings
+          Live Adjustable Settings
           <button type="button" onclick="showLiveSettingsPopup()" class="info-btn" title="Explain Live Settings">ⓘ</button>
         </h2>
       <div style="margin:1.2rem 0;">
@@ -1466,10 +1466,10 @@
                   <div class="bar-marker" id="groupStabilityMarker" style="left:50%;"></div>
                 </div>
                 <div class="bar-labels">
-                  <span>Challenging</span>
-                  <span>Average</span>
-                  <span>Very good</span>
-                  <span>Excellent</span>
+                  <span>0 of 3</span>
+                  <span>1 of 3</span>
+                  <span>2 of 3</span>
+                  <span>3 of 3</span>
                 </div>
                 <span class="moving-value" id="groupStabilityValue">0/3</span>
               </div>
@@ -1693,7 +1693,20 @@ function showGettingStarted() {
             </p>
           </div>
 
-          <!-- Slide 3 - Experiment -->
+          <!-- Slide 3 - Get Insights Everywhere -->
+          <div class="onboarding-slide">
+            <h3>Get Personalized Insights (Free)</h3>
+            <p>Click the ⓘ info icons next to any field for custom guidance based on your build.</p>
+            <p style="font-size:3rem; margin:1.5rem 0;">ⓘ</p>
+            <p style="font-size:1.1rem; margin:1rem 0; line-height:1.6;">
+              <strong>Answer questions like:</strong><br>
+              What does this field mean, like Balance Point?<br>
+              What should my Point Weight fall between for hunting?<br>
+              What will the flight time of my arrow be to 50 yards?
+            </p>
+          </div>
+
+          <!-- Slide 4 - Experiment -->
           <div class="onboarding-slide">
             <h3>Experiment Before Buying (Free)</h3>
             <p>Test arrow builds — change weight, spine, point — see performance instantly.</p>
@@ -1706,7 +1719,7 @@ function showGettingStarted() {
             </p>
           </div>
 
-          <!-- Slide 4 - Analyze Current Setup -->
+          <!-- Slide 5 - Analyze Current Setup -->
           <div class="onboarding-slide">
             <h3>Understand Your Setup (Free)</h3>
             <p>Enter your full bow + arrow build — see real performance data.</p>
@@ -1719,7 +1732,7 @@ function showGettingStarted() {
             </p>
           </div>
 
-          <!-- Slide 5 - AI Goal Advisor -->
+          <!-- Slide 6 - AI Goal Advisor -->
           <div class="onboarding-slide">
             <h3>AI Goal Advisor (Paid — Coming Soon)</h3>
             <p>Tell AI your goals — get personalized gear ideas.</p>
@@ -1732,7 +1745,7 @@ function showGettingStarted() {
             </p>
           </div>
 
-          <!-- Slide 6 - AI Full Analysis -->
+          <!-- Slide 7 - AI Full Analysis -->
           <div class="onboarding-slide">
             <h3>AI Full Analysis (Paid — Coming Soon)</h3>
             <p>Enter your setup — AI suggests improvements.</p>
@@ -2582,7 +2595,7 @@ function showFpsMathPopup() {
 
   if (hasManualFps) {
     content.innerHTML = `
-      <p><strong>Using your chronographed speed:</strong> ${currentFps.toFixed(1)} FPS</p>
+      <p><strong>Using your calculated estimated or chronographed speed:</strong> ${currentFps.toFixed(1)} FPS</p>
       <p style="margin-top:0.75rem;color:var(--light);">
         Manual entry overrides estimate — this is the most accurate!
       </p>
@@ -3194,7 +3207,7 @@ function showGroupStabilityPopup() {
 
   $('gameMathContent').innerHTML = `
     <p><strong>Group Stability (Target / 3D) Math & Usage</strong></p>
-    <p>This rates how optimized your setup is for tight groups in target/3D shooting based on three key factors known to affect in-flight stability and forgiveness.</p>
+    <p>This rates how optimized your setup is for tight groups for multiple arrows in target/training shooting based on three key factors known to affect in-flight stability and forgiveness.</p>
     <hr>
     <p><strong>Your Current Build:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
@@ -3219,10 +3232,10 @@ function showGroupStabilityPopup() {
     <hr>
     <p><strong>Interpretation:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li><strong>3/3</strong> = Excellent — tight groups likely with good tuning</li>
-      <li><strong>2/3</strong> = Very good — small tweaks help</li>
-      <li><strong>1/3</strong> = Average — more forgiveness trade-offs</li>
-      <li><strong>0/3</strong> = Challenging — expect larger groups until optimized</li>
+      <li><strong>3 of 3</strong> = Excellent — tight groups likely with good tuning</li>
+      <li><strong>2 of 3</strong> = Very good — small tweaks help</li>
+      <li><strong>1 of 3</strong> = Average — more forgiveness trade-offs</li>
+      <li><strong>0 of 3</strong> = Challenging — expect larger groups until optimized</li>
     </ul>
     <p>Execution and tuning always matter most — this is just a starting point based on proven target/3D principles.</p>
     <hr>
