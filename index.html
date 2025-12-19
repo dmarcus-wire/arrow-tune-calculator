@@ -85,6 +85,105 @@
     .dark input[type="range"] {
       background-color: var(--border);
     }
+    
+    /* how-to slides*/
+    .onboarding-modal {
+      background: var(--card-bg);
+      color: var(--text);
+      border-radius: 16px;
+      max-width: 520px;
+      width: 100%;
+      height: 90vh;
+      max-height: 90vh;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Allow clicks to pass through slides to arrows */
+    .slides-wrapper {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .slides-container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.4s ease;
+      pointer-events: auto;  /* ← ADD THIS — content is clickable, but wrapper isn't */
+    }
+
+    .onboarding-slide {
+      min-width: 100%;
+      width: 100%;
+      padding: 2.5rem 2rem;
+      box-sizing: border-box;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      border: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      font-size: 1.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    .nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.5);
+      color: white;
+      border: none;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      font-size: 2rem;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    #prevBtn { left: 1rem; }
+    #nextBtn { right: 1rem; }
+
+    .dots {
+      text-align: center;
+      padding: 1rem 0;
+      background: var(--card-bg);
+    }
+
+    .dot {
+      height: 10px;
+      width: 10px;
+      background: var(--light);
+      border-radius: 50%;
+      display: inline-block;
+      margin: 0 5px;
+      cursor: pointer;
+      opacity: 0.6;
+    }
+
+    .dot.active {
+      background: var(--purple);
+      opacity: 1;
+    }
 
     #inputs-column .card { padding:0.8rem; }
     #inputs-column input, #inputs-column select { padding:0.5rem; font-size:0.95rem; }
@@ -606,6 +705,17 @@
       background: #1e293b;  /* dark slate */
       color: #e2e8f0;       /* light text */
     }
+
+    #loadBuild::-webkit-scrollbar {
+      width: 8px;
+    }
+    #loadBuild::-webkit-scrollbar-track {
+      background: var(--card-bg);
+    }
+    #loadBuild::-webkit-scrollbar-thumb {
+      background: var(--purple);
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
@@ -635,28 +745,32 @@
           <button id="aiButton" class="btn-small" style="background:var(--purple);">AI Advisor</button>
         </div>
       </div>
-      <p style="color:var(--light);font-size:0.85rem; margin-top:0.5rem;">Offline • Live • v0.0.15</p>
+      <p style="color:var(--light);font-size:0.85rem; margin-top:0.5rem;">Offline • Live • v0.0.16</p>
     </div>
     
     <div class="card">
       <h2>Build</h2>
       
-      <!-- Build Name input -->
+      <!-- Build Name input — lengthened -->
       <div class="input-row" style="align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
         <label for="buildName" style="min-width:100px;">Build Name</label>
         <input type="text" id="buildName" placeholder="e.g. 2025 Hoyt RX-9 70lb 500gr Elk Heavy" style="flex:1; width:100%; max-width:none;">
       </div>
 
-      <!-- Load dropdown on its own row -->
+      <!-- Load dropdown on its own row — scrollable -->
       <div style="margin-top:0.75rem;">
-        <select id="loadBuild" style="width:100%;"><option>– Load Build –</option></select>
+        <select id="loadBuild" style="width:100%; max-height:200px; overflow-y:auto; padding:0.5rem;">
+          <option>– Load Build –</option>
+          <!-- options added by JS -->
+        </select>
       </div>
 
-      <!-- All four buttons on one row below -->
-      <div style="margin-top:0.75rem; display:flex; justify-content:center; gap:0.5rem; flex-wrap:wrap;">
-        <button class="btn-small secondary" onclick="suggestBuildName()">Suggest Name</button>
-        <button id="saveBuild">Save</button>
+      <!-- All buttons on one row — stay inline, wrap only on very small screens -->
+      <div style="margin-top:0.75rem; display:flex; justify-content:center; gap:0.5rem; flex-wrap:nowrap; overflow-x:auto; padding:0.25rem 0;">
+        <button class="btn-small secondary" onclick="suggestBuildName()">Auto Name</button>
         <button onclick="clearBuildFields()" class="secondary">Clear</button>
+        <button onclick="showGettingStarted()" class="secondary">How To</button>
+        <button id="saveBuild">Save</button>
         <button id="deleteBuild" style="background:var(--danger);">Delete</button>
       </div>
     </div>
@@ -1530,6 +1644,133 @@ function clearBuildFields() {
 
   calculateEverything();
   alert('All fields cleared!');
+}
+
+function showGettingStarted() {
+  if (document.getElementById('howToModal')) return;
+
+  const modal = document.createElement('div');
+  modal.id = 'howToModal';
+  modal.style.cssText = `
+    position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.85); display:flex; align-items:center;
+    justify-content:center; z-index:1000; padding:1rem;
+  `;
+
+  modal.innerHTML = `
+    <div style="background:var(--card-bg); color:#ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); border-radius:16px; max-width:520px; width:100%; max-height:90vh; overflow:hidden; position:relative; box-shadow:0 20px 40px rgba(0,0,0,0.4);">
+      <!-- Close button -->
+      <button onclick="document.getElementById('howToModal').remove()"
+              style="position:absolute; top:1rem; right:1rem; background:rgba(0,0,0,0.5); color:white; border:none; width:44px; height:44px; border-radius:50%; font-size:1.8rem; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:20;">
+        ×
+      </button>
+
+      <div class="slides-wrapper">
+        <div class="slides-container">
+          <!-- Slide 1 -->
+          <div class="onboarding-slide">
+            <h2>Welcome to ArrowForge!</h2>
+            <p>Smart tuning tools for archers — completely offline and privacy-first.</p>
+            <p style="font-size:4rem; margin:2rem 0;">🏹</p>
+            <p>Get instant insights on FOC, spine, trajectory, KE, and more.</p>
+          </div>
+
+          <!-- Slide 2 -->
+          <div class="onboarding-slide">
+            <h3>Try Pro Sample Profiles (Free)</h3>
+            <p>Load real-world setups from top archers like Cameron Hanes and Paige Pearce.</p>
+            <p style="font-size:3rem; margin:1.5rem 0;">🔥</p>
+            <p>Tweak and save as your own — start strong.</p>
+          </div>
+
+          <!-- Slide 3 -->
+          <div class="onboarding-slide">
+            <h3>Experiment Before Buying (Free)</h3>
+            <p>Test arrow builds — change weight, spine, point — see performance instantly.</p>
+            <p style="font-size:3rem; margin:1.5rem 0;">💡</p>
+            <p>Find your perfect setup without wasting money.</p>
+          </div>
+
+          <!-- Slide 4 -->
+          <div class="onboarding-slide">
+            <h3>Understand Real Physics (Free)</h3>
+            <p>See trajectory, drop, KE, momentum, and game effectiveness at any range.</p>
+            <p style="font-size:3rem; margin:1.5rem 0;">📊</p>
+            <p>No guesswork — data-driven tuning.</p>
+          </div>
+
+          <!-- Slide 5 -->
+          <div class="onboarding-slide">
+            <h3>AI Goal Advisor (Paid — Coming Soon)</h3>
+            <p>Tell AI your goals — get personalized gear and spec ideas.</p>
+            <p style="font-size:3rem; margin:1.5rem 0;">✨</p>
+          </div>
+
+          <!-- Slide 6 -->
+          <div class="onboarding-slide">
+            <h3>AI Full Analysis (Paid — Coming Soon)</h3>
+            <p>Enter your setup — AI analyzes and suggests improvements.</p>
+            <p style="font-size:3rem; margin:1.5rem 0;">🚀</p>
+            <p style="margin-top:2rem;">Ready to forge your perfect arrow?</p>
+          </div>
+        </div>
+
+        <!-- Navigation arrows moved INSIDE slides-wrapper -->
+        <button id="prevBtn" class="nav-btn">‹</button>
+        <button id="nextBtn" class="nav-btn">›</button>
+      </div>
+
+      <!-- Dots -->
+      <div class="dots">
+        <span class="dot active"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const slidesContainer = modal.querySelector('.slides-container');
+  const dots = modal.querySelectorAll('.dot');
+  let currentSlide = 0;
+  const totalSlides = 6;
+
+  function updateSlide() {
+    slidesContainer.style.transform = `translateX(-${currentSlide * 100}%)`;
+    dots.forEach((dot, i) => dot.classList.toggle('active', i === currentSlide));
+  }
+
+  // Close button
+  modal.querySelector('button[onclick*="remove"]').onclick = () => modal.remove();
+
+  // Navigation
+  modal.querySelector('#prevBtn').onclick = () => {
+    currentSlide = currentSlide > 0 ? currentSlide - 1 : totalSlides - 1;
+    updateSlide();
+  };
+  modal.querySelector('#nextBtn').onclick = () => {
+    currentSlide = currentSlide < totalSlides - 1 ? currentSlide + 1 : 0;
+    updateSlide();
+  };
+  dots.forEach((dot, i) => dot.onclick = () => {
+    currentSlide = i;
+    updateSlide();
+  });
+
+  // Touch swipe
+  let touchStartX = 0;
+  modal.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX);
+  modal.addEventListener('touchend', e => {
+    const touchEndX = e.changedTouches[0].clientX;
+    if (touchStartX - touchEndX > 50) modal.querySelector('#nextBtn').click();
+    if (touchEndX - touchStartX > 50) modal.querySelector('#prevBtn').click();
+  });
+
+  updateSlide();
 }
 
 /*Bow Model info icon*/
@@ -4498,7 +4739,7 @@ toggleArrowDetailsMode();
 <!--contact information-->
 <footer style="text-align:center; padding:1rem; color:var(--light); font-size:0.9rem; margin-top:2rem;">
   Questions? Feedback? Email <a href="mailto:arrowforgeapp@tuta.io" style="color:var(--purple);">arrowforgeapp@tuta.io</a><br>
-  ArrowForge v0.0.14 — Built for archers, by archers 🏹<br>
+  ArrowForge v0.0.16 — Built for archers, by archers 🏹<br>
   <span style="font-size:0.8rem; opacity:0.8;">© 2025 Frontier Forge LLC -    © 2025 <a href="/about.html" style="color:var(--light);">About</a></span>
 </footer>
 
