@@ -1921,6 +1921,29 @@ function showBowTypePopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+// Suggest Build Name
+function suggestBuildName() {
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10); // YYYY-MM-DD
+
+  const appType = $('appType')?.value.trim() || 'Hunting';
+  const arrowWeight = $('totalWt')?.value.trim() || '???';
+  const bowModel = $('bowModel')?.value.trim() || 'Bow';
+  const drawWt = $('drawWt')?.value || '??';
+
+  const templates = [
+    `${dateStr} ${appType} ${bowModel} ${drawWt}lb ${arrowWeight}gr`,
+    `${dateStr} ${bowModel} ${drawWt}lb ${appType} ${arrowWeight}gr`,
+    `${dateStr} ${appType} Build ${arrowWeight}gr`,
+    `${dateStr} ${bowModel} ${appType} Setup`
+  ];
+
+  // Pick the best template (one without ?? or ???)
+  const best = templates.find(t => !t.includes('??') && !t.includes('???')) || templates[0];
+
+  $('buildName').value = best.trim();
+}
+
 /*Bow Type Update Pins*/
 function updatePinCountForTraditional() {
   const bowType = $('bowType').value;
