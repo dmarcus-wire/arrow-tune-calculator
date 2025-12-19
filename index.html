@@ -4760,6 +4760,11 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
+// Show "How To" onboarding on first visit only
+if (!localStorage.getItem('hasSeenOnboarding')) {
+  showGettingStarted();
+  localStorage.setItem('hasSeenOnboarding', 'true');
+}
 
 // set initial state
 updateLoadDropdown();
