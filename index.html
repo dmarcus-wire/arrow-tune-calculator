@@ -65,6 +65,19 @@
       box-shadow:0 4px 12px rgba(15,23,42,0.08);
     }
 
+    /* Right-aligned number inputs with cursor at right end */
+    input[type="number"],
+    input[type="text"].left-align {  /* use for any text inputs you want left-aligned */
+      text-align: left;
+      direction: rtl;
+    }
+
+    /* Optional: Better spinner position on iOS/Safari */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      margin-left: 0; /* keeps spinners on right */
+    }
+
     /* Minimal tick marks for range sliders */
     input[type="range"] {
       -webkit-appearance: none; /* Remove default styling */
@@ -746,7 +759,7 @@
       <!-- Build Name input — lengthened -->
       <div class="input-row" style="align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
         <label for="buildName" style="min-width:100px;">Build Name</label>
-        <input type="text" id="buildName" placeholder="e.g. 2025 Hoyt RX-9 70lb 500gr Elk Heavy" style="flex:1; width:100%; max-width:none;">
+        <input type="text" id="buildName" placeholder="e.g. 2025 Hoyt RX-9 70lb 500gr Elk Heavy"  class="left-align" style="flex:1; width:100%; max-width:none;">
       </div>
 
       <!-- Load dropdown on its own row — scrollable -->
@@ -781,7 +794,7 @@
             <label for="bowModel">Model</label>
             <button type="button" onclick="showBowModelPopup()" class="info-btn" title="About Bow Model">ⓘ</button>
           </div>
-          <input type="text" id="bowModel" placeholder="Hoyt RX-9" style="flex:1;">
+          <input type="text" id="bowModel" placeholder="Hoyt RX-9" class="left-align" style="flex:1;">
         </div>
         <!---Bow Type-->
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -801,7 +814,7 @@
             <label for="ibo">IBO fps</label>
             <button type="button" onclick="showIboPopup()" class="info-btn" title="About IBO Speed">ⓘ</button>
           </div>
-          <input type="number" id="ibo" value="340" min="200" max="400" step="1" style="flex:1;">
+          <input type="number" id="ibo" value="340" min="200" max="400" step="1" class="left-align" style="flex:1;">
         </div>  
         <!---Brace Height-->
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -809,7 +822,7 @@
             <label for="braceHeight">Brace height in</label>
             <button type="button" onclick="showBraceHeightPopup()" class="info-btn" title="About Brace Height">ⓘ</button>
           </div>
-          <input type="number" id="braceHeight" value="6" min="4" max="9" step="0.1" style="flex:1;">
+          <input type="number" id="braceHeight" value="6" min="4" max="9" step="0.1" class="left-align" style="flex:1;">
         </div>        
         <!---Cam System-->
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -830,7 +843,7 @@
             <label for="drawWt">Draw wt lb</label>
             <button type="button" onclick="showDrawWtPopup()" class="info-btn" title="About Draw Weight">ⓘ</button>
           </div>
-          <input type="number" id="drawWt" value="70" min="30" max="100" step="0.5" style="flex:1;">
+          <input type="number" id="drawWt" value="70" min="30" max="100" step="0.5" class="left-align" style="flex:1;">
         </div>
         <!---Draw Length-->
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -838,7 +851,7 @@
             <label for="drawLen">Draw length in</label>
             <button type="button" onclick="showDrawLenPopup()" class="info-btn" title="About Draw Length">ⓘ</button>
           </div>
-          <input type="number" id="drawLen" value="29" min="24" max="34" step="0.1" style="flex:1;">
+          <input type="number" id="drawLen" value="29" min="24" max="34" step="0.1" class="left-align" style="flex:1;">
         </div>
         <!---Let off %--> 
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -846,7 +859,7 @@
             <label for="letOff">Let-off %</label>
             <button type="button" onclick="showLetOffPopup()" class="info-btn" title="About Let-off">ⓘ</button>
           </div>
-          <input type="number" id="letOff" value="80" min="65" max="90" step="1" style="flex:1;">
+          <input type="number" id="letOff" value="80" min="65" max="90" step="1" class="left-align" style="flex:1;">
         </div> 
         <!---String Weight-->
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -854,7 +867,7 @@
             <label for="stringWt">String add-ons gr</label>
             <button type="button" onclick="showStringAddonsPopup()" class="info-btn" title="About String Add-ons">ⓘ</button>
           </div>
-          <input type="number" id="stringWt" value="20" min="0" step="0.5" style="flex:1;" data-manual="false">
+          <input type="number" id="stringWt" value="20" min="0" step="0.5" class="left-align" style="flex:1;" data-manual="false">
         </div>
 
         <!---String Details-->
@@ -874,35 +887,35 @@
               <label for="peepWt">Peep weight gr</label>
               <button type="button" onclick="showPeepWtPopup()" class="info-btn" title="About Peep Weight">ⓘ</button>
             </div>
-            <input type="number" id="peepWt" value="0" step="0.5" style="flex:1;">
+            <input type="number" id="peepWt" value="0" step="0.5" class="left-align" style="flex:1;">
           </div>
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="dloopWt">D-loop gr</label>
               <button type="button" onclick="showDloopWtPopup()" class="info-btn" title="About D-loop Weight">ⓘ</button>
             </div>
-            <input type="number" id="dloopWt" value="0" step="0.5" style="flex:1;">
+            <input type="number" id="dloopWt" value="0" step="0.5" class="left-align" style="flex:1;">
           </div>
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="kisserWt">Kisser gr</label>
               <button type="button" onclick="showKisserWtPopup()" class="info-btn" title="About Kisser Weight">ⓘ</button>
             </div>
-            <input type="number" id="kisserWt" value="0" step="0.5" style="flex:1;">
+            <input type="number" id="kisserWt" value="0" step="0.5" class="left-align" style="flex:1;">
           </div>
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="silencerWt">Silencers gr</label>
               <button type="button" onclick="showSilencerWtPopup()" class="info-btn" title="About Silencers Weight">ⓘ</button>
             </div>
-            <input type="number" id="silencerWt" value="0" step="0.5" style="flex:1;">
+            <input type="number" id="silencerWt" value="0" step="0.5" class="left-align" style="flex:1;">
           </div>
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="nockWt">Nock weight gr</label>
               <button type="button" onclick="showNockWtPopup()" class="info-btn" title="About Nock Weight">ⓘ</button>
             </div>
-            <input type="number" id="nockWt" value="0" step="0.5" style="flex:1;">
+            <input type="number" id="nockWt" value="0" step="0.5" class="left-align" style="flex:1;">
           </div>
           <!-- New total display -->
           <div style="margin-top:1rem; padding:0.75rem; background:var(--border); border-radius:8px; text-align:center;">
@@ -939,7 +952,7 @@
         </div>
 
         <!-- Dynamic pin zero inputs -->
-        <div id="pinInputs" style="margin-top:1rem; display:grid; gap:0.75rem;">
+        <div id="pinInputs" class="left-align" style="margin-top:1rem; display:grid; gap:0.75rem;">
           <!-- JS fills this -->
         </div>
 
@@ -962,7 +975,7 @@
             <label for="arrowName">Name</label>
             <button type="button" onclick="showArrowNamePopup()" class="info-btn" title="About Arrow Name">ⓘ</button>
           </div>
-          <input type="text" id="arrowName" placeholder="Victory VAP TKO" style="flex:1;">
+          <input type="text" id="arrowName" placeholder="Victory VAP TKO" class="left-align" style="flex:1;">
         </div>        
         <!---Arrow Spine-->
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -970,7 +983,7 @@
             <label for="spine">Spine</label>
             <button type="button" onclick="showSpinePopup()" class="info-btn" title="About Spine">ⓘ</button>
           </div>
-          <input type="number" id="spine" value="300" min="100" max="600" step="10" style="flex:1;">
+          <input type="number" id="spine" value="300" min="100" max="600" step="10" class="left-align" style="flex:1;">
         </div>
         <!---Arrow Diameter-->       
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -990,7 +1003,7 @@
             <label for="arrowLen">Length in</label>
             <button type="button" onclick="showArrowLenPopup()" class="info-btn" title="About Arrow Length">ⓘ</button>
           </div>
-          <input type="number" id="arrowLen" value="28.5" min="24" max="34" step="0.1" style="flex:1;">
+          <input type="number" id="arrowLen" value="28.5" min="24" max="34" step="0.1" class="left-align" style="flex:1;">
         </div>        
         <!---Total Weight-->        
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -998,14 +1011,14 @@
             <label for="totalWt">Total weight gr</label>
             <button type="button" onclick="showTotalWtInputPopup()" class="info-btn" title="About Total Arrow Weight">ⓘ</button>
           </div>
-          <input type="number" id="totalWt" value="495" min="200" max="1000" step="0.5" style="flex:1;" data-manual="false">        </div>        
+          <input type="number" id="totalWt" value="495" min="200" max="1000" step="0.5" class="left-align" style="flex:1;" data-manual="false">        </div>        
         <!---Point Weight-->           
         <div class="input-row" style="align-items:center; gap:0.5rem;">
           <div style="display:flex; align-items:center; gap:0.4rem;">
             <label for="pointWt">Point weight gr</label>
             <button type="button" onclick="showPointWtPopup()" class="info-btn" title="About Point Weight">ⓘ</button>
           </div>
-          <input type="number" id="pointWt" value="125" min="50" max="300" step="5" style="flex:1;">
+          <input type="number" id="pointWt" value="125" min="50" max="300" step="5" class="left-align" style="flex:1;">
         </div>        
         
         <!---Balance Point-->          
@@ -1014,7 +1027,7 @@
             <label for="balancePt">Balance point in</label>
             <button type="button" onclick="showBalancePtPopup()" class="info-btn" title="About Balance Point">ⓘ</button>
           </div>
-          <input type="number" id="balancePt" value="17.2" min="10" max="30" step="0.05" style="flex:1;">
+          <input type="number" id="balancePt" value="17.2" min="10" max="30" step="0.05" class="left-align" style="flex:1;">
         </div>        
         
         <!---Components-->    
@@ -1037,7 +1050,7 @@
               <label for="bareShaftWt">Bare shaft weight gr</label>
               <button type="button" onclick="showBareShaftWtPopup()" class="info-btn" title="About Bare Shaft Weight">ⓘ</button>
             </div>
-            <input type="number" id="bareShaftWt" value="0" min="0" step="0.5" style="flex:1;">
+            <input type="number" id="bareShaftWt" value="0" min="0" step="0.5" class="left-align" style="flex:1;">
           </div>
 
           <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -1045,7 +1058,7 @@
               <label for="insertWt">Insert/Outsert gr</label>
               <button type="button" onclick="showInsertWtPopup()" class="info-btn" title="About Insert/Outsert">ⓘ</button>
             </div>
-            <input type="number" id="insertWt" value="0" step="0.5" style="flex:1;">
+            <input type="number" id="insertWt" value="0" step="0.5" class="left-align" style="flex:1;">
           </div>
 
           <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -1053,7 +1066,7 @@
               <label for="wrapWt">Wrap gr</label>
               <button type="button" onclick="showWrapWtPopup()" class="info-btn" title="About Wrap">ⓘ</button>
             </div>
-            <input type="number" id="wrapWt" value="0" step="0.5" style="flex:1;">
+            <input type="number" id="wrapWt" value="0" step="0.5" class="left-align" style="flex:1;">
           </div>
 
           <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -1061,7 +1074,7 @@
               <label for="vaneWt">Vane weight (each) gr</label>
               <button type="button" onclick="showVaneWtPopup()" class="info-btn" title="About Vane Weight">ⓘ</button>
             </div>
-            <input type="number" id="vaneWt" value="0" step="0.1" style="flex:1;">
+            <input type="number" id="vaneWt" value="0" step="0.1" class="left-align" style="flex:1;">
           </div>
 
           <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -1069,7 +1082,7 @@
               <label for="vaneCount">Vane count</label>
               <button type="button" onclick="showVaneCountPopup()" class="info-btn" title="About Vane Count">ⓘ</button>
             </div>
-            <input type="number" id="vaneCount" value="0" min="0" max="6" style="flex:1;">
+            <input type="number" id="vaneCount" value="0" min="0" max="6" class="left-align" style="flex:1;">
           </div>
 
           <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -1077,7 +1090,7 @@
               <label for="vaneHeight">Vane Height (in)</label>
               <button type="button" onclick="showVaneHeightPopup()" class="info-btn" title="About Vane Height">ⓘ</button>
             </div>
-            <input type="number" id="vaneHeight" value="0.5" min="0.2" max="0.8" step="0.05" style="flex:1;">
+            <input type="number" id="vaneHeight" value="0.5" min="0.2" max="0.8" step="0.05" class="left-align" style="flex:1;">
           </div>
 
           <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -1099,7 +1112,7 @@
               <label for="glueWt">Glue / Pin gr</label>
               <button type="button" onclick="showGlueWtPopup()" class="info-btn" title="About Glue/Pin">ⓘ</button>
             </div>
-            <input type="number" id="glueWt" value="0" step="0.5" style="flex:1;">
+            <input type="number" id="glueWt" value="0" step="0.5" class="left-align" style="flex:1;">
           </div>
           <!-- Arrow Components Total Display -->
           <div style="margin-top:1rem; padding:0.75rem; background:var(--border); border-radius:8px; text-align:center;">
