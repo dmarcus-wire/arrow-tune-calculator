@@ -2,7 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <!--width=device-width — forces page to fit screen width.
+      initial-scale=1.0 — loads at correct zoom.
+      maximum-scale=1.0, user-scalable=no — prevents pinch zoom 
+        (good for PWA feel — optional, remove if you want zoom).-->
+  <meta name="viewport" content="width=device-width, 
+    initial-scale=1.0, 
+    maximum-scale=1.0, 
+    user-scalable=yes">
   <title>ArrowForge – Smart Arrow Tuner</title>
   <meta name="description" content="Offline-first archery calculator with AI advisor. Perfect arrow tuning made simple.">
   <meta name="theme-color" content="#0ea5e9">
@@ -65,17 +72,22 @@
       box-shadow:0 4px 12px rgba(15,23,42,0.08);
     }
 
-    /* Right-aligned number inputs with cursor at right end */
-    input[type="number"],
-    input[type="text"].left-align {  /* use for any text inputs you want left-aligned */
-      text-align: left;
-      direction: rtl;
+    /* Left-aligned inputs — clean and mobile-friendly */
+    .input-row input,
+    .input-row select {
+      flex:1;
+      min-width:140px;
+      text-align: left;  /* ← left-aligned values */
+      font-size:1rem;
     }
 
-    /* Optional: Better spinner position on iOS/Safari */
-    input[type="number"]::-webkit-inner-spin-button,
-    input[type="number"]::-webkit-outer-spin-button {
-      margin-left: 0; /* keeps spinners on right */
+    /* Desktop: slightly larger, still left-aligned */
+    @media (min-width:769px) {
+      .input-row input, .input-row select {
+        max-width:240px;
+        text-align: left;  /* keep left on desktop too */
+        font-size:1.05rem;
+      }
     }
 
     /* Minimal tick marks for range sliders */
