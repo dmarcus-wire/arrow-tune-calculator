@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <title>ArrowForge – Smart Arrow Tuner</title>
   <meta name="description" content="Offline-first archery calculator with AI advisor. Perfect arrow tuning made simple.">
   <meta name="theme-color" content="#0ea5e9">
@@ -733,7 +733,7 @@
             <input type="checkbox" id="darkToggle"><span class="slider"></span>
           </label>
           <span style="color:var(--light);">Dark</span>
-          <button id="aiButton" class="btn-small" style="background:var(--purple);">AI Advisor</button>
+          <button onclick="showGettingStarted()" class="secondary">How To</button>
         </div>
       </div>
 
@@ -761,9 +761,9 @@
       <div style="margin-top:0.75rem; display:flex; justify-content:center; gap:0.5rem; flex-wrap:nowrap; overflow-x:auto; padding:0.25rem 0;">
         <button class="btn-small secondary" onclick="suggestBuildName()">Auto Name</button>
         <button onclick="clearBuildFields()" class="secondary">Clear</button>
-        <button onclick="showGettingStarted()" class="secondary">How To</button>
         <button id="saveBuild">Save</button>
         <button id="deleteBuild" style="background:var(--danger);">Delete</button>
+        <button id="aiButton" class="btn-small" style="background:var(--purple);">AI Advisor</button>
       </div>
     </div>
 
