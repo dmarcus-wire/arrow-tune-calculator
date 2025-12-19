@@ -720,23 +720,14 @@
 </head>
 <body>
 <div class="container">
-  <div id="inputs-column">
-    <div class="card">
-      <div class="card-header" style="display:flex; align-items:center; justify-content:space-between;">
-        <!-- Larger logo + text
-         height:125px — your requested size.
-          src="icon-512.png" — uses high-res icon for crispness at larger size.
-          font-size:2.5rem on <h1> — balances the bigger logo.
-          gap:1rem — good spacing between logo and text.-->
-        <!-- Logo with auto light/dark switching -->
-        <!-- Logo + text -->
-        <div style="display:flex; align-items:center; gap:1rem;">
-          <img id="appLogo" src="logo-light.png" alt="ArrowForge Logo" style="height:125px; width:auto; border-radius:12px;">
-          <h1 style="margin:0; font-size:2.5rem;">Arrow Forge</h1>
-        </div>
+  <div id="inputs-column">    <div class="card">
+      <div class="card-header" style="display:flex; flex-direction:column; align-items:center; text-align:center; gap:1rem; padding:1.5rem 1rem;">
+        <!-- Centered Logo — constrained to column width -->
+        <img id="appLogo" src="logo-dark.png" alt="ArrowForge Logo"
+             style="height: clamp(70px, 10vw, 130px); width: auto; max-width: 100%; max-height: 150px; object-fit: contain;">
 
-        <!-- Right side controls -->
-        <div class="flex" style="align-items:center; gap:1rem;">
+        <!-- Controls below logo -->
+        <div class="flex" style="gap:1rem; flex-wrap:wrap; justify-content:center;">
           <span style="color:var(--light);">Light</span>
           <label class="toggle-switch">
             <input type="checkbox" id="darkToggle"><span class="slider"></span>
@@ -745,7 +736,8 @@
           <button id="aiButton" class="btn-small" style="background:var(--purple);">AI Advisor</button>
         </div>
       </div>
-      <p style="color:var(--light);font-size:0.85rem; margin-top:0.5rem;">Offline • Live • v0.0.16</p>
+
+      <p style="color:var(--light);font-size:0.85rem; margin-top:0.5rem; text-align:center;">ArrowForge • Offline • Live • v0.0.16</p>
     </div>
     
     <div class="card">
@@ -4773,14 +4765,17 @@ syncSlider('rangeSlider', 'rangeInput');
 document.querySelectorAll('input, select').forEach(el => {
   el.addEventListener('input', calculateEverything);
 });
+// dark model toggle
 $('darkToggle').addEventListener('change', e => {
   const isDark = e.target.checked;
+
+  // Toggle dark mode class on body
   document.body.classList.toggle('dark', isDark);
 
   // Save preference
   localStorage.setItem('darkMode', isDark);
 
-  // Optional: Swap logo if you have light/dark versions
+  // Swap logo
   const logoImg = document.getElementById('appLogo');
   if (logoImg) {
     logoImg.src = isDark ? 'logo-dark.png' : 'logo-light.png';
@@ -4791,15 +4786,19 @@ $('saveBuild').addEventListener('click', saveBuild);
 $('loadBuild').addEventListener('change', loadBuild);
 $('deleteBuild').addEventListener('click', deleteBuild);
 
-// Restore dark mode on load
+// Restore dark mode and logo on page load
 const savedDark = localStorage.getItem('darkMode') === 'true';
 if (savedDark) {
   document.body.classList.add('dark');
   $('darkToggle').checked = true;
 
-  // Restore logo if using light/dark versions
+  // Restore dark logo
   const logoImg = document.getElementById('appLogo');
   if (logoImg) logoImg.src = 'logo-dark.png';
+} else {
+  // Ensure light logo on fresh load
+  const logoImg = document.getElementById('appLogo');
+  if (logoImg) logoImg.src = 'logo-light.png';
 }
 
 // Close modal when clicking/tapping outside the content
