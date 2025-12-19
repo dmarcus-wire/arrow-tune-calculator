@@ -1061,6 +1061,28 @@
             <input type="number" id="insertWt" value="0" step="0.5" class="left-align" style="flex:1;">
           </div>
 
+          <!-- Point Type -->
+          <div class="input-row" style="align-items:center; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+              <label for="pointType">Point Type</label>
+              <button type="button" onclick="showPointTypePopup()" class="info-btn" title="About Vane Weight">ⓘ</button>
+            </div>
+            <select id="pointType" style="flex:1;">
+              <option value="Fixed Blade">Fixed Blade</option>
+              <option value="Mechanical">Mechanical</option>
+              <option value="Field">Field Point</option>
+            </select>
+          </div>
+
+          <!-- In-Flight Diameter -->
+          <div class="input-row" style="align-items:center; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+              <label for="inFlightDia">In-Flight Diameter in.</label>
+              <button type="button" onclick="showInFlightDiaPopup()" class="info-btn" title="About Vane Weight">ⓘ</button>
+            </div>
+            <input type="number" id="inFlightDia" placeholder="e.g. 1.25" step="0.01" class="left-align" style="flex:1;">
+          </div>
+
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="wrapWt">Wrap gr</label>
@@ -1297,7 +1319,7 @@
                 </div>
                 <div class="bar-labels">
                   <span>low</span>
-                  <span>ideal</span>
+                  <span>balanced/ideal</span>
                   <span>high</span>
                 </div>
               </div>
@@ -1325,7 +1347,7 @@
                 </div>
                 <div class="bar-labels">
                   <span>light/fast</span>
-                  <span>balanced</span>
+                  <span>balanced/ideal</span>
                   <span>heavy/quiet</span>
                 </div>
                 <span class="moving-value" id="gppValue">0.0 gr</span>
@@ -1355,7 +1377,7 @@
                 </div>
                   <div class="bar-labels">
                     <span>light/fast</span>
-                    <span>ideal</span>
+                    <span>balanced/ideal</span>
                     <span>heavy/stable</span>
                   </div>
                 <span class="moving-value" id="gpiValue">0.0 gr/in</span>
@@ -1384,7 +1406,7 @@
                 </div>
                 <div class="bar-labels">
                   <span>fast/light</span>
-                  <span>ideal</span>
+                  <span>balanced/ideal</span>
                   <span>heavy/quiet</span>
                 </div>
                 <span class="moving-value" id="totalWtValue">0 gr</span>
@@ -2434,19 +2456,107 @@ function showBareShaftWtPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
-/*Insert/Out  weight info icon*/
+/* Insert / Outsert Weight info icon */
 function showInsertWtPopup() {
+  const insertWt = parseFloat($('insertWt').value) || 0;
+  const pointWt = parseFloat($('pointWt').value) || 125;
+  const totalFront = insertWt + pointWt;
+
+  let weightClass = '';
+  if (insertWt >= 100) weightClass = 'Heavy (deep penetration setup)';
+  else if (insertWt >= 60) weightClass = 'Moderate (common hybrid)';
+  else if (insertWt > 0) weightClass = 'Light (standard insert)';
+  else weightClass = 'None';
+
   $('gameMathContent').innerHTML = `
-    <p><strong>Insert / Outsert Weight (grains)</strong></p>
-    <p>Weight of internal insert or external outsert (half-out, ethics, etc.).</p>
+    <p><strong>Insert / Outsert Weight</strong></p>
+    <p>Weight of any internal insert or external outsert (half-out, ethics, HIT, etc.) in grains.</p>
+    <p>You may need to <strong>reduce the weight of your Point Weight gr.</strong> if you included (broadhead + insert/outsert).</p>
     <hr>
-    <p>Typical:</p>
+    <p><strong>Your Current Build:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Insert/Outsert Weight: <strong>${insertWt.toFixed(1)} gr</strong></li>
+      <li>Total Front Weight: <strong>${totalFront.toFixed(1)} gr</strong> (insert + point)</li>
+      <li>Classification: <strong>${weightClass}</strong></li>
+    </ul>
+    <hr>
+    <p><strong>Common Types & Weights:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Standard aluminum insert: 10–30 gr</li>
       <li>Aluminum half-out: 50–80 gr</li>
       <li>Steel/titanium outsert: 75–125 gr</li>
-      <li>Ethics insert: ~100 gr</li>
+      <li>Ethics Archery insert: ~100 gr</li>
+      <li>Heavy HIT/outserts: 125–200+ gr</li>
     </ul>
-    <p>Adds FOC and strengthens front end — popular for heavy points.</p>
+    <hr>
+    <p><strong>Why It Matters:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Increases FOC (more weight forward)</li>
+      <li>Adds total arrow weight → better momentum & penetration</li>
+      <li>Strengthens arrow front end (protects shaft from broadhead impact)</li>
+      <li>Allows heavier broadheads without weak spine</li>
+    </ul>
+    <p style="margin-top:0.75rem;">
+      Popular for hunting — especially elk/moose setups with 125–200 gr broadheads.
+    </p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/* Point Type info icon */
+function showPointTypePopup() {
+  const pointType = $('pointType').value || 'Fixed Blade';
+  const inFlightDia = parseFloat($('inFlightDia').value) || 0;
+
+  $('gameMathContent').innerHTML = `
+    <p><strong>Point Type</strong></p>
+    <p>Select your broadhead/point type — affects flight characteristics, tuning, and future drag/wind modeling.</p>
+    <hr>
+    <p><strong>Your Current Selection:</strong> <strong>${pointType}</strong></p>
+    <hr>
+    <p><strong>Types Explained:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li><strong>Fixed Blade</strong>: Blades always open — reliable penetration, no moving parts. More drag in flight, can require bow tuning for field-point accuracy.</li>
+      <li><strong>Mechanical</strong>: Blades closed in flight (low drag, flies like field point), open on impact for larger cut. Easier to tune, great blood trails, but can fail on heavy bone.</li>
+      <li><strong>Field Point</strong>: Practice point — no blades. Minimal drag, perfect for tuning and target shooting.</li>
+    </ul>
+    <hr>
+    <p><strong>Pro Tip:</strong> Mechanicals often have smaller "in-flight diameter" than cutting diameter — enter the closed diameter below for accurate drag modeling.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/* In-Flight Diameter info icon */
+function showInFlightDiaPopup() {
+  const inFlightDia = parseFloat($('inFlightDia').value) || 0;
+  const pointType = $('pointType').value || 'Fixed Blade';
+
+  let typical = '';
+  if (pointType === 'Mechanical') typical = '0.75–1.0 in (closed blades)';
+  else if (pointType === 'Fixed Blade') typical = '1.0–1.5 in (exposed blades)';
+  else typical = '0.25–0.3 in (shaft only)';
+
+  $('gameMathContent').innerHTML = `
+    <p><strong>In-Flight Diameter (inches)</strong></p>
+    <p>Effective frontal diameter during flight — shaft + any exposed blades. Critical for drag and wind drift calculations.</p>
+    <hr>
+    <p><strong>Your Current Value:</strong> <strong>${inFlightDia.toFixed(2) || '—'} in</strong></p>
+    <p><strong>Point Type:</strong> ${pointType}</p>
+    <hr>
+    <p><strong>Typical Values:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Field Point: 0.25–0.3 in (shaft diameter only)</li>
+      <li>Mechanical (closed): 0.75–1.0 in</li>
+      <li>Fixed Blade: 1.0–1.5 in (blades exposed)</li>
+    </ul>
+    <hr>
+    <p><strong>Why It Matters:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Larger diameter = more drag → slower speed, more drop, greater wind drift</li>
+      <li>Smaller diameter = flatter trajectory, better long-range performance</li>
+      <li>Mechanicals fly with small diameter but cut larger on impact</li>
+    </ul>
+    <p style="margin-top:0.75rem;"><strong>Pro Tip:</strong> For mechanicals, enter the closed/blades-folded diameter — this gives accurate in-flight performance.</p>
   `;
   $('gameMathModal').style.display = 'flex';
 }
@@ -4145,6 +4255,19 @@ function calculateEverything() {
   addRow('Point Weight', pointWt + ' gr');
   addRow('Balance Point', balancePt + ' in');
 
+  // === Detailed Arrow Components (only if toggled on) ===
+  if (useArrowDetails) {
+    addRow('Bare Shaft Weight', $('bareShaftWt').value + ' gr');
+    addRow('Insert Weight', $('insertWt').value + ' gr');
+    addRow('Point Type', $('pointType').value || 'Fixed Blade');
+    addRow('In-Flight Diameter', ($('inFlightDia').value || '—') + ' in');
+    addRow('Wrap Weight', $('wrapWt').value + ' gr');
+    addRow('Vane Weight', $('vaneWt').value + ' gr (' + $('vaneCount').value + ' × ' + $('vaneHeight').value + '" ' + $('vaneHelical').value + ')');
+    addRow('Glue Weight', $('glueWt').value + ' gr');
+    addRow('Nock Weight', $('nockWt').value + ' gr');  // if you have this
+    // Add any other components you have
+  }
+
   // === 4. Live Settings ===
   addRow('Actual Speed', fps.toFixed(1) + ' fps');
   addRow('Crosswind', windMph.toFixed(1) + ' mph');
@@ -4591,6 +4714,8 @@ function saveBuild() {
     balancePt: $('balancePt').value,
     bareShaftWt: $('bareShaftWt').value || '0',
     insertWt: $('insertWt').value,
+    pointType: $('pointType').value || 'Fixed Blade',
+    inFlightDia: $('inFlightDia').value || '',
     wrapWt: $('wrapWt').value,
     vaneWt: $('vaneWt').value,
     vaneHeight: $('vaneHeight').value,
@@ -4657,6 +4782,8 @@ function loadBuild() {
   $('balancePt').value = build.balancePt || '';
   $('bareShaftWt').value = build.bareShaftWt || '0';
   $('insertWt').value = build.insertWt || '0';
+  $('pointType').value = build.pointType || 'Fixed Blade';
+  $('inFlightDia').value = build.inFlightDia || '';
   $('wrapWt').value = build.wrapWt || '0';
   $('vaneWt').value = build.vaneWt || '0';
   $('vaneCount').value = build.vaneCount || '0';
