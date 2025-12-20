@@ -853,7 +853,7 @@
             <label for="ibo">IBO fps</label>
             <button type="button" onclick="showIboPopup()" class="info-btn" title="About IBO Speed">ⓘ</button>
           </div>
-          <input type="number" id="ibo" value="340" min="200" max="400" step="1" class="left-align" style="flex:1;">
+          <input type="number" id="ibo" placeholder="340" min="200" max="400" step="1" class="left-align" style="flex:1;">
         </div>  
         <!---Brace Height-->
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -861,7 +861,7 @@
             <label for="braceHeight">Brace height in</label>
             <button type="button" onclick="showBraceHeightPopup()" class="info-btn" title="About Brace Height">ⓘ</button>
           </div>
-          <input type="number" id="braceHeight" value="6" min="4" max="9" step="0.1" class="left-align" style="flex:1;">
+          <input type="number" id="braceHeight" placeholder="6" min="4" max="9" step="0.1" class="left-align" style="flex:1;">
         </div>        
         <!---Cam System-->
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -877,7 +877,7 @@
             <label for="drawWt">Draw wt lb</label>
             <button type="button" onclick="showDrawWtPopup()" class="info-btn" title="About Draw Weight">ⓘ</button>
           </div>
-          <input type="number" id="drawWt" value="70" min="30" max="100" step="0.5" class="left-align" style="flex:1;">
+          <input type="number" id="drawWt" placeholder="70" min="30" max="100" step="0.5" class="left-align" style="flex:1;">
         </div>
         <!---Draw Length-->
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -885,7 +885,7 @@
             <label for="drawLen">Draw length in</label>
             <button type="button" onclick="showDrawLenPopup()" class="info-btn" title="About Draw Length">ⓘ</button>
           </div>
-          <input type="number" id="drawLen" value="29" min="24" max="34" step="0.1" class="left-align" style="flex:1;">
+          <input type="number" id="drawLen" placeholder="29" min="24" max="34" step="0.1" class="left-align" style="flex:1;">
         </div>
         <!---Let off %--> 
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -893,7 +893,7 @@
             <label for="letOff">Let-off %</label>
             <button type="button" onclick="showLetOffPopup()" class="info-btn" title="About Let-off">ⓘ</button>
           </div>
-          <input type="number" id="letOff" value="80" min="65" max="90" step="1" class="left-align" style="flex:1;">
+          <input type="number" id="letOff" placeholder="80" min="65" max="90" step="1" class="left-align" style="flex:1;">
         </div> 
         <!---String Weight-->
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -901,7 +901,7 @@
             <label for="stringWt">String add-ons gr</label>
             <button type="button" onclick="showStringAddonsPopup()" class="info-btn" title="About String Add-ons">ⓘ</button>
           </div>
-          <input type="number" id="stringWt" value="20" min="0" step="0.5" class="left-align" style="flex:1;" data-manual="false">
+          <input type="number" id="stringWt" placeholder="20" min="0" step="0.5" class="left-align" style="flex:1;" data-manual="false">
         </div>
 
         <!---String Details-->
@@ -921,28 +921,28 @@
               <label for="peepWt">Peep weight gr</label>
               <button type="button" onclick="showPeepWtPopup()" class="info-btn" title="About Peep Weight">ⓘ</button>
             </div>
-            <input type="number" id="peepWt" value="0" step="0.5" class="left-align" style="flex:1;">
+            <input type="number" id="peepWt" placeholder="0" step="0.5" class="left-align" style="flex:1;">
           </div>
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="dloopWt">D-loop gr</label>
               <button type="button" onclick="showDloopWtPopup()" class="info-btn" title="About D-loop Weight">ⓘ</button>
             </div>
-            <input type="number" id="dloopWt" value="0" step="0.5" class="left-align" style="flex:1;">
+            <input type="number" id="dloopWt" placeholder="0" step="0.5" class="left-align" style="flex:1;">
           </div>
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="kisserWt">Kisser gr</label>
               <button type="button" onclick="showKisserWtPopup()" class="info-btn" title="About Kisser Weight">ⓘ</button>
             </div>
-            <input type="number" id="kisserWt" value="0" step="0.5" class="left-align" style="flex:1;">
+            <input type="number" id="kisserWt" placeholder="0" step="0.5" class="left-align" style="flex:1;">
           </div>
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="silencerWt">Silencers gr</label>
               <button type="button" onclick="showSilencerWtPopup()" class="info-btn" title="About Silencers Weight">ⓘ</button>
             </div>
-            <input type="number" id="silencerWt" value="0" step="0.5" class="left-align" style="flex:1;">
+            <input type="number" id="silencerWt" placeholder="0" step="0.5" class="left-align" style="flex:1;">
           </div>
           <!-- New total display -->
           <div style="margin-top:1rem; padding:0.75rem; background:var(--border); border-radius:8px; text-align:center;">
@@ -1017,7 +1017,7 @@
             <label for="spine">Spine</label>
             <button type="button" onclick="showSpinePopup()" class="info-btn" title="About Spine">ⓘ</button>
           </div>
-          <input type="number" id="spine" value="300" min="100" max="600" step="10" class="left-align" style="flex:1;">
+          <input type="number" id="spine" placeholder="300" min="100" max="600" step="10" class="left-align" style="flex:1;">
         </div>
         <!---Arrow Diameter-->       
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -1026,6 +1026,7 @@
             <button type="button" onclick="showArrowDiaPopup()" class="info-btn" title="About Arrow Diameter">ⓘ</button>
           </div>
           <select id="arrowDia" style="flex:1;">
+            <option value="standard">None</option>
             <option value="standard">Standard (~6.5mm / .246")</option>
             <option value="small">Small (~5mm / .204")</option>
             <option value="micro" selected>Micro (~4mm / .166")</option>
@@ -1037,7 +1038,7 @@
             <label for="arrowLen">Length in</label>
             <button type="button" onclick="showArrowLenPopup()" class="info-btn" title="About Arrow Length">ⓘ</button>
           </div>
-          <input type="number" id="arrowLen" value="28.5" min="24" max="34" step="0.1" class="left-align" style="flex:1;">
+          <input type="number" id="arrowLen" placeholder="28.5" min="24" max="34" step="0.1" class="left-align" style="flex:1;">
         </div>        
         <!---Total Weight-->        
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -1045,14 +1046,14 @@
             <label for="totalWt">Total weight gr</label>
             <button type="button" onclick="showTotalWtInputPopup()" class="info-btn" title="About Total Arrow Weight">ⓘ</button>
           </div>
-          <input type="number" id="totalWt" value="495" min="200" max="1000" step="0.5" class="left-align" style="flex:1;" data-manual="false">        </div>        
+          <input type="number" id="totalWt" placeholder="495" min="200" max="1000" step="0.5" class="left-align" style="flex:1;" data-manual="false">        </div>        
         <!---Point Weight-->           
         <div class="input-row" style="align-items:center; gap:0.5rem;">
           <div style="display:flex; align-items:center; gap:0.4rem;">
             <label for="pointWt">Point weight gr</label>
             <button type="button" onclick="showPointWtPopup()" class="info-btn" title="About Point Weight">ⓘ</button>
           </div>
-          <input type="number" id="pointWt" value="125" min="50" max="300" step="5" class="left-align" style="flex:1;">
+          <input type="number" id="pointWt" placeholder="125" min="50" max="300" step="5" class="left-align" style="flex:1;">
         </div>        
         
         <!---Balance Point-->          
@@ -1061,7 +1062,7 @@
             <label for="balancePt">Balance point in</label>
             <button type="button" onclick="showBalancePtPopup()" class="info-btn" title="About Balance Point">ⓘ</button>
           </div>
-          <input type="number" id="balancePt" value="17.2" min="10" max="30" step="0.05" class="left-align" style="flex:1;">
+          <input type="number" id="balancePt" placeholder="17.2" min="10" max="30" step="0.05" class="left-align" style="flex:1;">
         </div>        
         
         <!---Components-->    
@@ -1084,7 +1085,7 @@
               <label for="bareShaftWt">Bare shaft weight gr</label>
               <button type="button" onclick="showBareShaftWtPopup()" class="info-btn" title="About Bare Shaft Weight">ⓘ</button>
             </div>
-            <input type="number" id="bareShaftWt" value="0" min="0" step="0.5" class="left-align" style="flex:1;">
+            <input type="number" id="bareShaftWt" placeholder="0" min="0" step="0.5" class="left-align" style="flex:1;">
           </div>
 
           <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -1092,7 +1093,7 @@
               <label for="insertWt">Insert/Outsert gr</label>
               <button type="button" onclick="showInsertWtPopup()" class="info-btn" title="About Insert/Outsert">ⓘ</button>
             </div>
-            <input type="number" id="insertWt" value="0" step="0.5" class="left-align" style="flex:1;">
+            <input type="number" id="insertWt" placeholder="0" step="0.5" class="left-align" style="flex:1;">
           </div>
 
           <!-- Point Type -->
@@ -1102,6 +1103,7 @@
               <button type="button" onclick="showPointTypePopup()" class="info-btn" title="About Vane Weight">ⓘ</button>
             </div>
             <select id="pointType" style="flex:1;">
+              <option value="Fixed Blade">None</option>
               <option value="Fixed Blade">Fixed Blade</option>
               <option value="Mechanical">Mechanical</option>
               <option value="Field">Field Point</option>
@@ -1123,7 +1125,7 @@
               <label for="wrapWt">Wrap gr</label>
               <button type="button" onclick="showWrapWtPopup()" class="info-btn" title="About Wrap">ⓘ</button>
             </div>
-            <input type="number" id="wrapWt" value="0" step="0.5" class="left-align" style="flex:1;">
+            <input type="number" id="wrapWt" placeholder="0" step="0.5" class="left-align" style="flex:1;">
           </div>
 
           <!--vane weight each-->
@@ -1132,7 +1134,7 @@
               <label for="vaneWt">Vane weight (each) gr</label>
               <button type="button" onclick="showVaneWtPopup()" class="info-btn" title="About Vane Weight">ⓘ</button>
             </div>
-            <input type="number" id="vaneWt" value="0" step="0.1" class="left-align" style="flex:1;">
+            <input type="number" id="vaneWt" placeholder="0" step="0.1" class="left-align" style="flex:1;">
           </div>
 
           <!--vane count-->
@@ -1141,7 +1143,7 @@
               <label for="vaneCount">Vane count</label>
               <button type="button" onclick="showVaneCountPopup()" class="info-btn" title="About Vane Count">ⓘ</button>
             </div>
-            <input type="number" id="vaneCount" value="0" min="0" max="6" class="left-align" style="flex:1;">
+            <input type="number" id="vaneCount" placeholder="0" min="0" max="6" class="left-align" style="flex:1;">
           </div>
 
           <!--vane height-->
@@ -1150,7 +1152,7 @@
               <label for="vaneHeight">Vane Height (in)</label>
               <button type="button" onclick="showVaneHeightPopup()" class="info-btn" title="About Vane Height">ⓘ</button>
             </div>
-            <input type="number" id="vaneHeight" value="0.5" min="0.2" max="0.8" step="0.05" class="left-align" style="flex:1;">
+            <input type="number" id="vaneHeight" placeholder="0.5" min="0.2" max="0.8" step="0.05" class="left-align" style="flex:1;">
           </div>
 
           <!--helical-->
@@ -1160,6 +1162,7 @@
               <button type="button" onclick="showVaneHelicalPopup()" class="info-btn" title="About Helical/Offset">ⓘ</button>
             </div>
             <select id="vaneHelical" style="flex:1;">
+              <option value="straight">None</option>
               <option value="straight">Straight</option>
               <option value="slight">Slight Offset</option>
               <option value="moderate">Moderate Offset</option>
@@ -1174,7 +1177,7 @@
               <label for="nockWt">Nock weight gr</label>
               <button type="button" onclick="showNockWtPopup()" class="info-btn" title="About Nock Weight">ⓘ</button>
             </div>
-            <input type="number" id="nockWt" value="0" step="0.5" class="left-align" style="flex:1;">
+            <input type="number" id="nockWt" placeholder="0" step="0.5" class="left-align" style="flex:1;">
           </div>
 
           <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -1182,7 +1185,7 @@
               <label for="glueWt">Glue / Pin gr</label>
               <button type="button" onclick="showGlueWtPopup()" class="info-btn" title="About Glue/Pin">ⓘ</button>
             </div>
-            <input type="number" id="glueWt" value="0" step="0.5" class="left-align" style="flex:1;">
+            <input type="number" id="glueWt" placeholder="0" step="0.5" class="left-align" style="flex:1;">
           </div>
           <!-- Arrow Components Total Display -->
           <div style="margin-top:1rem; padding:0.75rem; background:var(--border); border-radius:8px; text-align:center;">
@@ -1219,22 +1222,22 @@
           <button onclick="recalculateAndShowMath()" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--primary);padding:0;" title="Recalculate and show estimate">Calculate</button>
         </div>
         <div style="display:flex; align-items:center; gap:1rem;">
-          <input type="range" id="fpsSlider" min="150" max="400" value="278" step="1" style="background-size: 12.5% 6px;">
-          <input type="number" id="fpsInput" value="278" min="150" max="400" style="width:80px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
+          <input type="range" id="fpsSlider" min="50" max="400" placeholder="278" step="1" style="background-size: 12.5% 6px;">
+          <input type="number" id="fpsInput" placeholder="278" min="50" max="400" style="width:80px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
         </div>
       </div>
       <div style="margin:1.2rem 0;">
         <label style="display:block; margin-bottom:0.4rem; font-weight:600;">Crosswind (mph)</label>
         <div style="display:flex; align-items:center; gap:1rem;">
-          <input type="range" id="windSlider" min="0" max="40" value="0" step="0.1" style="background-size: 12.5% 6px;">
-          <input type="number" id="windInput" value="0" min="0" max="40" step="0.1" style="width:70px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
+          <input type="range" id="windSlider" min="0" max="40" placeholder="0" step="0.1" style="background-size: 12.5% 6px;">
+          <input type="number" id="windInput" placeholder="0" min="0" max="40" step="0.1" style="width:70px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
         </div>
       </div>
       <div style="margin:1.2rem 0;">
         <label style="display:block; margin-bottom:0.4rem; font-weight:600;">Range (yards)</label>
         <div style="display:flex; align-items:center; gap:1rem;">
-          <input type="range" id="rangeSlider" min="5" max="150" value="0" step="1" style="background-size: 12.5% 6px;">
-          <input type="number" id="rangeInput" value="0" min="5" max="150" style="width:70px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
+          <input type="range" id="rangeSlider" min="0" max="150" placeholder="0" step="1" style="background-size: 12.5% 6px;">
+          <input type="number" id="rangeInput" placeholder="0" min="0" max="150" style="width:70px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
         </div>
       </div>
     </div>
@@ -3854,14 +3857,14 @@ function showWindDriftPopup() {
 
 function calculateEverything() {
   // Parse all inputs first
-  const drawWt = parseFloat($('drawWt').value) || 70;
-  const totalWt = parseFloat($('totalWt').value) || 495;
+  const drawWt = parseFloat($('drawWt').value) || 0;
+  const totalWt = parseFloat($('totalWt').value) || 0;
   const windMph = parseFloat($('windSlider').value) || 0;
-  const rangeYd = parseFloat($('rangeSlider').value) || 50;
-  const arrowLen = parseFloat($('arrowLen').value) || 29;
-  const balancePt = parseFloat($('balancePt').value) || 17.2;
+  const rangeYd = parseFloat($('rangeSlider').value) || 0;
+  const arrowLen = parseFloat($('arrowLen').value) || 0;
+  const balancePt = parseFloat($('balancePt').value) || 0;
   // For the Total Weight
-  const pointWt = parseFloat($('pointWt').value) || 125;
+  const pointWt = parseFloat($('pointWt').value) || 0;
 
   // === Auto-calculate String Add-ons from details ===
   const peepWt = parseFloat($('peepWt').value) || 0;
