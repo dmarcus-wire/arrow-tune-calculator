@@ -817,13 +817,13 @@
       <div class="collapsible-trigger" onclick="this.classList.toggle('open')">
         <span>Bow Details</span>
         <div style="display:flex; align-items:center; gap:0.75rem;">
-          <button onclick="event.stopPropagation(); promptBowLookup()" 
-                  class="btn-small" 
+          <button onclick="event.stopPropagation(); promptBowLookup()"
+                  class="btn-small"
                   style="background:var(--purple); padding:0.4rem 0.8rem;">
             AI Lookup ✨
           </button>
+          <span class="chevron">></span>
         </div>
-        <span class="chevron">></span>
       </div>
       <div class="collapsible-content">
         <div class="input-row"><label for="appType">Application</label><select id="appType"><option>Target</option><option selected>Hunting</option><option>Other</option></select></div>
@@ -993,7 +993,14 @@
     <div class="card" id="arrowCard">
       <div class="collapsible-trigger" onclick="this.classList.toggle('open')">
         <span>Arrow Details</span>
-        <span class="chevron">></span>
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <button onclick="event.stopPropagation(); runAIAnalyzer()"
+                  class="btn-small"
+                  style="background:var(--purple); padding:0.4rem 0.8rem;">
+            AI Analyzer ✨
+          </button>
+          <span class="chevron">></span>
+        </div>
       </div>
       <div class="collapsible-content">
         <!---Arrow Name-->
@@ -1909,7 +1916,7 @@ function showBowModelPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
-// AI Hard Coded Button
+// AI Lookup Hard Coded Button
 function promptBowLookup() {
   const model = prompt('Hard Coded samples - Enter bow model in lower case (e.g., "2025 hoyt rx-9")');
   if (!model) return; // user cancelled
@@ -2263,6 +2270,86 @@ function showSightPinsPopup() {
     <p>Used for build reference and future pin gap/drop analysis.</p>
   `;
   $('gameMathModal').style.display = 'flex';
+}
+
+// AI Analyzer function
+function runAIAnalyzer() {
+  // Gather bow data
+  const bowModel = $('bowModel').value.trim() || 'Unknown Bow';
+  const bowType = $('bowType').value || 'compound';
+  const drawWt = parseFloat($('drawWt').value) || 70;
+  const drawLen = parseFloat($('drawLen').value) || 28;
+  const appType = $('appType').value || 'Hunting';
+
+  // Check if arrow data exists
+  const hasArrowData = $('totalWt').value && parseFloat($('totalWt').value) > 0;
+
+  let message = '';
+
+  if (!hasArrowData) {
+    // Scenario 1: No arrow data → recommend starting build
+    message = `No arrow data entered yet — here's a recommended starting build for your ${bowModel} (${drawWt} lb, ${appType}):\n\n`;
+
+    if (appType === 'Hunting') {
+      message += `• **Balanced Hunting Arrow**\n`;
+      message += `  - Spine: 300–350\n`;
+      message += `  - Total Weight: 480–520 gr\n`;
+      message += `  - Point: 125–150 gr (fixed or mechanical)\n`;
+      message += `  - FOC Target: 15–19%\n`;
+      message += `  Great for elk/deer — penetration + accuracy.\n\n`;
+      message += `Try entering these values and see how it performs!`;
+    } else {
+      message += `• **Speed/Flat Trajectory Arrow**\n`;
+      message += `  - Spine: 350–400\n`;
+      message += `  - Total Weight: 380–450 gr\n`;
+      message += `  - Point: 100–120 gr\n`;
+      message += `  - FOC Target: 10–14%\n`;
+      message += `  Ideal for 3D/target — fast and forgiving.\n\n`;
+      message += `Enter these to test!`;
+    }
+  } else {
+    // Scenario 2: Has arrow data → analyze and suggest improvements
+    const totalWt = parseFloat($('totalWt').value);
+    const pointWt = parseFloat($('pointWt').value) || 125;
+    const arrowLen = parseFloat($('arrowLen').value) || 28.5;
+    const spine = parseFloat($('spine').value) || 300;
+    const foc = ((parseFloat($('balancePt').value) || 17) - arrowLen/2) / arrowLen * 100;
+
+    message = `Analyzing your current arrow build:\n`;
+    message += `• Total Weight: ${totalWt.toFixed(1)} gr\n`;
+    message += `• Point Weight: ${pointWt} gr\n`;
+    message += `• FOC: ${foc.toFixed(1)}%\n`;
+    message += `• Spine: ${spine}\n\n`;
+
+    message += `Suggestions for improvement:\n\n`;
+
+    if (appType === 'Hunting') {
+      if (totalWt < 480) {
+        message += `→ Add 20–40 gr (heavier point/insert) → better penetration on big game\n`;
+      }
+      if (foc < 15) {
+        message += `→ Increase point weight → raise FOC to 16–19% for stability\n`;
+      }
+      if (totalWt > 550) {
+        message += `→ Lighten point or shaft → gain 5–10 fps for flatter trajectory\n`;
+      }
+    } else {
+      if (totalWt > 450) {
+        message += `→ Lighten point/shaft → gain speed and flatter groups at 60+ yd\n`;
+      }
+      if (foc > 14) {
+        message += `→ Reduce point weight → lower FOC for more forgiveness\n`;
+      }
+    }
+
+    if (message.includes('→')) {
+      message += `\nWant me to pre-fill one of these tweaks?`;
+    } else {
+      message += `Your build looks solid — great tuning!`;
+    }
+  }
+
+  alert(message); // Replace with modal later
 }
 
 /*Arrow Name info icon*/
@@ -3769,7 +3856,7 @@ function calculateEverything() {
   const totalWt = parseFloat($('totalWt').value) || 495;
   const windMph = parseFloat($('windSlider').value) || 0;
   const rangeYd = parseFloat($('rangeSlider').value) || 50;
-  const arrowLen = parseFloat($('arrowLen').value) || 28.5;
+  const arrowLen = parseFloat($('arrowLen').value) || 29;
   const balancePt = parseFloat($('balancePt').value) || 17.2;
   // For the Total Weight
   const pointWt = parseFloat($('pointWt').value) || 125;
