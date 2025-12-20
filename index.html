@@ -1985,16 +1985,18 @@ function suggestBuildName() {
   const arrowWeight = $('totalWt')?.value.trim() || '???';
   const bowModel = $('bowModel')?.value.trim() || 'Bow';
   const drawWt = $('drawWt')?.value || '??';
+  const arrowName = $('arrowName')?.value.trim() || 'Arrow';  // ← NEW: Arrow Name
 
   const templates = [
-    `${dateStr} ${appType} ${bowModel} ${drawWt}lb ${arrowWeight}gr`,
-    `${dateStr} ${bowModel} ${drawWt}lb ${appType} ${arrowWeight}gr`,
-    `${dateStr} ${appType} Build ${arrowWeight}gr`,
-    `${dateStr} ${bowModel} ${appType} Setup`
+    `${dateStr} ${appType} ${bowModel} ${drawWt}lb ${arrowName} ${arrowWeight}gr`,
+    `${dateStr} ${bowModel} ${drawWt}lb ${appType} ${arrowName} ${arrowWeight}gr`,
+    `${dateStr} ${appType} ${arrowName} Build ${arrowWeight}gr`,
+    `${dateStr} ${bowModel} ${appType} ${arrowName} Setup`,
+    `${dateStr} ${arrowName} ${arrowWeight}gr ${appType}`
   ];
 
   // Pick the best template (one without ?? or ???)
-  const best = templates.find(t => !t.includes('??') && !t.includes('???')) || templates[0];
+  const best = templates.find(t => !t.includes('??') && !t.includes('???') && !t.includes('Arrow')) || templates[0];
 
   $('buildName').value = best.trim();
 }
