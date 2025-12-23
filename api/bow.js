@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  // CORS headers for browser requests
+  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -11,7 +11,6 @@ export default async function handler(req, res) {
   const { model: userModel, debug } = req.query;
   const isDebug = !!debug;
 
-  // Debug info
   const apiKey = process.env.XAI_API_KEY;
   const debugInfo = {
     isDebugMode: isDebug,
@@ -21,11 +20,8 @@ export default async function handler(req, res) {
     nodeVersion: process.version,
     queryParams: req.query,
     timestamp: new Date().toISOString(),
-    requestUrl: req.url,
-    requestMethod: req.method,
   };
 
-  // Debug mode
   if (isDebug) {
     return res.status(200).json({
       status: 'debug',
@@ -52,18 +48,16 @@ export default async function handler(req, res) {
       'User-Agent': 'ArrowForge/1.0 (Vercel)',
     };
 
-    debugInfo.authorizationPreview = headers.Authorization.substring(0, 20) + '...';
-
     const body = JSON.stringify({
       model: 'grok-4-1-fast-reasoning',
       messages: [
         {
           role: 'system',
-          content: `You are an archery bow spec lookup assistant. User input: "${userModel}" (may be partial/ambiguous).
+          content: `You are an archery bow spec lookup assistant. User input: "${userModel}" (partial/ambiguous OK).
 
 Use web_search and browse_page tools to fetch accurate specs from manufacturer sites (hoyt.com, mathewsinc.com) or reliable sources.
 
-Return ONLY valid JSON (no text outside {}, no markdown, no intro/outro). Structure:
+Return ONLY valid JSON (no text outside {}, no markdown, no intro/outro):
 {
   "ambiguous": boolean,
   "matches": array of objects like {
@@ -92,33 +86,37 @@ Rules:
       max_tokens: 500,
       tools: [
         {
-          name: "web_search",
-          description: "Search the web for bow specs",
-          input_schema: {
-            type: "object",
-            properties: {
-              query: { type: "string", description: "The search query" },
-              num_results: { type: "integer", description: "Number of results (default 5)" }
-            },
-            required: ["query"]
+          type: "function",
+          function: {
+            name: "web_search",
+            description: "Search the web for bow specs",
+            parameters: {
+              type: "object",
+              properties: {
+                query: { type: "string", description: "The search query" },
+                num_results: { type: "integer", description: "Number of results (default 5)" }
+              },
+              required: ["query"]
+            }
           }
         },
         {
-          name: "browse_page",
-          description: "Browse a specific URL for details",
-          input_schema: {
-            type: "object",
-            properties: {
-              url: { type: "string", description: "The URL to browse" },
-              instructions: { type: "string", description: "Instructions for summarizer" }
-            },
-            required: ["url", "instructions"]
+          type: "function",
+          function: {
+            name: "browse_page",
+            description: "Browse a specific URL for details",
+            parameters: {
+              type: "object",
+              properties: {
+                url: { type: "string", description: "The URL to browse" },
+                instructions: { type: "string", description: "Instructions for summarizer" }
+              },
+              required: ["url", "instructions"]
+            }
           }
         }
       ]
     });
-
-    debugInfo.requestBodyPreview = body.substring(0, 200) + '...';
 
     const response = await fetch(fetchUrl, {
       method: 'POST',
@@ -126,35 +124,32 @@ Rules:
       body,
     });
 
-    debugInfo.xaiStatus = response.status;
-    debugInfo.xaiStatusText = response.statusText;
-    debugInfo.xaiHeaders = Object.fromEntries(response.headers.entries());
-
     if (!response.ok) {
       const errorText = await response.text();
-      debugInfo.xaiErrorBody = errorText;
       return res.status(response.status).json({
-        error: `xAI API returned ${response.status}`,
+        error: `xAI API returned ${response.status}: ${errorText}`,
         debugInfo,
       });
     }
 
     const data = await response.json();
-    debugInfo.xaiResponsePreview = JSON.stringify(data, null, 2).substring(0, 500) + '...';
-
     const content = data.choices[0]?.message?.content?.trim() || '';
+
+    let specs;
+    try {
+      specs = JSON.parse(content);
+    } catch {
+      specs = { raw: content, warning: 'Model did not return pure JSON' };
+    }
 
     return res.status(200).json({
       success: true,
-      responseContent: content || '(No content returned)',
+      ...specs,
       debugInfo,
     });
   } catch (err) {
-    debugInfo.fetchError = err.message;
-    debugInfo.errorStack = err.stack?.substring(0, 500);
-
     return res.status(500).json({
-      error: 'Internal error during fetch',
+      error: 'Internal error: ' + err.message,
       debugInfo,
     });
   }
