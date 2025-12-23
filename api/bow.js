@@ -85,37 +85,37 @@ Rules:
       temperature: 0.1,
       max_tokens: 500,
       tools: [
-        {
-          type: "function",
-          function: {
-            name: "web_search",
-            description: "Search the web for bow specs",
-            parameters: {
-              type: "object",
-              properties: {
-                query: { type: "string", description: "The search query" },
-                num_results: { type: "integer", description: "Number of results (default 5)" }
-              },
-              required: ["query"]
+          {
+            type: "function",
+            function: {
+              name: "web_search",
+              description: "Search the web for bow specs",
+              parameters: {
+                type: "object",
+                properties: {
+                  query: { type: "string", description: "The search query" },
+                  num_results: { type: "integer", description: "Number of results (default 5)" }
+                },
+                required: ["query"]
+              }
+            }
+          },
+          {
+            type: "function",
+            function: {
+              name: "browse_page",
+              description: "Browse a specific URL for details",
+              parameters: {
+                type: "object",
+                properties: {
+                  url: { type: "string", description: "The URL to browse" },
+                  instructions: { type: "string", description: "Instructions for summarizer" }
+                },
+                required: ["url", "instructions"]
+              }
             }
           }
-        },
-        {
-          type: "function",
-          function: {
-            name: "browse_page",
-            description: "Browse a specific URL for details",
-            parameters: {
-              type: "object",
-              properties: {
-                url: { type: "string", description: "The URL to browse" },
-                instructions: { type: "string", description: "Instructions for summarizer" }
-              },
-              required: ["url", "instructions"]
-            }
-          }
-        }
-      ]
+        ]
     });
 
     const response = await fetch(fetchUrl, {
