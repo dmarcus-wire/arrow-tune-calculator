@@ -2,7 +2,7 @@ export default async function handler(req, res) {
   const { model: userModel, debug } = req.query;
   const isDebug = !!debug;
 
-  // Always collect debug info
+  // Collect debug info from the start
   const apiKey = process.env.XAI_API_KEY;
   const debugInfo = {
     isDebugMode: isDebug,
@@ -12,20 +12,25 @@ export default async function handler(req, res) {
     nodeVersion: process.version,
     queryParams: req.query,
     timestamp: new Date().toISOString(),
+    requestUrl: req.url,
+    requestMethod: req.method,
   };
 
-  // Debug mode: return info immediately (no model required)
+  // Debug mode: return immediately with info
   if (isDebug) {
     return res.status(200).json({
       status: 'debug',
       ...debugInfo,
-      message: 'Debug mode active. apiKeyLength > 0 means env var is loaded.',
+      message: 'Debug mode active. Check apiKeyLength > 0 for env var success.',
     });
   }
 
   // Normal mode: require model
   if (!userModel) {
-    return res.status(400).json({ error: 'Missing bow model' });
+    return res.status(400).json({
+      error: 'Missing bow model',
+      debugInfo,
+    });
   }
 
   // Check API key
@@ -43,7 +48,7 @@ export default async function handler(req, res) {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`,
       'Accept': 'application/json',
-      'User-Agent': 'ArrowForge/1.0 (Vercel)',
+      'User-Agent': 'ArrowForge-Debug/1.0 (Vercel)',
     };
 
     debugInfo.authorizationPreview = headers.Authorization.substring(0, 20) + '...';
@@ -57,12 +62,14 @@ export default async function handler(req, res) {
         },
         {
           role: 'user',
-          content: `Test from Vercel: bow model ${userModel}`,
+          content: `Test from Vercel debug: bow model ${userModel}`,
         },
       ],
       temperature: 0.1,
       max_tokens: 50,
     });
+
+    debugInfo.requestBodyPreview = body.substring(0, 200) + '...';
 
     const response = await fetch(fetchUrl, {
       method: 'POST',
@@ -72,6 +79,7 @@ export default async function handler(req, res) {
 
     debugInfo.xaiStatus = response.status;
     debugInfo.xaiStatusText = response.statusText;
+    debugInfo.xaiHeaders = Object.fromEntries(response.headers.entries());
 
     if (!response.ok) {
       const errorText = await response.text();
