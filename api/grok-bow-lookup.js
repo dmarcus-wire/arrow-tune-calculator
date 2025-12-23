@@ -1,5 +1,3 @@
-import OpenAI from 'openai';
-
 export default async function handler(req, res) {
   const { model: userModel, debug } = req.query;
   const isDebug = !!debug || userModel === 'debug';
@@ -9,12 +7,14 @@ export default async function handler(req, res) {
   }
 
   const apiKey = process.env.XAI_API_KEY;
+
+  // Debug info object
   const debugInfo = {
     isDebugMode: isDebug,
-    apiKeyExists: !!apiKey,
+    apiKeyLoaded: !!apiKey,
     apiKeyLength: apiKey ? apiKey.length : 0,
     nodeVersion: process.version,
-    requestQuery: req.query,
+    queryParams: req.query,
     timestamp: new Date().toISOString(),
   };
 
@@ -22,41 +22,79 @@ export default async function handler(req, res) {
     return res.status(200).json({
       status: 'debug',
       ...debugInfo,
-      message: 'Debug mode active. If apiKeyLength > 0, key is loaded.',
+      message: 'Debug mode active. If apiKeyLength > 0, env var is loaded.',
     });
   }
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'API key not loaded', debugInfo });
+    return res.status(500).json({
+      error: 'API key not loaded in runtime',
+      debugInfo,
+    });
   }
 
   try {
-    const openai = new OpenAI({
-      apiKey,
-      baseURL: 'https://api.x.ai/v1',
-    });
+    const fetchUrl = 'https://api.x.ai/v1/chat/completions';
 
-    const response = await openai.chat.completions.create({
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+      'Accept': 'application/json',
+      'User-Agent': 'ArrowForge/1.0 (Vercel)',
+    };
+
+    debugInfo.authorizationPreview = headers.Authorization.substring(0, 20) + '...';
+
+    const body = JSON.stringify({
       model: 'grok-4-1-fast-reasoning',
       messages: [
-        { role: 'user', content: `Test bow lookup for: ${userModel}` },
+        {
+          role: 'system',
+          content: 'You are a test assistant.',
+        },
+        {
+          role: 'user',
+          content: `Test from Vercel: bow model ${userModel}`,
+        },
       ],
       temperature: 0.1,
+      max_tokens: 50,
     });
 
-    const content = response.choices[0].message.content;
+    const response = await fetch(fetchUrl, {
+      method: 'POST',
+      headers,
+      body,
+    });
+
+    debugInfo.xaiStatus = response.status;
+    debugInfo.xaiStatusText = response.statusText;
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      debugInfo.xaiErrorBody = errorText;
+      return res.status(response.status).json({
+        error: `xAI API returned ${response.status}`,
+        debugInfo,
+      });
+    }
+
+    const data = await response.json();
+    debugInfo.xaiResponsePreview = JSON.stringify(data, null, 2).substring(0, 500) + '...';
+
+    const content = data.choices[0]?.message?.content?.trim();
 
     return res.status(200).json({
       success: true,
-      response: content,
+      responseContent: content,
       debugInfo,
     });
   } catch (err) {
-    debugInfo.error = err.message;
+    debugInfo.fetchError = err.message;
     debugInfo.errorStack = err.stack?.substring(0, 500);
 
     return res.status(500).json({
-      error: 'xAI call failed',
+      error: 'Internal error during fetch',
       debugInfo,
     });
   }
