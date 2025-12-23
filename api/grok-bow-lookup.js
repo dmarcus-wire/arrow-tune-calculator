@@ -1,11 +1,13 @@
 export default async function handler(req, res) {
-  const { model: userModel } = req.query; // renamed for clarity
+  const { model: userModel } = req.query;
 
   if (!userModel) {
     return res.status(400).json({ error: 'Missing bow model' });
   }
 
   const apiKey = process.env.XAI_API_KEY;
+  console.log('API Key exists:', !!apiKey); // Debug: check env var
+  console.log('Bow model:', userModel);
 
   try {
     const response = await fetch('https://api.x.ai/v1/chat/completions', {
@@ -19,91 +21,45 @@ export default async function handler(req, res) {
         messages: [
           {
             role: 'system',
-            content: `You are an archery bow spec lookup assistant. User input: "${userModel}" (may be partial/ambiguous).
-
-Use web search and browsing tools to find the most relevant compound bow models (prioritize Hoyt, Mathews, etc., recent/current 2024–2026 models from manufacturer sites like hoyt.com, mathewsinc.com, or reliable archery sources).
-
-Return ONLY valid JSON (no explanations, no extra text):
-{
-  "ambiguous": boolean,
-  "matches": array of objects like {
-    "full_name": "2025 Hoyt Carbon RX-9 Ultra",
-    "year": "2025",
-    "type": "compound",
-    "ibo": number or null,
-    "brace": number or null,
-    "cam": string or null
-  },
-  "clarification": short string (max 100 chars, only if ambiguous) like "Which year/model for accurate specs?"
-}
-
-If one clear match, ambiguous=false, matches=[single object].
-If ambiguous, ambiguous=true, matches=2–5 best options.
-If nothing found, { "error": "not found" }.
-Output pure JSON only.`
+            content: `You are an archery bow spec lookup assistant. Return ONLY valid JSON for bow "${userModel}": {"ambiguous":false,"matches":[{"full_name":"${userModel}","type":"compound","ibo":340,"brace":6.125,"cam":"HBX Gen 4"}]}`
           },
-          {
-            role: 'user',
-            content: `Find specs for bow model: ${userModel}`
-          }
+          { role: 'user', content: `Find specs for: ${userModel}` }
         ],
         temperature: 0.1,
-        max_tokens: 500,
-        tools: [
-          {
-            name: "web_search",
-            description: "Search the web for bow specs",
-            input_schema: {
-              type: "object",
-              properties: {
-                query: { type: "string", description: "The search query" },
-                num_results: { type: "integer", description: "Number of results (default 10)" }
-              },
-              required: ["query"]
-            }
-          },
-          {
-            name: "browse_page",
-            description: "Browse a specific URL for details",
-            input_schema: {
-              type: "object",
-              properties: {
-                url: { type: "string", description: "The URL to browse" },
-                instructions: { type: "string", description: "Instructions for summarizer" }
-              },
-              required: ["url", "instructions"]
-            }
-          }
-        ]
+        max_tokens: 200
+        // NO TOOLS for now - we'll add later
       })
     });
 
+    console.log('xAI response status:', response.status); // Debug
+    
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`API error: ${response.status} - ${errorText}`);
+      console.error('xAI error body:', errorText);
+      throw new Error(`xAI API ${response.status}: ${errorText}`);
     }
 
     const data = await response.json();
-    const message = data.choices[0].message;
-
-    // If model returns tool calls, we need to handle them (for now, assume it resolves in one call)
-    if (message.tool_calls) {
-      // In production, you'd implement tool execution loop here
-      // For simple cases, model often returns final JSON without tool_calls
-      return res.status(200).json({ error: 'Tool calls not yet handled in proxy' });
+    console.log('xAI response structure:', JSON.stringify(data, null, 2)); // Debug full response
+    
+    const content = data.choices[0]?.message?.content?.trim();
+    if (!content) {
+      throw new Error('No content in response');
     }
-
-    const content = message.content?.trim();
-
+    
+    console.log('Raw content:', content); // Debug
+    
     try {
       const specs = JSON.parse(content);
       return res.status(200).json(specs);
-    } catch (e) {
-      console.error('JSON parse error:', content);
-      return res.status(500).json({ error: 'Invalid response format' });
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError.message);
+      console.error('Failed content:', content);
+      return res.status(500).json({ error: 'Invalid JSON from model' });
     }
   } catch (e) {
-    console.error('Proxy error:', e);
-    return res.status(500).json({ error: 'Failed to fetch specs' });
+    console.error('FULL ERROR:', e.message);
+    console.error('Stack:', e.stack);
+    return res.status(500).json({ error: 'Failed to fetch specs: ' + e.message });
   }
 }
