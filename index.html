@@ -1923,7 +1923,7 @@ function showBowModelPopup() {
 }
 
 async function promptBowLookup() {
-  const modelInput = prompt('Enter bow model (full or partial, e.g., "hoyt rx9", "mathews lift")');
+  const modelInput = prompt('Enter bow model (full or partial, e.g., "hoyt rx9" or "mathews lift")');
   if (!modelInput) return; // cancelled
 
   const normalized = modelInput.trim().toLowerCase();
@@ -1950,9 +1950,9 @@ async function promptBowLookup() {
     return;
   }
 
-  // Call API
+  // Call API on the NEW project
   try {
-    const response = await fetch(`/api/bow?model=${encodeURIComponent(normalized)}`);
+    const response = await fetch('https://arrow-forge-gl1d.vercel.app/api/bow?model=${encodeURIComponent(normalized)}');
     if (!response.ok) throw new Error('API error');
 
     const data = await response.json();
