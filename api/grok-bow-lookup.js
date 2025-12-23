@@ -6,60 +6,52 @@ export default async function handler(req, res) {
   }
 
   const apiKey = process.env.XAI_API_KEY;
-  console.log('API Key exists:', !!apiKey); // Debug: check env var
-  console.log('Bow model:', userModel);
+
+  // Debug logs
+  console.log('XAI_API_KEY exists:', !!apiKey);
+  console.log('XAI_API_KEY length:', apiKey ? apiKey.length : 'undefined');
+
+  if (!apiKey) {
+    return res.status(500).json({ error: 'API key not set in environment variables' });
+  }
 
   try {
-    const response = await fetch('https://api.grok.x.ai/v1/chat/completions', {
+    const fetchUrl = 'https://api.x.ai/v1/chat/completions';
+    console.log('Fetching from:', fetchUrl);
+
+    const body = JSON.stringify({
+      model: 'grok-4-1-fast-reasoning',
+      messages: [
+        { role: 'user', content: `Test: bow model ${userModel}` }
+      ],
+      temperature: 0.1
+    });
+    console.log('Request body:', body);
+
+    const response = await fetch(fetchUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Authorization': `Bearer ${apiKey.trim()}` // trim to be safe
       },
-      body: JSON.stringify({
-        model: 'grok-4-1-fast-reasoning',
-        messages: [
-          {
-            role: 'system',
-            content: `You are an archery bow spec lookup assistant. Return ONLY valid JSON for bow "${userModel}": {"ambiguous":false,"matches":[{"full_name":"${userModel}","type":"compound","ibo":340,"brace":6.125,"cam":"HBX Gen 4"}]}`
-          },
-          { role: 'user', content: `Find specs for: ${userModel}` }
-        ],
-        temperature: 0.1,
-        max_tokens: 200
-        // NO TOOLS for now - we'll add later
-      })
+      body
     });
 
-    console.log('xAI response status:', response.status); // Debug
-    
+    console.log('xAI response status:', response.status);
+
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('xAI API error:', response.status, errorText);
-      throw new Error(`xAI API error: ${response.status} - ${errorText}`);
+      console.error('xAI full response error:', errorText);
+      return res.status(500).json({ error: `xAI API failed: ${response.status} - ${errorText}` });
     }
 
     const data = await response.json();
-    console.log('xAI response structure:', JSON.stringify(data, null, 2)); // Debug full response
-    
-    const content = data.choices[0]?.message?.content?.trim();
-    if (!content) {
-      throw new Error('No content in response');
-    }
-    
-    console.log('Raw content:', content); // Debug
-    
-    try {
-      const specs = JSON.parse(content);
-      return res.status(200).json(specs);
-    } catch (parseError) {
-      console.error('JSON parse error:', parseError.message);
-      console.error('Failed content:', content);
-      return res.status(500).json({ error: 'Invalid JSON from model' });
-    }
+    console.log('xAI response:', JSON.stringify(data, null, 2));
+
+    // For now, just echo a simple response
+    return res.status(200).json({ success: true, modelResponse: data.choices[0].message.content });
   } catch (e) {
-    console.error('FULL ERROR:', e.message);
-    console.error('Stack:', e.stack);
-    return res.status(500).json({ error: 'Failed to fetch specs: ' + e.message });
+    console.error('Proxy error:', e.message, e.stack);
+    return res.status(500).json({ error: 'Internal error: ' + e.message });
   }
 }
