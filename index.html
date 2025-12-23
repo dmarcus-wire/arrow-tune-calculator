@@ -1952,9 +1952,9 @@ async function promptBowLookup() {
     return;
   }
 
-  // Call API on the NEW project (fixed template literal)
+  // Call the LIVE preview API
   try {
-    const response = await fetch(`https://arrow-forge-gl1d.vercel.app/api/bow?model=${encodeURIComponent(normalized)}`);
+    const response = await fetch(`https://arrow-forge-ai-git-ai-bow-lookup-davids-projects-0e631f5c.vercel.app/api/bow?model=${encodeURIComponent(normalized)}`);
     if (!response.ok) throw new Error(`API error: ${response.status}`);
 
     const data = await response.json();
