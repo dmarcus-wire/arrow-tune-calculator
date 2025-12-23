@@ -1950,10 +1950,10 @@ async function promptBowLookup() {
     return;
   }
 
-  // Call API on the NEW project
+  // Call API on the NEW project (fixed template literal)
   try {
-    const response = await fetch('https://arrow-forge-gl1d.vercel.app/api/bow?model=${encodeURIComponent(normalized)}');
-    if (!response.ok) throw new Error('API error');
+    const response = await fetch(`https://arrow-forge-gl1d.vercel.app/api/bow?model=${encodeURIComponent(normalized)}`);
+    if (!response.ok) throw new Error(`API error: ${response.status}`);
 
     const data = await response.json();
 
