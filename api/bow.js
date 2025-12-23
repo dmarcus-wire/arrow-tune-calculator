@@ -1,8 +1,17 @@
 export default async function handler(req, res) {
+  // CORS headers for browser requests
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   const { model: userModel, debug } = req.query;
   const isDebug = !!debug;
 
-  // Collect debug info from the start
+  // Collect debug info
   const apiKey = process.env.XAI_API_KEY;
   const debugInfo = {
     isDebugMode: isDebug,
@@ -16,7 +25,7 @@ export default async function handler(req, res) {
     requestMethod: req.method,
   };
 
-  // Debug mode: return immediately with info (no xAI call)
+  // Debug mode: return info immediately
   if (isDebug) {
     return res.status(200).json({
       status: 'debug',
@@ -27,18 +36,11 @@ export default async function handler(req, res) {
 
   // Normal mode: require model
   if (!userModel) {
-    return res.status(400).json({
-      error: 'Missing bow model',
-      debugInfo,
-    });
+    return res.status(400).json({ error: 'Missing bow model', debugInfo });
   }
 
-  // Check API key
   if (!apiKey) {
-    return res.status(500).json({
-      error: 'API key not loaded in runtime',
-      debugInfo,
-    });
+    return res.status(500).json({ error: 'API key not loaded', debugInfo });
   }
 
   try {
