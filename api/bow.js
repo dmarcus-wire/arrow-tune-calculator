@@ -1,3 +1,5 @@
+import OpenAI from 'openai';
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -20,20 +22,17 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch('https://api.x.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        'Accept': 'application/json',
-        'User-Agent': 'ArrowForge/1.0 (Vercel)',
-      },
-      body: JSON.stringify({
-        model: 'grok-4-1-fast-reasoning',
-        messages: [
-          {
-            role: 'system',
-            content: `You are an archery bow spec lookup assistant.
+    const openai = new OpenAI({
+      apiKey,
+      baseURL: 'https://api.x.ai/v1',
+    });
+
+    const completion = await openai.chat.completions.create({
+      model: 'grok-4-1-fast-reasoning',
+      messages: [
+        {
+          role: 'system',
+          content: `You are an archery bow spec lookup assistant.
 
 You MUST return ONLY a valid JSON object with this exact structure. No markdown, no extra text, no explanations — just the JSON.
 
@@ -52,32 +51,24 @@ You MUST return ONLY a valid JSON object with this exact structure. No markdown,
   "clarification": string or null
 }
 
-- If one clear match: ambiguous = false, matches = [one object]
-- If ambiguous: ambiguous = true, matches = array of 2–5 best matches, clarification = short question
+- If one clear match: ambiguous=false, matches=[one object]
+- If ambiguous: ambiguous=true, matches=array of 2–5 best matches, clarification=short question
 - If no match: { "error": "not found" }
 
 User query: "${userModel}"`,
-          },
-          {
-            role: 'user',
-            content: `Find specs for bow model: ${userModel}`,
-          },
-        ],
-        temperature: 0.0,
-        max_tokens: 500,
-        response_format: { type: "json_object" },  // This forces JSON
-      }),
+        },
+        {
+          role: 'user',
+          content: `Find specs for bow model: ${userModel}`,
+        },
+      ],
+      temperature: 0.0,
+      max_tokens: 500,
+      response_format: { type: "json_object" },
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      return res.status(response.status).json({ error: `xAI error: ${errorText}` });
-    }
+    const content = completion.choices[0].message.content.trim();
 
-    const data = await response.json();
-    const content = data.choices[0].message.content.trim();
-
-    // Parse and validate JSON
     let specs;
     try {
       specs = JSON.parse(content);
