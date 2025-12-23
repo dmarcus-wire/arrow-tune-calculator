@@ -10,6 +10,9 @@
     initial-scale=1.0, 
     maximum-scale=1.0, 
     user-scalable=yes">
+  
+  <meta name="mobile-web-app-capable" content="yes">
+  
   <title>ArrowForge – Smart Arrow Tuner</title>
   <meta name="description" content="Offline-first archery calculator with AI advisor. Perfect arrow tuning made simple.">
   <meta name="theme-color" content="#0ea5e9">
@@ -4882,17 +4885,16 @@ function saveBuild() {
     bowModel: $('bowModel').value,
     bowType: $('bowType').value,
     ibo: $('ibo').value,
+    braceHeight: $('braceHeight').value,
+    camType: $('camType').value,
     drawWt: $('drawWt').value,
     drawLen: $('drawLen').value,
     letOff: $('letOff').value,
-    braceHeight: $('braceHeight').value,
-    camType: $('camType').value,
     stringWt: $('stringWt').value,
     peepWt: $('peepWt').value,
     dloopWt: $('dloopWt').value,
     kisserWt: $('kisserWt').value,
     silencerWt: $('silencerWt').value,
-    nockWt: $('nockWt').value,
     pinCount: $('pinCount').value,
     pin1Zero: $('pin1Zero')?.value || '20',
     pin2Zero: $('pin2Zero')?.value || '30',
@@ -4915,6 +4917,7 @@ function saveBuild() {
     vaneHeight: $('vaneHeight').value,
     vaneCount: $('vaneCount').value,
     vaneHelical: $('vaneHelical').value,
+    nockWt: $('nockWt').value,
     glueWt: $('glueWt').value,
     buildNotes: $('buildNotes') ? $('buildNotes').value : '',
     fpsSlider: $('fpsSlider').value,
@@ -4933,75 +4936,98 @@ function loadBuild() {
   const select = $('loadBuild');
   const selectedName = select.value;
   if (!selectedName || selectedName === '– Load Build –') return;
+
   const builds = JSON.parse(localStorage.getItem('arrowForgeBuilds') || '[]');
   const build = builds.find(b => b.name === selectedName);
   if (!build) return;
 
-  // Set all fields first
-  $('buildName').value = build.name;
-  $('appType').value = build.appType || 'Hunting';
-  $('bowModel').value = build.bowModel || '';
-  $('bowType').value = build.bowType || 'compound';
-  $('letOff').value = build.letOff || '80';
-  $('braceHeight').value = build.braceHeight || '6';
-  $('camType').value = build.camType || 'hybrid';
-  $('ibo').value = build.ibo || '';
-  $('drawWt').value = build.drawWt || '';
-  $('drawLen').value = build.drawLen || '';
-  $('stringWt').value = build.stringWt || '';
-  $('peepWt').value = build.peepWt || '8';
-  $('dloopWt').value = build.dloopWt || '8';
-  $('kisserWt').value = build.kisserWt || '0';
-  $('silencerWt').value = build.silencerWt || '12';
-  $('nockWt').value = build.nockWt || '10';
-
-  // Pin count with override
-  let pinCountValue = build.pinCount || '3';
-  if (build.bowType === 'recurve' || build.bowType === 'longbow') {
-    pinCountValue = '0';
-  }
-  $('pinCount').value = pinCountValue;
-
-  // Restore checkbox states
-  if ($('useStringDetails')) $('useStringDetails').checked = build.useStringDetails ?? false;
-  if ($('useArrowDetails')) $('useArrowDetails').checked = build.useArrowDetails ?? false;
-
-  // Arrow fields
-  $('arrowName').value = build.arrowName || '';
-  $('spine').value = build.spine || '';
-  $('arrowDia').value = build.arrowDia || 'micro';
-  $('arrowLen').value = build.arrowLen || '';
-  $('totalWt').value = build.totalWt || '';
-  $('pointWt').value = build.pointWt || '';
-  $('balancePt').value = build.balancePt || '';
-  $('bareShaftWt').value = build.bareShaftWt || '0';
-  $('insertWt').value = build.insertWt || '0';
-  $('pointType').value = build.pointType || 'Fixed Blade';
-  $('inFlightDia').value = build.inFlightDia || '';
-  $('wrapWt').value = build.wrapWt || '0';
-  $('vaneWt').value = build.vaneWt || '0';
-  $('vaneCount').value = build.vaneCount || '0';
-  $('vaneHeight').value = build.vaneHeight || '0.5';
-  $('vaneHelical').value = build.vaneHelical || 'max';
-  $('glueWt').value = build.glueWt || '0';
-
-  // notes
-  if ($('buildNotes')) {
-    $('buildNotes').value = build.buildNotes || '';
+  // Force-expand Bow Details
+  const bowTrigger = document.querySelector('#bowCard .collapsible-trigger');
+  const bowContent = document.querySelector('#bowCard .collapsible-content');
+  if (bowTrigger && bowContent) {
+    bowTrigger.click(); // use click to trigger your toggle logic
   }
 
-  // Sliders
-  $('fpsSlider').value = build.fpsSlider || '278';
-  $('fpsInput').value = build.fpsSlider || '278';
-  $('windSlider').value = build.windSlider || '5';
-  $('windInput').value = build.windSlider || '5';
-  $('rangeSlider').value = build.rangeSlider || '50';
-  $('rangeInput').value = build.rangeSlider || '50';
+  // Force-expand Arrow Details (always)
+  const arrowTrigger = document.querySelector('#arrowCard .collapsible-trigger');
+  const arrowContent = document.querySelector('#arrowCard .collapsible-content');
+  if (arrowTrigger && arrowContent) {
+    arrowTrigger.click(); // use click for reliability
+  }
 
-  alert(`Build "${build.name}" loaded!`);
+  // Delay for DOM update
+  setTimeout(() => {
+    // Debug: check if arrowName and spine exist
+    console.log('Arrow Name element:', $('arrowName'));
+    console.log('Spine element:', $('spine'));
+    console.log('Point Type element:', $('pointType'));
 
-  // ONLY ONE call at the end — after all fields are set
-  calculateEverything();
+    // Restore bow fields
+    if ($('buildName')) $('buildName').value = build.name || '';
+    if ($('appType')) $('appType').value = build.appType || 'Hunting';
+    if ($('bowModel')) $('bowModel').value = build.bowModel || '';
+    if ($('bowType')) $('bowType').value = build.bowType || 'compound';
+    if ($('ibo')) $('ibo').value = build.ibo || '';
+    if ($('drawWt')) $('drawWt').value = build.drawWt || '';
+    if ($('drawLen')) $('drawLen').value = build.drawLen || '';
+    if ($('letOff')) $('letOff').value = build.letOff || '';
+    if ($('braceHeight')) $('braceHeight').value = build.braceHeight || '';
+    if ($('camType')) $('camType').value = build.camType || '';
+
+    // String add-ons
+    if ($('stringWt')) $('stringWt').value = build.stringWt || '0';
+    if ($('peepWt')) $('peepWt').value = build.peepWt || '0';
+    if ($('dloopWt')) $('dloopWt').value = build.dloopWt || '0';
+    if ($('kisserWt')) $('kisserWt').value = build.kisserWt || '0';
+    if ($('silencerWt')) $('silencerWt').value = build.silencerWt || '0';
+
+    // Pin count & zeros
+    if ($('pinCount')) $('pinCount').value = build.pinCount || '3';
+    if ($('pin1Zero')) $('pin1Zero').value = build.pin1Zero || '20';
+    if ($('pin2Zero')) $('pin2Zero').value = build.pin2Zero || '30';
+    if ($('pin3Zero')) $('pin3Zero').value = build.pin3Zero || '40';
+    if ($('pin4Zero')) $('pin4Zero').value = build.pin4Zero || '50';
+    if ($('pin5Zero')) $('pin5Zero').value = build.pin5Zero || '60';
+
+    // Arrow specs (basic)
+    if ($('arrowName')) $('arrowName').value = build.arrowName || '';
+    if ($('spine')) $('spine').value = build.spine || '';
+    if ($('arrowDia')) $('arrowDia').value = build.arrowDia || 'micro';
+    if ($('arrowLen')) $('arrowLen').value = build.arrowLen || '';
+    if ($('totalWt')) $('totalWt').value = build.totalWt || '';
+    if ($('pointWt')) $('pointWt').value = build.pointWt || '';
+    if ($('balancePt')) $('balancePt').value = build.balancePt || '';
+
+    // Arrow details — detailed components
+    if ($('useArrowDetails')) $('useArrowDetails').checked = build.useArrowDetails ?? true;
+    if ($('bareShaftWt')) $('bareShaftWt').value = build.bareShaftWt || '0';
+    if ($('insertWt')) $('insertWt').value = build.insertWt || '0';
+    if ($('pointType')) $('pointType').value = build.pointType || 'Fixed Blade';
+    if ($('inFlightDia')) $('inFlightDia').value = build.inFlightDia || '';
+    if ($('wrapWt')) $('wrapWt').value = build.wrapWt || '0';
+    if ($('vaneWt')) $('vaneWt').value = build.vaneWt || '0';
+    if ($('vaneCount')) $('vaneCount').value = build.vaneCount || '0';
+    if ($('vaneHeight')) $('vaneHeight').value = build.vaneHeight || '';
+    if ($('vaneHelical')) $('vaneHelical').value = build.vaneHelical || 'None';
+    if ($('glueWt')) $('glueWt').value = build.glueWt || '0';
+    if ($('nockWt')) $('nockWt').value = build.nockWt || '0';
+
+    // Build Notes
+    if ($('buildNotes')) $('buildNotes').value = build.buildNotes || '';
+
+    // Sliders
+    if ($('fpsSlider')) $('fpsSlider').value = build.fpsSlider || '278';
+    if ($('fpsInput')) $('fpsInput').value = build.fpsSlider || '278';
+    if ($('windSlider')) $('windSlider').value = build.windSlider || '0';
+    if ($('windInput')) $('windInput').value = build.windSlider || '0';
+    if ($('rangeSlider')) $('rangeSlider').value = build.rangeSlider || '50';
+    if ($('rangeInput')) $('rangeInput').value = build.rangeSlider || '50';
+
+    // Re-calculate everything after loading
+    calculateEverything();
+
+    alert(`Build "${build.name}" loaded!`);
+  }, 500); // increased delay to 500ms
 }
 
 function deleteBuild() {
