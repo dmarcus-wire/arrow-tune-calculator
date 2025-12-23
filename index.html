@@ -1952,7 +1952,7 @@ async function promptBowLookup() {
 
   // Call API
   try {
-    const response = await fetch(`/api/grok-bow-lookup-debug?model=${encodeURIComponent(normalized)}`);
+    const response = await fetch(`/api/bow?model=${encodeURIComponent(normalized)}`);
     if (!response.ok) throw new Error('API error');
 
     const data = await response.json();
