@@ -1,31 +1,34 @@
 export default async function handler(req, res) {
   const { model: userModel, debug } = req.query;
-  const isDebug = !!debug || userModel === 'debug';
+  const isDebug = !!debug;
 
-  if (!userModel && !isDebug) {
-    return res.status(400).json({ error: 'Missing bow model' });
-  }
-
+  // Always collect debug info
   const apiKey = process.env.XAI_API_KEY;
-
-  // Debug info object
   const debugInfo = {
     isDebugMode: isDebug,
     apiKeyLoaded: !!apiKey,
     apiKeyLength: apiKey ? apiKey.length : 0,
+    apiKeyPreview: apiKey ? apiKey.substring(0, 10) + '...' : 'none',
     nodeVersion: process.version,
     queryParams: req.query,
     timestamp: new Date().toISOString(),
   };
 
+  // Debug mode: return info immediately (no model required)
   if (isDebug) {
     return res.status(200).json({
       status: 'debug',
       ...debugInfo,
-      message: 'Debug mode active. If apiKeyLength > 0, env var is loaded.',
+      message: 'Debug mode active. apiKeyLength > 0 means env var is loaded.',
     });
   }
 
+  // Normal mode: require model
+  if (!userModel) {
+    return res.status(400).json({ error: 'Missing bow model' });
+  }
+
+  // Check API key
   if (!apiKey) {
     return res.status(500).json({
       error: 'API key not loaded in runtime',
@@ -82,11 +85,11 @@ export default async function handler(req, res) {
     const data = await response.json();
     debugInfo.xaiResponsePreview = JSON.stringify(data, null, 2).substring(0, 500) + '...';
 
-    const content = data.choices[0]?.message?.content?.trim();
+    const content = data.choices[0]?.message?.content?.trim() || '';
 
     return res.status(200).json({
       success: true,
-      responseContent: content,
+      responseContent: content || '(No content returned)',
       debugInfo,
     });
   } catch (err) {
