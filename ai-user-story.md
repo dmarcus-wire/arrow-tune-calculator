@@ -146,3 +146,49 @@ const knownBows = {
   // add more as you go
 };
 ```
+
+## 1. AI-Powered Build Optimizer
+
+- Users input their bow specs, hunting goals (e.g., "elk penetration at 50 yards"), and budget.
+- AI suggests 3–5 optimized arrow builds (spine, weight, FOC, components) with pros/cons, estimated FPS, and drift/drop predictions.
+- Integration: Use Grok API for recommendations (proxy through your Vercel server with your key — no user setup).
+- User benefit: Saves time/money on trial-and-error; "Load this build" button pre-fills fields.
+- Monetization: Free for basic (3 options), paid for premium (unlimited + explanations).
+
+## 2. AI Tuning Advisor (Natural Language Chat)
+
+- Add a chat box where users ask questions like "How to improve penetration?" or "Fix my weak spine?"
+- AI analyzes current build (from app data) and gives step-by-step advice, with links to popup explanations or external resources.
+- Integration: Grok API for chat (server-side, your key). - Cache responses offline for common queries.
+User benefit: Feels like a pro coach; great for beginners without overwhelming tech.
+Monetization: Free daily quota (5 queries), paid unlimited.
+
+## 3. AI Training & Practice Planner
+
+- Input skill level, goals (e.g., "hunt elk in 3 months"), and current setup.
+- AI generates a personalized 4–8 week plan with drills, shot distances, and progress tracking (e.g., "Week 1: 20 yd groups, focus on form").
+- Integration: Grok API for plan generation, app tracks progress offline.
+- User benefit: Turns the app into a full training companion, motivating consistent practice.
+- Monetization: Paid feature with progress reports and reminders.
+
+## 4. AI Wind & Trajectory Simulator
+
+- Users input weather (wind, temp), terrain, and setup — AI simulates real-time drift/drop for the shot.
+- Suggests holdover or "pass on shot" if too risky.
+- Integration: Grok API for advanced simulation (use your key server-side).
+- User benefit: Helps in-field decisions; "What if" scenarios for different arrows.
+- Monetization: Free basic, paid for detailed reports.
+
+5. AI Pro Comparison Tool
+
+- Compare user's build to pro profiles (e.g., "Cameron Hanes heavy hunter").
+- AI highlights differences and suggests tweaks (e.g., "Add 50 gr point to match his FOC").
+- Integration: Hard-coded pros + Grok API for dynamic comparisons.
+- User benefit: Inspires users with real-world examples; "How do I stack up?"
+- Monetization: Free for basic pros, paid for premium/custom comparisons.
+
+## To implement this without user tech setup:
+
+- Use your own Grok API key in a server-side proxy (Vercel function) — users just click, no keys needed.
+- Offline fallback — hard-coded for common cases, AI for advanced.
+- Pricing model: Free core app, $4.99/mo "AI Pro" for unlimited features (use Stripe or Patreon).

@@ -785,7 +785,7 @@
         </div>
       </div>
 
-      <p style="color:var(--light);font-size:0.85rem; margin-top:0.5rem; text-align:center;">ArrowForge • Offline • Live • v0.0.17</p>
+      <p style="color:var(--light);font-size:0.85rem; margin-top:0.5rem; text-align:center;">ArrowForge • Offline • Live • v0.0.18</p>
     </div>
     
     <div class="card">
@@ -1922,47 +1922,58 @@ function showBowModelPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
-function promptBowLookup() {
-  const modelInput = prompt('Enter bow model (e.g., "2025 hoyt rx-9")');
-  if (!modelInput) return; // user cancelled
+async function promptBowLookup() {
+  const modelInput = prompt('Enter bow model (full or partial, e.g., "hoyt rx9" or "mathews lift")');
+  if (!modelInput) return; // cancelled
 
-  const normalized = modelInput.toLowerCase().trim();
+  const normalized = modelInput.trim();
 
-  // Hard-coded bow data
+  // Optional: quick hard-coded check (faster, offline)
   const knownBows = {
     "2025 hoyt rx-9": { type: "compound", ibo: 342, brace: 6.125, cam: "hbx gen 4" },
-    "2025 hoyt rx-8": { type: "compound", ibo: 342, brace: 6.125, cam: "hbx xact" },
-    "mathews lift": { type: "compound", ibo: 348, brace: 6, cam: "switchweight x" },
-    "bowtech carbon one": { type: "compound", ibo: 335, brace: 6.63, cam: "deadlock" },
-    "elite verdict": { type: "compound", ibo: 332, brace: 7.125, cam: "spx" },
-    "2014 mathews chill r": { type: "compound", ibo: 342, brace: 6.125, cam: "dyad avs" }
+    // ... add your favorites
   };
 
   let matched = null;
-  let matchedKey = null;
   for (const key in knownBows) {
-    if (normalized.includes(key)) {
+    if (normalized.toLowerCase().includes(key)) {
       matched = knownBows[key];
-      matchedKey = key;
       break;
     }
   }
 
   if (matched) {
-    // Save the matched bow name (capitalized for display)
-    const displayName = matchedKey.replace(/(^\w|\s\w)/g, m => m.toUpperCase());
-    $('bowModel').value = displayName; // ← NEW: save the matched name
-
+    // Prefill fields
+    $('bowModel').value = normalized; // save what user typed
     $('bowType').value = matched.type;
     $('ibo').value = matched.ibo;
     $('braceHeight').value = matched.brace;
     $('camType').value = matched.cam;
 
-    alert(`Found specs for ${displayName}!\n\nIBO: ${matched.ibo} fps\nBrace: ${matched.brace}"\nCam: ${matched.cam}\n\nFields updated.`);
-    calculateEverything();
+    alert(`Found specs for "${normalized}"!\n\nBow Type: ${matched.type}\nIBO: ${matched.ibo} fps\nBrace: ${matched.brace}"\nCam: ${matched.cam}\n\nFields updated.`);
   } else {
-    alert(`"${modelInput}" not found in database yet.\n\nEnter specs manually or try a known model like "2025 Hoyt RX-9".`);
+    // Call your serverless proxy (no user API key needed)
+    try {
+      const response = await fetch(`/api/grok-bow-lookup?model=${encodeURIComponent(normalized)}`);
+      const specs = await response.json();
+
+      if (response.ok && specs.type) {
+        $('bowModel').value = normalized; // save user input
+        $('bowType').value = specs.type;
+        $('ibo').value = specs.ibo || '';
+        $('braceHeight').value = specs.brace || '';
+        $('camType').value = specs.cam || '';
+
+        alert(`AI found specs for "${normalized}"!\n\nBow Type: ${specs.type}\nIBO: ${specs.ibo || 'unknown'} fps\nBrace: ${specs.brace || 'unknown'}"\nCam: ${specs.cam || 'unknown'}\n\nFields updated.`);
+      } else {
+        alert(`No specs found for "${normalized}".\n\nEnter manually or try a different name.`);
+      }
+    } catch (e) {
+      alert(`Error connecting to AI. Please enter specs manually.`);
+    }
   }
+
+  calculateEverything();
 }
 
 /*Bow Type info icon*/
@@ -5221,7 +5232,7 @@ toggleArrowDetailsMode();
   <br><br></p>
 
   <p>Questions? Feedback? Email <a href="mailto:arrowforgeapp@tuta.io" style="color:var(--purple);">arrowforgeapp@tuta.io</a><br></p>
-  <p>ArrowForge v0.0.17 — Built for archers, by archers 🏹<br></br></p>
+  <p>ArrowForge v0.0.18 — Built for archers, by archers 🏹<br></br></p>
   <span style="font-size:0.8rem; opacity:0.8;">© 2025 Frontier Forge LLC -    © 2025 <a href="/about.html" style="color:var(--light);">About</a></span>
 </footer>
 
