@@ -16,7 +16,7 @@ export default async function handler(req, res) {
     requestMethod: req.method,
   };
 
-  // Debug mode: return immediately with info
+  // Debug mode: return immediately with info (no xAI call)
   if (isDebug) {
     return res.status(200).json({
       status: 'debug',
@@ -48,7 +48,7 @@ export default async function handler(req, res) {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`,
       'Accept': 'application/json',
-      'User-Agent': 'ArrowForge-Debug/1.0 (Vercel)',
+      'User-Agent': 'ArrowForge/1.0 (Vercel)',
     };
 
     debugInfo.authorizationPreview = headers.Authorization.substring(0, 20) + '...';
@@ -58,15 +58,62 @@ export default async function handler(req, res) {
       messages: [
         {
           role: 'system',
-          content: 'You are a test assistant.',
+          content: `You are an archery bow spec lookup assistant. User input: "${userModel}" (may be partial/ambiguous).
+
+Use web search and browsing tools to find the most relevant compound bow models (prioritize Hoyt, Mathews, etc., recent/current 2024–2026 models from manufacturer sites like hoyt.com, mathewsinc.com, or reliable archery sources).
+
+Return ONLY valid JSON (no explanations, no extra text):
+{
+  "ambiguous": boolean,
+  "matches": array of objects like {
+    "full_name": "2025 Hoyt Carbon RX-9 Ultra",
+    "year": "2025",
+    "type": "compound",
+    "ibo": number or null,
+    "brace": number or null,
+    "cam": string or null
+  },
+  "clarification": short string (max 100 chars, only if ambiguous) like "Which year/model for accurate specs?"
+}
+
+If one clear match, ambiguous=false, matches=[single object].
+If ambiguous, ambiguous=true, matches=2–5 best options.
+If nothing found, { "error": "not found" }.
+Output pure JSON only.`,
         },
         {
           role: 'user',
-          content: `Test from Vercel debug: bow model ${userModel}`,
+          content: `Find specs for bow model: ${userModel}`,
         },
       ],
       temperature: 0.1,
-      max_tokens: 50,
+      max_tokens: 500,
+      tools: [
+        {
+          name: "web_search",
+          description: "Search the web for bow specs",
+          input_schema: {
+            type: "object",
+            properties: {
+              query: { type: "string", description: "The search query" },
+              num_results: { type: "integer", description: "Number of results (default 10)" }
+            },
+            required: ["query"]
+          }
+        },
+        {
+          name: "browse_page",
+          description: "Browse a specific URL for details",
+          input_schema: {
+            type: "object",
+            properties: {
+              url: { type: "string", description: "The URL to browse" },
+              instructions: { type: "string", description: "Instructions for summarizer" }
+            },
+            required: ["url", "instructions"]
+          }
+        }
+      ]
     });
 
     debugInfo.requestBodyPreview = body.substring(0, 200) + '...';
