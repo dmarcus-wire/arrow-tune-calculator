@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  // CORS headers
+  // CORS headers (allow all origins for now; tighten later if needed)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -11,6 +11,7 @@ export default async function handler(req, res) {
   const { model: userModel, debug } = req.query;
   const isDebug = !!debug;
 
+  // Debug info (only returned when ?debug=true)
   const apiKey = process.env.XAI_API_KEY;
   const debugInfo = {
     isDebugMode: isDebug,
@@ -31,11 +32,11 @@ export default async function handler(req, res) {
   }
 
   if (!userModel) {
-    return res.status(400).json({ error: 'Missing bow model', debugInfo });
+    return res.status(400).json({ error: 'Missing bow model' });
   }
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'API key not loaded', debugInfo });
+    return res.status(500).json({ error: 'API key not loaded' });
   }
 
   try {
@@ -53,11 +54,11 @@ export default async function handler(req, res) {
       messages: [
         {
           role: 'system',
-          content: `You are an archery bow spec lookup assistant. User input: "${userModel}" (partial/ambiguous OK).
+          content: `You are an archery bow spec lookup assistant. User input: "${userModel}" (may be partial/ambiguous).
 
 Use web_search and browse_page tools to fetch accurate specs from manufacturer sites (hoyt.com, mathewsinc.com) or reliable sources.
 
-Return ONLY valid JSON (no text outside {}, no markdown, no intro/outro):
+Return ONLY valid JSON. No text outside {}. No markdown, no intro/outro, no explanations. Strictly follow this structure:
 {
   "ambiguous": boolean,
   "matches": array of objects like {
@@ -75,7 +76,7 @@ Rules:
 - If one clear match, ambiguous=false, matches=[single object]
 - If ambiguous, ambiguous=true, matches=2–5 best options
 - If nothing found, { "error": "not found" }
-- Output pure JSON only. No explanations.`,
+- Output pure JSON only. No other text.`,
         },
         {
           role: 'user',
@@ -85,37 +86,37 @@ Rules:
       temperature: 0.1,
       max_tokens: 500,
       tools: [
-          {
-            type: "function",
-            function: {
-              name: "web_search",
-              description: "Search the web for bow specs",
-              parameters: {
-                type: "object",
-                properties: {
-                  query: { type: "string", description: "The search query" },
-                  num_results: { type: "integer", description: "Number of results (default 5)" }
-                },
-                required: ["query"]
-              }
-            }
-          },
-          {
-            type: "function",
-            function: {
-              name: "browse_page",
-              description: "Browse a specific URL for details",
-              parameters: {
-                type: "object",
-                properties: {
-                  url: { type: "string", description: "The URL to browse" },
-                  instructions: { type: "string", description: "Instructions for summarizer" }
-                },
-                required: ["url", "instructions"]
-              }
+        {
+          type: "function",
+          function: {
+            name: "web_search",
+            description: "Search the web for bow specs",
+            parameters: {
+              type: "object",
+              properties: {
+                query: { type: "string", description: "The search query" },
+                num_results: { type: "integer", description: "Number of results (default 5)" }
+              },
+              required: ["query"]
             }
           }
-        ]
+        },
+        {
+          type: "function",
+          function: {
+            name: "browse_page",
+            description: "Browse a specific URL for details",
+            parameters: {
+              type: "object",
+              properties: {
+                url: { type: "string", description: "The URL to browse" },
+                instructions: { type: "string", description: "Instructions for summarizer" }
+              },
+              required: ["url", "instructions"]
+            }
+          }
+        }
+      ]
     });
 
     const response = await fetch(fetchUrl, {
@@ -128,7 +129,6 @@ Rules:
       const errorText = await response.text();
       return res.status(response.status).json({
         error: `xAI API returned ${response.status}: ${errorText}`,
-        debugInfo,
       });
     }
 
@@ -145,12 +145,10 @@ Rules:
     return res.status(200).json({
       success: true,
       ...specs,
-      debugInfo,
     });
   } catch (err) {
     return res.status(500).json({
       error: 'Internal error: ' + err.message,
-      debugInfo,
     });
   }
 }
