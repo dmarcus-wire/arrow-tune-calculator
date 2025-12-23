@@ -1,0 +1,14 @@
+{
+  "name": "Arrow-Forge",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "openai": "^4.78.0"
+  },
+  "engines": {
+    "node": "20.x"
+  }
+}
