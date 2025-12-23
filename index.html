@@ -12,7 +12,7 @@
     user-scalable=yes">
   
   <meta name="mobile-web-app-capable" content="yes">
-  
+
   <title>ArrowForge – Smart Arrow Tuner</title>
   <meta name="description" content="Offline-first archery calculator with AI advisor. Perfect arrow tuning made simple.">
   <meta name="theme-color" content="#0ea5e9">
@@ -3773,36 +3773,25 @@ function showWindDriftPopup() {
   const totalWt = parseFloat($('totalWt').value) || 495;
   const rangeYd = parseFloat($('rangeSlider').value) || 50;
   const windMphValue = parseFloat($('windSlider').value) || 0;
+  const arrowDia = $('arrowDia')?.value || 'micro';
 
-  let driftIn = 0;
-  let tof = 0;
-  let windFps = 0;
-  let baseDriftFt = 0;
-  let diameterFactor = 1.0;
-  let finalDriftIn = "0.0";
+  // Read the card's drift value (matches exactly)
+  const driftIn = $('windDriftIn').textContent || '0.0';
 
-  if (windMphValue > 0 && rangeYd > 0) {
-    tof = (rangeYd * 3) / fps;
-    windFps = windMphValue * 1.467;
-    baseDriftFt = windFps * tof * 0.9;
-
-    const diaFactor = $('arrowDia')?.value;
-    if (diaFactor === 'micro') diameterFactor = 0.85;
-    else if (diaFactor === 'small') diameterFactor = 0.92;
-
-    driftIn = baseDriftFt * diameterFactor * 12;
-    finalDriftIn = driftIn.toFixed(1);
-  }
+  // Simple linear TOF for popup explanation (matches card)
+  const tof = (rangeYd * 3) / fps;
+  const windFps = windMphValue * 1.467;
+  const baseDriftFt = windFps * tof * 0.9;
 
   const diaLabel = {
     'standard': 'Standard (~6.5mm)',
     'small': 'Small (~5mm)',
     'micro': 'Micro (~4mm)'
-  }[$('arrowDia')?.value || 'micro'];
+  }[arrowDia] || 'Micro (~4mm)';
 
   $('gameMathContent').innerHTML = `
     <p><strong>Wind Drift Math & Usage</strong></p>
-    <p>Estimated sideways drift in a full crosswind at current range.</p>
+    <p>Estimated sideways drift in a full crosswind at current range. Arrows lag behind wind due to inertia and fletching.</p>
     <hr>
     <p><strong>Your Current Build:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
@@ -3811,7 +3800,7 @@ function showWindDriftPopup() {
       <li>Arrow Diameter: <strong>${diaLabel}</strong></li>
       <li>Current Range: <strong>${rangeYd} yd</strong></li>
       <li>Crosswind: <strong>${windMphValue.toFixed(1)} mph</strong></li>
-      <li>Wind Drift: <strong>${finalDriftIn} in</strong></li>
+      <li>Wind Drift: <strong>${driftIn} in</strong></li>
     </ul>
     <hr>
     <p><strong>Raw Equation</strong></p>
@@ -3832,9 +3821,9 @@ function showWindDriftPopup() {
       <li>Wind speed = ${windMphValue.toFixed(1)} × 1.467 = <strong>${windFps.toFixed(1)} fps</strong></li>
       <li>Base drift = Wind speed × Flight time × arrow lag factor</li>
       <li>Base drift = ${windFps.toFixed(1)} × ${tof.toFixed(3)} × 0.9 = <strong>${baseDriftFt.toFixed(2)} ft</strong></li>
-      <li>Diameter factor = <strong>${diameterFactor.toFixed(2)}</strong></li>
-      <li>Final drift = Base drift × Diameter factor × ft to in. conversion</li>
-      <li>Final drift = ${baseDriftFt.toFixed(2)} × ${diameterFactor.toFixed(2)} × 12 = <strong>${finalDriftIn} in</strong></li>
+      <li>Diameter factor = <strong>0.92</strong></li>
+      <li>Final drift = Base drift × Diameter factor × ft to in conversion</li>
+      <li>Final drift = ${baseDriftFt.toFixed(2)} × 0.92 × 12 = <strong>${driftIn} in</strong></li>
     </ul>
     <hr>
     <p><strong>How to Use It (Hunting Guide):</strong></p>
@@ -4371,30 +4360,45 @@ function calculateEverything() {
   if (flightTimeSecEl) flightTimeSecEl.textContent = timeTarget.toFixed(3);
   if (flightDistanceYdEl) flightDistanceYdEl.textContent = rangeTarget;
 
-  // === Wind Drift Calculation ===
+  // === Wind Drift (Realistic for Arrows) ===
   const windMphValue = windMph || 0;
   if (windMphValue > 0 && rangeTarget > 0) {
-    // Simple approximation: drift ≈ (wind_fps * tof) * lag factor
-    // Lag factor ~0.8-1.0 for arrows (they lag behind wind)
-    const tof = timeTarget; // reuse flight time
-    const windFps = windMphValue * 1.467; // mph to fps
-    let driftFt = windFps * tof * 0.9; // ~10% less than full wind (typical arrow lag)
+    const tof = timeTarget; // your TOF is fine
 
-    // Adjust slightly by arrow diameter (smaller = less drift)
-    const diaFactor = $('arrowDia')?.value;
-    if (diaFactor === 'micro') driftFt *= 0.85;
-    else if (diaFactor === 'small') driftFt *= 0.92;
-    // standard = 1.0
+    const windFps = windMphValue * 1.467;
+
+    // Lag factor (higher = less drift; arrows stabilize with fletching)
+    let lagFactor = 0.45; // default: ~55% less drift than particle
+    const pointType = $('pointType')?.value || 'Fixed Blade';
+    if (pointType === 'Mechanical') lagFactor = 0.50; // closed blades = less drag = less drift
+    else if (pointType === 'Fixed Blade') lagFactor = 0.40; // exposed blades = more drag = more drift
+    else if (pointType === 'Field') lagFactor = 0.55; // minimal drag = least drift
+
+    // Diameter factor (smaller = less drag)
+    const diaFactor = {
+      'micro': 0.85,
+      'small': 0.92,
+      'standard': 1.0
+    }[$('arrowDia')?.value] || 0.85;
+
+    // In-Flight Diameter override (if entered)
+    const inFlightDia = parseFloat($('inFlightDia').value) || 0;
+    let finalDiaFactor = diaFactor;
+    if (inFlightDia > 0) finalDiaFactor = Math.min(1.5, inFlightDia / 0.3);
+
+    // Base drift (feet)
+    let driftFt = windFps * tof * lagFactor * finalDiaFactor;
+
+    // Wind angle (default 90° crosswind)
+    const windAngle = 90;
+    driftFt *= Math.sin(windAngle * Math.PI / 180);
 
     const driftIn = (driftFt * 12).toFixed(1);
-
     $('windDriftIn').textContent = driftIn;
     $('windDriftDistanceYd').textContent = rangeTarget;
     $('windDriftMph').textContent = windMphValue.toFixed(1);
   } else {
     $('windDriftIn').textContent = '0.0';
-    $('windDriftDistanceYd').textContent = rangeTarget;
-    $('windDriftMph').textContent = '0';
   }
 
   // === Update Build Summary Table ===
