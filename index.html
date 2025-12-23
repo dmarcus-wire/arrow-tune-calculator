@@ -1995,18 +1995,6 @@ async function promptBowLookup() {
   calculateEverything();
 }
 
-/*
-// Helper to prefill and alert
-function prefillBowFields(modelName, specs) {
-  $('bowModel').value = modelName;
-  $('bowType').value = specs.type || 'compound';
-  $('ibo').value = specs.ibo || '';
-  $('braceHeight').value = specs.brace || '';
-  $('camType').value = specs.cam || '';
-
-  alert(`Found specs for "${modelName}"!\n\nBow Type: ${specs.type || 'unknown'}\nIBO: ${specs.ibo || 'unknown'} fps\nBrace: ${specs.brace || 'unknown'}"\nCam: ${specs.cam || 'unknown'}\n\nFields updated.`);
-}
-  */
 function prefillBowFields(modelName, specs) {
   $('bowModel').value = specs.full_name || modelName;  // Use full_name if available
   $('bowType').value = specs.type || '';
