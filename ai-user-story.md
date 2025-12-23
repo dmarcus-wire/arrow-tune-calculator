@@ -2,10 +2,58 @@
 
 ## User Scenario 1: Clicks AI Advisor button to prefill bow data
 
-1. User types bow model (e.g., "2025 Hoyt RX-9")
 1. Clicks "AI Advisor" or a "Lookup Bow" button
+1. User types bow model (e.g., "2025 Hoyt RX-9" or hoyt)
 1. AI searches web/manufacturer data → returns specs
 1. Auto-fills: Bow Type, IBO, Brace Height, Cam System
+
+Prompt Structure: Use this as the system/user prompt in your API call
+```sh
+You are an archery bow spec lookup assistant. The user provided a partial bow model name: "{user_input}" (e.g., "hoyt rx").
+
+Your task:
+1. Use web search and browsing tools to find the most relevant Hoyt RX-series (or similar) compound bow models.
+2. Prioritize recent/current models (2024–2026+), manufacturer sites (hoyt.com), and reliable archery sources.
+3. If the input is ambiguous or partial, identify 2–5 closest matches (e.g., Carbon RX-9, Carbon RX-10, Carbon RX-8, etc.) with their likely years or variants.
+4. Return ONLY a JSON object with:
+   - "ambiguous": true/false
+   - "matches": array of objects like { "full_name": "2025 Hoyt Carbon RX-9", "year": "2025", "type": "compound", "ibo": 342, "brace": 6.125, "cam": "HBX Gen 4" }  (use real specs from search; use "unknown" if not found)
+   - "clarification": short string (max 100 chars) like "Which model/year do you have? Here are the closest matches:" (only if ambiguous)
+   - "selected_specs": null  (do not auto-select; wait for user confirmation)
+
+If only one clear match, set ambiguous=false and provide specs directly (still in "matches" as single item).
+Do not add explanations, chit-chat, or extra text—output pure JSON only.
+```
+
+Handing ambigous prompts:
+
+Your frontend can parse this JSON:
+- If ambiguous: true, show the clarification message + a dropdown/list of matches for user to select.
+- Once selected, re-query the API with the chosen full name (or add a new param like ?selected=2025 Hoyt Carbon RX-9).
+ -If ambiguous: false, auto-prefill fields.
+
+```sh
+{
+  "ambiguous": true,
+  "matches": [
+    { "full_name": "2025 Hoyt Carbon RX-9", "year": "2025", "type": "compound", "ibo": 342, "brace": 6.125, "cam": "HBX Gen 4" },
+    { "full_name": "2026 Hoyt Carbon RX-10", "year": "2026", "type": "compound", "ibo": 340, "brace": 6.125, "cam": "HBX Gen 4" },
+    { "full_name": "2024 Hoyt Carbon RX-8", "year": "2024", "type": "compound", "ibo": 340, "brace": 6.75, "cam": "HBX" }
+  ],
+  "clarification": "Which year/model for accurate specs?",
+  "selected_specs": null
+}
+```
+
+Keeps Conversation Tight:
+
+ -Structured JSON-only output prevents rambling—model can't add fluff.
+- No multi-turn in one call—it either resolves or asks for confirmation via the clarification field.
+- Frontend controls flow—user picks from list → one follow-up query → specs prefilled.
+- Edge cases (e.g., very obscure partial like "hoyt old rx") → returns empty matches or "unknown" + clarification.
+- Add known hard-coded matches (from your code) as a fallback before/after API call.
+- If the model hallucinates a non-existent model, the JSON structure makes it easy to filter (e.g., cross-check against hoyt.com via tools).
+- Test with partials: "hoyt rx", "rx9", "carbon rx", "mathews lift" (should resolve to one if clear).
 
 AI Advisor: Prefills 4x Bow Data fields by scraping the web.
 ```
