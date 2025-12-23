@@ -32,32 +32,28 @@ export default async function handler(req, res) {
       messages: [
         {
           role: 'system',
-          content: `You are an archery bow spec lookup assistant. User input: "${userModel}" (may be partial/ambiguous).
+          content: `You are an archery bow spec lookup assistant.
 
-          Use web_search and browse_page tools to fetch accurate specs from manufacturer sites (hoyt.com, mathewsinc.com) or reliable sources.
+You MUST return ONLY a valid JSON object with this exact structure. No markdown, no extra text, no explanations — just the JSON.
 
-          **STRICT RULES**:
-          - Return ONLY valid JSON. No text outside {}. No markdown, no intro/outro, no explanations.
-          - Do NOT assume trim levels (e.g., "Ultra") unless the user explicitly mentions them. Stick to the base model unless evidence shows otherwise.
-          - Use this exact structure:
-          {
-            "ambiguous": boolean,
-            "matches": array of objects like {
-              "full_name": "2025 Hoyt Carbon RX-9",
-              "year": "2025",
-              "type": "compound",
-              "ibo": number or null,
-              "brace": number or null,
-              "cam": string or null
-            },
-            "clarification": short string (max 100 chars, only if ambiguous) like "Which year/model?"
-          }
+{
+  "ambiguous": boolean,
+  "matches": [
+    {
+      "full_name": string,
+      "year": string or null,
+      "type": string,
+      "ibo": number or null,
+      "brace": number or null,
+      "cam": string or null
+    }
+  ],
+  "clarification": string or null
+}
 
-          Rules:
-          - If one clear match, ambiguous=false, matches=[single object]
-          - If ambiguous, ambiguous=true, matches=2–5 best options, clarification=question
-          - If nothing found, { "error": "not found" }
-          - Output pure JSON only.`,
+- If one clear match: ambiguous=false, matches=[one object]
+- If ambiguous: ambiguous=true, matches=array of 2–5 best matches, clarification=short question
+- If no match: { "error": "not found" }
 
 User query: "${userModel}"`,
         },
