@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
-  // CORS headers for browser requests
-  res.setHeader('Access-Control-Allow-Origin', 'https://arrow-forge-ai-git-ai-bow-lookup-davids-projects-0e631f5c.vercel.app');
+  // CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   const { model: userModel, debug } = req.query;
   const isDebug = !!debug;
 
-  // Collect debug info
+  // Debug info
   const apiKey = process.env.XAI_API_KEY;
   const debugInfo = {
     isDebugMode: isDebug,
@@ -25,16 +25,15 @@ export default async function handler(req, res) {
     requestMethod: req.method,
   };
 
-  // Debug mode: return info immediately
+  // Debug mode
   if (isDebug) {
     return res.status(200).json({
       status: 'debug',
       ...debugInfo,
-      message: 'Debug mode active. Check apiKeyLength > 0 for env var success.',
+      message: 'Debug mode active. apiKeyLength > 0 means env var loaded.',
     });
   }
 
-  // Normal mode: require model
   if (!userModel) {
     return res.status(400).json({ error: 'Missing bow model', debugInfo });
   }
@@ -60,11 +59,11 @@ export default async function handler(req, res) {
       messages: [
         {
           role: 'system',
-          content: `You are an archery bow spec lookup assistant. User input: "${userModel}" (may be partial/ambiguous).
+          content: `You are an archery bow spec lookup assistant. User input: "${userModel}" (partial/ambiguous OK).
 
-Use web search and browsing tools to find the most relevant compound bow models (prioritize Hoyt, Mathews, etc., recent/current 2024–2026 models from manufacturer sites like hoyt.com, mathewsinc.com, or reliable archery sources).
+Use web_search and browse_page tools to fetch accurate specs from manufacturer sites (hoyt.com, mathewsinc.com) or reliable sources.
 
-Return ONLY valid JSON (no explanations, no extra text):
+Return ONLY valid JSON (no text outside {}):
 {
   "ambiguous": boolean,
   "matches": array of objects like {
@@ -75,13 +74,14 @@ Return ONLY valid JSON (no explanations, no extra text):
     "brace": number or null,
     "cam": string or null
   },
-  "clarification": short string (max 100 chars, only if ambiguous) like "Which year/model for accurate specs?"
+  "clarification": short string (max 100 chars, only if ambiguous) like "Which year/model?"
 }
 
-If one clear match, ambiguous=false, matches=[single object].
-If ambiguous, ambiguous=true, matches=2–5 best options.
-If nothing found, { "error": "not found" }.
-Output pure JSON only.`,
+Rules:
+- If one clear match, ambiguous=false, matches=[single object]
+- If ambiguous, ambiguous=true, matches=2–5 best options
+- If nothing found, { "error": "not found" }
+- Output pure JSON only`,
         },
         {
           role: 'user',
@@ -98,7 +98,7 @@ Output pure JSON only.`,
             type: "object",
             properties: {
               query: { type: "string", description: "The search query" },
-              num_results: { type: "integer", description: "Number of results (default 10)" }
+              num_results: { type: "integer", description: "Number of results (default 5)" }
             },
             required: ["query"]
           }
