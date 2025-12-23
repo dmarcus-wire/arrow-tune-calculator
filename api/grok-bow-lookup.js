@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   console.log('Bow model:', userModel);
 
   try {
-    const response = await fetch('https://api.x.ai/v1/chat/completions', {
+    const response = await fetch('https://api.grok.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -35,8 +35,8 @@ export default async function handler(req, res) {
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('xAI error body:', errorText);
-      throw new Error(`xAI API ${response.status}: ${errorText}`);
+      console.error('xAI API error:', response.status, errorText);
+      throw new Error(`xAI API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
