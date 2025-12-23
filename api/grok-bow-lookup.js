@@ -1,57 +1,48 @@
 export default async function handler(req, res) {
-  const { model: userModel } = req.query;
+  const { model } = req.query;
 
-  if (!userModel) {
+  if (!model) {
     return res.status(400).json({ error: 'Missing bow model' });
   }
 
   const apiKey = process.env.XAI_API_KEY;
 
   // Debug logs
-  console.log('XAI_API_KEY exists:', !!apiKey);
-  console.log('XAI_API_KEY length:', apiKey ? apiKey.length : 'undefined');
+  console.log('DEBUG: XAI_API_KEY exists:', !!apiKey);
+  console.log('DEBUG: XAI_API_KEY length:', apiKey ? apiKey.length : 'UNDEFINED');
+  console.log('DEBUG: Node version:', process.version);
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'API key not set in environment variables' });
+    return res.status(500).json({ error: 'API key not available at runtime' });
   }
 
   try {
-    const fetchUrl = 'https://api.x.ai/v1/chat/completions';
-    console.log('Fetching from:', fetchUrl);
-
-    const body = JSON.stringify({
-      model: 'grok-4-1-fast-reasoning',
-      messages: [
-        { role: 'user', content: `Test: bow model ${userModel}` }
-      ],
-      temperature: 0.1
-    });
-    console.log('Request body:', body);
-
-    const response = await fetch(fetchUrl, {
+    const response = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey.trim()}` // trim to be safe
+        'Authorization': `Bearer ${apiKey}`
       },
-      body
+      body: JSON.stringify({
+        model: 'grok-4-1-fast-reasoning',
+        messages: [{ role: 'user', content: 'Test bow lookup: hoyt rx' }],
+        temperature: 0.1
+      })
     });
-
-    console.log('xAI response status:', response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('xAI full response error:', errorText);
-      return res.status(500).json({ error: `xAI API failed: ${response.status} - ${errorText}` });
+      console.error('xAI error:', response.status, errorText);
+      return res.status(500).json({ error: `xAI API ${response.status}: ${errorText}` });
     }
 
     const data = await response.json();
-    console.log('xAI response:', JSON.stringify(data, null, 2));
-
-    // For now, just echo a simple response
-    return res.status(200).json({ success: true, modelResponse: data.choices[0].message.content });
+    return res.status(200).json({
+      success: true,
+      modelResponse: data.choices[0].message.content
+    });
   } catch (e) {
-    console.error('Proxy error:', e.message, e.stack);
-    return res.status(500).json({ error: 'Internal error: ' + e.message });
+    console.error('Fetch error:', e.message);
+    return res.status(500).json({ error: 'Fetch failed: ' + e.message });
   }
 }
