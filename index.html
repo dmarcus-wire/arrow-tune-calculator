@@ -1922,12 +1922,11 @@ function showBowModelPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
-// AI Lookup Hard Coded Button
 function promptBowLookup() {
-  const model = prompt('Hard Coded samples - Enter bow model in lower case (e.g., "2025 hoyt rx-9")');
-  if (!model) return; // user cancelled
+  const modelInput = prompt('Enter bow model (e.g., "2025 hoyt rx-9")');
+  if (!modelInput) return; // user cancelled
 
-  const normalized = model.toLowerCase().trim();
+  const normalized = modelInput.toLowerCase().trim();
 
   // Hard-coded bow data
   const knownBows = {
@@ -1937,27 +1936,32 @@ function promptBowLookup() {
     "bowtech carbon one": { type: "compound", ibo: 335, brace: 6.63, cam: "deadlock" },
     "elite verdict": { type: "compound", ibo: 332, brace: 7.125, cam: "spx" },
     "2014 mathews chill r": { type: "compound", ibo: 342, brace: 6.125, cam: "dyad avs" }
-    // Add more bows here as needed
   };
 
   let matched = null;
+  let matchedKey = null;
   for (const key in knownBows) {
     if (normalized.includes(key)) {
       matched = knownBows[key];
+      matchedKey = key;
       break;
     }
   }
 
   if (matched) {
+    // Save the matched bow name (capitalized for display)
+    const displayName = matchedKey.replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+    $('bowModel').value = displayName; // ← NEW: save the matched name
+
     $('bowType').value = matched.type;
     $('ibo').value = matched.ibo;
     $('braceHeight').value = matched.brace;
     $('camType').value = matched.cam;
 
-    alert(`Found specs for ${model}!\n\nIBO: ${matched.ibo} fps\nBrace: ${matched.brace}"\nCam: ${matched.cam}\n\nFields updated.`);
+    alert(`Found specs for ${displayName}!\n\nIBO: ${matched.ibo} fps\nBrace: ${matched.brace}"\nCam: ${matched.cam}\n\nFields updated.`);
     calculateEverything();
   } else {
-    alert(`"${model}" not found in database yet.\n\nEnter specs manually or try a known model like "2025 Hoyt RX-9".`);
+    alert(`"${modelInput}" not found in database yet.\n\nEnter specs manually or try a known model like "2025 Hoyt RX-9".`);
   }
 }
 
