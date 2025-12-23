@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  // CORS headers
+  // CORS headers for browser requests
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -59,11 +59,11 @@ export default async function handler(req, res) {
       messages: [
         {
           role: 'system',
-          content: `You are an archery bow spec lookup assistant. User input: "${userModel}" (partial/ambiguous OK).
+          content: `You are an archery bow spec lookup assistant. User input: "${userModel}" (may be partial/ambiguous).
 
 Use web_search and browse_page tools to fetch accurate specs from manufacturer sites (hoyt.com, mathewsinc.com) or reliable sources.
 
-Return ONLY valid JSON (no text outside {}):
+Return ONLY valid JSON (no text outside {}, no markdown, no intro/outro). Structure:
 {
   "ambiguous": boolean,
   "matches": array of objects like {
@@ -81,7 +81,7 @@ Rules:
 - If one clear match, ambiguous=false, matches=[single object]
 - If ambiguous, ambiguous=true, matches=2–5 best options
 - If nothing found, { "error": "not found" }
-- Output pure JSON only`,
+- Output pure JSON only. No explanations.`,
         },
         {
           role: 'user',
