@@ -52,6 +52,7 @@ Return ONLY valid JSON:
       "full_name": "Arrow full name",
       "year": "Year",
       "type": "Type",
+      "arrowLength": "Recommended cut length (inches)",
       "foc": "FOC %",
       "gpp": "GPP",
       "gpi": "GPI",
@@ -65,6 +66,7 @@ Return ONLY valid JSON:
 - If one perfect match: ambiguous=false, matches=[single object]
 - If multiple: ambiguous=true, matches=2–3 options, clarification="Choose the best one for your setup"
 - If no match: { "error": "not found" }
+- Always include "arrowLength": recommended cut length (typically drawLen + 0.5" to 1" for safety)
 - Output pure JSON only.`,
         },
         {
