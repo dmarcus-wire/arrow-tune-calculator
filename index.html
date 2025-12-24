@@ -785,7 +785,7 @@
         </div>
       </div>
 
-      <p style="color:var(--light);font-size:0.85rem; margin-top:0.5rem; text-align:center;">ArrowForge • Offline • Live • v0.0.18</p>
+      <p style="color:var(--light);font-size:0.85rem; margin-top:0.5rem; text-align:center;">ArrowForge • Offline • Live • v0.0.17</p>
     </div>
     
     <div class="card">
@@ -2325,48 +2325,58 @@ function showSightPinsPopup() {
 }
 
 // AI Analyzer function
-function runAIAnalyzer() {
+async function runAIAnalyzer() {
   // Gather bow data
+  const appType = $('appType').value || 'compound-hunting';
   const bowModel = $('bowModel').value.trim() || 'Unknown Bow';
-  const bowType = $('bowType').value || 'compound';
-  const drawWt = parseFloat($('drawWt').value) || 70;
   const drawLen = parseFloat($('drawLen').value) || 28;
-  const appType = $('appType').value || 'Hunting';
+  const drawWt = parseFloat($('drawWt').value) || 70;
 
-  // Check if arrow data exists
-  const hasArrowData = $('totalWt').value && parseFloat($('totalWt').value) > 0;
+  // Gather arrow data (optional)
+  const totalWt = parseFloat($('totalWt').value) || 0;
+  const pointWt = parseFloat($('pointWt').value) || 125;
+  const arrowLen = parseFloat($('arrowLen').value) || drawLen + 0.5;
+  const spine = parseFloat($('spine').value) || 300;
+  const balancePt = parseFloat($('balancePt').value) || arrowLen / 2 + 1; // Default FOC ~10%
+
+  // Calculate FOC if not provided
+  const foc = ((balancePt - arrowLen / 2) / arrowLen) * 100;
+
+  const hasArrowData = totalWt > 0;
 
   let message = '';
 
   if (!hasArrowData) {
-    // Scenario 1: No arrow data → recommend starting build
-    message = `No arrow data entered yet — here's a recommended starting build for your ${bowModel} (${drawWt} lb, ${appType}):\n\n`;
+    // Scenario 1: No arrow data → Recommend starting build
+    message = `No arrow data entered yet — here's a recommended starting build for your ${bowModel} (${drawWt} lb, ${drawLen}" draw, ${appType}):\n\n`;
 
-    if (appType === 'Hunting') {
-      message += `• **Balanced Hunting Arrow**\n`;
+    if (appType.includes('hunting') || appType.includes('compound')) {
+      message += `**Balanced Hunting Arrow**\n`;
       message += `  - Spine: 300–350\n`;
       message += `  - Total Weight: 480–520 gr\n`;
       message += `  - Point: 125–150 gr (fixed or mechanical)\n`;
       message += `  - FOC Target: 15–19%\n`;
-      message += `  Great for elk/deer — penetration + accuracy.\n\n`;
+      message += `  Great for elk/deer — excellent penetration + accuracy.\n\n`;
       message += `Try entering these values and see how it performs!`;
-    } else {
-      message += `• **Speed/Flat Trajectory Arrow**\n`;
+    } else if (appType.includes('target')) {
+      message += `**Speed/Flat Trajectory Arrow**\n`;
       message += `  - Spine: 350–400\n`;
       message += `  - Total Weight: 380–450 gr\n`;
       message += `  - Point: 100–120 gr\n`;
       message += `  - FOC Target: 10–14%\n`;
-      message += `  Ideal for 3D/target — fast and forgiving.\n\n`;
+      message += `  Ideal for 3D/target — fast and forgiving at distance.\n\n`;
+      message += `Enter these to test!`;
+    } else {
+      message += `**Traditional/Recurve Arrow**\n`;
+      message += `  - Spine: 400–500\n`;
+      message += `  - Total Weight: 500–600 gr\n`;
+      message += `  - Point: 150–200 gr (field or broadhead)\n`;
+      message += `  - FOC Target: 15–22%\n`;
+      message += `  Great for stability with fingers.\n\n`;
       message += `Enter these to test!`;
     }
   } else {
-    // Scenario 2: Has arrow data → analyze and suggest improvements
-    const totalWt = parseFloat($('totalWt').value);
-    const pointWt = parseFloat($('pointWt').value) || 125;
-    const arrowLen = parseFloat($('arrowLen').value) || 28.5;
-    const spine = parseFloat($('spine').value) || 300;
-    const foc = ((parseFloat($('balancePt').value) || 17) - arrowLen/2) / arrowLen * 100;
-
+    // Scenario 2: Has arrow data → Analyze and suggest improvements
     message = `Analyzing your current arrow build:\n`;
     message += `• Total Weight: ${totalWt.toFixed(1)} gr\n`;
     message += `• Point Weight: ${pointWt} gr\n`;
@@ -2375,7 +2385,7 @@ function runAIAnalyzer() {
 
     message += `Suggestions for improvement:\n\n`;
 
-    if (appType === 'Hunting') {
+    if (appType.includes('hunting') || appType.includes('compound')) {
       if (totalWt < 480) {
         message += `→ Add 20–40 gr (heavier point/insert) → better penetration on big game\n`;
       }
@@ -2385,12 +2395,29 @@ function runAIAnalyzer() {
       if (totalWt > 550) {
         message += `→ Lighten point or shaft → gain 5–10 fps for flatter trajectory\n`;
       }
-    } else {
+      if (spine < 300 || spine > 400) {
+        message += `→ Adjust spine to 300–350 range → better forgiveness and accuracy\n`;
+      }
+    } else if (appType.includes('target')) {
       if (totalWt > 450) {
         message += `→ Lighten point/shaft → gain speed and flatter groups at 60+ yd\n`;
       }
       if (foc > 14) {
         message += `→ Reduce point weight → lower FOC for more forgiveness\n`;
+      }
+      if (spine < 350 || spine > 450) {
+        message += `→ Adjust spine to 350–400 range → tighter groups\n`;
+      }
+    } else {
+      // Recurve/Longbow
+      if (totalWt < 500) {
+        message += `→ Add weight → improve momentum and quietness\n`;
+      }
+      if (foc < 15) {
+        message += `→ Increase point weight → raise FOC to 15–22% for stability\n`;
+      }
+      if (spine < 400 || spine > 600) {
+        message += `→ Adjust spine to 400–500 range → better finger release tolerance\n`;
       }
     }
 
@@ -2401,7 +2428,9 @@ function runAIAnalyzer() {
     }
   }
 
-  alert(message); // Replace with modal later
+  // Show in modal (better UX than alert)
+  document.getElementById('analyzerResults').innerHTML = `<pre>${message}</pre>`;
+  document.getElementById('analyzerModal').style.display = 'block';
 }
 
 /*Arrow Name info icon*/
@@ -5261,7 +5290,7 @@ toggleArrowDetailsMode();
   <br><br></p>
 
   <p>Questions? Feedback? Email <a href="mailto:arrowforgeapp@tuta.io" style="color:var(--purple);">arrowforgeapp@tuta.io</a><br></p>
-  <p>ArrowForge v0.0.18 — Built for archers, by archers 🏹<br></br></p>
+  <p>ArrowForge v0.0.17 — Built for archers, by archers 🏹<br></br></p>
   <span style="font-size:0.8rem; opacity:0.8;">© 2025 Frontier Forge LLC -    © 2025 <a href="/about.html" style="color:var(--light);">About</a></span>
 </footer>
 
