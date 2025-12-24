@@ -1212,6 +1212,14 @@
     </div>
   </div>
 
+  <!-- a small popup window that appears on the screen when the AI Analyzer button is clicked-->
+  <div id="analyzerOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999;"></div>
+  <div id="analyzerModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:20px; border:1px solid #ccc; z-index:1000; max-width:90%; max-height:80vh; overflow:auto; box-shadow:0 4px 20px rgba(0,0,0,0.3); border-radius:12px;">
+    <h3>AI Arrow Analyzer</h3>
+    <div id="analyzerResults" style="white-space:pre-wrap;"></div>
+    <button onclick="document.getElementById('analyzerModal').style.display='none'; document.getElementById('analyzerOverlay').style.display='none';" style="margin-top:1rem; padding:0.5rem 1rem; background:var(--purple); color:white; border:none; border-radius:8px; cursor:pointer;">Close</button>
+  </div>
+  
   <!--OUTPUT COLUMN-->
   <div id="outputs-column">
     <div class="card">
@@ -2428,57 +2436,14 @@ async function runAIAnalyzer() {
     }
   }
 
-  // Show in modal (better UX than alert)
+  // Show in modal with overlay
   document.getElementById('analyzerResults').innerHTML = `<pre>${message}</pre>`;
   document.getElementById('analyzerModal').style.display = 'block';
-}
-
-/*Arrow Name info icon*/
-function showArrowNamePopup() {
-  $('gameMathContent').innerHTML = `
-    <p><strong>Arrow Name</strong></p>
-    <p>Enter the make and model of your arrow shaft.</p>
-    <p>Examples:</p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>Victory VAP TKO</li>
-      <li>Easton Axis 5mm</li>
-      <li>Gold Tip Hunter XT</li>
-      <li>Black Eagle Outlaw</li>
-    </ul>
-    <hr>
-    <p>Used for:</p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>Build naming suggestions</li>
-      <li>Personal reference & organization</li>
-      <li>Future sample matching</li>
-    </ul>
-    <p>No impact on calculations — just for your records.</p>
-  `;
-  $('gameMathModal').style.display = 'flex';
-}
-
-/* Arrow Spine info icon*/
-function showSpinePopup() {
-  $('gameMathContent').innerHTML = `
-    <p><strong>Spine (deflection rating)</strong></p>
-    <p>Arrow shaft stiffness — lower number = stiffer shaft.</p>
-    <hr>
-    <p><strong>Common Ranges:</strong></p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>600–400: Light draw / long arrows — very flexible</li>
-      <li>400–300: Standard hunting (60–70 lb) — most popular</li>
-      <li>300–200: Heavy draw (70–80+ lb) — stiff for speed & penetration</li>
-      <li>200 and below: Extreme setups or micro-diameter shafts</li>
-    </ul>
-    <hr>
-    <p>Used for:</p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>Stiffness / Forgiveness rating (matches your effective load)</li>
-      <li>Build comparison & tuning reference</li>
-    </ul>
-    <p>App recommends "Good" range based on your draw weight, arrow length, and point weight.</p>
-  `;
-  $('gameMathModal').style.display = 'flex';
+  document.getElementById('analyzerOverlay').style.display = 'block';
+  document.getElementById('analyzerOverlay').onclick = function() {
+    document.getElementById('analyzerModal').style.display = 'none';
+    this.style.display = 'none';
+};
 }
 
 /*Arrow diameter*/
