@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 
 export default async function handler(req, res) {
-  // CORS headers (unchanged)
+  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -75,16 +75,16 @@ Rules:
 - If one clear match: ambiguous=false, matches=[one object]
 - If ambiguous: ambiguous=true, matches=2–5 best options, clarification=question
 - If no match: { "error": "not found" }
-- Output pure JSON only.`,
+- Output pure JSON only.`
         },
         {
           role: 'user',
-          content: `Find specs for bow model: ${userModel}`,
-        },
+          content: `Find specs for bow model: ${userModel}`
+        }
       ],
       temperature: 0.0,
       max_tokens: 500,
-      response_format: { type: 'json_object' },
+      response_format: { type: 'json_object' }
     });
 
     console.log('[OPENAI] Completion received');
