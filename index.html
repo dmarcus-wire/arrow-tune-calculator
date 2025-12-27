@@ -904,7 +904,7 @@
             <label for="stringWt">String add-ons gr</label>
             <button type="button" onclick="showStringAddonsPopup()" class="info-btn" title="About String Add-ons">ⓘ</button>
           </div>
-          <input type="number" id="stringWt" placeholder="20" min="0" step="0.5" class="left-align" style="flex:1;" data-manual="false">
+          <input type="number" id="stringWt" placeholder="20" min="0" step="0.5" class="left-align" style="flex:1;">
         </div>
 
         <!---String Details-->
@@ -1052,7 +1052,7 @@
             <label for="totalWt">Total weight gr</label>
             <button type="button" onclick="showTotalWtInputPopup()" class="info-btn" title="About Total Arrow Weight">ⓘ</button>
           </div>
-          <input type="number" id="totalWt" placeholder="495" min="200" max="1000" step="0.5" class="left-align" style="flex:1;" data-manual="false">        </div>        
+          <input type="number" id="totalWt" placeholder="495" min="200" max="1000" step="0.5" class="left-align" style="flex:1;">        </div>        
         <!---Point Weight-->           
         <div class="input-row" style="align-items:center; gap:0.5rem;">
           <div style="display:flex; align-items:center; gap:0.4rem;">
@@ -2385,6 +2385,12 @@ if (peepWtInput) {
   // Update border on every input change
   function updatePeepBorder() {
     let val = parseFloat(peepWtInput.value);
+    // Skip red border if field is empty (allow typing)
+    if (peepWtInput.value === '') {
+      peepWtInput.style.borderColor = '';
+      return;
+    }
+    // Red border if invalid
     if (isNaN(val) || val < peepWtInput.min || val > peepWtInput.max) {
       peepWtInput.style.borderColor = 'red';
     } else {
@@ -2408,16 +2414,15 @@ if (peepWtInput) {
 
   peepWtInput.addEventListener('blur', () => {
     let val = parseFloat(peepWtInput.value);
-    if (isNaN(val) || val < peepWtInput.min) {
+    if (peepWtInput.value === '' || isNaN(val) || val < peepWtInput.min) {
       peepWtInput.value = peepWtInput.min;
     } else if (val > peepWtInput.max) {
       peepWtInput.value = peepWtInput.max;
     }
-
-    updatePeepBorder();
+    peepWtInput.style.borderColor = ''; // Reset border
   });
 
-  // Initial check on load
+  // Initial check on load (won't turn red if empty)
   updatePeepBorder();
 }
 
@@ -2439,6 +2444,12 @@ if (dloopWtInput) {
   // Update border on every input change
   function updateDloopBorder() {
     let val = parseFloat(dloopWtInput.value);
+    // Skip red border if field is empty (allow typing)
+    if (dloopWtInput.value === '') {
+      dloopWtInput.style.borderColor = '';
+      return;
+    }
+    // Red border if invalid
     if (isNaN(val) || val < dloopWtInput.min || val > dloopWtInput.max) {
       dloopWtInput.style.borderColor = 'red';
     } else {
@@ -2462,7 +2473,7 @@ if (dloopWtInput) {
 
   dloopWtInput.addEventListener('blur', () => {
     let val = parseFloat(dloopWtInput.value);
-    if (isNaN(val) || val < dloopWtInput.min) {
+    if (dloopWtInput.value === '' || isNaN(val) || val < dloopWtInput.min) {
       dloopWtInput.value = dloopWtInput.min;
     } else if (val > dloopWtInput.max) {
       dloopWtInput.value = dloopWtInput.max;
@@ -2470,7 +2481,7 @@ if (dloopWtInput) {
     dloopWtInput.style.borderColor = ''; // Reset border
   });
 
-  // Initial check on load
+  // Initial check on load (won't turn red if empty)
   updateDloopBorder();
 }
 
@@ -2492,6 +2503,12 @@ if (kisserWtInput) {
   // Update border on every input change
   function updateKisserBorder() {
     let val = parseFloat(kisserWtInput.value);
+    // Skip red border if field is empty (allow typing)
+    if (kisserWtInput.value === '') {
+      kisserWtInput.style.borderColor = '';
+      return;
+    }
+    // Red border if invalid
     if (isNaN(val) || val < kisserWtInput.min || val > kisserWtInput.max) {
       kisserWtInput.style.borderColor = 'red';
     } else {
@@ -2515,7 +2532,7 @@ if (kisserWtInput) {
 
   kisserWtInput.addEventListener('blur', () => {
     let val = parseFloat(kisserWtInput.value);
-    if (isNaN(val) || val < kisserWtInput.min) {
+    if (kisserWtInput.value === '' || isNaN(val) || val < kisserWtInput.min) {
       kisserWtInput.value = kisserWtInput.min;
     } else if (val > kisserWtInput.max) {
       kisserWtInput.value = kisserWtInput.max;
@@ -2523,7 +2540,7 @@ if (kisserWtInput) {
     kisserWtInput.style.borderColor = ''; // Reset border
   });
 
-  // Initial check on load
+  // Initial check on load (won't turn red if empty)
   updateKisserBorder();
 }
 
@@ -2545,6 +2562,12 @@ if (silencerWtInput) {
   // Update border on every input change
   function updateSilencerBorder() {
     let val = parseFloat(silencerWtInput.value);
+    // Skip red border if field is empty (allow typing)
+    if (silencerWtInput.value === '') {
+      silencerWtInput.style.borderColor = '';
+      return;
+    }
+    // Red border if invalid
     if (isNaN(val) || val < silencerWtInput.min || val > silencerWtInput.max) {
       silencerWtInput.style.borderColor = 'red';
     } else {
@@ -2568,7 +2591,7 @@ if (silencerWtInput) {
 
   silencerWtInput.addEventListener('blur', () => {
     let val = parseFloat(silencerWtInput.value);
-    if (isNaN(val) || val < silencerWtInput.min) {
+    if (silencerWtInput.value === '' || isNaN(val) || val < silencerWtInput.min) {
       silencerWtInput.value = silencerWtInput.min;
     } else if (val > silencerWtInput.max) {
       silencerWtInput.value = silencerWtInput.max;
@@ -2576,7 +2599,7 @@ if (silencerWtInput) {
     silencerWtInput.style.borderColor = ''; // Reset border
   });
 
-  // Initial check on load
+  // Initial check on load (won't turn red if empty)
   updateSilencerBorder();
 }
 
@@ -2774,7 +2797,7 @@ function showArrowLenPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
-/* Arrow Length (min 24, max 35) */
+/* Arrow Length (min 20, max 35) */
 const arrowLenInput = document.getElementById('arrowLen');
 
 if (arrowLenInput) {
@@ -2795,16 +2818,7 @@ if (arrowLenInput) {
   }
 
   arrowLenInput.addEventListener('input', () => {
-    let val = parseFloat(arrowLenInput.value);
-    if (isNaN(val)) return; // Allow typing
-
-    if (val < arrowLenInput.min) {
-      arrowLenInput.value = arrowLenInput.min;
-    }
-    if (val > arrowLenInput.max) {
-      arrowLenInput.value = arrowLenInput.max;
-    }
-
+    // Only update border while typing - no clamping here
     updateArrowLenBorder();
   });
 
@@ -2815,7 +2829,7 @@ if (arrowLenInput) {
     } else if (val > arrowLenInput.max) {
       arrowLenInput.value = arrowLenInput.max;
     }
-    updateArrowLenBorder();
+    updateArrowLenBorder(); // Final border check
   });
 
   // Initial check on load (won't turn red if empty)
@@ -2912,16 +2926,7 @@ if (totalWeightInput) {
   }
 
   totalWeightInput.addEventListener('input', () => {
-    let val = parseFloat(totalWeightInput.value);
-    if (isNaN(val)) return; // Allow typing
-
-    if (val < totalWeightInput.min) {
-      totalWeightInput.value = totalWeightInput.min;
-    }
-    if (val > totalWeightInput.max) {
-      totalWeightInput.value = totalWeightInput.max;
-    }
-
+    // Only update border while typing - no clamping here
     updateTotalWeightBorder();
   });
 
@@ -2932,7 +2937,7 @@ if (totalWeightInput) {
     } else if (val > totalWeightInput.max) {
       totalWeightInput.value = totalWeightInput.max;
     }
-    totalWeightInput.style.borderColor = ''; // Reset border
+    updateTotalWeightBorder(); // Final border check
   });
 
   // Initial check on load (won't turn red if empty)
@@ -3020,16 +3025,7 @@ if (pointWtInput) {
   }
 
   pointWtInput.addEventListener('input', () => {
-    let val = parseFloat(pointWtInput.value);
-    if (isNaN(val)) return; // Allow typing
-
-    if (val < pointWtInput.min) {
-      pointWtInput.value = pointWtInput.min;
-    }
-    if (val > pointWtInput.max) {
-      pointWtInput.value = pointWtInput.max;
-    }
-
+    // Only update border while typing - no clamping here
     updatePointWtBorder();
   });
 
@@ -3040,7 +3036,7 @@ if (pointWtInput) {
     } else if (val > pointWtInput.max) {
       pointWtInput.value = pointWtInput.max;
     }
-    pointWtInput.style.borderColor = ''; // Reset border
+    updatePointWtBorder(); // Final border check
   });
 
   // Initial check on load (won't turn red if empty)
@@ -3097,16 +3093,7 @@ if (balancePtInput) {
   }
 
   balancePtInput.addEventListener('input', () => {
-    let val = parseFloat(balancePtInput.value);
-    if (isNaN(val)) return; // Allow typing
-
-    if (val < balancePtInput.min) {
-      balancePtInput.value = balancePtInput.min;
-    }
-    if (val > balancePtInput.max) {
-      balancePtInput.value = balancePtInput.max;
-    }
-
+    // Only update border while typing - no clamping here
     updateBalancePtBorder();
   });
 
@@ -3117,7 +3104,7 @@ if (balancePtInput) {
     } else if (val > balancePtInput.max) {
       balancePtInput.value = balancePtInput.max;
     }
-    balancePtInput.style.borderColor = ''; // Reset border
+    updateBalancePtBorder(); // Final border check
   });
 
   // Initial check on load (won't turn red if empty)
@@ -3175,48 +3162,18 @@ function showBareShaftWtPopup() {
 const bareShaftWtInput = document.getElementById('bareShaftWt');
 
 if (bareShaftWtInput) {
-  // Update border on every input change
-  function updateBareShaftWtBorder() {
-    let val = parseFloat(bareShaftWtInput.value);
-    // Skip red border if field is empty (allow typing)
-    if (bareShaftWtInput.value === '') {
-      bareShaftWtInput.style.borderColor = '';
-      return;
-    }
-    // Red border if invalid
-    if (isNaN(val) || val < bareShaftWtInput.min || val > bareShaftWtInput.max) {
-      bareShaftWtInput.style.borderColor = 'red';
-    } else {
-      bareShaftWtInput.style.borderColor = '';
-    }
-  }
-
   bareShaftWtInput.addEventListener('input', () => {
-    let val = parseFloat(bareShaftWtInput.value);
-    if (isNaN(val)) return; // Allow typing
-
-    if (val < bareShaftWtInput.min) {
-      bareShaftWtInput.value = bareShaftWtInput.min;
-    }
-    if (val > bareShaftWtInput.max) {
-      bareShaftWtInput.value = bareShaftWtInput.max;
-    }
-
-    updateBareShaftWtBorder();
+    // No reset here - allow backspace and typing freely
   });
 
   bareShaftWtInput.addEventListener('blur', () => {
     let val = parseFloat(bareShaftWtInput.value);
-    if (bareShaftWtInput.value === '' || isNaN(val) || val < bareShaftWtInput.min) {
-      bareShaftWtInput.value = bareShaftWtInput.min;
-    } else if (val > bareShaftWtInput.max) {
-      bareShaftWtInput.value = bareShaftWtInput.max;
+    if (bareShaftWtInput.value === '' || isNaN(val) || val < 0) {
+      bareShaftWtInput.value = 0; // Reset only on leaving field if invalid/empty
+    } else if (val > 400) {
+      bareShaftWtInput.value = 400;
     }
-    bareShaftWtInput.style.borderColor = ''; // Reset border
   });
-
-  // Initial check on load (won't turn red if empty)
-  updateBareShaftWtBorder();
 }
 
 /* Insert / Outsert Weight info icon */
