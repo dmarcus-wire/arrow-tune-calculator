@@ -1149,7 +1149,7 @@
               <label for="vaneCount">Vane count</label>
               <button type="button" onclick="showVaneCountPopup()" class="info-btn" title="About Vane Count">ⓘ</button>
             </div>
-            <input type="number" id="vaneCount" placeholder="0" min="0" max="6" class="left-align" style="flex:1;">
+            <input type="number" id="vaneCount" placeholder="0" min="0" max="6" step="1" class="left-align" style="flex:1;">
           </div>
 
           <!--vane height-->
@@ -3560,6 +3560,54 @@ function showVaneCountPopup() {
     <p>More vanes = faster stabilization, slightly more weight/drag.</p>
   `;
   $('gameMathModal').style.display = 'flex';
+}
+
+/* Vane Count (min 0, max 6) */
+const vaneCountInput = document.getElementById('vaneCount');
+
+if (vaneCountInput) {
+  // Update border on every input change
+  function updateVaneCountBorder() {
+    let val = parseFloat(vaneCountInput.value);
+    // Skip red border if field is empty (allow typing)
+    if (vaneCountInput.value === '') {
+      vaneCountInput.style.borderColor = '';
+      return;
+    }
+    // Red border if invalid
+    if (isNaN(val) || val < vaneCountInput.min || val > vaneCountInput.max) {
+      vaneCountInput.style.borderColor = 'red';
+    } else {
+      vaneCountInput.style.borderColor = '';
+    }
+  }
+
+  vaneCountInput.addEventListener('input', () => {
+    let val = parseFloat(vaneCountInput.value);
+    if (isNaN(val)) return; // Allow typing
+
+    if (val < vaneCountInput.min) {
+      vaneCountInput.value = vaneCountInput.min;
+    }
+    if (val > vaneCountInput.max) {
+      vaneCountInput.value = vaneCountInput.max;
+    }
+
+    updateVaneCountBorder();
+  });
+
+  vaneCountInput.addEventListener('blur', () => {
+    let val = parseFloat(vaneCountInput.value);
+    if (vaneCountInput.value === '' || isNaN(val) || val < vaneCountInput.min) {
+      vaneCountInput.value = vaneCountInput.min;
+    } else if (val > vaneCountInput.max) {
+      vaneCountInput.value = vaneCountInput.max;
+    }
+    vaneCountInput.style.borderColor = ''; // Reset border
+  });
+
+  // Initial check on load (won't turn red if empty)
+  updateVaneCountBorder();
 }
 
 /*Vane Height info icon*/
