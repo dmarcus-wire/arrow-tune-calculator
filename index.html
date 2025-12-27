@@ -785,7 +785,7 @@
         </div>
       </div>
 
-      <p style="color:var(--light);font-size:0.85rem; margin-top:0.5rem; text-align:center;">ArrowForge • Offline • Live • v0.0.19</p>
+      <p style="color:var(--light);font-size:0.85rem; margin-top:0.5rem; text-align:center;">ArrowForge • Offline • Live • v0.0.20</p>
     </div>
     
     <div class="card">
@@ -1976,7 +1976,7 @@ async function promptBowLookup() {
   try {
     if (statusEl) statusEl.innerHTML = 'Fetching from AI...';
 
-    const response = await fetch(`https://arrow-forge-ai-git-ai-bow-lookup-davids-projects-0e631f5c.vercel.app/api/bow?model=${encodeURIComponent(normalized)}`);
+    const response = await fetch(`https://arrowforgeap.com/api/bow?model=${encodeURIComponent(normalized)}`);
     if (!response.ok) throw new Error(`API error: ${response.status}`);
 
     const data = await response.json();
@@ -6191,7 +6191,7 @@ toggleArrowDetailsMode();
   <br><br></p>
 
   <p>Questions? Feedback? Email <a href="mailto:arrowforgeapp@tuta.io" style="color:var(--purple);">arrowforgeapp@tuta.io</a><br></p>
-  <p>ArrowForge v0.0.19 — Built for archers, by archers 🏹<br></br></p>
+  <p>ArrowForge v0.0.20 — Built for archers, by archers 🏹<br></br></p>
   <span style="font-size:0.8rem; opacity:0.8;">© 2025 Frontier Forge LLC -    © 2025 <a href="/about.html" style="color:var(--light);">About</a></span>
 </footer>
 
