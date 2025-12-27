@@ -1946,33 +1946,32 @@ async function promptBowLookup() {
   const statusEl = document.getElementById('lookupStatus');
   if (statusEl) {
     statusEl.style.display = 'block';
-    statusEl.innerHTML = 'Searching bow specs...'; // Initial message
+    statusEl.innerHTML = 'Searching bow specs...';
   }
 
-  // Hard-coded known bows (expand as needed)
+  // Hard-coded fallback (optional — expand as needed)
   const knownBows = {
     "2025 hoyt rx-9": { type: "compound", ibo: 342, brace: 6.125, cam: "HBX Gen 4" },
     "hoyt carbon rx-9": { type: "compound", ibo: 342, brace: 6.125, cam: "HBX Gen 4" },
     "mathews lift": { type: "compound", ibo: 343, brace: 6.5, cam: "SwitchWeight X" },
-    // Add more common ones
   };
 
   let matched = null;
   for (const key in knownBows) {
     if (normalized.includes(key)) {
       matched = knownBows[key];
-      matched.full_name = key; // for display
+      matched.full_name = key;
       break;
     }
   }
 
   if (matched) {
     prefillBowFields(normalized, matched);
-    if (statusEl) statusEl.style.display = 'none'; // Hide status
+    if (statusEl) statusEl.style.display = 'none';
     return;
   }
 
-  // Call the LIVE preview API
+  // Call the LIVE API (production endpoint)
   try {
     if (statusEl) statusEl.innerHTML = 'Fetching from AI...';
 
@@ -1984,16 +1983,19 @@ async function promptBowLookup() {
     if (statusEl) statusEl.innerHTML = 'Processing specs...';
 
     if (data.error) {
-      alert(`No specs found for "${normalized}".\nEnter manually or try a different name.`);
+      alert(`No specs found for "${normalized}".\nTry a different name or enter manually.`);
       if (statusEl) statusEl.style.display = 'none';
       return;
     }
 
     if (data.ambiguous) {
-      // Show selection prompt
-      const options = data.matches.map((m, i) => `${i + 1}. ${m.full_name || normalized} (${m.year || 'unknown'})`);
+      // Build a detailed numbered list
+      const options = data.matches.map((m, i) => {
+        return `${i + 1}. ${m.full_name} (${m.year || 'unknown year'}) - ${m.ibo || '?'} IBO, ${m.brace || '?"} brace, ${m.cam || 'unknown cam'}`;
+      });
+
       const choice = prompt(
-        `${data.clarification || 'Which model/year do you have?'}\n\n${options.join('\n')}\n\nEnter number (or cancel):`
+        `${data.clarification || 'Multiple variants found — which one do you have?'}\n\n${options.join('\n')}\n\nEnter number (1-${data.matches.length}) or cancel:`
       );
 
       if (!choice) {
@@ -2009,15 +2011,14 @@ async function promptBowLookup() {
       }
 
       const selected = data.matches[selectedIndex];
-      prefillBowFields(selected.full_name || normalized, selected);
+      prefillBowFields(selected.full_name, selected);
     } else if (data.matches && data.matches.length > 0) {
-      // Single match
-      prefillBowFields(normalized, data.matches[0]);
+      // Single match — auto-fill
+      prefillBowFields(data.matches[0].full_name, data.matches[0]);
     } else {
       alert(`No specs found for "${normalized}".\nEnter manually.`);
     }
 
-    // Hide status on success
     if (statusEl) statusEl.style.display = 'none';
   } catch (e) {
     console.error(e);
