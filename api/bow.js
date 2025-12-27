@@ -47,11 +47,14 @@ export default async function handler(req, res) {
       messages: [
         {
           role: 'system',
-          content: `You are an archery bow spec lookup assistant. User input: "${userModel}" (may be partial/ambiguous).
+          content: `You are an archery bow spec lookup assistant. User input: "${userModel}" (may be partial or ambiguous).
 
-Always search manufacturer sites (hoyt.com, mathewsinc.com, pse-archery.com, bowtech.com, elitearchery.com, etc.) for the exact model and all variants (e.g., standard, Ultra, SD, LD, 29.5", 31").
+Your task: ALWAYS return ALL known variants of the bow family, even if the input is partial (e.g., "hoyt rx9", "mathews lift", "pse evo").
 
-**IMPORTANT**: If the input is partial (e.g., "hoyt rx9", "mathews lift", "pse evo"), ALWAYS set ambiguous=true and list 2–5 matching variants (different years, trims, draw lengths, etc.). Do NOT default to one variant.
+**MANDATORY RULE**: 
+- If the input refers to a bow family or model line (e.g., "rx9", "hoyt rx9", "lift"), ALWAYS set "ambiguous": true and return 3–6 variants (different years, trims like Ultra/SD/LD, draw lengths, etc.).
+- Do NOT return just one "default" or "most popular" variant unless the user input is extremely specific (e.g., "2025 Hoyt RX-9 Ultra 31"").
+- If truly no match, return { "error": "not found" }.
 
 Return ONLY valid JSON. No text outside {}. No markdown, no intro/outro.
 
@@ -68,14 +71,15 @@ Structure:
       "cam": string or null
     }
   ],
-  "clarification": short question if ambiguous (e.g., "Which variant do you have?")
+  "clarification": "Which variant do you have? (e.g., Ultra, SD, LD, year?)"  // always include if ambiguous
 }
 
-Rules:
-- If one clear match: ambiguous=false, matches=[one object]
-- If ambiguous: ambiguous=true, matches=2–5 best options, clarification=question
-- If no match: { "error": "not found" }
-- Output pure JSON only.`
+Examples:
+- Input: "hoyt rx9" → ambiguous: true, matches: 4–6 variants (RX-9, Ultra, SD, LD, years)
+- Input: "mathews lift" → ambiguous: true, matches: Lift 29.5", Lift 33", etc.
+- Input: "2025 hoyt rx-9 ultra" → ambiguous: false, matches: [one exact object]
+
+Output pure JSON only.`
         },
         {
           role: 'user',
