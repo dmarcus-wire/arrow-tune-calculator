@@ -2378,6 +2378,49 @@ function showPeepWtPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+/* Peep Weight (min 0, max 30) */
+const peepWtInput = document.getElementById('peepWt');
+
+if (peepWtInput) {
+  // Update border on every input change
+  function updatePeepBorder() {
+    let val = parseFloat(peepWtInput.value);
+    if (isNaN(val) || val < peepWtInput.min || val > peepWtInput.max) {
+      peepWtInput.style.borderColor = 'red';
+    } else {
+      peepWtInput.style.borderColor = '';
+    }
+  }
+
+  peepWtInput.addEventListener('input', () => {
+    let val = parseFloat(peepWtInput.value);
+    if (isNaN(val)) return; // Allow typing
+
+    if (val < peepWtInput.min) {
+      peepWtInput.value = peepWtInput.min;
+    }
+    if (val > peepWtInput.max) {
+      peepWtInput.value = peepWtInput.max;
+    }
+
+    updatePeepBorder();
+  });
+
+  peepWtInput.addEventListener('blur', () => {
+    let val = parseFloat(peepWtInput.value);
+    if (isNaN(val) || val < peepWtInput.min) {
+      peepWtInput.value = peepWtInput.min;
+    } else if (val > peepWtInput.max) {
+      peepWtInput.value = peepWtInput.max;
+    }
+
+    updatePeepBorder();
+  });
+
+  // Initial check on load
+  updatePeepBorder();
+}
+
 /*DLoop  weight info icon*/
 function showDloopWtPopup() {
   $('gameMathContent').innerHTML = `
@@ -2387,6 +2430,48 @@ function showDloopWtPopup() {
     <p>Protects string, improves nock fit — small speed impact.</p>
   `;
   $('gameMathModal').style.display = 'flex';
+}
+
+/* D-loop Weight (min 0, max 20) */
+const dloopWtInput = document.getElementById('dloopWt');
+
+if (dloopWtInput) {
+  // Update border on every input change
+  function updateDloopBorder() {
+    let val = parseFloat(dloopWtInput.value);
+    if (isNaN(val) || val < dloopWtInput.min || val > dloopWtInput.max) {
+      dloopWtInput.style.borderColor = 'red';
+    } else {
+      dloopWtInput.style.borderColor = '';
+    }
+  }
+
+  dloopWtInput.addEventListener('input', () => {
+    let val = parseFloat(dloopWtInput.value);
+    if (isNaN(val)) return; // Allow typing
+
+    if (val < dloopWtInput.min) {
+      dloopWtInput.value = dloopWtInput.min;
+    }
+    if (val > dloopWtInput.max) {
+      dloopWtInput.value = dloopWtInput.max;
+    }
+
+    updateDloopBorder();
+  });
+
+  dloopWtInput.addEventListener('blur', () => {
+    let val = parseFloat(dloopWtInput.value);
+    if (isNaN(val) || val < dloopWtInput.min) {
+      dloopWtInput.value = dloopWtInput.min;
+    } else if (val > dloopWtInput.max) {
+      dloopWtInput.value = dloopWtInput.max;
+    }
+    dloopWtInput.style.borderColor = ''; // Reset border
+  });
+
+  // Initial check on load
+  updateDloopBorder();
 }
 
 /*Kisser  weight info icon*/
@@ -2400,6 +2485,48 @@ function showKisserWtPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+/* Kisser Weight (min 0, max 15) */
+const kisserWtInput = document.getElementById('kisserWt');
+
+if (kisserWtInput) {
+  // Update border on every input change
+  function updateKisserBorder() {
+    let val = parseFloat(kisserWtInput.value);
+    if (isNaN(val) || val < kisserWtInput.min || val > kisserWtInput.max) {
+      kisserWtInput.style.borderColor = 'red';
+    } else {
+      kisserWtInput.style.borderColor = '';
+    }
+  }
+
+  kisserWtInput.addEventListener('input', () => {
+    let val = parseFloat(kisserWtInput.value);
+    if (isNaN(val)) return; // Allow typing
+
+    if (val < kisserWtInput.min) {
+      kisserWtInput.value = kisserWtInput.min;
+    }
+    if (val > kisserWtInput.max) {
+      kisserWtInput.value = kisserWtInput.max;
+    }
+
+    updateKisserBorder();
+  });
+
+  kisserWtInput.addEventListener('blur', () => {
+    let val = parseFloat(kisserWtInput.value);
+    if (isNaN(val) || val < kisserWtInput.min) {
+      kisserWtInput.value = kisserWtInput.min;
+    } else if (val > kisserWtInput.max) {
+      kisserWtInput.value = kisserWtInput.max;
+    }
+    kisserWtInput.style.borderColor = ''; // Reset border
+  });
+
+  // Initial check on load
+  updateKisserBorder();
+}
+
 /* Silencer weight info icon*/
 function showSilencerWtPopup() {
   $('gameMathContent').innerHTML = `
@@ -2411,50 +2538,47 @@ function showSilencerWtPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
-/*Nock weight info icon*/
-function showNockWtPopup() {
-  $('gameMathContent').innerHTML = `
-    <p><strong>Nock Weight (grains)</strong></p>
-    <p>Extra weight from brass nocking points or tie-on nocks.</p>
-    <p>Typical: 5–15 gr (brass ~10 gr).</p>
-    <p>Small impact on speed, improves nock fit.</p>
-  `;
-  $('gameMathModal').style.display = 'flex';
-}
+/* Silencer Weight (min 0, max 60) */
+const silencerWtInput = document.getElementById('silencerWt');
 
-// Prevent negatives and enforce min/max for all string accessory weights
-function enforceInputRange(inputId, minVal, maxVal) {
-  const input = document.getElementById(inputId);
-  if (!input) return;
+if (silencerWtInput) {
+  // Update border on every input change
+  function updateSilencerBorder() {
+    let val = parseFloat(silencerWtInput.value);
+    if (isNaN(val) || val < silencerWtInput.min || val > silencerWtInput.max) {
+      silencerWtInput.style.borderColor = 'red';
+    } else {
+      silencerWtInput.style.borderColor = '';
+    }
+  }
 
-  input.addEventListener('input', () => {
-    let val = parseFloat(input.value);
+  silencerWtInput.addEventListener('input', () => {
+    let val = parseFloat(silencerWtInput.value);
     if (isNaN(val)) return; // Allow typing
 
-    if (val < minVal) {
-      input.value = minVal;
+    if (val < silencerWtInput.min) {
+      silencerWtInput.value = silencerWtInput.min;
     }
-    if (val > maxVal) {
-      input.value = maxVal;
+    if (val > silencerWtInput.max) {
+      silencerWtInput.value = silencerWtInput.max;
     }
+
+    updateSilencerBorder();
   });
 
-  input.addEventListener('blur', () => {
-    let val = parseFloat(input.value);
-    if (isNaN(val) || val < minVal) {
-      input.value = minVal;
-    } else if (val > maxVal) {
-      input.value = maxVal;
+  silencerWtInput.addEventListener('blur', () => {
+    let val = parseFloat(silencerWtInput.value);
+    if (isNaN(val) || val < silencerWtInput.min) {
+      silencerWtInput.value = silencerWtInput.min;
+    } else if (val > silencerWtInput.max) {
+      silencerWtInput.value = silencerWtInput.max;
     }
+    silencerWtInput.style.borderColor = ''; // Reset border
   });
+
+  // Initial check on load
+  updateSilencerBorder();
 }
-
-// Apply to each field
-enforceInputRange('peepWt', 5, 30);
-enforceInputRange('dloopWt', 5, 20);
-enforceInputRange('kisserWt', 0, 10);
-enforceInputRange('silencerWt', 0, 50);
-enforceInputRange('nockWt', 5, 20);
 
 /*Sight pins info icon*/
 function showSightPinsPopup() {
@@ -2536,6 +2660,30 @@ async function runAIAnalyzer() {
     console.error(e);
     alert('Error connecting to AI analyzer. Try again.');
   }
+}
+
+/*Spine info icon*/
+function showSpinePopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Spine</strong></p>
+    <p>Arrow stiffness rating — measures how much the shaft flexes under force.</p>
+    <hr>
+    <p><strong>Typical Ranges:</strong></p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>300–400 spine: Stiffer — for heavy draw weight (70–90+ lb) or short draw length.</li>
+      <li>400–500 spine: Standard — most hunting bows (50–70 lb).</li>
+      <li>500–700+ spine: Softer — lighter draw weight (30–50 lb) or longer arrows.</li>
+    </ul>
+    <hr>
+    <p>Used for:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>Arrow tuning & forgiveness</li>
+      <li>Future spine recommendation</li>
+      <li>Build comparison & reference</li>
+    </ul>
+    <p>Stiffer spine = less flex (more accurate at speed), but less forgiving on release. Softer spine = more flex (forgiving), but can cause erratic flight if too soft.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
 }
 
 /*Arrow diameter*/
@@ -2974,6 +3122,17 @@ function showVaneHelicalPopup() {
       <li>Fixed-blade broadheads benefit most from high/max helical</li>
     </ul>
     <p>Most hunters use Moderate to Max for reliable broadhead tuning.</p>
+  `;
+  $('gameMathModal').style.display = 'flex';
+}
+
+/*Nock weight info icon*/
+function showNockWtPopup() {
+  $('gameMathContent').innerHTML = `
+    <p><strong>Nock Weight (grains)</strong></p>
+    <p>Extra weight from brass nocking points or tie-on nocks.</p>
+    <p>Typical: 5–15 gr (brass ~10 gr).</p>
+    <p>Small impact on speed, improves nock fit.</p>
   `;
   $('gameMathModal').style.display = 'flex';
 }
