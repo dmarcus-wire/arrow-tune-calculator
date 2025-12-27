@@ -1044,7 +1044,7 @@
             <label for="arrowLen">Length in</label>
             <button type="button" onclick="showArrowLenPopup()" class="info-btn" title="About Arrow Length">ⓘ</button>
           </div>
-          <input type="number" id="arrowLen" placeholder="28.5" min="24" max="34" step="0.1" class="left-align" style="flex:1;">
+          <input type="number" id="arrowLen" placeholder="28.5" min="20" max="35" step="0.1" class="left-align" style="flex:1;">
         </div>        
         <!---Total Weight-->        
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -2693,7 +2693,8 @@ if (spineInput) {
   // Update border on every input change
   function updateSpineBorder() {
     let val = parseFloat(spineInput.value);
-    if (isNaN(val) || val < spineInput.min || val > spineInput.max) {
+    // Only apply red if user has typed something invalid
+    if (spineInput.value !== '' && (isNaN(val) || val < spineInput.min || val > spineInput.max)) {
       spineInput.style.borderColor = 'red';
     } else {
       spineInput.style.borderColor = '';
@@ -2716,15 +2717,15 @@ if (spineInput) {
 
   spineInput.addEventListener('blur', () => {
     let val = parseFloat(spineInput.value);
-    if (isNaN(val) || val < spineInput.min) {
+    if (spineInput.value !== '' && (isNaN(val) || val < spineInput.min)) {
       spineInput.value = spineInput.min;
     } else if (val > spineInput.max) {
       spineInput.value = spineInput.max;
     }
-    spineInput.style.borderColor = ''; // Reset border
+    updateSpineBorder();
   });
 
-  // Initial check on load
+  // Initial check: only if value is present
   updateSpineBorder();
 }
 
@@ -2771,6 +2772,54 @@ function showArrowLenPopup() {
     <p>Longer arrows = more stable, higher FOC, but slightly less speed.</p>
   `;
   $('gameMathModal').style.display = 'flex';
+}
+
+/* Arrow Length (min 24, max 35) */
+const arrowLenInput = document.getElementById('arrowLen');
+
+if (arrowLenInput) {
+  // Update border on every input change
+  function updateArrowLenBorder() {
+    let val = parseFloat(arrowLenInput.value);
+    // Skip red border if field is empty (allow typing)
+    if (arrowLenInput.value === '') {
+      arrowLenInput.style.borderColor = '';
+      return;
+    }
+    // Red border if invalid
+    if (isNaN(val) || val < arrowLenInput.min || val > arrowLenInput.max) {
+      arrowLenInput.style.borderColor = 'red';
+    } else {
+      arrowLenInput.style.borderColor = '';
+    }
+  }
+
+  arrowLenInput.addEventListener('input', () => {
+    let val = parseFloat(arrowLenInput.value);
+    if (isNaN(val)) return; // Allow typing
+
+    if (val < arrowLenInput.min) {
+      arrowLenInput.value = arrowLenInput.min;
+    }
+    if (val > arrowLenInput.max) {
+      arrowLenInput.value = arrowLenInput.max;
+    }
+
+    updateArrowLenBorder();
+  });
+
+  arrowLenInput.addEventListener('blur', () => {
+    let val = parseFloat(arrowLenInput.value);
+    if (arrowLenInput.value === '' || isNaN(val) || val < arrowLenInput.min) {
+      arrowLenInput.value = arrowLenInput.min;
+    } else if (val > arrowLenInput.max) {
+      arrowLenInput.value = arrowLenInput.max;
+    }
+    updateArrowLenBorder();
+  });
+
+  // Initial check on load (won't turn red if empty)
+  updateArrowLenBorder();
 }
 
 /* Arrow Total Weight info icon*/
