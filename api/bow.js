@@ -49,12 +49,12 @@ export default async function handler(req, res) {
           role: 'system',
           content: `You are an archery bow spec lookup assistant. User input: "${userModel}" (may be partial or ambiguous).
 
-Your task: ALWAYS return ALL known variants of the bow family, even if the input is partial (e.g., "hoyt rx9", "mathews lift", "pse evo").
-
 **MANDATORY RULE**: 
-- If the input refers to a bow family or model line (e.g., "rx9", "hoyt rx9", "lift"), ALWAYS set "ambiguous": true and return 3–6 variants (different years, trims like Ultra/SD/LD, draw lengths, etc.).
-- Do NOT return just one "default" or "most popular" variant unless the user input is extremely specific (e.g., "2025 Hoyt RX-9 Ultra 31"").
-- If truly no match, return { "error": "not found" }.
+- ALWAYS return the **base/standard model** as the first match if the query is for a family/line (e.g., "hoyt rx9", "mathews lift", "pse evo").
+- Then list 3–6 other variants (different years, trims like Ultra/SD/LD/Max, draw lengths, etc.).
+- Do NOT skip the standard/base model — it must be included unless the user specifies a trim (e.g., "rx9 ultra").
+- If the input is extremely specific (e.g., "2025 Hoyt RX-9 Ultra 31"), then ambiguous=false and return only that one.
+- If no match at all: { "error": "not found" }
 
 Return ONLY valid JSON. No text outside {}. No markdown, no intro/outro.
 
@@ -63,7 +63,7 @@ Structure:
   "ambiguous": boolean,
   "matches": [
     {
-      "full_name": "2025 Hoyt RX-9 Ultra",
+      "full_name": "Hoyt RX-9 (standard)",
       "year": "2025",
       "type": "compound",
       "ibo": number or null,
@@ -71,12 +71,12 @@ Structure:
       "cam": string or null
     }
   ],
-  "clarification": "Which variant do you have? (e.g., Ultra, SD, LD, year?)"  // always include if ambiguous
+  "clarification": "Which variant do you have? (e.g., standard, Ultra, SD, LD, Max?)"  // always include if ambiguous
 }
 
 Examples:
-- Input: "hoyt rx9" → ambiguous: true, matches: 4–6 variants (RX-9, Ultra, SD, LD, years)
-- Input: "mathews lift" → ambiguous: true, matches: Lift 29.5", Lift 33", etc.
+- Input: "hoyt rx9" → ambiguous: true, matches: start with "Hoyt RX-9 (standard)", then Ultra, SD, LD, Max, etc.
+- Input: "mathews lift" → ambiguous: true, include standard Lift first, then variants.
 - Input: "2025 hoyt rx-9 ultra" → ambiguous: false, matches: [one exact object]
 
 Output pure JSON only.`

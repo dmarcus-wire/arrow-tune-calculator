@@ -1991,7 +1991,7 @@ async function promptBowLookup() {
     if (data.ambiguous) {
       // Build a detailed numbered list
       const options = data.matches.map((m, i) => {
-        return `${i + 1}. ${m.full_name} (${m.year || 'unknown year'}) - ${m.ibo || '?'} IBO, ${m.brace || '?"} brace, ${m.cam || 'unknown cam'}`;
+        return `${i + 1}. ${m.full_name} (${m.year || 'unknown year'}) - ${m.ibo || '?'} IBO, ${m.brace || '?'} brace, ${m.cam || 'unknown cam'}`;
       });
 
       const choice = prompt(
