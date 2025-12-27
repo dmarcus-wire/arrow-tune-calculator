@@ -785,7 +785,7 @@
         </div>
       </div>
 
-      <p style="color:var(--light);font-size:0.85rem; margin-top:0.5rem; text-align:center;">ArrowForge • Offline • Live • v0.0.17</p>
+      <p style="color:var(--light);font-size:0.85rem; margin-top:0.5rem; text-align:center;">ArrowForge • Offline • Live • v0.0.19</p>
     </div>
     
     <div class="card">
@@ -880,7 +880,7 @@
             <label for="drawWt">Draw wt lb</label>
             <button type="button" onclick="showDrawWtPopup()" class="info-btn" title="About Draw Weight">ⓘ</button>
           </div>
-          <input type="number" id="drawWt" placeholder="70" min="30" max="100" step="0.5" class="left-align" style="flex:1;">
+          <input type="number" id="drawWt" placeholder="70" min="0" max="120" step="0.5" class="left-align" style="flex:1;">
         </div>
         <!---Draw Length-->
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -888,7 +888,7 @@
             <label for="drawLen">Draw length in</label>
             <button type="button" onclick="showDrawLenPopup()" class="info-btn" title="About Draw Length">ⓘ</button>
           </div>
-          <input type="number" id="drawLen" placeholder="29" min="24" max="34" step="0.1" class="left-align" style="flex:1;">
+          <input type="number" id="drawLen" placeholder="29" min="0" max="40" step="0.1" class="left-align" style="flex:1;">
         </div>
         <!---Let off %--> 
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -896,7 +896,7 @@
             <label for="letOff">Let-off %</label>
             <button type="button" onclick="showLetOffPopup()" class="info-btn" title="About Let-off">ⓘ</button>
           </div>
-          <input type="number" id="letOff" placeholder="80" min="65" max="90" step="1" class="left-align" style="flex:1;">
+          <input type="number" id="letOff" placeholder="80" min="0" max="90" step="1" class="left-align" style="flex:1;">
         </div> 
         <!---String Weight-->
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -2137,28 +2137,55 @@ function showCamTypePopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
-/*Draw Weight info icon*/
+/* Draw Weight info icon popup */
 function showDrawWtPopup() {
-  $('gameMathContent').innerHTML = `
+  const content = `
     <p><strong>Draw Weight (lb)</strong></p>
     <p>Peak weight your bow is set to — the force needed to pull it back.</p>
     <hr>
     <p><strong>Typical Ranges:</strong></p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+    <ul style="margin-left:1.25rem; font-size:0.9rem;">
       <li>40–60 lb: Lighter — easier to draw, common for women/youth or long holds.</li>
       <li>60–70 lb: Standard hunting — good balance of speed and penetration.</li>
       <li>70–80+ lb: Heavy — max speed/momentum, popular for big game (elk, bear).</li>
     </ul>
     <hr>
-    <p>Used for:</p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+    <p><strong>Used for:</strong></p>
+    <ul style="margin-left:1.25rem; font-size:0.9rem;">
       <li>FPS estimate (higher = faster)</li>
       <li>Effective Load & spine recommendation</li>
       <li>GPP calculation</li>
     </ul>
     <p>Higher draw weight = more speed & penetration, but harder to shoot accurately.</p>
   `;
+
+  $('gameMathContent').innerHTML = content;
   $('gameMathModal').style.display = 'flex';
+}
+
+// Draw Weight (min 30)
+const drawWtInput = document.getElementById('drawWt');
+drawWtInput.addEventListener('input', () => {
+  if (drawWtInput.value < drawWtInput.min) {
+    drawWtInput.value = drawWtInput.min;
+  }
+});
+drawWtInput.addEventListener('blur', () => {
+  if (drawWtInput.value < drawWtInput.min || isNaN(drawWtInput.value)) {
+    drawWtInput.value = drawWtInput.min;
+  }
+});
+
+drawWtInput.addEventListener('input', () => {
+  if (drawWtInput.value < drawWtInput.min) {
+    drawWtInput.style.borderColor = 'red';
+  } else {
+    drawWtInput.style.borderColor = '';
+  }
+});
+
+if (drawWtInput.value > drawWtInput.max) {
+  drawWtInput.value = drawWtInput.max;
 }
 
 /*Draw Length info icon*/
@@ -2188,29 +2215,63 @@ function showDrawLenPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+// Draw Length (min 24)
+const drawLenInput = document.getElementById('drawLen');
+drawLenInput.addEventListener('input', () => {
+  if (drawLenInput.value < drawLenInput.min) {
+    drawLenInput.value = drawLenInput.min;
+  }
+});
+drawLenInput.addEventListener('blur', () => {
+  if (drawLenInput.value < drawLenInput.min || isNaN(drawLenInput.value)) {
+    drawLenInput.value = drawLenInput.min;
+  }
+});
 
-/*Let Off % info icon*/
+
+/* Let-Off % info icon popup */
 function showLetOffPopup() {
   $('gameMathContent').innerHTML = `
-    <p><strong>Let-off %</strong></p>
-    <p>Percentage of peak draw weight you hold at full draw (valley).</p>
+    <p><strong>Let-Off %</strong></p>
+    <p>The percentage of peak draw weight you hold at full draw (the "valley").</p>
     <hr>
     <p><strong>Typical Ranges:</strong></p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>65–75%: Aggressive cams — faster, harder to hold (speed bows)</li>
-      <li>75–85%: Balanced — most hunting bows (smooth & fast)</li>
-      <li>85–90+%: High let-off — easier to hold, common in target/hunting hybrids</li>
+    <ul style="margin-left:1.25rem; font-size:0.9rem;">
+      <li>65–75%: Aggressive cams — faster bows, harder to hold steady.</li>
+      <li>75–85%: Balanced — most common for hunting (smooth + fast).</li>
+      <li>85–90+%: High let-off — easiest to hold, great for long shots or target.</li>
     </ul>
     <hr>
-    <p>Used for:</p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>Future speed estimate fine-tuning (higher let-off = slight speed gain)</li>
-      <li>Build comparison & reference</li>
+    <p><strong>Used for:</strong></p>
+    <ul style="margin-left:1.25rem; font-size:0.9rem;">
+      <li>Fine-tuning FPS estimates (higher let-off = slight speed gain).</li>
+      <li>Comparing bows & builds.</li>
     </ul>
-    <p>Higher let-off = easier to hold steady for longer, great for hunting or target.</p>
+    <p>Higher let-off makes holding steady easier — ideal for hunting or target shooting.</p>
     <p><em>Recurve/Longbow: N/A (no let-off)</em></p>
   `;
   $('gameMathModal').style.display = 'flex';
+}
+
+/* Let-Off % (min 65, max 90) */
+const letOffInput = document.getElementById('letOff'); // add id="letOff" to your input
+if (letOffInput) {
+  letOffInput.addEventListener('input', () => {
+    if (letOffInput.value < letOffInput.min) {
+      letOffInput.value = letOffInput.min;
+    }
+    if (letOffInput.value > letOffInput.max) {
+      letOffInput.value = letOffInput.max;
+    }
+  });
+  letOffInput.addEventListener('blur', () => {
+    if (letOffInput.value < letOffInput.min || isNaN(letOffInput.value)) {
+      letOffInput.value = letOffInput.min;
+    }
+    if (letOffInput.value > letOffInput.max) {
+      letOffInput.value = letOffInput.max;
+    }
+  });
 }
 
 /*String weight*/
@@ -5202,7 +5263,7 @@ toggleArrowDetailsMode();
   <br><br></p>
 
   <p>Questions? Feedback? Email <a href="mailto:arrowforgeapp@tuta.io" style="color:var(--purple);">arrowforgeapp@tuta.io</a><br></p>
-  <p>ArrowForge v0.0.17 — Built for archers, by archers 🏹<br></br></p>
+  <p>ArrowForge v0.0.19 — Built for archers, by archers 🏹<br></br></p>
   <span style="font-size:0.8rem; opacity:0.8;">© 2025 Frontier Forge LLC -    © 2025 <a href="/about.html" style="color:var(--light);">About</a></span>
 </footer>
 
