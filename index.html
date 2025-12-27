@@ -2254,22 +2254,35 @@ function showLetOffPopup() {
 }
 
 /* Let-Off % (min 65, max 90) */
-const letOffInput = document.getElementById('letOff'); // add id="letOff" to your input
+const letOffInput = document.getElementById('letOff'); // Ensure your input has id="letOff"
+
 if (letOffInput) {
   letOffInput.addEventListener('input', () => {
-    if (letOffInput.value < letOffInput.min) {
+    let val = parseFloat(letOffInput.value);
+    if (isNaN(val)) return; // Allow typing, don't reset mid-input
+
+    if (val < letOffInput.min) {
       letOffInput.value = letOffInput.min;
-    }
-    if (letOffInput.value > letOffInput.max) {
+    } else if (val > letOffInput.max) {
       letOffInput.value = letOffInput.max;
+    }
+
+    // Red border if invalid
+    if (isNaN(val) || val < letOffInput.min || val > letOffInput.max) {
+      letOffInput.style.borderColor = 'red';
+    } else {
+      letOffInput.style.borderColor = '';
     }
   });
+
   letOffInput.addEventListener('blur', () => {
-    if (letOffInput.value < letOffInput.min || isNaN(letOffInput.value)) {
+    let val = parseFloat(letOffInput.value);
+    if (isNaN(val) || val < letOffInput.min) {
       letOffInput.value = letOffInput.min;
-    }
-    if (letOffInput.value > letOffInput.max) {
+      letOffInput.style.borderColor = '';
+    } else if (val > letOffInput.max) {
       letOffInput.value = letOffInput.max;
+      letOffInput.style.borderColor = '';
     }
   });
 }
