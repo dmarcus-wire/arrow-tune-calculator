@@ -1976,7 +1976,7 @@ async function promptBowLookup() {
   try {
     if (statusEl) statusEl.innerHTML = 'Fetching from AI...';
 
-    const response = await fetch(`https://arrowforgeap.com/api/bow?model=${encodeURIComponent(normalized)}`);
+    const response = await fetch(`https://arrowforgeapp.com/api/bow?model=${encodeURIComponent(normalized)}`);
     if (!response.ok) throw new Error(`API error: ${response.status}`);
 
     const data = await response.json();
