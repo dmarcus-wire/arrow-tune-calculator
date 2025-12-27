@@ -1140,7 +1140,7 @@
               <label for="vaneWt">Vane weight (each) gr</label>
               <button type="button" onclick="showVaneWtPopup()" class="info-btn" title="About Vane Weight">ⓘ</button>
             </div>
-            <input type="number" id="vaneWt" placeholder="0" step="0.1" class="left-align" style="flex:1;">
+            <input type="number" id="vaneWt" placeholder="0" min="0" max="20" step="0.1" class="left-align" style="flex:1;">
           </div>
 
           <!--vane count-->
@@ -3495,6 +3495,54 @@ function showVaneWtPopup() {
     <p>Multiplied by vane count for total fletching weight.</p>
   `;
   $('gameMathModal').style.display = 'flex';
+}
+
+/* Vane Weight (each) (min 0, max 20) */
+const vaneWtInput = document.getElementById('vaneWt');
+
+if (vaneWtInput) {
+  // Update border on every input change
+  function updateVaneWtBorder() {
+    let val = parseFloat(vaneWtInput.value);
+    // Skip red border if field is empty (allow typing)
+    if (vaneWtInput.value === '') {
+      vaneWtInput.style.borderColor = '';
+      return;
+    }
+    // Red border if invalid
+    if (isNaN(val) || val < vaneWtInput.min || val > vaneWtInput.max) {
+      vaneWtInput.style.borderColor = 'red';
+    } else {
+      vaneWtInput.style.borderColor = '';
+    }
+  }
+
+  vaneWtInput.addEventListener('input', () => {
+    let val = parseFloat(vaneWtInput.value);
+    if (isNaN(val)) return; // Allow typing
+
+    if (val < vaneWtInput.min) {
+      vaneWtInput.value = vaneWtInput.min;
+    }
+    if (val > vaneWtInput.max) {
+      vaneWtInput.value = vaneWtInput.max;
+    }
+
+    updateVaneWtBorder();
+  });
+
+  vaneWtInput.addEventListener('blur', () => {
+    let val = parseFloat(vaneWtInput.value);
+    if (vaneWtInput.value === '' || isNaN(val) || val < vaneWtInput.min) {
+      vaneWtInput.value = vaneWtInput.min;
+    } else if (val > vaneWtInput.max) {
+      vaneWtInput.value = vaneWtInput.max;
+    }
+    vaneWtInput.style.borderColor = ''; // Reset border
+  });
+
+  // Initial check on load (won't turn red if empty)
+  updateVaneWtBorder();
 }
 
 /* Vane Count info icon*/
