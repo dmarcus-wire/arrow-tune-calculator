@@ -1185,13 +1185,13 @@
             </div>
             <input type="number" id="nockWt" placeholder="0" step="0.5" min="0" max="50" class="left-align" style="flex:1;">
           </div>
-
+          <!--Glue Weight-->
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="glueWt">Glue / Pin gr</label>
               <button type="button" onclick="showGlueWtPopup()" class="info-btn" title="About Glue/Pin">ⓘ</button>
             </div>
-            <input type="number" id="glueWt" placeholder="0" step="0.5" class="left-align" style="flex:1;">
+            <input type="number" id="glueWt" placeholder="0" min="0" max="15" step="0.5" class="left-align" style="flex:1;">
           </div>
           <!-- Arrow Components Total Display -->
           <div style="margin-top:1rem; padding:0.75rem; background:var(--border); border-radius:8px; text-align:center;">
@@ -3772,6 +3772,54 @@ function showGlueWtPopup() {
     <p>Minor contribution — included for maximum accuracy.</p>
   `;
   $('gameMathModal').style.display = 'flex';
+}
+
+/* Glue / Pin Weight (min 0, max 15) */
+const glueWtInput = document.getElementById('glueWt');
+
+if (glueWtInput) {
+  // Update border on every input change
+  function updateGlueWtBorder() {
+    let val = parseFloat(glueWtInput.value);
+    // Skip red border if field is empty (allow typing)
+    if (glueWtInput.value === '') {
+      glueWtInput.style.borderColor = '';
+      return;
+    }
+    // Red border if invalid
+    if (isNaN(val) || val < glueWtInput.min || val > glueWtInput.max) {
+      glueWtInput.style.borderColor = 'red';
+    } else {
+      glueWtInput.style.borderColor = '';
+    }
+  }
+
+  glueWtInput.addEventListener('input', () => {
+    let val = parseFloat(glueWtInput.value);
+    if (isNaN(val)) return; // Allow typing
+
+    if (val < glueWtInput.min) {
+      glueWtInput.value = glueWtInput.min;
+    }
+    if (val > glueWtInput.max) {
+      glueWtInput.value = glueWtInput.max;
+    }
+
+    updateGlueWtBorder();
+  });
+
+  glueWtInput.addEventListener('blur', () => {
+    let val = parseFloat(glueWtInput.value);
+    if (glueWtInput.value === '' || isNaN(val) || val < glueWtInput.min) {
+      glueWtInput.value = glueWtInput.min;
+    } else if (val > glueWtInput.max) {
+      glueWtInput.value = glueWtInput.max;
+    }
+    glueWtInput.style.borderColor = ''; // Reset border
+  });
+
+  // Initial check on load (won't turn red if empty)
+  updateGlueWtBorder();
 }
 
 function calculateEstimatedFPS() {
