@@ -47,39 +47,52 @@ export default async function handler(req, res) {
       messages: [
         {
           role: 'system',
-          content: `You are an archery bow spec lookup assistant. User input: "${userModel}" (may be partial or ambiguous).
+          content: `You are an expert archery bow database. User gives a bow model (partial or full).
 
-**MANDATORY RULE**: 
-- ALWAYS return the **base/standard model** as the first match if the query is for a family/line (e.g., "hoyt rx9", "mathews lift", "pse evo").
-- Then list 3–6 other variants (different years, trims like Ultra/SD/LD/Max, draw lengths, etc.).
-- Do NOT skip the standard/base model — it must be included unless the user specifies a trim (e.g., "rx9 ultra").
-- If the input is extremely specific (e.g., "2025 Hoyt RX-9 Ultra 31"), then ambiguous=false and return only that one.
-- If no match at all: { "error": "not found" }
+        Return ONLY valid JSON in this EXACT structure. Nothing else. No explanations, no markdown.
 
-Return ONLY valid JSON. No text outside {}. No markdown, no intro/outro.
+        {
+          "ambiguous": boolean,
+          "matches": [
+            {
+              "full_name": string,
+              "year": string or null,
+              "type": "compound" or "recurve" or "longbow",
+              "ibo": number or null,
+              "brace": number or null,
+              "cam": string or null
+            }
+          ],
+          "clarification": string or null
+        }
 
-Structure:
-{
-  "ambiguous": boolean,
-  "matches": [
-    {
-      "full_name": "Hoyt RX-9 (standard)",
-      "year": "2025",
-      "type": "compound",
-      "ibo": number or null,
-      "brace": number or null,
-      "cam": string or null
-    }
-  ],
-  "clarification": "Which variant do you have? (e.g., standard, Ultra, SD, LD, Max?)"  // always include if ambiguous
-}
+        Rules:
+        - If input is partial/family name (e.g., "hoyt rx9", "mathews lift", "pse evo"), ALWAYS set "ambiguous": true and return 4-6 variants.
+        - ALWAYS include the base/standard model as the FIRST item if it exists.
+        - Use real manufacturer data (Hoyt, Mathews, PSE, etc.).
+        - If exact single match: "ambiguous": false, one item in matches.
+        - If no match: { "error": "not found" }
 
-Examples:
-- Input: "hoyt rx9" → ambiguous: true, matches: start with "Hoyt RX-9 (standard)", then Ultra, SD, LD, Max, etc.
-- Input: "mathews lift" → ambiguous: true, include standard Lift first, then variants.
-- Input: "2025 hoyt rx-9 ultra" → ambiguous: false, matches: [one exact object]
+        Examples:
 
-Output pure JSON only.`
+        Input: "hoyt rx9"
+        Output:
+        {
+          "ambiguous": true,
+          "matches": [
+            {"full_name": "Hoyt RX-9 (standard)", "year": "2025", "type": "compound", "ibo": 342, "brace": 6.125, "cam": "HBX Gen 4"},
+            {"full_name": "Hoyt RX-9 Ultra", "year": "2025", "type": "compound", "ibo": 345, "brace": 6.75, "cam": "HBX Gen 4"},
+            {"full_name": "Hoyt RX-9 SD", "year": "2025", "type": "compound", "ibo": 338, "brace": 6.0, "cam": "HBX SD"},
+            {"full_name": "Hoyt RX-9 LD", "year": "2025", "type": "compound", "ibo": 340, "brace": 7.0, "cam": "HBX Gen 4"},
+            {"full_name": "Hoyt RX-9 Max", "year": "2025", "type": "compound", "ibo": 348, "brace": 6.5, "cam": "HBX Gen 4"}
+          ],
+          "clarification": "Which RX-9 variant do you have?"
+        }
+
+        Input: "mathews lift"
+        Output: similar structure with Lift X 29.5, Lift X 33, Lift XD, Lift RS, etc.
+
+        Output ONLY the JSON.`
         },
         {
           role: 'user',

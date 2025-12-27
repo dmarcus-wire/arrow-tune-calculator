@@ -1949,29 +1949,7 @@ async function promptBowLookup() {
     statusEl.innerHTML = 'Searching bow specs...';
   }
 
-  // Hard-coded fallback (optional — expand as needed)
-  const knownBows = {
-    "2025 hoyt rx-9": { type: "compound", ibo: 342, brace: 6.125, cam: "HBX Gen 4" },
-    "hoyt carbon rx-9": { type: "compound", ibo: 342, brace: 6.125, cam: "HBX Gen 4" },
-    "mathews lift": { type: "compound", ibo: 343, brace: 6.5, cam: "SwitchWeight X" },
-  };
-
-  let matched = null;
-  for (const key in knownBows) {
-    if (normalized.includes(key)) {
-      matched = knownBows[key];
-      matched.full_name = key;
-      break;
-    }
-  }
-
-  if (matched) {
-    prefillBowFields(normalized, matched);
-    if (statusEl) statusEl.style.display = 'none';
-    return;
-  }
-
-  // Call the LIVE API (production endpoint)
+  // Call the LIVE API first (production endpoint)
   try {
     if (statusEl) statusEl.innerHTML = 'Fetching from AI...';
 
@@ -1983,7 +1961,27 @@ async function promptBowLookup() {
     if (statusEl) statusEl.innerHTML = 'Processing specs...';
 
     if (data.error) {
-      alert(`No specs found for "${normalized}".\nTry a different name or enter manually.`);
+      // Fallback to hard-coded if AI fails
+      const knownBows = {
+        "2025 hoyt rx-9": { type: "compound", ibo: 342, brace: 6.125, cam: "HBX Gen 4" },
+        "hoyt carbon rx-9": { type: "compound", ibo: 342, brace: 6.125, cam: "HBX Gen 4" },
+        "mathews lift": { type: "compound", ibo: 343, brace: 6.5, cam: "SwitchWeight X" },
+      };
+
+      let matched = null;
+      for (const key in knownBows) {
+        if (normalized.includes(key)) {
+          matched = knownBows[key];
+          matched.full_name = key;
+          break;
+        }
+      }
+
+      if (matched) {
+        prefillBowFields(normalized, matched);
+      } else {
+        alert(`No specs found for "${normalized}".\nTry a different name or enter manually.`);
+      }
       if (statusEl) statusEl.style.display = 'none';
       return;
     }
@@ -1994,15 +1992,9 @@ async function promptBowLookup() {
         return `${i + 1}. ${m.full_name} (${m.year || 'unknown year'}) - ${m.ibo || '?'} IBO, ${m.brace || '?'} brace, ${m.cam || 'unknown cam'}`;
       });
 
-      /*
-      const choice = prompt(
-        `${data.clarification || 'Multiple variants found — which one do you have?'}\n\n${options.join('\n')}\n\nEnter number (1-${data.matches.length}) or cancel:`
-      );
-      */
-
       const choice = prompt(
         `${data.clarification || 'Multiple variants found — which one do you have?'}\n\n` +
-        `Note: The standard/base model is usually listed first.\n\n` +
+        `Note: Standard/base model is usually listed first.\n\n` +
         `${options.join('\n')}\n\n` +
         `Enter number (1-${data.matches.length}) or cancel:`
       );
