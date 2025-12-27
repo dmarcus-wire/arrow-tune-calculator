@@ -1,31 +1,46 @@
 import OpenAI from 'openai';
 
 export default async function handler(req, res) {
-  // CORS headers
+  // CORS headers (unchanged)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
+    console.log('[OPTIONS] Preflight request received');
     return res.status(200).end();
   }
 
+  console.log('[REQUEST] Received request for bow lookup');
+
   const { model: userModel } = req.query;
+  console.log('[QUERY] userModel:', userModel);
 
   if (!userModel) {
+    console.warn('[VALIDATION] Missing bow model');
     return res.status(400).json({ error: 'Missing bow model' });
   }
 
   const apiKey = process.env.XAI_API_KEY;
+  console.log('[ENV] XAI_API_KEY present:', !!apiKey);
+  console.log('[ENV] API key length:', apiKey ? apiKey.length : 'undefined');
+
   if (!apiKey) {
+    console.error('[ERROR] XAI_API_KEY is missing or empty');
     return res.status(500).json({ error: 'API key not loaded' });
   }
 
   try {
+    console.log('[OPENAI] Initializing client');
+
     const openai = new OpenAI({
       apiKey,
       baseURL: 'https://api.x.ai/v1',
     });
+
+    console.log('[OPENAI] Creating completion request');
+    console.log('[OPENAI] Model:', 'grok-4-1-fast-reasoning');
+    console.log('[OPENAI] User model input:', userModel);
 
     const completion = await openai.chat.completions.create({
       model: 'grok-4-1-fast-reasoning',
@@ -61,8 +76,6 @@ Rules:
 - If ambiguous: ambiguous=true, matches=2–5 best options, clarification=question
 - If no match: { "error": "not found" }
 - Output pure JSON only.`,
-
-User query: "${userModel}"`,
         },
         {
           role: 'user',
@@ -71,20 +84,32 @@ User query: "${userModel}"`,
       ],
       temperature: 0.0,
       max_tokens: 500,
-      response_format: { type: "json_object" },
+      response_format: { type: 'json_object' },
     });
 
+    console.log('[OPENAI] Completion received');
+    console.log('[OPENAI] Choices count:', completion.choices?.length);
+
     const content = completion.choices[0].message.content.trim();
+    console.log('[OPENAI] Raw content length:', content.length);
+    console.log('[OPENAI] Raw content preview:', content.substring(0, 200) + '...');
 
     let specs;
     try {
       specs = JSON.parse(content);
-    } catch (e) {
-      specs = { error: "Invalid JSON from model", raw: content };
+      console.log('[PARSE] JSON parsed successfully');
+    } catch (parseErr) {
+      console.error('[PARSE] Failed to parse JSON:', parseErr.message);
+      specs = { error: 'Invalid JSON from model', raw: content };
     }
 
+    console.log('[RESPONSE] Sending successful JSON');
     return res.status(200).json(specs);
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    console.error('[ERROR] Function failed:', err.message);
+    console.error('[ERROR] Stack trace:', err.stack);
+    console.error('[ERROR] Full error object:', JSON.stringify(err, null, 2));
+
+    return res.status(500).json({ error: 'Internal server error', details: err.message });
   }
 }
