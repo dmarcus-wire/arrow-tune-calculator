@@ -1059,7 +1059,7 @@
             <label for="pointWt">Point weight gr</label>
             <button type="button" onclick="showPointWtPopup()" class="info-btn" title="About Point Weight">ⓘ</button>
           </div>
-          <input type="number" id="pointWt" placeholder="125" min="50" max="300" step="5" class="left-align" style="flex:1;">
+          <input type="number" id="pointWt" placeholder="125" min="50" max="300" step="0.5" class="left-align" style="flex:1;">
         </div>        
         
         <!---Balance Point-->          
@@ -2999,6 +2999,54 @@ function showPointWtPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+/* Point Weight (min 50, max 300) */
+const pointWtInput = document.getElementById('pointWt');
+
+if (pointWtInput) {
+  // Update border on every input change
+  function updatePointWtBorder() {
+    let val = parseFloat(pointWtInput.value);
+    // Skip red border if field is empty (allow typing)
+    if (pointWtInput.value === '') {
+      pointWtInput.style.borderColor = '';
+      return;
+    }
+    // Red border if invalid
+    if (isNaN(val) || val < pointWtInput.min || val > pointWtInput.max) {
+      pointWtInput.style.borderColor = 'red';
+    } else {
+      pointWtInput.style.borderColor = '';
+    }
+  }
+
+  pointWtInput.addEventListener('input', () => {
+    let val = parseFloat(pointWtInput.value);
+    if (isNaN(val)) return; // Allow typing
+
+    if (val < pointWtInput.min) {
+      pointWtInput.value = pointWtInput.min;
+    }
+    if (val > pointWtInput.max) {
+      pointWtInput.value = pointWtInput.max;
+    }
+
+    updatePointWtBorder();
+  });
+
+  pointWtInput.addEventListener('blur', () => {
+    let val = parseFloat(pointWtInput.value);
+    if (pointWtInput.value === '' || isNaN(val) || val < pointWtInput.min) {
+      pointWtInput.value = pointWtInput.min;
+    } else if (val > pointWtInput.max) {
+      pointWtInput.value = pointWtInput.max;
+    }
+    pointWtInput.style.borderColor = ''; // Reset border
+  });
+
+  // Initial check on load (won't turn red if empty)
+  updatePointWtBorder();
+}
+
 /*Balance Point info icon*/
 function showBalancePtPopup() {
   $('gameMathContent').innerHTML = `
@@ -3027,6 +3075,55 @@ function showBalancePtPopup() {
   `;
   $('gameMathModal').style.display = 'flex';
 }
+
+/* Balance Point (min 10, max 30) */
+const balancePtInput = document.getElementById('balancePt');
+
+if (balancePtInput) {
+  // Update border on every input change
+  function updateBalancePtBorder() {
+    let val = parseFloat(balancePtInput.value);
+    // Skip red border if field is empty (allow typing)
+    if (balancePtInput.value === '') {
+      balancePtInput.style.borderColor = '';
+      return;
+    }
+    // Red border if invalid
+    if (isNaN(val) || val < balancePtInput.min || val > balancePtInput.max) {
+      balancePtInput.style.borderColor = 'red';
+    } else {
+      balancePtInput.style.borderColor = '';
+    }
+  }
+
+  balancePtInput.addEventListener('input', () => {
+    let val = parseFloat(balancePtInput.value);
+    if (isNaN(val)) return; // Allow typing
+
+    if (val < balancePtInput.min) {
+      balancePtInput.value = balancePtInput.min;
+    }
+    if (val > balancePtInput.max) {
+      balancePtInput.value = balancePtInput.max;
+    }
+
+    updateBalancePtBorder();
+  });
+
+  balancePtInput.addEventListener('blur', () => {
+    let val = parseFloat(balancePtInput.value);
+    if (balancePtInput.value === '' || isNaN(val) || val < balancePtInput.min) {
+      balancePtInput.value = balancePtInput.min;
+    } else if (val > balancePtInput.max) {
+      balancePtInput.value = balancePtInput.max;
+    }
+    balancePtInput.style.borderColor = ''; // Reset border
+  });
+
+  // Initial check on load (won't turn red if empty)
+  updateBalancePtBorder();
+}
+
 
 /*Checkbox behavior*/
 function toggleArrowDetailsMode() {
