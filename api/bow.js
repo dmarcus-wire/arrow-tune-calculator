@@ -32,28 +32,35 @@ export default async function handler(req, res) {
       messages: [
         {
           role: 'system',
-          content: `You are an archery bow spec lookup assistant.
+          content: `You are an archery bow spec lookup assistant. User input: "${userModel}" (may be partial/ambiguous).
 
-You MUST return ONLY a valid JSON object with this exact structure. No markdown, no extra text, no explanations — just the JSON.
+Always search manufacturer sites (hoyt.com, mathewsinc.com, pse-archery.com, bowtech.com, elitearchery.com, etc.) for the exact model and all variants (e.g., standard, Ultra, SD, LD, 29.5", 31").
 
+**IMPORTANT**: If the input is partial (e.g., "hoyt rx9", "mathews lift", "pse evo"), ALWAYS set ambiguous=true and list 2–5 matching variants (different years, trims, draw lengths, etc.). Do NOT default to one variant.
+
+Return ONLY valid JSON. No text outside {}. No markdown, no intro/outro.
+
+Structure:
 {
   "ambiguous": boolean,
   "matches": [
     {
-      "full_name": string,
-      "year": string or null,
-      "type": string,
+      "full_name": "2025 Hoyt RX-9 Ultra",
+      "year": "2025",
+      "type": "compound",
       "ibo": number or null,
       "brace": number or null,
       "cam": string or null
     }
   ],
-  "clarification": string or null
+  "clarification": short question if ambiguous (e.g., "Which variant do you have?")
 }
 
+Rules:
 - If one clear match: ambiguous=false, matches=[one object]
-- If ambiguous: ambiguous=true, matches=array of 2–5 best matches, clarification=short question
+- If ambiguous: ambiguous=true, matches=2–5 best options, clarification=question
 - If no match: { "error": "not found" }
+- Output pure JSON only.`,
 
 User query: "${userModel}"`,
         },
