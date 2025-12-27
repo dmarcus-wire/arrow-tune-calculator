@@ -1085,7 +1085,7 @@
             <label for="useArrowDetails">Use detailed components</label>
             <input type="checkbox" id="useArrowDetails" onchange="toggleArrowDetailsMode()">
           </div>
-
+          <!--Bare Shaft Weight-->
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="bareShaftWt">Bare shaft weight gr</label>
@@ -3169,6 +3169,54 @@ function showBareShaftWtPopup() {
     <p>Leave 0 if unknown — not required for current calculations.</p>
   `;
   $('gameMathModal').style.display = 'flex';
+}
+
+/* Bare Shaft Weight (min 0, max 400) */
+const bareShaftWtInput = document.getElementById('bareShaftWt');
+
+if (bareShaftWtInput) {
+  // Update border on every input change
+  function updateBareShaftWtBorder() {
+    let val = parseFloat(bareShaftWtInput.value);
+    // Skip red border if field is empty (allow typing)
+    if (bareShaftWtInput.value === '') {
+      bareShaftWtInput.style.borderColor = '';
+      return;
+    }
+    // Red border if invalid
+    if (isNaN(val) || val < bareShaftWtInput.min || val > bareShaftWtInput.max) {
+      bareShaftWtInput.style.borderColor = 'red';
+    } else {
+      bareShaftWtInput.style.borderColor = '';
+    }
+  }
+
+  bareShaftWtInput.addEventListener('input', () => {
+    let val = parseFloat(bareShaftWtInput.value);
+    if (isNaN(val)) return; // Allow typing
+
+    if (val < bareShaftWtInput.min) {
+      bareShaftWtInput.value = bareShaftWtInput.min;
+    }
+    if (val > bareShaftWtInput.max) {
+      bareShaftWtInput.value = bareShaftWtInput.max;
+    }
+
+    updateBareShaftWtBorder();
+  });
+
+  bareShaftWtInput.addEventListener('blur', () => {
+    let val = parseFloat(bareShaftWtInput.value);
+    if (bareShaftWtInput.value === '' || isNaN(val) || val < bareShaftWtInput.min) {
+      bareShaftWtInput.value = bareShaftWtInput.min;
+    } else if (val > bareShaftWtInput.max) {
+      bareShaftWtInput.value = bareShaftWtInput.max;
+    }
+    bareShaftWtInput.style.borderColor = ''; // Reset border
+  });
+
+  // Initial check on load (won't turn red if empty)
+  updateBareShaftWtBorder();
 }
 
 /* Insert / Outsert Weight info icon */
