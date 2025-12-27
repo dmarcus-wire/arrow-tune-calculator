@@ -2666,7 +2666,7 @@ async function runAIAnalyzer() {
 
   try {
     // Call the real AI backend with all inputs
-    const response = await fetch(`https://arrow-forge-ai-git-ai-bow-lookup-davids-projects-0e631f5c.vercel.app/api/analyze?appType=${encodeURIComponent(appType)}&bowModel=${encodeURIComponent(bowModel)}&drawLen=${drawLen}&drawWt=${drawWt}&totalWt=${totalWt}&pointWt=${pointWt}&arrowLen=${arrowLen}&spine=${spine}&foc=${foc.toFixed(1)}`);
+    const response = await fetch(`https://arrowforgeapp.com/api/analyze?appType=${encodeURIComponent(appType)}&bowModel=${encodeURIComponent(bowModel)}&drawLen=${drawLen}&drawWt=${drawWt}&totalWt=${totalWt}&pointWt=${pointWt}&arrowLen=${arrowLen}&spine=${spine}&foc=${foc.toFixed(1)}`);
     if (!response.ok) throw new Error(`API error: ${response.status}`);
 
     const data = await response.json();
