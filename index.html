@@ -2822,8 +2822,8 @@ if (arrowLenInput) {
   updateArrowLenBorder();
 }
 
-/* Arrow Total Weight info icon*/
-function showTotalWtPopup() {
+/* Total Arrow Weight (Input Field) info icon popup */
+function showTotalWtInputPopup() {
   const totalWt = parseFloat($('totalWt').value) || 495;
   const bowType = $('bowType')?.value || 'compound';
   const appType = $('appType')?.value || 'Hunting';
@@ -2845,45 +2845,98 @@ function showTotalWtPopup() {
   const isHeavy = totalWt > sweetMax;
   const isLight = totalWt < sweetMin;
 
-  $('gameMathContent').innerHTML = `
-    <p><strong>Total Arrow Weight (TW) Math & Usage</strong></p>
-    <p>TW is your finished arrow weight in grains — shaft, components, and point all added together. This is the number that drives almost every other output in the app.</p>
+  const content = `
+    <p><strong>Total Arrow Weight (Input Field)</strong></p>
+    <p>This is the master weight value for your finished arrow — everything included (shaft, point, insert, fletching, wrap, glue). It drives nearly every calculation in the app.</p>
     <hr>
-    <p><strong>Your Current Build:</strong></p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+    <p><strong>Your Current Value:</strong></p>
+    <ul style="margin-left:1.25rem; font-size:0.9rem;">
       <li>Total Arrow Weight: <strong>${totalWt.toFixed(1)} gr</strong></li>
-      <li>Setup: <strong>${typeLabel}</strong></li>
     </ul>
     <hr>
-    <p><strong>Sweet Spot (highlighted in green):</strong></p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li><strong>Compound/Hunting</strong>: 450–550 — balanced speed & penetration</li>
-      <li><strong>Target</strong>: 350–450 — lighter for speed & forgiveness</li>
-      <li><strong>Recurve/Longbow</strong>: 400–600 — heavier for momentum & quietness</li>
+    <p><strong>Typical Arrow Weight Ranges:</strong></p>
+    <ul style="margin-left:1.25rem; font-size:0.9rem;">
+      <li><strong>Youth/Children</strong> (20–50 lb bows): 250–400 gr — light for easy draw and safety</li>
+      <li><strong>Women/Shorter Adults</strong> (40–60 lb): 350–480 gr — balanced speed & forgiveness</li>
+      <li><strong>Adult Men (Compound Hunting)</strong> (60–80+ lb): 450–550 gr — ideal penetration & speed</li>
+      <li><strong>Target/3D</strong> (40–70 lb): 350–450 gr — lighter for flat trajectory & forgiveness</li>
+      <li><strong>Recurve/Longbow</strong> (30–60 lb): 400–600 gr — heavier for momentum & quietness</li>
     </ul>
-    <p style="margin-top:0.75rem;">
-      ${isHeavy ? '<strong>Heavy — more penetration but slower</strong>' : 
-        isLight ? '<strong>Light — faster but less momentum</strong>' : 
-        '<strong>Your TW is in the ideal range!</strong>'}
+    <hr>
+    <p><strong>Your Build Status:</strong></p>
+    <p style="margin-top:0.75rem; font-weight:bold;">
+      ${isHeavy ? 'Heavy — more penetration but slower' : 
+        isLight ? 'Light — faster but less momentum' : 
+        'Your TW is in the ideal range!'}
     </p>
     <hr>
-    <p>This same TW value is reused in:</p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>GPP (grains per pound)</li>
-      <li>GPI (grains per inch)</li>
-      <li>Launch KE and Impact KE</li>
-      <li>Momentum and Game Effectiveness</li>
-      <li>The Arrow Weight Composition bar</li>
+    <p><strong>How to Set This Value:</strong></p>
+    <ul style="margin-left:1.25rem; font-size:0.9rem;">
+      <li><strong>Manual entry</strong> (here) — quick estimate if you know your finished weight</li>
+      <li><strong>Detailed components</strong> (checkbox below) — auto-calculated from individual parts for accuracy</li>
     </ul>
     <hr>
-    <p><strong>Influenced By:</strong></p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>All arrow components (shaft, point, insert, fletching, wrap, glue)</li>
-      <li>Use detailed components for maximum accuracy, or enter manually for quick estimate</li>
+    <p>This value drives:</p>
+    <ul style="margin-left:1.25rem; font-size:0.9rem;">
+      <li>GPP & GPI</li>
+      <li>FOC (if using balance point)</li>
+      <li>Kinetic Energy & Momentum</li>
+      <li>Game Effectiveness ratings</li>
+      <li>Trajectory, drop, flight time</li>
     </ul>
-    <p>If this number is off, every downstream calculation will be off — so get TW as close as possible to your real, finished arrow.</p>
+    <p><strong>Pro tip:</strong> Get this as accurate as possible — even 10–20 gr off can change recommendations noticeably.</p>
   `;
+
+  $('gameMathContent').innerHTML = content;
   $('gameMathModal').style.display = 'flex';
+}
+
+/* Total Weight (min 200, max 1000) */
+const totalWeightInput = document.getElementById('totalWt');
+
+if (totalWeightInput) {
+  // Update border on every input change
+  function updateTotalWeightBorder() {
+    let val = parseFloat(totalWeightInput.value);
+    // Skip red border if field is empty (allow typing)
+    if (totalWeightInput.value === '') {
+      totalWeightInput.style.borderColor = '';
+      return;
+    }
+    // Red border if invalid
+    if (isNaN(val) || val < totalWeightInput.min || val > totalWeightInput.max) {
+      totalWeightInput.style.borderColor = 'red';
+    } else {
+      totalWeightInput.style.borderColor = '';
+    }
+  }
+
+  totalWeightInput.addEventListener('input', () => {
+    let val = parseFloat(totalWeightInput.value);
+    if (isNaN(val)) return; // Allow typing
+
+    if (val < totalWeightInput.min) {
+      totalWeightInput.value = totalWeightInput.min;
+    }
+    if (val > totalWeightInput.max) {
+      totalWeightInput.value = totalWeightInput.max;
+    }
+
+    updateTotalWeightBorder();
+  });
+
+  totalWeightInput.addEventListener('blur', () => {
+    let val = parseFloat(totalWeightInput.value);
+    if (totalWeightInput.value === '' || isNaN(val) || val < totalWeightInput.min) {
+      totalWeightInput.value = totalWeightInput.min;
+    } else if (val > totalWeightInput.max) {
+      totalWeightInput.value = totalWeightInput.max;
+    }
+    totalWeightInput.style.borderColor = ''; // Reset border
+  });
+
+  // Initial check on load (won't turn red if empty)
+  updateTotalWeightBorder();
 }
 
 /* Point Weight info icon */
@@ -3714,33 +3767,66 @@ function showGpiPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
-function showTotalWtInputPopup() {
+/* Arrow Total Weight info icon*/
+function showTotalWtPopup() {
   const totalWt = parseFloat($('totalWt').value) || 495;
+  const bowType = $('bowType')?.value || 'compound';
+  const appType = $('appType')?.value || 'Hunting';
+
+  let sweetMin = 450;
+  let sweetMax = 550;
+  let typeLabel = "Compound/Hunting";
+
+  if (bowType === 'recurve' || bowType === 'longbow') {
+    sweetMin = 400;
+    sweetMax = 600;
+    typeLabel = "Recurve/Longbow";
+  } else if (appType === 'Target') {
+    sweetMin = 350;
+    sweetMax = 450;
+    typeLabel = "Target";
+  }
+
+  const isHeavy = totalWt > sweetMax;
+  const isLight = totalWt < sweetMin;
 
   $('gameMathContent').innerHTML = `
-    <p><strong>Total Arrow Weight (Input Field)</strong></p>
-    <p>This is the master weight value for your finished arrow — everything included (shaft, point, insert, fletching, wrap, glue).</p>
+    <p><strong>Total Arrow Weight (TW) Math & Usage</strong></p>
+    <p>TW is your finished arrow weight in grains — shaft, components, and point all added together. This is the number that drives almost every other output in the app.</p>
     <hr>
-    <p><strong>Your Current Value:</strong></p>
+    <p><strong>Your Current Build:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
       <li>Total Arrow Weight: <strong>${totalWt.toFixed(1)} gr</strong></li>
+      <li>Setup: <strong>${typeLabel}</strong></li>
     </ul>
     <hr>
-    <p>There are two ways to set this:</p>
+    <p><strong>Sweet Spot (highlighted in green):</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li><strong>Manual entry</strong> (here) — quick estimate if you know your finished weight</li>
-      <li><strong>Detailed components</strong> (checkbox below) — auto-calculated from individual parts for maximum accuracy</li>
+      <li><strong>Compound/Hunting</strong>: 450–550 — balanced speed & penetration</li>
+      <li><strong>Target</strong>: 350–450 — lighter for speed & forgiveness</li>
+      <li><strong>Recurve/Longbow</strong>: 400–600 — heavier for momentum & quietness</li>
+    </ul>
+    <p style="margin-top:0.75rem;">
+      ${isHeavy ? '<strong>Heavy — more penetration but slower</strong>' : 
+        isLight ? '<strong>Light — faster but less momentum</strong>' : 
+        '<strong>Your TW is in the ideal range!</strong>'}
+    </p>
+    <hr>
+    <p>This same TW value is reused in:</p>
+    <ul style="margin-left:1.25rem;font-size:0.9rem;">
+      <li>GPP (grains per pound)</li>
+      <li>GPI (grains per inch)</li>
+      <li>Launch KE and Impact KE</li>
+      <li>Momentum and Game Effectiveness</li>
+      <li>The Arrow Weight Composition bar</li>
     </ul>
     <hr>
-    <p>This value drives nearly every calculation in the app:</p>
+    <p><strong>Influenced By:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>GPP & GPI</li>
-      <li>FOC (if using balance point)</li>
-      <li>Kinetic Energy & Momentum</li>
-      <li>Game Effectiveness ratings</li>
-      <li>Trajectory, drop, flight time</li>
+      <li>All arrow components (shaft, point, insert, fletching, wrap, glue)</li>
+      <li>Use detailed components for maximum accuracy, or enter manually for quick estimate</li>
     </ul>
-    <p><strong>Pro tip:</strong> Get this as accurate as possible — even 10–20 gr off can change recommendations noticeably.</p>
+    <p>If this number is off, every downstream calculation will be off — so get TW as close as possible to your real, finished arrow.</p>
   `;
   $('gameMathModal').style.display = 'flex';
 }
