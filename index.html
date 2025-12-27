@@ -864,7 +864,7 @@
             <label for="braceHeight">Brace height in</label>
             <button type="button" onclick="showBraceHeightPopup()" class="info-btn" title="About Brace Height">ⓘ</button>
           </div>
-          <input type="number" id="braceHeight" placeholder="6" min="4" max="9" step="0.1" class="left-align" style="flex:1;">
+          <input type="number" id="braceHeight" placeholder="6" min="0" max="20" step="0.1" class="left-align" style="flex:1;">
         </div>        
         <!---Cam System-->
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -2117,6 +2117,40 @@ function showBraceHeightPopup() {
     <p>Shorter brace = more speed but harsher; longer = smoother & more forgiving.</p>
   `;
   $('gameMathModal').style.display = 'flex';
+}
+
+/* Brace Height (min 5, max 9) */
+const braceHeightInput = document.getElementById('braceHeight');
+
+if (braceHeightInput) {
+  braceHeightInput.addEventListener('input', () => {
+    let val = parseFloat(braceHeightInput.value);
+    if (isNaN(val)) return; // Allow typing
+
+    if (val < braceHeightInput.min) {
+      braceHeightInput.value = braceHeightInput.min;
+    }
+    if (val > braceHeightInput.max) {
+      braceHeightInput.value = braceHeightInput.max;
+    }
+
+    // Optional: red border for invalid
+    if (isNaN(val) || val < braceHeightInput.min || val > braceHeightInput.max) {
+      braceHeightInput.style.borderColor = 'red';
+    } else {
+      braceHeightInput.style.borderColor = '';
+    }
+  });
+
+  braceHeightInput.addEventListener('blur', () => {
+    let val = parseFloat(braceHeightInput.value);
+    if (isNaN(val) || val < braceHeightInput.min) {
+      braceHeightInput.value = braceHeightInput.min;
+    } else if (val > braceHeightInput.max) {
+      braceHeightInput.value = braceHeightInput.max;
+    }
+    braceHeightInput.style.borderColor = ''; // Reset border
+  });
 }
 
 /* Cam System info icon*/
