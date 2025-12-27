@@ -1183,7 +1183,7 @@
               <label for="nockWt">Nock weight gr</label>
               <button type="button" onclick="showNockWtPopup()" class="info-btn" title="About Nock Weight">ⓘ</button>
             </div>
-            <input type="number" id="nockWt" placeholder="0" step="0.5" class="left-align" style="flex:1;">
+            <input type="number" id="nockWt" placeholder="0" step="0.5" min="0" max="50" class="left-align" style="flex:1;">
           </div>
 
           <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -3712,6 +3712,54 @@ function showNockWtPopup() {
     <p>Small impact on speed, improves nock fit.</p>
   `;
   $('gameMathModal').style.display = 'flex';
+}
+
+/* Nock Weight (min 0, max 50) */
+const nockWtInput = document.getElementById('nockWt');
+
+if (nockWtInput) {
+  // Update border on every input change
+  function updateNockWtBorder() {
+    let val = parseFloat(nockWtInput.value);
+    // Skip red border if field is empty (allow typing)
+    if (nockWtInput.value === '') {
+      nockWtInput.style.borderColor = '';
+      return;
+    }
+    // Red border if invalid
+    if (isNaN(val) || val < nockWtInput.min || val > nockWtInput.max) {
+      nockWtInput.style.borderColor = 'red';
+    } else {
+      nockWtInput.style.borderColor = '';
+    }
+  }
+
+  nockWtInput.addEventListener('input', () => {
+    let val = parseFloat(nockWtInput.value);
+    if (isNaN(val)) return; // Allow typing
+
+    if (val < nockWtInput.min) {
+      nockWtInput.value = nockWtInput.min;
+    }
+    if (val > nockWtInput.max) {
+      nockWtInput.value = nockWtInput.max;
+    }
+
+    updateNockWtBorder();
+  });
+
+  nockWtInput.addEventListener('blur', () => {
+    let val = parseFloat(nockWtInput.value);
+    if (nockWtInput.value === '' || isNaN(val) || val < nockWtInput.min) {
+      nockWtInput.value = nockWtInput.min;
+    } else if (val > nockWtInput.max) {
+      nockWtInput.value = nockWtInput.max;
+    }
+    nockWtInput.style.borderColor = ''; // Reset border
+  });
+
+  // Initial check on load (won't turn red if empty)
+  updateNockWtBorder();
 }
 
 /*Glue  weight info icon*/
