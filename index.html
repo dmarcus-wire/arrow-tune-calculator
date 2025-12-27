@@ -1131,7 +1131,7 @@
               <label for="wrapWt">Wrap gr</label>
               <button type="button" onclick="showWrapWtPopup()" class="info-btn" title="About Wrap">ⓘ</button>
             </div>
-            <input type="number" id="wrapWt" placeholder="0" step="0.5" class="left-align" style="flex:1;">
+            <input type="number" id="wrapWt" placeholder="0" min="0" max="30" step="0.5" class="left-align" style="flex:1;">
           </div>
 
           <!--vane weight each-->
@@ -3430,6 +3430,54 @@ function showWrapWtPopup() {
     <p>Adds custom look and slight FOC — minimal speed impact.</p>
   `;
   $('gameMathModal').style.display = 'flex';
+}
+
+/* Wrap Weight (min 0, max 30) */
+const wrapWtInput = document.getElementById('wrapWt');
+
+if (wrapWtInput) {
+  // Update border on every input change
+  function updateWrapWtBorder() {
+    let val = parseFloat(wrapWtInput.value);
+    // Skip red border if field is empty (allow typing)
+    if (wrapWtInput.value === '') {
+      wrapWtInput.style.borderColor = '';
+      return;
+    }
+    // Red border if invalid
+    if (isNaN(val) || val < wrapWtInput.min || val > wrapWtInput.max) {
+      wrapWtInput.style.borderColor = 'red';
+    } else {
+      wrapWtInput.style.borderColor = '';
+    }
+  }
+
+  wrapWtInput.addEventListener('input', () => {
+    let val = parseFloat(wrapWtInput.value);
+    if (isNaN(val)) return; // Allow typing
+
+    if (val < wrapWtInput.min) {
+      wrapWtInput.value = wrapWtInput.min;
+    }
+    if (val > wrapWtInput.max) {
+      wrapWtInput.value = wrapWtInput.max;
+    }
+
+    updateWrapWtBorder();
+  });
+
+  wrapWtInput.addEventListener('blur', () => {
+    let val = parseFloat(wrapWtInput.value);
+    if (wrapWtInput.value === '' || isNaN(val) || val < wrapWtInput.min) {
+      wrapWtInput.value = wrapWtInput.min;
+    } else if (val > wrapWtInput.max) {
+      wrapWtInput.value = wrapWtInput.max;
+    }
+    wrapWtInput.style.borderColor = ''; // Reset border
+  });
+
+  // Initial check on load (won't turn red if empty)
+  updateWrapWtBorder();
 }
 
 /*Vane  weight info icon*/
