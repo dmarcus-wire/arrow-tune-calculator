@@ -918,34 +918,37 @@
             <label for="useStringDetails">Use detailed components</label>
             <input type="checkbox" id="useStringDetails" onchange="toggleStringDetailsMode()">
           </div>
-
+          <!--Peep Weight-->
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="peepWt">Peep weight gr</label>
               <button type="button" onclick="showPeepWtPopup()" class="info-btn" title="About Peep Weight">ⓘ</button>
             </div>
-            <input type="number" id="peepWt" placeholder="0" step="0.5" class="left-align" style="flex:1;">
+            <input type="number" id="peepWt" placeholder="0" step="0.5" class="left-align" style="flex:1;" min="0" max="30">
           </div>
+          <!--D Loop Weight-->
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="dloopWt">D-loop gr</label>
               <button type="button" onclick="showDloopWtPopup()" class="info-btn" title="About D-loop Weight">ⓘ</button>
             </div>
-            <input type="number" id="dloopWt" placeholder="0" step="0.5" class="left-align" style="flex:1;">
+            <input type="number" id="dloopWt" placeholder="0" step="0.5" class="left-align" style="flex:1;"min="0" max="30">
           </div>
+          <!--Kisser Weight-->
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="kisserWt">Kisser gr</label>
               <button type="button" onclick="showKisserWtPopup()" class="info-btn" title="About Kisser Weight">ⓘ</button>
             </div>
-            <input type="number" id="kisserWt" placeholder="0" step="0.5" class="left-align" style="flex:1;">
+            <input type="number" id="kisserWt" placeholder="0" step="0.5" class="left-align" style="flex:1;" min="0" max="20">
           </div>
+          <!--Silencer Weight-->
           <div class="input-row" style="align-items:center; gap:0.5rem;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <label for="silencerWt">Silencers gr</label>
               <button type="button" onclick="showSilencerWtPopup()" class="info-btn" title="About Silencers Weight">ⓘ</button>
             </div>
-            <input type="number" id="silencerWt" placeholder="0" step="0.5" class="left-align" style="flex:1;">
+            <input type="number" id="silencerWt" placeholder="0" step="0.5" class="left-align" style="flex:1;" min="0" max="50">
           </div>
           <!-- New total display -->
           <div style="margin-top:1rem; padding:0.75rem; background:var(--border); border-radius:8px; text-align:center;">
@@ -2418,6 +2421,40 @@ function showNockWtPopup() {
   `;
   $('gameMathModal').style.display = 'flex';
 }
+
+// Prevent negatives and enforce min/max for all string accessory weights
+function enforceInputRange(inputId, minVal, maxVal) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  input.addEventListener('input', () => {
+    let val = parseFloat(input.value);
+    if (isNaN(val)) return; // Allow typing
+
+    if (val < minVal) {
+      input.value = minVal;
+    }
+    if (val > maxVal) {
+      input.value = maxVal;
+    }
+  });
+
+  input.addEventListener('blur', () => {
+    let val = parseFloat(input.value);
+    if (isNaN(val) || val < minVal) {
+      input.value = minVal;
+    } else if (val > maxVal) {
+      input.value = maxVal;
+    }
+  });
+}
+
+// Apply to each field
+enforceInputRange('peepWt', 5, 30);
+enforceInputRange('dloopWt', 5, 20);
+enforceInputRange('kisserWt', 0, 10);
+enforceInputRange('silencerWt', 0, 50);
+enforceInputRange('nockWt', 5, 20);
 
 /*Sight pins info icon*/
 function showSightPinsPopup() {
