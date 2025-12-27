@@ -825,6 +825,7 @@
                   style="background:var(--purple); padding:0.4rem 0.8rem;">
             AI Lookup ✨
           </button>
+          <div id="lookupStatus" style="display:none; color:var(--text); font-style:italic; margin-top:1rem; text-align:center;"></div>
           <span class="chevron">></span>
         </div>
       </div>
@@ -1934,12 +1935,19 @@ function showBowModelPopup() {
 }
 
 // AI Lookup Button
-/*
+
 async function promptBowLookup() {
   const modelInput = prompt('Enter bow model (full or partial, e.g., "hoyt rx9" or "mathews lift")');
   if (!modelInput) return; // cancelled
 
   const normalized = modelInput.trim().toLowerCase();
+
+  // Show loading status
+  const statusEl = document.getElementById('lookupStatus');
+  if (statusEl) {
+    statusEl.style.display = 'block';
+    statusEl.innerHTML = 'Searching bow specs...'; // Initial message
+  }
 
   // Hard-coded known bows (expand as needed)
   const knownBows = {
@@ -1960,18 +1968,24 @@ async function promptBowLookup() {
 
   if (matched) {
     prefillBowFields(normalized, matched);
+    if (statusEl) statusEl.style.display = 'none'; // Hide status
     return;
   }
 
   // Call the LIVE preview API
   try {
+    if (statusEl) statusEl.innerHTML = 'Fetching from AI...';
+
     const response = await fetch(`https://arrow-forge-ai-git-ai-bow-lookup-davids-projects-0e631f5c.vercel.app/api/bow?model=${encodeURIComponent(normalized)}`);
     if (!response.ok) throw new Error(`API error: ${response.status}`);
 
     const data = await response.json();
 
+    if (statusEl) statusEl.innerHTML = 'Processing specs...';
+
     if (data.error) {
       alert(`No specs found for "${normalized}".\nEnter manually or try a different name.`);
+      if (statusEl) statusEl.style.display = 'none';
       return;
     }
 
@@ -1982,101 +1996,15 @@ async function promptBowLookup() {
         `${data.clarification || 'Which model/year do you have?'}\n\n${options.join('\n')}\n\nEnter number (or cancel):`
       );
 
-      if (!choice) return;
-
-      const selectedIndex = parseInt(choice) - 1;
-      if (isNaN(selectedIndex) || selectedIndex < 0 || selectedIndex >= data.matches.length) {
-        alert('Invalid selection. Please try again.');
-        return;
-      }
-
-      const selected = data.matches[selectedIndex];
-      prefillBowFields(selected.full_name || normalized, selected);
-    } else if (data.matches && data.matches.length > 0) {
-      // Single match
-      prefillBowFields(normalized, data.matches[0]);
-    } else {
-      alert(`No specs found for "${normalized}".\nEnter manually.`);
-    }
-  } catch (e) {
-    console.error(e);
-    alert(`Error connecting to AI. Please enter specs manually.`);
-  }
-
-  calculateEverything();
-}
-*/
-
-async function promptBowLookup() {
-  const modelInput = prompt('Enter bow model (full or partial, e.g., "hoyt rx9" or "mathews lift")');
-  if (!modelInput) return; // cancelled
-
-  const normalized = modelInput.trim().toLowerCase();
-
-  // Show loading status
-  const statusEl = document.getElementById('lookupStatus');
-  statusEl.style.display = 'block';
-  statusEl.innerHTML = 'Searching bow specs...'; // Initial message
-
-  // Hard-coded known bows (expand as needed)
-  const knownBows = {
-    "2025 hoyt rx-9": { type: "compound", ibo: 342, brace: 6.125, cam: "HBX Gen 4" },
-    "hoyt carbon rx-9": { type: "compound", ibo: 342, brace: 6.125, cam: "HBX Gen 4" },
-    "mathews lift": { type: "compound", ibo: 343, brace: 6.5, cam: "SwitchWeight X" },
-    // Add more common ones
-  };
-
-  let matched = null;
-  for (const key in knownBows) {
-    if (normalized.includes(key)) {
-      matched = knownBows[key];
-      matched.full_name = key; // for display
-      break;
-    }
-  }
-
-  if (matched) {
-    prefillBowFields(normalized, matched);
-    statusEl.style.display = 'none'; // Hide status
-    return;
-  }
-
-  // Call the LIVE preview API
-  try {
-    // Update status during fetch
-    statusEl.innerHTML = 'Fetching from AI...';
-
-    const response = await fetch(`https://arrow-forge-ai-git-ai-bow-lookup-davids-projects-0e631f5c.vercel.app/api/bow?model=${encodeURIComponent(normalized)}`);
-    if (!response.ok) throw new Error(`API error: ${response.status}`);
-
-    const data = await response.json();
-
-    // Optional: Show "Processing response..." if needed
-    statusEl.innerHTML = 'Processing specs...';
-
-    if (data.error) {
-      alert(`No specs found for "${normalized}".\nEnter manually or try a different name.`);
-      statusEl.style.display = 'none';
-      return;
-    }
-
-    if (data.ambiguous) {
-      const options = data.matches.map((m, i) => 
-        `${i + 1}. ${m.full_name || normalized} (${m.year || 'unknown'})`
-      );
-      const choice = prompt(
-        `${data.clarification || 'Multiple matches found — which bow do you have?'}\n\n${options.join('\n')}\n\nEnter number (or cancel):`
-      );
-
       if (!choice) {
-        statusEl.style.display = 'none';
+        if (statusEl) statusEl.style.display = 'none';
         return;
       }
 
       const selectedIndex = parseInt(choice.trim()) - 1;
       if (isNaN(selectedIndex) || selectedIndex < 0 || selectedIndex >= data.matches.length) {
         alert('Invalid selection. Please try again.');
-        statusEl.style.display = 'none';
+        if (statusEl) statusEl.style.display = 'none';
         return;
       }
 
@@ -2090,11 +2018,11 @@ async function promptBowLookup() {
     }
 
     // Hide status on success
-    statusEl.style.display = 'none';
+    if (statusEl) statusEl.style.display = 'none';
   } catch (e) {
     console.error(e);
     alert(`Error connecting to AI. Please enter specs manually.`);
-    statusEl.style.display = 'none';
+    if (statusEl) statusEl.style.display = 'none';
   }
 
   calculateEverything();
