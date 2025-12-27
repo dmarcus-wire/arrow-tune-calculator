@@ -2686,6 +2686,48 @@ function showSpinePopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
+/* Spine (min 100, max 600) */
+const spineInput = document.getElementById('spine');
+
+if (spineInput) {
+  // Update border on every input change
+  function updateSpineBorder() {
+    let val = parseFloat(spineInput.value);
+    if (isNaN(val) || val < spineInput.min || val > spineInput.max) {
+      spineInput.style.borderColor = 'red';
+    } else {
+      spineInput.style.borderColor = '';
+    }
+  }
+
+  spineInput.addEventListener('input', () => {
+    let val = parseFloat(spineInput.value);
+    if (isNaN(val)) return; // Allow typing
+
+    if (val < spineInput.min) {
+      spineInput.value = spineInput.min;
+    }
+    if (val > spineInput.max) {
+      spineInput.value = spineInput.max;
+    }
+
+    updateSpineBorder();
+  });
+
+  spineInput.addEventListener('blur', () => {
+    let val = parseFloat(spineInput.value);
+    if (isNaN(val) || val < spineInput.min) {
+      spineInput.value = spineInput.min;
+    } else if (val > spineInput.max) {
+      spineInput.value = spineInput.max;
+    }
+    spineInput.style.borderColor = ''; // Reset border
+  });
+
+  // Initial check on load
+  updateSpineBorder();
+}
+
 /*Arrow diameter*/
 function showArrowDiaPopup() {
   $('gameMathContent').innerHTML = `
