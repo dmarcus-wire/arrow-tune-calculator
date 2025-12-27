@@ -1122,7 +1122,7 @@
               <label for="inFlightDia">In-Flight Diameter in.</label>
               <button type="button" onclick="showInFlightDiaPopup()" class="info-btn" title="About Vane Weight">ⓘ</button>
             </div>
-            <input type="number" id="inFlightDia" placeholder="e.g. 1.25" step="0.01" class="left-align" style="flex:1;">
+            <input type="number" id="inFlightDia" placeholder="e.g. 1.25" min="0.2" max="5.0" step="0.01" class="left-align" style="flex:1;">
           </div>
 
           <!--wrap weight-->
@@ -3370,6 +3370,54 @@ function showInFlightDiaPopup() {
     <p style="margin-top:0.75rem;"><strong>Pro Tip:</strong> For mechanicals, enter the closed/blades-folded diameter — this gives accurate in-flight performance.</p>
   `;
   $('gameMathModal').style.display = 'flex';
+}
+
+/* In-Flight Diameter (min 0.2, max 5.0) */
+const inFlightDiaInput = document.getElementById('inFlightDia');
+
+if (inFlightDiaInput) {
+  // Update border on every input change
+  function updateInFlightDiaBorder() {
+    let val = parseFloat(inFlightDiaInput.value);
+    // Skip red border if field is empty (allow typing)
+    if (inFlightDiaInput.value === '') {
+      inFlightDiaInput.style.borderColor = '';
+      return;
+    }
+    // Red border if invalid
+    if (isNaN(val) || val < inFlightDiaInput.min || val > inFlightDiaInput.max) {
+      inFlightDiaInput.style.borderColor = 'red';
+    } else {
+      inFlightDiaInput.style.borderColor = '';
+    }
+  }
+
+  inFlightDiaInput.addEventListener('input', () => {
+    let val = parseFloat(inFlightDiaInput.value);
+    if (isNaN(val)) return; // Allow typing
+
+    if (val < inFlightDiaInput.min) {
+      inFlightDiaInput.value = inFlightDiaInput.min;
+    }
+    if (val > inFlightDiaInput.max) {
+      inFlightDiaInput.value = inFlightDiaInput.max;
+    }
+
+    updateInFlightDiaBorder();
+  });
+
+  inFlightDiaInput.addEventListener('blur', () => {
+    let val = parseFloat(inFlightDiaInput.value);
+    if (inFlightDiaInput.value === '' || isNaN(val) || val < inFlightDiaInput.min) {
+      inFlightDiaInput.value = inFlightDiaInput.min;
+    } else if (val > inFlightDiaInput.max) {
+      inFlightDiaInput.value = inFlightDiaInput.max;
+    }
+    inFlightDiaInput.style.borderColor = ''; // Reset border
+  });
+
+  // Initial check on load (won't turn red if empty)
+  updateInFlightDiaBorder();
 }
 
 /*wrap  weight info icon*/
