@@ -1994,8 +1994,17 @@ async function promptBowLookup() {
         return `${i + 1}. ${m.full_name} (${m.year || 'unknown year'}) - ${m.ibo || '?'} IBO, ${m.brace || '?'} brace, ${m.cam || 'unknown cam'}`;
       });
 
+      /*
       const choice = prompt(
         `${data.clarification || 'Multiple variants found — which one do you have?'}\n\n${options.join('\n')}\n\nEnter number (1-${data.matches.length}) or cancel:`
+      );
+      */
+
+      const choice = prompt(
+        `${data.clarification || 'Multiple variants found — which one do you have?'}\n\n` +
+        `Note: The standard/base model is usually listed first.\n\n` +
+        `${options.join('\n')}\n\n` +
+        `Enter number (1-${data.matches.length}) or cancel:`
       );
 
       if (!choice) {
