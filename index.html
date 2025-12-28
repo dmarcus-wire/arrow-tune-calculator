@@ -2753,42 +2753,41 @@ function prefillArrowFromAI(name, spine, dia, length, gpp = '7.0', foc = '15') {
   const drawWt = parseFloat($('drawWt').value) || 70;
 
   // Realistic hunting arrow weights by category
-  let totalWt = 490;
-  let pointWt = 125;
+  let totalWt = 490; // default balanced
+  let pointWt = 125; // default balanced
 
   if (name.toLowerCase().includes('fast') || name.toLowerCase().includes('light')) {
-    totalWt = Math.round(450 + (parseFloat(gpp) - 6.7) * 100);
-    pointWt = Math.round(100 + (parseFloat(foc) - 12) * 8);
+    totalWt = Math.round(450 + (parseFloat(gpp) - 6.7) * 100); // ~450–500 gr
+    pointWt = Math.round(100 + (parseFloat(foc) - 12) * 8);     // ~100–140 gr
   } else if (name.toLowerCase().includes('balanced')) {
-    totalWt = Math.round(480 + (parseFloat(gpp) - 7.0) * 100);
-    pointWt = Math.round(125 + (parseFloat(foc) - 14) * 8);
+    totalWt = Math.round(480 + (parseFloat(gpp) - 7.0) * 100); // ~480–520 gr
+    pointWt = Math.round(125 + (parseFloat(foc) - 14) * 8);     // ~125–165 gr
   } else {
-    totalWt = Math.round(520 + (parseFloat(gpp) - 7.2) * 100);
-    pointWt = Math.round(150 + (parseFloat(foc) - 16) * 8);
+    totalWt = Math.round(520 + (parseFloat(gpp) - 7.2) * 100); // ~520–580 gr
+    pointWt = Math.round(150 + (parseFloat(foc) - 16) * 8);     // ~150–200 gr
   }
 
+  // Set values BEFORE calculation
   $('totalWt').value = totalWt;
   $('pointWt').value = pointWt;
 
+  // Run calculations (this may update FOC/GPP etc.)
   calculateEverything();
 
-  // === BALANCE POINT CALCULATION (Fixed & Safe) ===
+  // Force input fields to show FINAL values AFTER calculation
+  $('totalWt').value = totalWt;
+  $('pointWt').value = pointWt;
+  $('arrowLen').value = length; // Re-set length if it was overwritten
+  // Balance point (re-calculate after all values are final)
   const arrowLenNum = parseFloat($('arrowLen').value) || 28.5;
   const totalWtNum = parseFloat($('totalWt').value) || 490;
   const pointWtNum = parseFloat($('pointWt').value) || 125;
 
-  if (arrowLenNum > 0 && totalWtNum > 0) {
-    const midpoint = arrowLenNum / 2;
-    const pointContribution = (pointWtNum / totalWtNum) * midpoint;
-    let balancePt = midpoint + pointContribution;
+  let balancePt = (arrowLenNum / 2) + ((pointWtNum / totalWtNum) * (arrowLenNum / 2));
+  balancePt = Math.max(arrowLenNum / 2, Math.min(arrowLenNum, balancePt)); // Clamp
+  $('balancePt').value = balancePt.toFixed(2);
 
-    // Clamp to valid range
-    balancePt = Math.max(midpoint, Math.min(arrowLenNum, balancePt));
-
-    $('balancePt').value = balancePt.toFixed(2);
-  }
-
-  // Optional: refresh table
+  // Refresh table if needed (optional)
   if (typeof updateBuildSummaryTable === 'function') {
     updateBuildSummaryTable();
   }
