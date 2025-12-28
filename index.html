@@ -2707,25 +2707,23 @@ async function runAIArrowRecommender() {
     if (data.matches && data.matches.length === 3) {
       const categories = ['Light/Fast', 'Balanced', 'Heavy'];
       data.matches.forEach((match, i) => {
-        // Safely escape all strings for onclick
-        const safeName = (match.full_name || 'Unknown').replace(/'/g, "\\'");
-        const safeSpine = (match.stiffness || '').replace(/'/g, "\\'");
-        const safeDia = (match.arrowDia || 'micro').replace(/'/g, "\\'");
+        const safeName = match.full_name.replace(/'/g, "\\'");
+        const safeSpine = match.stiffness || '';
+        const safeDia = match.arrowDia || 'micro';
         const safeLength = match.arrowLength || (drawLen + 0.5).toFixed(1);
-        const safeTotalWt = (match.totalWt || '').replace(/'/g, "\\'");
-        const safePointWt = (match.pointWt || '').replace(/'/g, "\\'");
+        const safeGPP = match.gpp || '7.0'; // Default GPP for balanced
+        const safeFOC = match.foc || '15'; // Default FOC for hunting
 
         resultsHTML += `
           <div class="arrow-recommendation" 
-               style="background:var(--card); padding:1rem; margin:0.75rem 0; border-radius:8px; border:1px solid var(--border); cursor:pointer;"
-               onclick="prefillArrowFromAI('${safeName}', '${safeSpine}', '${safeDia}', '${safeLength}', '${safeTotalWt}', '${safePointWt}')">
+              style="background:var(--card); padding:1rem; margin:0.75rem 0; border-radius:8px; border:1px solid var(--border); cursor:pointer;"
+              onclick="prefillArrowFromAI('${safeName}', '${safeSpine}', '${safeDia}', '${safeLength}', '${safeGPP}', '${safeFOC}')">
             <strong style="color:var(--primary);">${i + 1}. ${categories[i]} - ${match.full_name}</strong> (${match.year || 'current'})<br>
             <strong>Length:</strong> ${safeLength}" | 
             <strong>Spine:</strong> ${safeSpine || 'N/A'}<br>
-            <strong>FOC:</strong> ${match.foc || 'N/A'}% | 
-            <strong>GPP:</strong> ${match.gpp || 'N/A'} | 
-            <strong>GPI:</strong> ${match.gpi || 'N/A'} | 
-            <strong>FPS:</strong> ${match.fps || '270+'}<br>
+            <strong>FOC:</strong> ${safeFOC}% | 
+            <strong>GPP:</strong> ${safeGPP} | 
+            <strong>GPI:</strong> ${match.gpi || 'N/A'}<br>
             <em>${match.why}</em>
           </div>`;
       });
@@ -2746,17 +2744,26 @@ async function runAIArrowRecommender() {
 }
 
 // New simple prefill function (only arrow name for now)
-function prefillArrowFromAI(name, spine, dia, length, totalWt = '', pointWt = '') {
-  $('arrowName').value = name;
-  $('spine').value = spine;
-  $('arrowDia').value = dia; // Now works with text input
-  $('arrowLen').value = length;
+function prefillArrowFromAI(name, spine, dia, length, gpp = '7.0', foc = '15') {
+  if (name) $('arrowName').value = name;
+  if (spine) $('spine').value = spine;
+  if (dia) $('arrowDia').value = dia;
+  if (length) $('arrowLen').value = length;
 
-  if (totalWt) $('totalWt').value = totalWt;
-  if (pointWt) $('pointWt').value = pointWt;
+  // Calculate totalWt and pointWt based on category (GPP and FOC)
+  const drawWt = parseFloat($('drawWt').value) || 70;
+
+  // GPP → totalWt = GPP * drawWt
+  const calculatedTotalWt = Math.round(parseFloat(gpp) * drawWt);
+  if (calculatedTotalWt) $('totalWt').value = calculatedTotalWt;
+
+  // FOC → pointWt = (foc / 100) * totalWt + (totalWt / 2 - length / 2) adjustment (simplified)
+  const calculatedPointWt = Math.round((parseFloat(foc) / 100) * calculatedTotalWt);
+  if (calculatedPointWt) $('pointWt').value = calculatedPointWt;
 
   calculateEverything();
 
+  // Close modal
   document.getElementById('analyzerModal').style.display = 'none';
   document.getElementById('analyzerOverlay').style.display = 'none';
 }
