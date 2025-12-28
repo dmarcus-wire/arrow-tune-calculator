@@ -2688,7 +2688,6 @@ function showSightPinsPopup() {
 async function runAIArrowRecommender() {
   updateStatus('analyzerStatus', 'Recommending arrows...');
 
-  // Gather bow data (essential for recommendations)
   const appType = $('appType').value || 'Hunting';
   const bowModel = $('bowModel').value.trim() || 'Unknown Bow';
   const drawLen = parseFloat($('drawLen').value) || 28;
@@ -2708,16 +2707,17 @@ async function runAIArrowRecommender() {
     updateStatus('analyzerStatus', data.clarification || 'Recommendations ready');
 
     let resultsHTML = '<h3 style="color:var(--text);">AI Arrow Recommendations</h3>';
-    resultsHTML += '<p style="color:var(--light);">Click an arrow to auto-fill the fields:</p>';
+    resultsHTML += '<p style="color:var(--light);">Click an arrow to auto-fill the arrow name:</p>';
 
     if (data.matches && data.matches.length === 3) {
-      // Display 3 arrows: light/fast, balanced, heavy
       const categories = ['Light/Fast', 'Balanced', 'Heavy'];
       data.matches.forEach((match, i) => {
+        const safeName = match.full_name.replace(/'/g, "\\'"); // Escape quotes for onclick
+
         resultsHTML += `
           <div class="arrow-recommendation" 
                style="background:var(--card); padding:1rem; margin:0.75rem 0; border-radius:8px; border:1px solid var(--border); cursor:pointer;"
-               onclick="prefillArrowFromAI('${match.full_name.replace(/'/g, "\\'")}', '${match.stiffness || ''}', '${match.arrowDia || 'micro'}', '${match.arrowLength || (drawLen + 0.5).toFixed(1)}', '${match.totalWt || ''}', '${match.pointWt || ''}')">
+               onclick="prefillArrowName('${safeName}')">
             <strong style="color:var(--primary);">${i + 1}. ${categories[i]} - ${match.full_name}</strong> (${match.year || 'current'})<br>
             <strong>Length:</strong> ${match.arrowLength || (drawLen + 0.5).toFixed(1)}" | 
             <strong>Spine:</strong> ${match.stiffness || 'N/A'}<br>
@@ -2729,7 +2729,7 @@ async function runAIArrowRecommender() {
           </div>`;
       });
     } else {
-      resultsHTML += '<p style="color:var(--warning);">No recommendations available. Try entering more details.</p>';
+      resultsHTML += '<p style="color:var(--warning);">No recommendations available.</p>';
     }
 
     document.getElementById('analyzerResults').innerHTML = resultsHTML;
@@ -2744,17 +2744,10 @@ async function runAIArrowRecommender() {
   }
 }
 
-// Helper to prefill arrow fields from AI recommendation
-function prefillArrowFromAI(name, spine, dia, length, totalWt = '', pointWt = '') {
+// New simple prefill function (only arrow name for now)
+function prefillArrowName(name) {
   $('arrowName').value = name;
-  $('spine').value = spine;
-  $('arrowDia').value = dia;
-  $('arrowLen').value = length;
-
-  if (totalWt) $('totalWt').value = totalWt;
-  if (pointWt) $('pointWt').value = pointWt;
-
-  calculateEverything();
+  calculateEverything(); // Recalculate stats if needed
 
   // Close modal
   document.getElementById('analyzerModal').style.display = 'none';
