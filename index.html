@@ -2712,15 +2712,16 @@ async function runAIArrowRecommender() {
     if (data.matches && data.matches.length === 3) {
       const categories = ['Light/Fast', 'Balanced', 'Heavy'];
       data.matches.forEach((match, i) => {
-        const safeName = match.full_name.replace(/'/g, "\\'"); // Escape quotes for onclick
+        const safeName = match.full_name.replace(/'/g, "\\'");
+        const safeSpine = match.stiffness || ''; // spine from AI response
 
         resultsHTML += `
           <div class="arrow-recommendation" 
-               style="background:var(--card); padding:1rem; margin:0.75rem 0; border-radius:8px; border:1px solid var(--border); cursor:pointer;"
-               onclick="prefillArrowName('${safeName}')">
+              style="background:var(--card); padding:1rem; margin:0.75rem 0; border-radius:8px; border:1px solid var(--border); cursor:pointer;"
+              onclick="prefillArrowFromAI('${safeName}', '${safeSpine}')">
             <strong style="color:var(--primary);">${i + 1}. ${categories[i]} - ${match.full_name}</strong> (${match.year || 'current'})<br>
             <strong>Length:</strong> ${match.arrowLength || (drawLen + 0.5).toFixed(1)}" | 
-            <strong>Spine:</strong> ${match.stiffness || 'N/A'}<br>
+            <strong>Spine:</strong> ${safeSpine || 'N/A'}<br>
             <strong>FOC:</strong> ${match.foc || 'N/A'}% | 
             <strong>GPP:</strong> ${match.gpp || 'N/A'} | 
             <strong>GPI:</strong> ${match.gpi || 'N/A'} | 
@@ -2745,8 +2746,9 @@ async function runAIArrowRecommender() {
 }
 
 // New simple prefill function (only arrow name for now)
-function prefillArrowName(name) {
-  $('arrowName').value = name;
+function prefillArrowFromAI(name, spine) {
+  if (name) $('arrowName').value = name;
+  if (spine) $('spine').value = spine;
   calculateEverything(); // Recalculate stats if needed
 
   // Close modal
