@@ -2768,11 +2768,21 @@ function prefillArrowFromAI(name, spine, dia, length, gpp = '7.0', foc = '15') {
     pointWt = Math.round(150 + (parseFloat(foc) - 16) * 8);     // ~150–200 gr
   }
 
-  calculateEverything(); // Run calculations first
-
-  // Now set the values AFTER calculation — overrides any recalc
+  // Set weights first
   $('totalWt').value = totalWt;
   $('pointWt').value = pointWt;
+
+  // Calculate balance point (estimate)
+  const arrowLenNum = parseFloat(length) || 28.5;
+  const totalWtNum = totalWt;
+  const pointWtNum = pointWt;
+
+  let balancePt = (arrowLenNum / 2) + ((pointWtNum / totalWtNum) * (arrowLenNum / 2));
+  balancePt = Math.max(arrowLenNum / 2, Math.min(arrowLenNum, balancePt)); // Clamp to arrow length
+
+  $('balancePt').value = balancePt.toFixed(2);
+
+  calculateEverything(); // Run calculations
 
   // Refresh table if needed (optional)
   updateBuildSummaryTable(); // if you have this
