@@ -2745,6 +2745,7 @@ async function runAIArrowRecommender() {
 
 // New simple prefill function (only arrow name for now)
 function prefillArrowFromAI(name, spine, dia, length, gpp = '7.0', foc = '15') {
+  // Set all other fields first
   if (name) $('arrowName').value = name;
   if (spine) $('spine').value = spine;
   if (dia) $('arrowDia').value = dia;
@@ -2756,7 +2757,6 @@ function prefillArrowFromAI(name, spine, dia, length, gpp = '7.0', foc = '15') {
   let totalWt = 490; // default balanced
   let pointWt = 125; // default balanced
 
-  // Adjust based on category
   if (name.toLowerCase().includes('fast') || name.toLowerCase().includes('light')) {
     totalWt = Math.round(450 + (parseFloat(gpp) - 6.7) * 100); // ~450–500 gr
     pointWt = Math.round(100 + (parseFloat(foc) - 12) * 8);     // ~100–140 gr
@@ -2768,18 +2768,24 @@ function prefillArrowFromAI(name, spine, dia, length, gpp = '7.0', foc = '15') {
     pointWt = Math.round(150 + (parseFloat(foc) - 16) * 8);     // ~150–200 gr
   }
 
-  // Set weights FIRST
+  // Set weights
   $('totalWt').value = totalWt;
   $('pointWt').value = pointWt;
 
-  // Run calculations (this may recalculate FOC/GPP etc.)
+  // Run calculations (this may update FOC/GPP etc.)
   calculateEverything();
 
-  // Force input fields to show final values after calculation
-  $('totalWt').value = totalWt;   // re-set to override any recalc
-  $('pointWt').value = pointWt;
+  // Calculate balance point AFTER weights are set
+  const arrowLenNum = parseFloat(length) || 28.5;
+  const totalWtNum = parseFloat($('totalWt').value) || totalWt;
+  const pointWtNum = parseFloat($('pointWt').value) || pointWt;
 
-  // Refresh table if needed
+  let balancePt = (arrowLenNum / 2) + ((pointWtNum / totalWtNum) * (arrowLenNum / 2));
+  balancePt = Math.max(arrowLenNum / 2, Math.min(arrowLenNum, balancePt)); // Clamp to valid range
+
+  $('balancePt').value = balancePt.toFixed(2);
+
+  // Refresh table if needed (optional)
   if (typeof updateBuildSummaryTable === 'function') {
     updateBuildSummaryTable();
   }
