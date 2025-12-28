@@ -2707,22 +2707,23 @@ async function runAIArrowRecommender() {
     updateStatus('analyzerStatus', data.clarification || 'Recommendations ready');
 
     let resultsHTML = '<h3 style="color:var(--text);">AI Arrow Recommendations</h3>';
-    resultsHTML += '<p style="color:var(--light);">Click an arrow to auto-fill the arrow name:</p>';
+    resultsHTML += '<p style="color:var(--light);">Click an arrow to auto-fill:</p>';
 
     if (data.matches && data.matches.length === 3) {
       const categories = ['Light/Fast', 'Balanced', 'Heavy'];
       data.matches.forEach((match, i) => {
-        const safeName = match.full_name.replace(/'/g, "\\'");
-        const safeSpine = match.stiffness || '';
-        const safeDia = match.arrowDia || 'micro';
+        // Safely escape all strings for onclick
+        const safeName = (match.full_name || 'Unknown').replace(/'/g, "\\'");
+        const safeSpine = (match.stiffness || '').replace(/'/g, "\\'");
+        const safeDia = (match.arrowDia || 'micro').replace(/'/g, "\\'");
         const safeLength = match.arrowLength || (drawLen + 0.5).toFixed(1);
-        const safeTotalWt = match.totalWt || '';
-        const safePointWt = match.pointWt || '';
+        const safeTotalWt = (match.totalWt || '').replace(/'/g, "\\'");
+        const safePointWt = (match.pointWt || '').replace(/'/g, "\\'");
 
         resultsHTML += `
           <div class="arrow-recommendation" 
-              style="background:var(--card); padding:1rem; margin:0.75rem 0; border-radius:8px; border:1px solid var(--border); cursor:pointer;"
-              onclick="prefillArrowFromAI('${safeName}', '${safeSpine}', '${safeDia}', '${safeLength}', '${safeTotalWt}', '${safePointWt}')">
+               style="background:var(--card); padding:1rem; margin:0.75rem 0; border-radius:8px; border:1px solid var(--border); cursor:pointer;"
+               onclick="prefillArrowFromAI('${safeName}', '${safeSpine}', '${safeDia}', '${safeLength}', '${safeTotalWt}', '${safePointWt}')">
             <strong style="color:var(--primary);">${i + 1}. ${categories[i]} - ${match.full_name}</strong> (${match.year || 'current'})<br>
             <strong>Length:</strong> ${safeLength}" | 
             <strong>Spine:</strong> ${safeSpine || 'N/A'}<br>
@@ -2734,7 +2735,7 @@ async function runAIArrowRecommender() {
           </div>`;
       });
     } else {
-      resultsHTML += '<p style="color:var(--warning);">No recommendations available.</p>';
+      resultsHTML += '<p style="color:var(--warning);">No recommendations available. Try entering more details.</p>';
     }
 
     document.getElementById('analyzerResults').innerHTML = resultsHTML;
@@ -2743,7 +2744,7 @@ async function runAIArrowRecommender() {
 
     updateStatus('analyzerStatus', '', false);
   } catch (e) {
-    console.error(e);
+    console.error('Error in runAIArrowRecommender:', e);
     updateStatus('analyzerStatus', 'Error connecting to AI', true);
     setTimeout(() => updateStatus('analyzerStatus', '', false), 3000);
   }
