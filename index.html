@@ -2747,10 +2747,10 @@ async function runAIArrowRecommender() {
 
 // New simple prefill function (only arrow name for now)
 function prefillArrowFromAI(name, spine, dia, length, totalWt = '', pointWt = '') {
-  if (name) $('arrowName').value = name;
-  if (spine) $('spine').value = spine;
-  if (dia) $('arrowDia').value = dia;
-  if (length) $('arrowLen').value = length;
+  $('arrowName').value = name;
+  $('spine').value = spine;
+  $('arrowDia').value = dia; // Now works with text input
+  $('arrowLen').value = length;
 
   if (totalWt) $('totalWt').value = totalWt;
   if (pointWt) $('pointWt').value = pointWt;

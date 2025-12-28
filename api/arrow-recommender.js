@@ -22,67 +22,64 @@ export default async function handler(req, res) {
   try {
     const openai = new OpenAI({ apiKey, baseURL: 'https://api.x.ai/v1' });
 
-    const completion = await openai.chat.completions.create({
-      model: 'grok-4-1-fast-reasoning',
-      messages: [
-        {
-          role: 'system',
-          content: `You are an archery arrow recommendation assistant.
+    const systemPrompt = `
+You are an archery arrow recommendation assistant for hunters.
 
-Always return exactly 3 arrow recommendations for the user's bow setup, categorized as:
+ALWAYS return exactly 3 real-world arrow recommendations for the user's bow setup, categorized as:
 1. Light/Fast
 2. Balanced
 3. Heavy
 
 User inputs: appType="${appType}", bowModel="${bowModel}", drawLen=${drawLen}, drawWt=${drawWt}.
 
-Best practices for Hunting:
+Best practices for hunting:
 - FOC: 12–18%
 - GPP: 6.5–7.5
 - GPI: 7–9.5
 - FPS >= 270
 
-Return ONLY valid JSON with exactly 3 matches. No text outside the JSON.
+Use real arrows from brands like Easton, Gold Tip, Victory, Black Eagle, etc. Pull accurate specs (spine, inside diameter/ID, recommended length, etc.).
 
+Return ONLY valid JSON:
 {
   "ambiguous": true,
   "matches": [
     {
-      "full_name": "Arrow full name (e.g., Easton Axis 340)",
-      "year": "Year (e.g., 2025)",
+      "full_name": "Arrow full name",
+      "year": "Year",
       "type": "Hunting",
       "arrowLength": "Recommended cut length (inches)",
-      "foc": "FOC % range",
-      "gpp": "GPP range",
-      "gpi": "GPI range",
+      "foc": "FOC %",
+      "gpp": "GPP",
+      "gpi": "GPI",
       "stiffness": "Spine",
-      "arrowDia": "Diameter (micro, small, standard)",
+      "arrowDia": "Inside diameter (ID) or category (e.g., .204 in, micro, small, standard)",
       "why": "Reason why it fits"
     }
   ],
   "clarification": "Select an arrow to auto-fill"
 }
 
-- Use real arrows from brands like Easton, Gold Tip, Victory, Black Eagle.
+- ALWAYS include "arrowDia" (e.g., ".204 in", "micro", "small", "standard").
 - Ensure all 3 meet best practices.
 - arrowLength: drawLen + 0.5 to 1 inch.
-- arrowDia: "micro" (~4mm), "small" (~5mm), "standard" (~6.5mm).
-- Output pure JSON only.`
-        },
-        {
-          role: 'user',
-          content: `Recommend 3 arrows (light/fast, balanced, heavy) for ${bowModel}, ${drawWt} lb, ${drawLen} in, ${appType}`
-        }
+- Output pure JSON only.`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'grok-4-1-fast-reasoning',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Recommend 3 arrows (light/fast, balanced, heavy) for ${bowModel}, ${drawWt} lb, ${drawLen} in, ${appType}` }
       ],
       temperature: 0.3,
       max_tokens: 600,
-      response_format: { type: 'json_object' }
+      response_format: { type: 'json_object' },
     });
 
     const content = completion.choices[0].message.content.trim();
     let data = JSON.parse(content);
 
-    // Force 3 matches if AI response is invalid or missing
+    // Force 3 matches with arrowDia if AI fails
     if (!data.matches || data.matches.length !== 3) {
       data = {
         ambiguous: true,
@@ -96,11 +93,11 @@ Return ONLY valid JSON with exactly 3 matches. No text outside the JSON.
             gpp: "6.7-7.2",
             gpi: "7.2",
             stiffness: "300",
-            arrowDia: "small",
-            why: "Light/fast option with micro diameter for speed and penetration"
+            arrowDia: ".204 in (small)",  // Added
+            why: "Light/fast option with small diameter for speed and penetration"
           },
           {
-            full_name: "Easton Axis 340",
+            full_name: "Easton Axis 5mm 340",
             year: "2025",
             type: "Hunting",
             arrowLength: (parseFloat(drawLen) + 0.5).toFixed(1),
@@ -108,7 +105,7 @@ Return ONLY valid JSON with exactly 3 matches. No text outside the JSON.
             gpp: "6.8-7.2",
             gpi: "9.0",
             stiffness: "340",
-            arrowDia: "micro",
+            arrowDia: "5mm (micro)",  // Added
             why: "Balanced choice for speed, durability, and wind resistance"
           },
           {
@@ -120,7 +117,7 @@ Return ONLY valid JSON with exactly 3 matches. No text outside the JSON.
             gpp: "7.0-7.5",
             gpi: "9.5",
             stiffness: "300",
-            arrowDia: "standard",
+            arrowDia: ".246 in (standard)",  // Added
             why: "Heavy option for maximum momentum and penetration"
           }
         ],
@@ -130,7 +127,7 @@ Return ONLY valid JSON with exactly 3 matches. No text outside the JSON.
 
     res.status(200).json(data);
   } catch (err) {
-    console.error('API Error:', err);
+    console.error(err);
     res.status(500).json({ error: 'Internal server error' });
   }
 }
