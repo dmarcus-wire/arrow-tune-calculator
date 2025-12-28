@@ -2802,10 +2802,8 @@ function showSpinePopup() {
 const spineInput = document.getElementById('spine');
 
 if (spineInput) {
-  // Update border on every input change
   function updateSpineBorder() {
     let val = parseFloat(spineInput.value);
-    // Only apply red if user has typed something invalid
     if (spineInput.value !== '' && (isNaN(val) || val < spineInput.min || val > spineInput.max)) {
       spineInput.style.borderColor = 'red';
     } else {
@@ -2813,23 +2811,13 @@ if (spineInput) {
     }
   }
 
-  spineInput.addEventListener('input', () => {
-    let val = parseFloat(spineInput.value);
-    if (isNaN(val)) return; // Allow typing
+  // On input: ONLY visual feedback, NO clamping
+  spineInput.addEventListener('input', updateSpineBorder);
 
-    if (val < spineInput.min) {
-      spineInput.value = spineInput.min;
-    }
-    if (val > spineInput.max) {
-      spineInput.value = spineInput.max;
-    }
-
-    updateSpineBorder();
-  });
-
+  // On blur: Clamp to valid range
   spineInput.addEventListener('blur', () => {
     let val = parseFloat(spineInput.value);
-    if (spineInput.value !== '' && (isNaN(val) || val < spineInput.min)) {
+    if (isNaN(val) || val < spineInput.min) {
       spineInput.value = spineInput.min;
     } else if (val > spineInput.max) {
       spineInput.value = spineInput.max;
@@ -2837,7 +2825,7 @@ if (spineInput) {
     updateSpineBorder();
   });
 
-  // Initial check: only if value is present
+  // Initial check
   updateSpineBorder();
 }
 
