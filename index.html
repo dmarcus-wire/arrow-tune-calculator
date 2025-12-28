@@ -2756,34 +2756,26 @@ function prefillArrowFromAI(name, spine, dia, length, gpp = '7.0', foc = '15') {
   let totalWt = 490; // default balanced
   let pointWt = 125; // default balanced
 
-  // Light/Fast: lower total weight, lighter point
+  // Adjust based on category
   if (name.toLowerCase().includes('fast') || name.toLowerCase().includes('light')) {
     totalWt = Math.round(450 + (parseFloat(gpp) - 6.7) * 100); // ~450–500 gr
     pointWt = Math.round(100 + (parseFloat(foc) - 12) * 8);     // ~100–140 gr
-  }
-  // Balanced: standard hunting weight
-  else if (name.toLowerCase().includes('balanced')) {
+  } else if (name.toLowerCase().includes('balanced')) {
     totalWt = Math.round(480 + (parseFloat(gpp) - 7.0) * 100); // ~480–520 gr
     pointWt = Math.round(125 + (parseFloat(foc) - 14) * 8);     // ~125–165 gr
-  }
-  // Heavy: higher total weight, heavier point
-  else {
+  } else {
     totalWt = Math.round(520 + (parseFloat(gpp) - 7.2) * 100); // ~520–580 gr
     pointWt = Math.round(150 + (parseFloat(foc) - 16) * 8);     // ~150–200 gr
   }
 
+  calculateEverything(); // Run calculations first
+
+  // Now set the values AFTER calculation — overrides any recalc
   $('totalWt').value = totalWt;
   $('pointWt').value = pointWt;
 
-  // Recalculate stats
-  calculateEverything();
-
-  // Force input fields to reflect final calculated values (fixes display issue)
-  $('totalWt').value = parseFloat($('totalWt').value) || totalWt;
-  $('pointWt').value = parseFloat($('pointWt').value) || pointWt;
-
   // Refresh table if needed (optional)
-  updateBuildSummaryTable(); // if you have this function
+  updateBuildSummaryTable(); // if you have this
 
   // Close modal
   document.getElementById('analyzerModal').style.display = 'none';
