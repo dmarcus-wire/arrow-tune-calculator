@@ -2717,7 +2717,7 @@ async function runAIArrowRecommender() {
         resultsHTML += `
           <div class="arrow-recommendation" 
               style="background:var(--card); padding:1rem; margin:0.75rem 0; border-radius:8px; border:1px solid var(--border); cursor:pointer;"
-              onclick="prefillArrowFromAI('${safeName}', '${safeSpine}', '${safeDia}', '${safeLength}', '${safeGPP}', '${safeFOC}')">
+              onclick="prefillArrowFromAI('${safeName}', '${safeSpine}', '${safeDia}', '${safeLength}', '${match.gpp || '7.0'}', '${match.foc || '15'}')"
             <strong style="color:var(--primary);">${i + 1}. ${categories[i]} - ${match.full_name}</strong> (${match.year || 'current'})<br>
             <strong>Length:</strong> ${safeLength}" | 
             <strong>Spine:</strong> ${safeSpine || 'N/A'}<br>
@@ -2752,32 +2752,17 @@ function prefillArrowFromAI(name, spine, dia, length, gpp = '7.0', foc = '15') {
 
   const drawWt = parseFloat($('drawWt').value) || 70;
 
-  // Realistic hunting arrow weights by category
-  let totalWt = 490; // default balanced
-  let pointWt = 125; // default balanced
+  // Use AI's GPP to calculate total weight
+  const totalWt = Math.round(parseFloat(gpp) * drawWt);
 
-  // Light/Fast: lower total weight, lighter point
-  if (name.toLowerCase().includes('fast') || name.toLowerCase().includes('light')) {
-    totalWt = Math.round(450 + (parseFloat(gpp) - 6.7) * 100); // ~450–500 gr
-    pointWt = Math.round(100 + (parseFloat(foc) - 12) * 8);     // ~100–140 gr
-  }
-  // Balanced: standard hunting weight
-  else if (name.toLowerCase().includes('balanced')) {
-    totalWt = Math.round(480 + (parseFloat(gpp) - 7.0) * 100); // ~480–520 gr
-    pointWt = Math.round(125 + (parseFloat(foc) - 14) * 8);     // ~125–165 gr
-  }
-  // Heavy: higher total weight, heavier point
-  else {
-    totalWt = Math.round(520 + (parseFloat(gpp) - 7.2) * 100); // ~520–580 gr
-    pointWt = Math.round(150 + (parseFloat(foc) - 16) * 8);     // ~150–200 gr
-  }
+  // Point weight: FOC-driven, with realistic range for hunting (100–200 gr)
+  let pointWt = Math.round((parseFloat(foc) / 100) * totalWt);
+  pointWt = Math.max(100, Math.min(200, pointWt)); // clamp to realistic hunting range
 
   $('totalWt').value = totalWt;
   $('pointWt').value = pointWt;
 
-  // Force table refresh after prefill
-  calculateEverything();
-  updateBuildSummaryTable(); // ← Add this line (see below)
+  calculateEverything(); // Recalculate stats
 
   // Close modal
   document.getElementById('analyzerModal').style.display = 'none';
