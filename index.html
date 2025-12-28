@@ -2751,29 +2751,35 @@ function prefillArrowFromAI(name, spine, dia, length, gpp = '7.0', foc = '15') {
   if (length) $('arrowLen').value = length;
 
   const drawWt = parseFloat($('drawWt').value) || 70;
-  const category = name.toLowerCase().includes('fast') ? 'light' : 
-                   name.toLowerCase().includes('balanced') ? 'balanced' : 'heavy';
 
+  // Realistic hunting arrow weights by category
   let totalWt = 490; // default balanced
   let pointWt = 125; // default balanced
 
-  // Adjust based on category
-  if (category === 'light') {
+  // Light/Fast: lower total weight, lighter point
+  if (name.toLowerCase().includes('fast') || name.toLowerCase().includes('light')) {
     totalWt = Math.round(450 + (parseFloat(gpp) - 6.7) * 100); // ~450–500 gr
-    pointWt = Math.round(100 + (parseFloat(foc) - 12) * 10);   // ~100–125 gr
-  } else if (category === 'balanced') {
+    pointWt = Math.round(100 + (parseFloat(foc) - 12) * 8);     // ~100–140 gr
+  }
+  // Balanced: standard hunting weight
+  else if (name.toLowerCase().includes('balanced')) {
     totalWt = Math.round(480 + (parseFloat(gpp) - 7.0) * 100); // ~480–520 gr
-    pointWt = Math.round(125 + (parseFloat(foc) - 14) * 10);   // ~125–150 gr
-  } else { // heavy
+    pointWt = Math.round(125 + (parseFloat(foc) - 14) * 8);     // ~125–165 gr
+  }
+  // Heavy: higher total weight, heavier point
+  else {
     totalWt = Math.round(520 + (parseFloat(gpp) - 7.2) * 100); // ~520–580 gr
-    pointWt = Math.round(150 + (parseFloat(foc) - 16) * 10);   // ~150–200 gr
+    pointWt = Math.round(150 + (parseFloat(foc) - 16) * 8);     // ~150–200 gr
   }
 
   $('totalWt').value = totalWt;
   $('pointWt').value = pointWt;
 
+  // Force table refresh after prefill
   calculateEverything();
+  updateBuildSummaryTable(); // ← Add this line (see below)
 
+  // Close modal
   document.getElementById('analyzerModal').style.display = 'none';
   document.getElementById('analyzerOverlay').style.display = 'none';
 }
