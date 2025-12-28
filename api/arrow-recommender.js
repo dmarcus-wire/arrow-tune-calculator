@@ -29,77 +29,108 @@ export default async function handler(req, res) {
           role: 'system',
           content: `You are an archery arrow recommendation assistant.
 
-Always return exactly 3 arrow recommendations for the user's bow setup, categorized as light/fast, balanced, and heavy.
+Always return exactly 3 arrow recommendations for the user's bow setup, categorized as:
+1. Light/Fast
+2. Balanced
+3. Heavy
 
 User inputs: appType="${appType}", bowModel="${bowModel}", drawLen=${drawLen}, drawWt=${drawWt}.
 
-Best practices:
+Best practices for Hunting:
 - FOC: 12–18%
 - GPP: 6.5–7.5
 - GPI: 7–9.5
 - FPS >= 270
 
-Return ONLY valid JSON:
+Return ONLY valid JSON with exactly 3 matches. No text outside the JSON.
+
 {
   "ambiguous": true,
   "matches": [
     {
-      "full_name": "Light/Fast arrow name",
-      "year": "Year",
+      "full_name": "Arrow full name (e.g., Easton Axis 340)",
+      "year": "Year (e.g., 2025)",
       "type": "Hunting",
-      "arrowLength": "Recommended cut length",
-      "foc": "FOC %",
-      "gpp": "GPP",
-      "gpi": "GPI",
+      "arrowLength": "Recommended cut length (inches)",
+      "foc": "FOC % range",
+      "gpp": "GPP range",
+      "gpi": "GPI range",
       "stiffness": "Spine",
-      "why": "Reason why it fits"
-    },
-    {
-      "full_name": "Balanced arrow name",
-      "year": "Year",
-      "type": "Hunting",
-      "arrowLength": "Recommended cut length",
-      "foc": "FOC %",
-      "gpp": "GPP",
-      "gpi": "GPI",
-      "stiffness": "Spine",
-      "why": "Reason why it fits"
-    },
-    {
-      "full_name": "Heavy arrow name",
-      "year": "Year",
-      "type": "Hunting",
-      "arrowLength": "Recommended cut length",
-      "foc": "FOC %",
-      "gpp": "GPP",
-      "gpi": "GPI",
-      "stiffness": "Spine",
+      "arrowDia": "Diameter (micro, small, standard)",
       "why": "Reason why it fits"
     }
   ],
   "clarification": "Select an arrow to auto-fill"
 }
 
-- Use real arrows (Easton, Gold Tip, Victory, etc.).
-- Ensure all meet best practices.
+- Use real arrows from brands like Easton, Gold Tip, Victory, Black Eagle.
+- Ensure all 3 meet best practices.
 - arrowLength: drawLen + 0.5 to 1 inch.
-- Output pure JSON only.`,
+- arrowDia: "micro" (~4mm), "small" (~5mm), "standard" (~6.5mm).
+- Output pure JSON only.`
         },
         {
           role: 'user',
-          content: `Recommend 3 arrows (light/fast, balanced, heavy) for ${bowModel}, ${drawWt} lb, ${drawLen} in, ${appType}`,
-        },
+          content: `Recommend 3 arrows (light/fast, balanced, heavy) for ${bowModel}, ${drawWt} lb, ${drawLen} in, ${appType}`
+        }
       ],
       temperature: 0.3,
       max_tokens: 600,
-      response_format: { type: "json_object" },
+      response_format: { type: 'json_object' }
     });
 
     const content = completion.choices[0].message.content.trim();
-    const data = JSON.parse(content);
+    let data = JSON.parse(content);
+
+    // Force 3 matches if AI response is invalid or missing
+    if (!data.matches || data.matches.length !== 3) {
+      data = {
+        ambiguous: true,
+        matches: [
+          {
+            full_name: "Victory RIP TKO Elite 300",
+            year: "2025",
+            type: "Hunting",
+            arrowLength: (parseFloat(drawLen) + 0.5).toFixed(1),
+            foc: "13-15",
+            gpp: "6.7-7.2",
+            gpi: "7.2",
+            stiffness: "300",
+            arrowDia: "small",
+            why: "Light/fast option with micro diameter for speed and penetration"
+          },
+          {
+            full_name: "Easton Axis 340",
+            year: "2025",
+            type: "Hunting",
+            arrowLength: (parseFloat(drawLen) + 0.5).toFixed(1),
+            foc: "12-15",
+            gpp: "6.8-7.2",
+            gpi: "9.0",
+            stiffness: "340",
+            arrowDia: "micro",
+            why: "Balanced choice for speed, durability, and wind resistance"
+          },
+          {
+            full_name: "Gold Tip Hunter XT 300",
+            year: "2025",
+            type: "Hunting",
+            arrowLength: (parseFloat(drawLen) + 0.5).toFixed(1),
+            foc: "14-17",
+            gpp: "7.0-7.5",
+            gpi: "9.5",
+            stiffness: "300",
+            arrowDia: "standard",
+            why: "Heavy option for maximum momentum and penetration"
+          }
+        ],
+        clarification: "Select an arrow to auto-fill"
+      };
+    }
 
     res.status(200).json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('API Error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 }
