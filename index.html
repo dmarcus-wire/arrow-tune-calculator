@@ -1048,18 +1048,13 @@
           </div>
           <input type="number" id="spine" placeholder="300" min="100" max="600" step="10" class="left-align" style="flex:1;">
         </div>
-        <!---Arrow Diameter-->       
+        <!---Arrow Diameter-->           
         <div class="input-row" style="align-items:center; gap:0.5rem;">
           <div style="display:flex; align-items:center; gap:0.4rem;">
             <label for="arrowDia">Diameter</label>
             <button type="button" onclick="showArrowDiaPopup()" class="info-btn" title="About Arrow Diameter">ⓘ</button>
           </div>
-          <select id="arrowDia" style="flex:1;">
-            <option value="standard">None</option>
-            <option value="standard">Standard (~6.5mm / .246")</option>
-            <option value="small">Small (~5mm / .204")</option>
-            <option value="micro" selected>Micro (~4mm / .166")</option>
-          </select>
+          <input type="text" id="arrowDia" placeholder="e.g., .204 in / 5mm" style="flex:1;">
         </div>
         <!---Arrow Length-->
         <div class="input-row" style="align-items:center; gap:0.5rem;">
@@ -2754,7 +2749,7 @@ async function runAIArrowRecommender() {
 function prefillArrowFromAI(name, spine, dia, length, totalWt = '', pointWt = '') {
   if (name) $('arrowName').value = name;
   if (spine) $('spine').value = spine;
-  if (dia) $('arrowDia').value = dia; // Sets the <select> value
+  if (dia) $('arrowDia').value = dia;
   if (length) $('arrowLen').value = length;
 
   if (totalWt) $('totalWt').value = totalWt;
@@ -2762,7 +2757,6 @@ function prefillArrowFromAI(name, spine, dia, length, totalWt = '', pointWt = ''
 
   calculateEverything();
 
-  // Close modal
   document.getElementById('analyzerModal').style.display = 'none';
   document.getElementById('analyzerOverlay').style.display = 'none';
 }
