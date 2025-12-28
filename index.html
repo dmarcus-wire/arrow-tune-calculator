@@ -2713,14 +2713,18 @@ async function runAIArrowRecommender() {
       const categories = ['Light/Fast', 'Balanced', 'Heavy'];
       data.matches.forEach((match, i) => {
         const safeName = match.full_name.replace(/'/g, "\\'");
-        const safeSpine = match.stiffness || ''; // spine from AI response
+        const safeSpine = match.stiffness || '';
+        const safeDia = match.arrowDia || 'micro';
+        const safeLength = match.arrowLength || (drawLen + 0.5).toFixed(1);
+        const safeTotalWt = match.totalWt || '';
+        const safePointWt = match.pointWt || '';
 
         resultsHTML += `
           <div class="arrow-recommendation" 
               style="background:var(--card); padding:1rem; margin:0.75rem 0; border-radius:8px; border:1px solid var(--border); cursor:pointer;"
-              onclick="prefillArrowFromAI('${safeName}', '${safeSpine}')">
+              onclick="prefillArrowFromAI('${safeName}', '${safeSpine}', '${safeDia}', '${safeLength}', '${safeTotalWt}', '${safePointWt}')">
             <strong style="color:var(--primary);">${i + 1}. ${categories[i]} - ${match.full_name}</strong> (${match.year || 'current'})<br>
-            <strong>Length:</strong> ${match.arrowLength || (drawLen + 0.5).toFixed(1)}" | 
+            <strong>Length:</strong> ${safeLength}" | 
             <strong>Spine:</strong> ${safeSpine || 'N/A'}<br>
             <strong>FOC:</strong> ${match.foc || 'N/A'}% | 
             <strong>GPP:</strong> ${match.gpp || 'N/A'} | 
@@ -2746,10 +2750,16 @@ async function runAIArrowRecommender() {
 }
 
 // New simple prefill function (only arrow name for now)
-function prefillArrowFromAI(name, spine) {
+function prefillArrowFromAI(name, spine, dia, length, totalWt = '', pointWt = '') {
   if (name) $('arrowName').value = name;
   if (spine) $('spine').value = spine;
-  calculateEverything(); // Recalculate stats if needed
+  if (dia) $('arrowDia').value = dia; // Sets the <select> value
+  if (length) $('arrowLen').value = length;
+
+  if (totalWt) $('totalWt').value = totalWt;
+  if (pointWt) $('pointWt').value = pointWt;
+
+  calculateEverything();
 
   // Close modal
   document.getElementById('analyzerModal').style.display = 'none';
