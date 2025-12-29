@@ -796,6 +796,62 @@
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+    /* AI Prefilled field styling - Theme-aware */
+    .ai-prefilled {
+      transition: all 0.2s ease;
+      font-weight: 600; /* slight emphasis */
+    }
+
+    /* Light mode (default/fallback) */
+    .ai-prefilled {
+      background-color: #e0f7fa !important; /* light cyan */
+      color: #1e293b !important;            /* dark slate text */
+      border-color: #7dd3fc !important;     /* blue border */
+    }
+
+    /* Dark mode */
+    :root.dark .ai-prefilled,
+    [data-theme="dark"] .ai-prefilled,
+    body.dark .ai-prefilled {
+      background-color: #0e4f5c !important; /* dark teal/cyan */
+      color: #ffffff !important;            /* white text */
+      border-color: #22d3ee !important;     /* bright cyan border */
+      box-shadow: inset 0 0 0 2px #22d3ee !important; /* glow */
+    }
+
+    /* Hover effect (both modes) */
+    .ai-prefilled:hover {
+      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.3) !important;
+      transform: scale(1.02);
+    }
+
+    /* Tooltip on hover */
+    .ai-prefilled {
+      position: relative; /* required for ::after positioning */
+    }
+
+    .ai-prefilled::after {
+      content: attr(title);
+      position: absolute;
+      top: -2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 10;
+    }
+
+    .ai-prefilled:hover::after {
+      opacity: 1;
+    }
+
   </style>
 </head>
 <body>
@@ -2907,7 +2963,7 @@ function prefillArrowFromAI(name, spine, dia, length, gpp = '7.0', foc = '15') {
   if (name) $('arrowName').value = name;
   if (spine) $('spine').value = spine;
   if (dia) $('arrowDia').value = dia;
-  if (length) $('arrowLen').value = length; // or $('arrowLength') if that's your ID
+  if (length) $('arrowLen').value = length;
 
   // Get draw weight for realistic estimation
   const drawWt = parseFloat($('drawWt').value) || 70;
@@ -2917,14 +2973,14 @@ function prefillArrowFromAI(name, spine, dia, length, gpp = '7.0', foc = '15') {
   let pointWt = 125; // default balanced
 
   if (name.toLowerCase().includes('fast') || name.toLowerCase().includes('light')) {
-    totalWt = Math.round(450 + (parseFloat(gpp) - 6.7) * 100); // ~450–500 gr
-    pointWt = Math.round(100 + (parseFloat(foc) - 12) * 8);     // ~100–140 gr
+    totalWt = Math.round(450 + (parseFloat(gpp) - 6.7) * 100);
+    pointWt = Math.round(100 + (parseFloat(foc) - 12) * 8);
   } else if (name.toLowerCase().includes('balanced')) {
-    totalWt = Math.round(480 + (parseFloat(gpp) - 7.0) * 100); // ~480–520 gr
-    pointWt = Math.round(125 + (parseFloat(foc) - 14) * 8);     // ~125–165 gr
+    totalWt = Math.round(480 + (parseFloat(gpp) - 7.0) * 100);
+    pointWt = Math.round(125 + (parseFloat(foc) - 14) * 8);
   } else {
-    totalWt = Math.round(520 + (parseFloat(gpp) - 7.2) * 100); // ~520–580 gr
-    pointWt = Math.round(150 + (parseFloat(foc) - 16) * 8);     // ~150–200 gr
+    totalWt = Math.round(520 + (parseFloat(gpp) - 7.2) * 100);
+    pointWt = Math.round(150 + (parseFloat(foc) - 16) * 8);
   }
 
   // Set values BEFORE calculation
@@ -2933,24 +2989,28 @@ function prefillArrowFromAI(name, spine, dia, length, gpp = '7.0', foc = '15') {
 
   // IMPORTANT: Mark as prefilled so calculateEverything() doesn't overwrite it
   $('totalWt').dataset.prefilled = 'true';
-  $('totalWt').style.backgroundColor = '#e0f7fa'; // light cyan hint
-  $('totalWt').style.borderColor = '#7dd3fc';     // blue border
+
+  // Add the CSS class (styling is now handled by CSS)
+  $('totalWt').classList.add('ai-prefilled');
+
+  // Tooltip for clarity
+  $('totalWt').title = 'AI Prefilled (edit to unlock auto-calc)';
 
   // Run calculations once to update FOC, GPP, GPI, etc.
   calculateEverything();
 
-  // Force final values after calculation (in case anything tried to override)
+  // Force final values after calculation
   $('totalWt').value = totalWt;
   $('pointWt').value = pointWt;
-  $('arrowLen').value = length; // Re-set length if overwritten
+  $('arrowLen').value = length;
 
-  // Balance point (re-calculate after all values are final)
+  // Balance point
   const arrowLenNum = parseFloat($('arrowLen').value) || 28.5;
   const totalWtNum = parseFloat($('totalWt').value) || 490;
   const pointWtNum = parseFloat($('pointWt').value) || 125;
 
   let balancePt = (arrowLenNum / 2) + ((pointWtNum / totalWtNum) * (arrowLenNum / 2));
-  balancePt = Math.max(arrowLenNum / 2, Math.min(arrowLenNum, balancePt)); // Clamp
+  balancePt = Math.max(arrowLenNum / 2, Math.min(arrowLenNum, balancePt));
   $('balancePt').value = balancePt.toFixed(2);
 
   // Refresh table if needed
@@ -2958,13 +3018,11 @@ function prefillArrowFromAI(name, spine, dia, length, gpp = '7.0', foc = '15') {
     updateBuildSummaryTable();
   }
 
-  // Close the old analyzer modal (if still open)
+  // Close modals
   if (document.getElementById('analyzerModal')) {
     document.getElementById('analyzerModal').style.display = 'none';
     document.getElementById('analyzerOverlay').style.display = 'none';
   }
-
-  // Close the new slider modal (arrowRecModal)
   if (document.getElementById('arrowRecModal')) {
     document.getElementById('arrowRecModal').remove();
   }
@@ -5741,16 +5799,17 @@ function sendAi() {
 }
 
 // Allow user to "unlock" prefilled data by editing
-// Wait for DOM to be ready
 document.addEventListener('DOMContentLoaded', () => {
   const totalWtInput = $('totalWt');
   if (totalWtInput) {
     totalWtInput.addEventListener('input', () => {
       delete totalWtInput.dataset.prefilled; // remove AI lock
-      totalWtInput.style.backgroundColor = ''; // reset visual cue
+      totalWtInput.classList.remove('ai-prefilled'); // remove CSS styling
+      totalWtInput.style.backgroundColor = ''; // reset any inline styles
+      totalWtInput.style.color = '';
       totalWtInput.style.borderColor = '';
-      // Optional: recalculate immediately
-      calculateEverything();
+      totalWtInput.style.boxShadow = '';
+      calculateEverything(); // optional: recalculate immediately
     });
   }
 });
