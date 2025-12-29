@@ -789,6 +789,13 @@
       animation: spin 1.5s linear infinite;
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    #analyzerStatus::before {
+      content: "⏳ ";
+      animation: spin 1.5s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
   </style>
 </head>
 <body>
@@ -2706,7 +2713,18 @@ function showSightPinsPopup() {
 
 // AI Arrow Recommender function
 async function runAIArrowRecommender() {
-  updateStatus('analyzerStatus', 'Recommending arrows...');
+  const analyzerStatus = document.getElementById('analyzerStatus');
+  if (!analyzerStatus) return;
+
+  analyzerStatus.style.display = 'block';
+  analyzerStatus.innerHTML = 'Starting AI arrow recommendation...';
+
+  // Start live timer
+  const startTime = Date.now();
+  const timerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    analyzerStatus.innerHTML = `Processing... (${elapsed}s)`;
+  }, 1000);
 
   const appType = $('appType').value || 'Hunting';
   const bowModel = $('bowModel').value.trim() || 'Unknown Bow';
@@ -2714,7 +2732,8 @@ async function runAIArrowRecommender() {
   const drawWt = parseFloat($('drawWt').value) || 70;
 
   try {
-    updateStatus('analyzerStatus', 'Fetching AI recommendations...');
+    // Step 1: Querying AI
+    analyzerStatus.innerHTML = 'Querying AI for arrow recommendations...';
 
     const response = await fetch(
       `https://arrowforgeapp.com/api/arrow-recommender?appType=${encodeURIComponent(appType)}&bowModel=${encodeURIComponent(bowModel)}&drawLen=${drawLen}&drawWt=${drawWt}`
@@ -2722,49 +2741,72 @@ async function runAIArrowRecommender() {
 
     if (!response.ok) throw new Error(`API error: ${response.status}`);
 
+    // Step 2: Receiving data
+    analyzerStatus.innerHTML = 'Received recommendations from AI...';
+
     const data = await response.json();
 
-    updateStatus('analyzerStatus', data.clarification || 'Recommendations ready');
+    // Stop timer
+    clearInterval(timerInterval);
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    analyzerStatus.innerHTML = `AI recommendation complete (${elapsed}s)`;
 
-    let resultsHTML = '<h3 style="color:var(--text);">AI Arrow Recommendations</h3>';
-    resultsHTML += '<p style="color:var(--light);">Click an arrow to auto-fill:</p>';
+    // Brief pause to show success
+    await new Promise(resolve => setTimeout(resolve, 800));
 
     if (data.matches && data.matches.length === 3) {
+      analyzerStatus.innerHTML = `Found 3 optimized arrow builds (Light/Fast, Balanced, Heavy)`;
+
+      let resultsHTML = '<h3 style="color:var(--text);">AI Arrow Recommendations</h3>';
+      resultsHTML += '<p style="color:var(--light);">Click an arrow to auto-fill:</p>';
+
       const categories = ['Light/Fast', 'Balanced', 'Heavy'];
       data.matches.forEach((match, i) => {
         const safeName = match.full_name.replace(/'/g, "\\'");
         const safeSpine = match.stiffness || '';
         const safeDia = match.arrowDia || 'micro';
         const safeLength = match.arrowLength || (drawLen + 0.5).toFixed(1);
-        const safeGPP = match.gpp || '7.0'; // Default GPP for balanced
-        const safeFOC = match.foc || '15'; // Default FOC for hunting
+        const safeGPP = match.gpp || '7.0';
+        const safeFOC = match.foc || '15';
 
         resultsHTML += `
           <div class="arrow-recommendation" 
-              style="background:var(--card); padding:1rem; margin:0.75rem 0; border-radius:8px; border:1px solid var(--border); cursor:pointer;"
-              onclick="prefillArrowFromAI('${safeName}', '${safeSpine}', '${safeDia}', '${safeLength}', '${match.gpp || '7.0'}', '${match.foc || '15'}')"
+               style="background:var(--card); padding:1rem; margin:0.75rem 0; border-radius:8px; border:1px solid var(--border); cursor:pointer;"
+               onclick="prefillArrowFromAI('${safeName}', '${safeSpine}', '${safeDia}', '${safeLength}', '${safeGPP}', '${safeFOC}')">
             <strong style="color:var(--primary);">${i + 1}. ${categories[i]} - ${match.full_name}</strong> (${match.year || 'current'})<br>
             <strong>Length:</strong> ${safeLength}" | 
             <strong>Spine:</strong> ${safeSpine || 'N/A'}<br>
             <strong>FOC:</strong> ${safeFOC}% | 
             <strong>GPP:</strong> ${safeGPP} | 
             <strong>GPI:</strong> ${match.gpi || 'N/A'}<br>
-            <em>${match.why}</em>
+            <em>${match.why || 'Optimized for your bow setup'}</em>
           </div>`;
       });
+
+      document.getElementById('analyzerResults').innerHTML = resultsHTML;
+      document.getElementById('analyzerModal').style.display = 'block';
+      document.getElementById('analyzerOverlay').style.display = 'block';
+
+      // Show final status briefly
+      analyzerStatus.innerHTML = 'Recommendations loaded successfully';
+      setTimeout(() => {
+        analyzerStatus.style.display = 'none';
+      }, 1500);
     } else {
-      resultsHTML += '<p style="color:var(--warning);">No recommendations available. Try entering more details.</p>';
+      analyzerStatus.innerHTML = 'No suitable recommendations found';
+      document.getElementById('analyzerResults').innerHTML = 
+        '<p style="color:var(--warning);">No recommendations available. Try entering more details or adjusting your bow settings.</p>';
+      document.getElementById('analyzerModal').style.display = 'block';
+      document.getElementById('analyzerOverlay').style.display = 'block';
     }
 
-    document.getElementById('analyzerResults').innerHTML = resultsHTML;
-    document.getElementById('analyzerModal').style.display = 'block';
-    document.getElementById('analyzerOverlay').style.display = 'block';
-
-    updateStatus('analyzerStatus', '', false);
   } catch (e) {
+    clearInterval(timerInterval);
     console.error('Error in runAIArrowRecommender:', e);
-    updateStatus('analyzerStatus', 'Error connecting to AI', true);
-    setTimeout(() => updateStatus('analyzerStatus', '', false), 3000);
+    analyzerStatus.innerHTML = `Error: ${e.message || 'Failed to connect to AI'}`;
+    setTimeout(() => {
+      analyzerStatus.style.display = 'none';
+    }, 3000);
   }
 }
 
