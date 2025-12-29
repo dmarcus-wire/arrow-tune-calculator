@@ -2711,7 +2711,140 @@ function showSightPinsPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
-// AI Arrow Recommender function
+// function to handle the slider-based arrow recommender modal
+function showArrowRecommenderModal(recommendations, drawLen) {
+  if (document.getElementById('arrowRecModal')) return;
+
+  const modal = document.createElement('div');
+  modal.id = 'arrowRecModal';
+  modal.style.cssText = `
+    position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.85); display:flex; align-items:center;
+    justify-content:center; z-index:1001; padding:1rem;
+  `;
+
+  const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches || document.documentElement.classList.contains('dark');
+
+  let slidesHTML = `
+    <div style="background:var(--card-bg); color:var(--text); border-radius:16px; max-width:520px; width:100%; max-height:90vh; overflow:hidden; position:relative; box-shadow:0 20px 40px rgba(0,0,0,0.4);">
+      <!-- Close button -->
+      <button onclick="document.getElementById('arrowRecModal').remove()"
+              style="position:absolute; top:1rem; right:1rem; background:rgba(0,0,0,0.5); color:white; border:none; width:44px; height:44px; border-radius:50%; font-size:1.8rem; cursor:pointer; z-index:20;">
+        ×
+      </button>
+
+      <div class="slides-wrapper" style="position:relative; height:100%;">
+        <div class="slides-container" style="height:100%; position:relative;">
+  `;
+
+  const categories = ['Light/Fast', 'Balanced', 'Heavy'];
+  recommendations.forEach((match, i) => {
+    const safeName = match.full_name.replace(/'/g, "\\'");
+    const safeSpine = match.stiffness || '';
+    const safeDia = match.arrowDia || 'micro';
+    const safeLength = match.arrowLength || (drawLen + 0.5).toFixed(1);
+    const safeGPP = match.gpp || '7.0';
+    const safeFOC = match.foc || '15';
+
+    const textColor = isDarkMode ? '#ffffff' : '#1f2937';
+    const accentColor = isDarkMode ? 'var(--primary)' : '#2563eb';
+
+    slidesHTML += `
+      <div class="onboarding-slide" style="display:none; padding:2rem 1.5rem 9rem 1.5rem; text-align:center; color:${textColor}; position:relative;">
+        <h2 style="color:${accentColor}; margin:0 0 1rem; font-size:1.6rem;">
+          ${categories[i]} Arrow
+        </h2>
+        <div style="font-size:1.2rem; font-weight:600; margin-bottom:0.75rem;">
+          ${match.full_name} (${match.year || 'Current'})
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; font-size:0.95rem; margin:1rem 0;">
+          <div><strong>Length:</strong> ${safeLength}"</div>
+          <div><strong>Spine:</strong> ${safeSpine || 'N/A'}</div>
+          <div><strong>FOC:</strong> ${safeFOC}%</div>
+          <div><strong>GPP:</strong> ${safeGPP}</div>
+          <div><strong>GPI:</strong> ${match.gpi || 'N/A'}</div>
+        </div>
+
+        <div style="margin-top:1.5rem; font-size:0.9rem; font-style:italic; line-height:1.4; color:${isDarkMode ? 'var(--light)' : '#4b5563'}">
+          ${match.why || 'Optimized for your bow setup'}
+        </div>
+
+        <button onclick="prefillArrowFromAI('${safeName}', '${safeSpine}', '${safeDia}', '${safeLength}', '${safeGPP}', '${safeFOC}'); document.getElementById('arrowRecModal').remove();"
+                style="margin-top:2rem; padding:0.75rem 1.5rem; background:${accentColor}; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer;">
+          Auto-Fill This Arrow
+        </button>
+      </div>
+    `;
+  });
+
+  slidesHTML += `
+        </div>
+
+        <!-- Navigation arrows -->
+        <button id="prevArrowBtn" class="nav-btn" style="position:absolute; left:1rem; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:white; border:none; width:50px; height:50px; border-radius:50%; font-size:2rem; cursor:pointer; z-index:20; display:none;">
+          ‹
+        </button>
+        <button id="nextArrowBtn" class="nav-btn" style="position:absolute; right:1rem; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:white; border:none; width:50px; height:50px; border-radius:50%; font-size:2rem; cursor:pointer; z-index:20;">
+          ›
+        </button>
+      </div>
+
+      <!-- Dots with significantly more clearance -->
+      <div class="dots" style="position:absolute; bottom:7rem; left:50%; transform:translateX(-50%); display:flex; gap:0.75rem; z-index:20;">
+        <span class="dot active"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </div>
+  `;
+
+  modal.innerHTML = slidesHTML;
+  document.body.appendChild(modal);
+
+  // Slider logic (unchanged)
+  const slides = document.querySelectorAll('#arrowRecModal .onboarding-slide');
+  const dots = document.querySelectorAll('#arrowRecModal .dot');
+  const prevBtn = document.getElementById('prevArrowBtn');
+  const nextBtn = document.getElementById('nextArrowBtn');
+  let currentSlide = 0;
+
+  function showSlide(index) {
+    slides.forEach((slide, i) => {
+      slide.style.display = i === index ? 'block' : 'none';
+    });
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('active', i === index);
+    });
+    prevBtn.style.display = index === 0 ? 'none' : 'block';
+    nextBtn.style.display = index === slides.length - 1 ? 'none' : 'block';
+  }
+
+  prevBtn.addEventListener('click', () => {
+    if (currentSlide > 0) {
+      currentSlide--;
+      showSlide(currentSlide);
+    }
+  });
+
+  nextBtn.addEventListener('click', () => {
+    if (currentSlide < slides.length - 1) {
+      currentSlide++;
+      showSlide(currentSlide);
+    }
+  });
+
+  dots.forEach((dot, index) => {
+    dot.addEventListener('click', () => {
+      currentSlide = index;
+      showSlide(currentSlide);
+    });
+  });
+
+  showSlide(0);
+}
+
+// Now update your runAIArrowRecommender to use this new modal
 async function runAIArrowRecommender() {
   const analyzerStatus = document.getElementById('analyzerStatus');
   if (!analyzerStatus) return;
@@ -2719,7 +2852,6 @@ async function runAIArrowRecommender() {
   analyzerStatus.style.display = 'block';
   analyzerStatus.innerHTML = 'Starting AI arrow recommendation...';
 
-  // Start live timer
   const startTime = Date.now();
   const timerInterval = setInterval(() => {
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -2732,7 +2864,6 @@ async function runAIArrowRecommender() {
   const drawWt = parseFloat($('drawWt').value) || 70;
 
   try {
-    // Step 1: Querying AI
     analyzerStatus.innerHTML = 'Querying AI for arrow recommendations...';
 
     const response = await fetch(
@@ -2741,72 +2872,32 @@ async function runAIArrowRecommender() {
 
     if (!response.ok) throw new Error(`API error: ${response.status}`);
 
-    // Step 2: Receiving data
     analyzerStatus.innerHTML = 'Received recommendations from AI...';
 
     const data = await response.json();
 
-    // Stop timer
     clearInterval(timerInterval);
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
     analyzerStatus.innerHTML = `AI recommendation complete (${elapsed}s)`;
 
-    // Brief pause to show success
     await new Promise(resolve => setTimeout(resolve, 800));
 
     if (data.matches && data.matches.length === 3) {
-      analyzerStatus.innerHTML = `Found 3 optimized arrow builds (Light/Fast, Balanced, Heavy)`;
+      analyzerStatus.innerHTML = `Found 3 optimized builds`;
+      setTimeout(() => { analyzerStatus.style.display = 'none'; }, 1500);
 
-      let resultsHTML = '<h3 style="color:var(--text);">AI Arrow Recommendations</h3>';
-      resultsHTML += '<p style="color:var(--light);">Click an arrow to auto-fill:</p>';
-
-      const categories = ['Light/Fast', 'Balanced', 'Heavy'];
-      data.matches.forEach((match, i) => {
-        const safeName = match.full_name.replace(/'/g, "\\'");
-        const safeSpine = match.stiffness || '';
-        const safeDia = match.arrowDia || 'micro';
-        const safeLength = match.arrowLength || (drawLen + 0.5).toFixed(1);
-        const safeGPP = match.gpp || '7.0';
-        const safeFOC = match.foc || '15';
-
-        resultsHTML += `
-          <div class="arrow-recommendation" 
-               style="background:var(--card); padding:1rem; margin:0.75rem 0; border-radius:8px; border:1px solid var(--border); cursor:pointer;"
-               onclick="prefillArrowFromAI('${safeName}', '${safeSpine}', '${safeDia}', '${safeLength}', '${safeGPP}', '${safeFOC}')">
-            <strong style="color:var(--primary);">${i + 1}. ${categories[i]} - ${match.full_name}</strong> (${match.year || 'current'})<br>
-            <strong>Length:</strong> ${safeLength}" | 
-            <strong>Spine:</strong> ${safeSpine || 'N/A'}<br>
-            <strong>FOC:</strong> ${safeFOC}% | 
-            <strong>GPP:</strong> ${safeGPP} | 
-            <strong>GPI:</strong> ${match.gpi || 'N/A'}<br>
-            <em>${match.why || 'Optimized for your bow setup'}</em>
-          </div>`;
-      });
-
-      document.getElementById('analyzerResults').innerHTML = resultsHTML;
-      document.getElementById('analyzerModal').style.display = 'block';
-      document.getElementById('analyzerOverlay').style.display = 'block';
-
-      // Show final status briefly
-      analyzerStatus.innerHTML = 'Recommendations loaded successfully';
-      setTimeout(() => {
-        analyzerStatus.style.display = 'none';
-      }, 1500);
+      // Open the new slider modal
+      showArrowRecommenderModal(data.matches, drawLen);
     } else {
-      analyzerStatus.innerHTML = 'No suitable recommendations found';
-      document.getElementById('analyzerResults').innerHTML = 
-        '<p style="color:var(--warning);">No recommendations available. Try entering more details or adjusting your bow settings.</p>';
-      document.getElementById('analyzerModal').style.display = 'block';
-      document.getElementById('analyzerOverlay').style.display = 'block';
+      analyzerStatus.innerHTML = 'No recommendations found';
+      setTimeout(() => { analyzerStatus.style.display = 'none'; }, 3000);
+      alert('No suitable recommendations available. Try entering more details.');
     }
-
   } catch (e) {
     clearInterval(timerInterval);
     console.error('Error in runAIArrowRecommender:', e);
     analyzerStatus.innerHTML = `Error: ${e.message || 'Failed to connect to AI'}`;
-    setTimeout(() => {
-      analyzerStatus.style.display = 'none';
-    }, 3000);
+    setTimeout(() => { analyzerStatus.style.display = 'none'; }, 3000);
   }
 }
 
