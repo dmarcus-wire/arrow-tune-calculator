@@ -2802,19 +2802,21 @@ function showArrowRecommenderModal(recommendations, drawLen) {
     const safeGPP = match.gpp || '7.0';
     const safeFOC = match.foc || '15';
 
-    const textColor = isDarkMode ? '#ffffff' : '#1f2937';
-    const accentColor = isDarkMode ? 'var(--primary)' : '#2563eb';
+    // Strong contrast colors
+    const bgColor = isDarkMode ? '#0f172a' : '#ffffff'; // very dark or pure white
+    const textColor = isDarkMode ? '#f8fafc' : '#0f172a'; // near-white or near-black
+    const accentColor = isDarkMode ? '#38bdf8' : '#0ea5e9'; // brighter primary for visibility
 
     slidesHTML += `
-      <div class="onboarding-slide" style="display:none; padding:2rem 1.5rem 9rem 1.5rem; text-align:center; color:${textColor}; position:relative;">
-        <h2 style="color:${accentColor}; margin:0 0 1rem; font-size:1.6rem;">
+      <div class="onboarding-slide" style="display:none; padding:2rem 1.5rem 9rem 1.5rem; text-align:center; position:relative; background:${bgColor}; color:${textColor};">
+        <h2 style="color:${accentColor}; margin:0 0 1rem; font-size:1.6rem; font-weight:700;">
           ${categories[i]} Arrow
         </h2>
-        <div style="font-size:1.2rem; font-weight:600; margin-bottom:0.75rem;">
+        <div style="font-size:1.2rem; font-weight:600; margin-bottom:0.75rem; color:${textColor};">
           ${match.full_name} (${match.year || 'Current'})
         </div>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; font-size:0.95rem; margin:1rem 0;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; font-size:1rem; margin:1rem 0; color:${textColor};">
           <div><strong>Length:</strong> ${safeLength}"</div>
           <div><strong>Spine:</strong> ${safeSpine || 'N/A'}</div>
           <div><strong>FOC:</strong> ${safeFOC}%</div>
@@ -2822,7 +2824,7 @@ function showArrowRecommenderModal(recommendations, drawLen) {
           <div><strong>GPI:</strong> ${match.gpi || 'N/A'}</div>
         </div>
 
-        <div style="margin-top:1.5rem; font-size:0.9rem; font-style:italic; line-height:1.4; color:${isDarkMode ? 'var(--light)' : '#4b5563'}">
+        <div style="margin-top:1.5rem; font-size:0.95rem; font-style:italic; line-height:1.5; color:${textColor}; opacity:0.95;">
           ${match.why || 'Optimized for your bow setup'}
         </div>
 
@@ -2846,7 +2848,7 @@ function showArrowRecommenderModal(recommendations, drawLen) {
         </button>
       </div>
 
-      <!-- Dots with significantly more clearance -->
+      <!-- Dots -->
       <div class="dots" style="position:absolute; bottom:7rem; left:50%; transform:translateX(-50%); display:flex; gap:0.75rem; z-index:20;">
         <span class="dot active"></span>
         <span class="dot"></span>
