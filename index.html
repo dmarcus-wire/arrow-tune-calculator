@@ -1261,8 +1261,8 @@
       <div style="margin:1.2rem 0;">
         <label style="display:block; margin-bottom:0.4rem; font-weight:600;">Crosswind (mph)</label>
         <div style="display:flex; align-items:center; gap:1rem;">
-          <input type="range" id="windSlider" min="0" max="40" placeholder="0" step="0.1" style="background-size: 12.5% 6px;">
-          <input type="number" id="windInput" placeholder="0" min="0" max="40" step="0.1" style="width:70px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
+          <input type="range" id="windSlider" min="0" max="40" placeholder="0" value="2" step="0.1" style="background-size: 12.5% 6px;">
+          <input type="number" id="windInput" placeholder="0" min="0" max="40" value="2" step="0.1" style="width:70px; padding:0.45rem; text-align:center; font-weight:600; font-size:1rem;">
         </div>
       </div>
       <div style="margin:1.2rem 0;">
@@ -6176,6 +6176,10 @@ function toTitleCase(str) {
 syncSlider('fpsSlider', 'fpsInput');
 syncSlider('windSlider', 'windInput');
 syncSlider('rangeSlider', 'rangeInput');
+
+// Set default crosswind windSlider to 20 on page load
+document.getElementById('windSlider').value = 2;
+document.getElementById('windInput').value = 2;
 
 // Event listeners
 document.querySelectorAll('input, select').forEach(el => {
