@@ -1801,7 +1801,7 @@ function clearBuildFields() {
   // Arrow fields
   $('arrowName').value = '';
   $('spine').value = '';
-  $('arrowDia').value = 'micro';
+  $('arrowDia').value = '';
   $('arrowLen').value = '';
   $('totalWt').value = '';
   $('pointWt').value = '';
@@ -2797,7 +2797,7 @@ function showArrowRecommenderModal(recommendations, drawLen) {
   recommendations.forEach((match, i) => {
     const safeName = match.full_name.replace(/'/g, "\\'");
     const safeSpine = match.stiffness || '';
-    const safeDia = match.arrowDia || 'micro';
+    const safeDia = match.arrowDia || '';
     const safeLength = match.arrowLength || (drawLen + 0.5).toFixed(1);
     const safeGPP = match.gpp || '7.0';
     const safeFOC = match.foc || '15';
@@ -5058,7 +5058,7 @@ function showWindDriftPopup() {
   const totalWt = parseFloat($('totalWt').value) || 495;
   const rangeYd = parseFloat($('rangeSlider').value) || 50;
   const windMphValue = parseFloat($('windSlider').value) || 0;
-  const arrowDia = $('arrowDia')?.value || 'micro';
+  const arrowDia = $('arrowDia')?.value || 'standard';
 
   // Read the card's drift value (matches exactly)
   const driftIn = $('windDriftIn').textContent || '0.0';
@@ -5711,11 +5711,9 @@ function calculateEverything() {
   // === 3. Arrow Specs ===
   addRow('Arrow Name', $('arrowName').value || '-');
   addRow('Spine', actualSpine);
-  addRow('Arrow Diameter', {
-    'standard': 'Standard (~6.5mm)',
-    'small': 'Small (~5mm)',
-    'micro': 'Micro (~4mm)'
-  }[$('arrowDia').value] || 'Micro (~4mm)');
+  // Arrow Diameter - pure free-form text
+  const diaValue = $('arrowDia').value?.trim() || '';
+  addRow('Arrow Diameter', diaValue || '-'); // Shows exactly what user entered, or '-' if blank
   addRow('Arrow Length', arrowLen + ' in');
   addRow('Total Arrow Weight', totalWt + ' gr');
   addRow('Point Weight', pointWt + ' gr');
@@ -6271,7 +6269,7 @@ function loadBuild() {
     // Arrow specs (basic)
     if ($('arrowName')) $('arrowName').value = build.arrowName || '';
     if ($('spine')) $('spine').value = build.spine || '';
-    if ($('arrowDia')) $('arrowDia').value = build.arrowDia || 'micro';
+    if ($('arrowDia')) $('arrowDia').value = build.arrowDia || '';
     if ($('arrowLen')) $('arrowLen').value = build.arrowLen || '';
     if ($('totalWt')) $('totalWt').value = build.totalWt || '';
     if ($('pointWt')) $('pointWt').value = build.pointWt || '';
