@@ -2903,11 +2903,13 @@ async function runAIArrowRecommender() {
 
 // New simple prefill function (only arrow name for now)
 function prefillArrowFromAI(name, spine, dia, length, gpp = '7.0', foc = '15') {
+  // Fill basic fields
   if (name) $('arrowName').value = name;
   if (spine) $('spine').value = spine;
   if (dia) $('arrowDia').value = dia;
-  if (length) $('arrowLen').value = length;
+  if (length) $('arrowLen').value = length; // or $('arrowLength') if that's your ID
 
+  // Get draw weight for realistic estimation
   const drawWt = parseFloat($('drawWt').value) || 70;
 
   // Realistic hunting arrow weights by category
@@ -2929,13 +2931,19 @@ function prefillArrowFromAI(name, spine, dia, length, gpp = '7.0', foc = '15') {
   $('totalWt').value = totalWt;
   $('pointWt').value = pointWt;
 
-  // Run calculations (this may update FOC/GPP etc.)
+  // IMPORTANT: Mark as prefilled so calculateEverything() doesn't overwrite it
+  $('totalWt').dataset.prefilled = 'true';
+  $('totalWt').style.backgroundColor = '#e0f7fa'; // light cyan hint
+  $('totalWt').style.borderColor = '#7dd3fc';     // blue border
+
+  // Run calculations once to update FOC, GPP, GPI, etc.
   calculateEverything();
 
-  // Force input fields to show FINAL values AFTER calculation
+  // Force final values after calculation (in case anything tried to override)
   $('totalWt').value = totalWt;
   $('pointWt').value = pointWt;
-  $('arrowLen').value = length; // Re-set length if it was overwritten
+  $('arrowLen').value = length; // Re-set length if overwritten
+
   // Balance point (re-calculate after all values are final)
   const arrowLenNum = parseFloat($('arrowLen').value) || 28.5;
   const totalWtNum = parseFloat($('totalWt').value) || 490;
@@ -2945,14 +2953,21 @@ function prefillArrowFromAI(name, spine, dia, length, gpp = '7.0', foc = '15') {
   balancePt = Math.max(arrowLenNum / 2, Math.min(arrowLenNum, balancePt)); // Clamp
   $('balancePt').value = balancePt.toFixed(2);
 
-  // Refresh table if needed (optional)
+  // Refresh table if needed
   if (typeof updateBuildSummaryTable === 'function') {
     updateBuildSummaryTable();
   }
 
-  // Close modal
-  document.getElementById('analyzerModal').style.display = 'none';
-  document.getElementById('analyzerOverlay').style.display = 'none';
+  // Close the old analyzer modal (if still open)
+  if (document.getElementById('analyzerModal')) {
+    document.getElementById('analyzerModal').style.display = 'none';
+    document.getElementById('analyzerOverlay').style.display = 'none';
+  }
+
+  // Close the new slider modal (arrowRecModal)
+  if (document.getElementById('arrowRecModal')) {
+    document.getElementById('arrowRecModal').remove();
+  }
 }
 
 /*Spine info icon*/
@@ -5065,7 +5080,6 @@ function calculateEverything() {
   const rangeYd = parseFloat($('rangeSlider').value) || 0;
   const arrowLen = parseFloat($('arrowLen').value) || 0;
   const balancePt = parseFloat($('balancePt').value) || 0;
-  // For the Total Weight
   const pointWt = parseFloat($('pointWt').value) || 0;
 
   // === Auto-calculate String Add-ons from details ===
@@ -5074,22 +5088,19 @@ function calculateEverything() {
   const kisserWt = parseFloat($('kisserWt').value) || 0;
   const silencerWt = parseFloat($('silencerWt').value) || 0;
 
+  const calculatedStringTotal = peepWt + dloopWt + kisserWt + silencerWt;
 
-  const calculatedTotal = peepWt + dloopWt + kisserWt + silencerWt;
+  // Update display total
+  const stringTotalEl = $('stringAddonsTotal');
+  if (stringTotalEl) stringTotalEl.textContent = calculatedStringTotal.toFixed(1);
 
-  // Declare stringWtInput first
+  // Only auto-update main stringWt field if not manually edited
   const stringWtInput = $('stringWt');
-
-  // Update the display total
-  const totalEl = $('stringAddonsTotal');
-  if (totalEl) totalEl.textContent = calculatedTotal.toFixed(1);
-
-  // Only auto-update main field if user hasn't manually edited it
   if (stringWtInput) {
     const manualEdited = stringWtInput.dataset.manual === 'true';
     if (!manualEdited) {
-      stringWtInput.value = calculatedTotal.toFixed(1);
-      stringWtInput.dataset.manual = 'false'; // reset flag
+      stringWtInput.value = calculatedStringTotal.toFixed(1);
+      stringWtInput.dataset.manual = 'false';
     }
   }
 
@@ -5106,17 +5117,26 @@ function calculateEverything() {
 
   const calculatedArrowTotal = bareShaftWt + insertWt + wrapWt + (vaneWtEach * vaneCount) + glueWt + pointWt + nockWt;
 
-  // Always update display total
+  // Always update the display total (safe, doesn't affect main input)
   const arrowTotalEl = $('arrowComponentsTotal');
   if (arrowTotalEl) arrowTotalEl.textContent = calculatedArrowTotal.toFixed(1);
 
-  // Only auto-update main field if useArrowDetails is checked and not manually edited
+  // Only auto-update the main totalWt input if:
+  // - useArrowDetails is checked
+  // - AND it's NOT prefilled from AI
+  // - AND it hasn't been manually edited
   const totalWtInput = $('totalWt');
   if (totalWtInput && useArrowDetails) {
-    const manualEdited = totalWtInput.dataset.manual === 'true';
-    if (!manualEdited) {
-      totalWtInput.value = calculatedArrowTotal.toFixed(1);
-      totalWtInput.dataset.manual = 'false';
+    if (totalWtInput.dataset.prefilled === 'true') {
+      // AI prefilled → preserve the value, do nothing
+      // Optional: console.log('Total weight preserved from AI prefill');
+    } else {
+      // Normal behavior: only update if not manually edited
+      const manualEdited = totalWtInput.dataset.manual === 'true';
+      if (!manualEdited) {
+        totalWtInput.value = calculatedArrowTotal.toFixed(1);
+        totalWtInput.dataset.manual = 'false';
+      }
     }
   }
 
@@ -5136,7 +5156,7 @@ function calculateEverything() {
   // Update game distance
   $('gameDist').textContent = rangeYd;
 
-    // === FOC Progress Bar (SAFE) ===
+  // === FOC Progress Bar (SAFE) ===
   const midPoint = arrowLen / 2;
   const foc = ((balancePt - midPoint) / arrowLen) * 100;
   const focClamped = Math.max(0, Math.min(30, foc));
@@ -5153,15 +5173,15 @@ function calculateEverything() {
   const focBowType = $('bowType')?.value || 'compound';
   const focAppType = $('appType')?.value || 'Hunting';
 
-  let focSweetLeft = 40;   // default compound/hunting: 12% FOC
-  let focSweetWidth = 20;  // 6% range (12–18%)
+  let focSweetLeft = 40;
+  let focSweetWidth = 20;
 
   if (focBowType === 'recurve' || focBowType === 'longbow') {
-    focSweetLeft = 50;     // 15% FOC
-    focSweetWidth = 23.33; // ~7% range (15–22%)
+    focSweetLeft = 50;
+    focSweetWidth = 23.33;
   } else if (focAppType === 'Target') {
-    focSweetLeft = 33.33;  // 10% FOC
-    focSweetWidth = 13.33; // 4% range (10–14%)
+    focSweetLeft = 33.33;
+    focSweetWidth = 13.33;
   }
 
   const focSweetSpot = document.querySelector('.foc-sweet-spot');
@@ -5190,19 +5210,19 @@ function calculateEverything() {
     gppValue.textContent = gpp.toFixed(1) + ' gr';
   }
 
-    // === Dynamic GPP Sweet Spot ===
+  // === Dynamic GPP Sweet Spot ===
   const currentBowType = $('bowType')?.value || 'compound';
   const currentAppType = $('appType')?.value || 'Hunting';
 
-  let gppSweetLeft = 30;   // default compound/hunting: 6.5 GPP
-  let gppSweetWidth = 20;  // 1 unit range (6.5–7.5) = 20% of 5–10 bar
+  let gppSweetLeft = 30;
+  let gppSweetWidth = 20;
 
   if (currentBowType === 'recurve' || currentBowType === 'longbow') {
-    gppSweetLeft = 50;     // 7.5 GPP (higher for traditional)
-    gppSweetWidth = 25;    // wider range ~7–9+ (traditional arrows are heavier)
+    gppSweetLeft = 50;
+    gppSweetWidth = 25;
   } else if (currentAppType === 'Target') {
-    gppSweetLeft = 20;     // 6.0 GPP (lighter for target)
-    gppSweetWidth = 20;    // 6.0–8.0 range
+    gppSweetLeft = 20;
+    gppSweetWidth = 20;
   }
 
   const gppSweetSpot = document.querySelector('.gpp-sweet-spot');
@@ -5232,7 +5252,7 @@ function calculateEverything() {
   }
 
   // === Dynamic GPI Sweet Spot ===
-  const bowTypeForGPI = $('bowType')?.value || 'compound';  // ← unique name
+  const bowTypeForGPI = $('bowType')?.value || 'compound';
   const appType = $('appType')?.value || 'Hunting';
 
   let gpiSweetLeft = 35;
@@ -5275,15 +5295,15 @@ function calculateEverything() {
   const twBowType = $('bowType')?.value || 'compound';
   const twAppType = $('appType')?.value || 'Hunting';
 
-  let twSweetLeft = 42;   // default compound/hunting: 450 gr
-  let twSweetWidth = 10.5; // 100 gr range
+  let twSweetLeft = 42;
+  let twSweetWidth = 10.5;
 
   if (twBowType === 'recurve' || twBowType === 'longbow') {
-    twSweetLeft = 37;     // 400 gr
-    twSweetWidth = 21;    // 200 gr range (400–600)
+    twSweetLeft = 37;
+    twSweetWidth = 21;
   } else if (twAppType === 'Target') {
-    twSweetLeft = 31.6;   // 350 gr
-    twSweetWidth = 10.5;  // 100 gr range (350–450)
+    twSweetLeft = 31.6;
+    twSweetWidth = 10.5;
   }
 
   const twSweetSpot = document.querySelector('.totalwt-sweet-spot');
@@ -5357,18 +5377,18 @@ function calculateEverything() {
 
   stiffnessPercent = Math.max(0, Math.min(100, stiffnessPercent));
 
-    // === Dynamic Stiffness Sweet Spot ===
+  // === Dynamic Stiffness Sweet Spot ===
   const stiffBowType = $('bowType')?.value || 'compound';
   const stiffAppType = $('appType')?.value || 'Hunting';
 
-  let stiffSweetLeft = 25; // default compound/hunting: 25–75%
+  let stiffSweetLeft = 25;
   let stiffSweetWidth = 50;
 
   if (stiffBowType === 'recurve' || stiffBowType === 'longbow') {
-    stiffSweetLeft = 20; // slightly wider for traditional
+    stiffSweetLeft = 20;
     stiffSweetWidth = 60;
   } else if (stiffAppType === 'Target') {
-    stiffSweetLeft = 30; // target likes a bit stiffer
+    stiffSweetLeft = 30;
     stiffSweetWidth = 40;
   }
 
@@ -5385,7 +5405,6 @@ function calculateEverything() {
     stiffHighZone.style.left = (stiffSweetLeft + stiffSweetWidth) + '%';
     stiffHighZone.style.width = (100 - stiffSweetLeft - stiffSweetWidth) + '%';
   }
-  
 
   // === Effective Draw Weight bars (100% SAFE) ===
   const maxLoad = 120;
@@ -5416,10 +5435,9 @@ function calculateEverything() {
   let status = 'Good';
   if (spineDiff > 100) status = 'Weakest';
   else if (spineDiff < -100) status = 'Stiffest';
-  else if (spineDiff > 60) status = 'Weaker)';
-  else if (spineDiff < -60) status = 'Stiffer)';
+  else if (spineDiff > 60) status = 'Weaker';
+  else if (spineDiff < -60) status = 'Stiffer';
 
-  // Stiffness (SAFE)
   const stiffnessValue = $('stiffnessValue');
   const stiffnessMarker = $('stiffnessMarker');
 
@@ -5438,7 +5456,6 @@ function calculateEverything() {
   const extraDropInches = drop60 - drop20;
   const arcHeightFt = extraDropInches / 12;
 
-  // Marker logic FIRST (right = flatter = better)
   let flatnessPercent = 0;
   if (arcHeightFt < 3) {
     flatnessPercent = 100;
@@ -5448,7 +5465,6 @@ function calculateEverything() {
     flatnessPercent = Math.max(0, 66.67 - ((arcHeightFt - 4.5) / 3) * 66.67);
   }
 
-  // Flatness (SAFE)
   const flatnessValue = $('flatnessValue');
   const flatnessMarker = $('flatnessMarker');
 
@@ -5459,7 +5475,7 @@ function calculateEverything() {
   if (flatnessMarker) flatnessMarker.style.left = `${flatnessPercent}%`;
 
   // === Dynamic Group Stability Criteria ===
-  const groupBowType = $('bowType')?.value || 'compound';  // ← unique name
+  const groupBowType = $('bowType')?.value || 'compound';
   const groupAppType = $('appType')?.value || 'Hunting';
 
   let fpsThreshold = 270;
@@ -5483,10 +5499,6 @@ function calculateEverything() {
   const goodCount = (fpsGood ? 1 : 0) + (focGood ? 1 : 0) + (gpiGood ? 1 : 0);
   const groupPercent = (goodCount / 3) * 100;
 
-  // DELETE DEBUG
-  console.log('goodCount:', goodCount, 'percent:', groupPercent);
-
-    // Group Stability (SAFE)
   const groupStabilityValue = $('groupStabilityValue');
   const groupStabilityMarker = $('groupStabilityMarker');
 
@@ -5518,90 +5530,73 @@ function calculateEverything() {
   // === Max Height at Range (up to current range slider) ===
   const rangeTarget = rangeYd || 50;
 
-  // Approximate launch angle for 20 yd zero (~3°)
   const approxThetaDeg = 3;
   const approxThetaRad = approxThetaDeg * Math.PI / 180;
   const v0y = fps * Math.sin(approxThetaRad);
   const v0x = fps * Math.cos(approxThetaRad);
 
-  // Time to reach current range
   const timeToRange = (rangeTarget * 3) / v0x;
 
-  // Find max height between 0 and current range
-  const timeToPeak = v0y / 32.174; // time to absolute peak
+  const timeToPeak = v0y / 32.174;
   const actualTime = Math.min(timeToRange, timeToPeak);
   const maxHeightAtRangeFt = Math.max(0, v0y * actualTime - 0.5 * 32.174 * actualTime * actualTime);
 
   const maxHeightIn = (maxHeightAtRangeFt * 12).toFixed(1);
   const maxHeightFtRounded = maxHeightAtRangeFt.toFixed(1);
 
-  // Distance where max height occurs (within range)
   const maxHeightDistYd = Math.round(v0x * actualTime / 3);
 
-  // Update the card elements
   $('maxHeightFt').textContent = maxHeightFtRounded;
   $('maxHeightIn').textContent = maxHeightIn;
   $('maxHeightDistanceYd').textContent = maxHeightDistYd;
   $('maxHeightRangeYd').textContent = rangeTarget;
 
-  // Downrange drop function (for target range)
+  // Downrange drop function
   const dropAtDistance = (distYd) => {
     const distFt = distYd * 3;
     const time = distFt / fps;
-    return 0.5 * 32.174 * time * time * 12; // inches total gravity drop
+    return 0.5 * 32.174 * time * time * 12;
   };
 
-  // Downrange Drop at target range
   const dropInTarget = dropAtDistance(rangeTarget);
   const relativeDropInTarget = dropInTarget - dropAtDistance(20);
   const dropFtTarget = (relativeDropInTarget / 12).toFixed(1);
   const dropInTargetRounded = relativeDropInTarget.toFixed(1);
-  const dropFtEl = $('dropFt');
-  const dropInEl = $('dropIn');
-  const dropDistanceYdEl = $('dropDistanceYd');
-  if (dropFtEl) dropFtEl.textContent = dropFtTarget;
-  if (dropInEl) dropInEl.textContent = dropInTargetRounded;
-  if (dropDistanceYdEl) dropDistanceYdEl.textContent = rangeTarget;
+
+  $('dropFt').textContent = dropFtTarget;
+  $('dropIn').textContent = dropInTargetRounded;
+  $('dropDistanceYd').textContent = rangeTarget;
 
   // Flight Time to target
   const timeTarget = (rangeTarget * 3) / fps;
-  const flightTimeSecEl = $('flightTimeSec');
-  const flightDistanceYdEl = $('flightDistanceYd');
-  if (flightTimeSecEl) flightTimeSecEl.textContent = timeTarget.toFixed(3);
-  if (flightDistanceYdEl) flightDistanceYdEl.textContent = rangeTarget;
+  $('flightTimeSec').textContent = timeTarget.toFixed(3);
+  $('flightDistanceYd').textContent = rangeTarget;
 
-  // === Wind Drift (Realistic for Arrows) ===
+  // === Wind Drift ===
   const windMphValue = windMph || 0;
   if (windMphValue > 0 && rangeTarget > 0) {
-    const tof = timeTarget; // your TOF is fine
+    const tof = timeTarget;
 
     const windFps = windMphValue * 1.467;
 
-    // Lag factor (higher = less drift; arrows stabilize with fletching)
-    let lagFactor = 0.45; // default: ~55% less drift than particle
+    let lagFactor = 0.45;
     const pointType = $('pointType')?.value || 'Fixed Blade';
-    if (pointType === 'Mechanical') lagFactor = 0.50; // closed blades = less drag = less drift
-    else if (pointType === 'Fixed Blade') lagFactor = 0.40; // exposed blades = more drag = more drift
-    else if (pointType === 'Field') lagFactor = 0.55; // minimal drag = least drift
+    if (pointType === 'Mechanical') lagFactor = 0.50;
+    else if (pointType === 'Fixed Blade') lagFactor = 0.40;
+    else if (pointType === 'Field') lagFactor = 0.55;
 
-    // Diameter factor (smaller = less drag)
     const diaFactor = {
       'micro': 0.85,
       'small': 0.92,
       'standard': 1.0
     }[$('arrowDia')?.value] || 0.85;
 
-    // In-Flight Diameter override (if entered)
     const inFlightDia = parseFloat($('inFlightDia').value) || 0;
     let finalDiaFactor = diaFactor;
     if (inFlightDia > 0) finalDiaFactor = Math.min(1.5, inFlightDia / 0.3);
 
-    // Base drift (feet)
     let driftFt = windFps * tof * lagFactor * finalDiaFactor;
-
-    // Wind angle (default 90° crosswind)
-    const windAngle = 90;
-    driftFt *= Math.sin(windAngle * Math.PI / 180);
+    driftFt *= Math.sin(90 * Math.PI / 180); // 90° crosswind
 
     const driftIn = (driftFt * 12).toFixed(1);
     $('windDriftIn').textContent = driftIn;
@@ -5675,15 +5670,13 @@ function calculateEverything() {
     addRow('Wrap Weight', $('wrapWt').value + ' gr');
     addRow('Vane Weight', $('vaneWt').value + ' gr (' + $('vaneCount').value + ' × ' + $('vaneHeight').value + '" ' + $('vaneHelical').value + ')');
     addRow('Glue Weight', $('glueWt').value + ' gr');
-    addRow('Nock Weight', $('nockWt').value + ' gr');  // if you have this
-    // Add any other components you have
+    addRow('Nock Weight', $('nockWt').value + ' gr');
   }
 
   // === 4. Live Settings ===
   addRow('Actual Speed', fps.toFixed(1) + ' fps');
   addRow('Crosswind', windMph.toFixed(1) + ' mph');
   addRow('Range', rangeYd + ' yd');
-
 
   // === 5. Game Effectiveness at Current Range ===
   addRow('Impact Velocity', velImpact + ' fps');
@@ -5705,16 +5698,12 @@ function calculateEverything() {
   addRow('Downrange Drop', dropFtTarget + ' ft / ' + dropInTargetRounded + ' in');
   addRow('Wind Drift', $('windDriftIn').textContent + ' in');
 
-  // === Notes (only if they exist, at the very bottom) ===
+  // === Notes ===
   const notes = $('buildNotes')?.value.trim();
   if (notes) {
-    // Separator line for visual separation
     addRow('────────────────────', '────────────────────');
-    
-    // Notes row — preserve line breaks as bullets, wrap nicely
     addRow('Notes', notes.replace(/\n/g, ' • '));
   }
-
 }
 
 // Move this outside calculateEverything()
@@ -5750,6 +5739,21 @@ function sendAi() {
   $('aiIn').value = '';
   $('chatHist').scrollTop = $('chatHist').scrollHeight;
 }
+
+// Allow user to "unlock" prefilled data by editing
+// Wait for DOM to be ready
+document.addEventListener('DOMContentLoaded', () => {
+  const totalWtInput = $('totalWt');
+  if (totalWtInput) {
+    totalWtInput.addEventListener('input', () => {
+      delete totalWtInput.dataset.prefilled; // remove AI lock
+      totalWtInput.style.backgroundColor = ''; // reset visual cue
+      totalWtInput.style.borderColor = '';
+      // Optional: recalculate immediately
+      calculateEverything();
+    });
+  }
+});
 
 // Suggest Build Name
 document.querySelector('.secondary').addEventListener('click', () => {
