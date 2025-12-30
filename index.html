@@ -477,30 +477,6 @@
       border-radius:999px;
     }
 
-    /* GPI Sweet Spot — Green (default for compound/hunting: 7–9.5) */
-    .gpi-sweet-spot {
-      position:absolute;
-      top:0;
-      left:35%;     /* 7 on 0–20 scale = 35% */
-      width:12.5%;  /* 2.5 unit range = 12.5% */
-      height:100%;
-      background:rgba(34,197,94,0.25);
-      border-radius:999px;
-      transition: left 0.3s ease, width 0.3s ease;
-    }
-
-    .gpi-low-zone, .gpi-high-zone {
-      position:absolute;
-      top:0;
-      height:100%;
-      background:rgba(245,158,11,0.15);
-      border-radius:999px;
-      transition: width 0.3s ease;
-    }
-
-    .gpi-low-zone { left:0; width:35%; }
-    .gpi-high-zone { left:47.5%; width:52.5%; }
-
     /* Total Arrow Weight Sweet Spot — Green (default compound/hunting: 450–550) */
     .totalwt-sweet-spot {
       position:absolute;
@@ -570,7 +546,6 @@
       border-radius:999px;
     }
 
-    /* Group Stability Zones */
     .group-zero-zone {
       position:absolute;
       top:0;
@@ -693,28 +668,6 @@
       background: #ef4444; /* red */
     }
 
-    /* Better spacing for Group Stability 0-1-2-3 labels */
-    #groupStabilityValue ~ .stat-bar-container .bar-labels {
-      justify-content: space-between;
-      width: 100%;
-      padding: 0 4px; /* small padding so labels don't touch edges */
-    }
-
-    #groupStabilityValue ~ .stat-bar-container .bar-labels span:nth-child(1) { left: 0%; }
-    #groupStabilityValue ~ .stat-bar-container .bar-labels span:nth-child(2) { left: 33.33%; }
-    #groupStabilityValue ~ .stat-bar-container .bar-labels span:nth-child(3) { left: 66.67%; }
-    #groupStabilityValue ~ .stat-bar-container .bar-labels span:nth-child(4) { left: 100%; }
-
-    #groupStabilityValue ~ .stat-bar-container .bar-labels span {
-      position: absolute;
-      transform: translateX(-50%);
-      font-size: 0.85rem;
-      color: var(--light);
-    }
-
-    #groupStabilityValue ~ .stat-bar-container .bar-labels span:nth-child(4) {
-      transform: translateX(-100%); /* align "3" to the right edge */
-    }
 
     .effective-load-sweet-spot {
       position:absolute;
@@ -1508,36 +1461,6 @@
           </div>
         </div>
 
-        <!-- GPI -->
-        <div class="stat-item">
-          <div class="stat-row">
-            <div class="stat-title">
-              <strong>GPI</strong>
-              <button onclick="showGpiPopup()" class="info-btn" title="Explain GPI">ⓘ</button>
-            </div>
-            <div class="stat-content">
-              <div class="stat-bar-container">
-                <div class="bar" style="height:16px; position:relative;">
-                  <!-- Yellow low zone -->
-                  <div class="gpi-low-zone"></div>
-                  <!-- Green sweet spot (dynamic) -->
-                  <div class="gpi-sweet-spot"></div>
-                  <!-- Yellow high zone -->
-                  <div class="gpi-high-zone"></div>
-                  <!-- Bar marker -->
-                  <div class="bar-marker" id="gpiMarker" style="left:50%;"></div>
-                </div>
-                  <div class="bar-labels">
-                    <span>light/fast</span>
-                    <span>balanced/ideal</span>
-                    <span>heavy/stable</span>
-                  </div>
-                <span class="moving-value" id="gpiValue">0.0 gr/in</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <!-- Total Wt -->
         <div class="stat-item">
           <div class="stat-row">
@@ -1623,40 +1546,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Group Stability (Target / 3D) -->
-        <div class="stat-item">
-          <div class="stat-row">
-            <div class="stat-title">
-              <strong>Group Stability</strong>
-              <button onclick="showGroupStabilityPopup()" class="info-btn" title="Explain Group Stability">ⓘ</button>
-            </div>
-            <div class="stat-content">
-              <div class="stat-bar-container">
-                <div class="bar" style="height:16px; position:relative;">
-                  <!-- Grey for 0/3 -->
-                  <div class="group-zero-zone"></div>
-                  <!-- Yellow for 1/3 -->
-                  <div class="group-one-zone"></div>
-                  <!-- Orange for 2/3 -->
-                  <div class="group-two-zone"></div>
-                  <!-- Green for 3/3 -->
-                  <div class="group-three-zone"></div>
-                  <div class="bar-marker" id="groupStabilityMarker" style="left:50%;"></div>
-                </div>
-                <div class="bar-labels">
-                  <span>0 of 3</span>
-                  <span>1 of 3</span>
-                  <span>2 of 3</span>
-                  <span>3 of 3</span>
-                </div>
-                <span class="moving-value" id="groupStabilityValue">0/3</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- New Summary Cards Row -->
     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
@@ -4515,76 +4404,6 @@ function showGppPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
-function showGpiPopup() {
-  const totalWt = parseFloat($('totalWt').value) || 495;
-  const arrowLen = parseFloat($('arrowLen').value) || 28.5;
-  const gpi = (totalWt / arrowLen).toFixed(1);
-
-  const bowType = $('bowType')?.value || 'compound';
-  const appType = $('appType')?.value || 'Hunting';
-
-  let sweetMin = 7;
-  let sweetMax = 9.5;
-  let typeLabel = "Compound/Hunting";
-
-  if (bowType === 'recurve' || bowType === 'longbow') {
-    sweetMin = 9;
-    sweetMax = 12;
-    typeLabel = "Recurve/Longbow";
-  } else if (appType === 'Target') {
-    sweetMin = 6;
-    sweetMax = 8.5;
-    typeLabel = "Target";
-  }
-
-  const isSweet = parseFloat(gpi) >= sweetMin && parseFloat(gpi) <= sweetMax;
-
-  $('gameMathContent').innerHTML = `
-    <p><strong>GPI (Grains Per Inch) Math & Usage</strong></p>
-    <p>GPI is the finished arrow weight per inch of shaft length — a measure of shaft density.</p>
-    <hr>
-    <p><strong>Raw Equation</strong></p>
-    <div class="raw-equation">
-        GPI = Total Arrow Weight ÷ Arrow Length
-    </div>
-    <hr>
-    <p><strong>Your Current Build:</strong></p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>Total Arrow Weight: <strong>${totalWt} gr</strong></li>
-      <li>Arrow Length: <strong>${arrowLen.toFixed(1)} in</strong></li>
-      <li>Setup: <strong>${typeLabel}</strong></li>
-      <li>GPI: <strong>${gpi} gr/in</strong></li>
-    </ul>
-    <hr>
-    <p><strong>Step-by-Step Calculation:</strong></p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>GPI = ${totalWt} ÷ ${arrowLen.toFixed(1)} = <strong>${gpi} gr/in</strong></li>
-    </ul>
-    <hr>
-    <p><strong>Sweet Spot (highlighted in green):</strong></p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li><strong>Compound/Hunting</strong>: 7–9.5 — good balance of speed and momentum</li>
-      <li><strong>Target</strong>: 6–8.5 — lighter for speed & forgiveness</li>
-      <li><strong>Recurve/Longbow</strong>: 9–12 — heavier for momentum & quietness</li>
-    </ul>
-    <p style="margin-top:0.75rem;">
-      ${isSweet ? '<strong style="color:var(--success);">Your GPI is in the ideal range for your setup!</strong>' : 
-        parseFloat(gpi) < sweetMin ? '<strong style="color:var(--warning);">Light — faster but less momentum</strong>' : 
-        '<strong style="color:var(--warning);">Heavy — more penetration but slower</strong>'}
-    </p>
-    <hr>
-    <p>A lower GPI generally means a lighter, faster shaft. A higher GPI usually indicates a heavier, more robust shaft that boosts momentum and stability, especially for broadheads.</p>
-    <hr>
-    <p><strong>Influenced By:</strong></p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li><strong>Total Arrow Weight</strong> — biggest factor (heavier = higher GPI)</li>
-      <li><strong>Arrow Length</strong> — longer = lower GPI for same weight</li>
-      <li>Indirect: shaft material, wall thickness, diameter, point/insert weight</li>
-    </ul>
-    <p>GPI helps inform group stability, velocity retention, and downrange KE/momentum in this calculator.</p>
-  `;
-  $('gameMathModal').style.display = 'flex';
-}
 
 /* Arrow Total Weight info icon*/
 function showTotalWtPopup() {
@@ -4790,60 +4609,6 @@ function showFlatnessPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
-function showGroupStabilityPopup() {
-  const fps = parseFloat($('fpsSlider').value) || 278;
-  const foc = parseFloat($('focValue').textContent) || 0;
-  const gpi = parseFloat($('gpiValue').textContent) || 0;
-
-  const fpsGood = fps >= 270;
-  const focGood = foc >= 12 && foc <= 18;
-  const gpiGood = gpi <= 9.5;
-
-  const goodCount = (fpsGood ? 1 : 0) + (focGood ? 1 : 0) + (gpiGood ? 1 : 0);
-
-  $('gameMathContent').innerHTML = `
-    <p><strong>Group Stability (Target / 3D) Math & Usage</strong></p>
-    <p>This rates how optimized your setup is for tight groups for multiple arrows in target/training shooting based on three key factors known to affect in-flight stability and forgiveness.</p>
-    <hr>
-    <p><strong>Your Current Build:</strong></p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>Actual Speed: <strong>${fps.toFixed(1)} fps</strong> ${fpsGood ? '✓' : '✗'} (≥270 = good)</li>
-      <li>FOC: <strong>${foc.toFixed(1)}%</strong> ${focGood ? '✓' : '✗'} (12–18% = good)</li>
-      <li>GPI: <strong>${gpi.toFixed(1)} gr/in</strong> ${gpiGood ? '✓' : '✗'} (≤9.5 = good)</li>
-      <li><strong>Score: ${goodCount}/3</strong></li>
-    </ul>
-    <hr>
-    <p><strong>Raw Logic</strong></p>
-    <div class="raw-equation">
-      Score = (FPS ≥ 270 ? 1 : 0) + (FOC 12–18% ? 1 : 0) + (GPI ≤ 9.5 ? 1 : 0)
-    </div>
-    <hr>
-    <p><strong>Step-by-Step Scoring:</strong></p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>FPS ≥ 270: ${fpsGood ? 'Yes' : 'No'} → ${fpsGood ? '+1' : '+0'}</li>
-      <li>FOC 12–18%: ${focGood ? 'Yes' : 'No'} → ${focGood ? '+1' : '+0'}</li>
-      <li>GPI ≤ 9.5: ${gpiGood ? 'Yes' : 'No'} → ${gpiGood ? '+1' : '+0'}</li>
-      <li>Total: <strong>${goodCount}/3</strong></li>
-    </ul>
-    <hr>
-    <p><strong>Interpretation:</strong></p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li><strong>3 of 3</strong> = Excellent — tight groups likely with good tuning</li>
-      <li><strong>2 of 3</strong> = Very good — small tweaks help</li>
-      <li><strong>1 of 3</strong> = Average — more forgiveness trade-offs</li>
-      <li><strong>0 of 3</strong> = Challenging — expect larger groups until optimized</li>
-    </ul>
-    <p>Execution and tuning always matter most — this is just a starting point based on proven target/3D principles.</p>
-    <hr>
-    <p><strong>Influenced By:</strong></p>
-    <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li><strong>Actual Speed (FPS)</strong> — faster = more stable flight</li>
-      <li><strong>FOC</strong> — 12–18% = optimal aerodynamic stability</li>
-      <li><strong>GPI</strong> — lighter shafts (≤9.5) = better recovery & forgiveness</li>
-    </ul>
-  `;
-  $('gameMathModal').style.display = 'flex';
-}
 
 function showSightPopup() {
   $('gameMathContent').innerHTML = `
@@ -5299,47 +5064,6 @@ function calculateEverything() {
     gppHighZone.style.width = (100 - gppSweetLeft - gppSweetWidth) + '%';
   }
 
-  // === GPI (SAFE) ===
-  const gpi = totalWt / arrowLen;
-  const gpiPercent = (gpi / 20) * 100;
-
-  const gpiMarker = $('gpiMarker');
-  const gpiValue = $('gpiValue');
-  if (gpiMarker) gpiMarker.style.left = `${gpiPercent}%`;
-  if (gpiValue) {
-    gpiValue.style.left = `${gpiPercent}%`;
-    gpiValue.textContent = gpi.toFixed(1) + ' gr/in';
-  }
-
-  // === Dynamic GPI Sweet Spot ===
-  const bowTypeForGPI = $('bowType')?.value || 'compound';
-  const appType = $('appType')?.value || 'Hunting';
-
-  let gpiSweetLeft = 35;
-  let gpiSweetWidth = 12.5;
-
-  if (bowTypeForGPI === 'recurve' || bowTypeForGPI === 'longbow') {
-    gpiSweetLeft = 45;
-    gpiSweetWidth = 15;
-  } else if (appType === 'Target') {
-    gpiSweetLeft = 30;
-    gpiSweetWidth = 12.5;
-  }
-
-  const gpiSweetSpot = document.querySelector('.gpi-sweet-spot');
-  if (gpiSweetSpot) {
-    gpiSweetSpot.style.left = gpiSweetLeft + '%';
-    gpiSweetSpot.style.width = gpiSweetWidth + '%';
-  }
-
-  const gpiLowZone = document.querySelector('.gpi-low-zone');
-  const gpiHighZone = document.querySelector('.gpi-high-zone');
-  if (gpiLowZone) gpiLowZone.style.width = gpiSweetLeft + '%';
-  if (gpiHighZone) {
-    gpiHighZone.style.left = (gpiSweetLeft + gpiSweetWidth) + '%';
-    gpiHighZone.style.width = (100 - gpiSweetLeft - gpiSweetWidth) + '%';
-  }
-
   // === Total Wt (SAFE) ===
   const totalWtPercent = ((totalWt - 50) / 950) * 100;
 
@@ -5534,37 +5258,6 @@ function calculateEverything() {
   }
   if (flatnessMarker) flatnessMarker.style.left = `${flatnessPercent}%`;
 
-  // === Dynamic Group Stability Criteria ===
-  const groupBowType = $('bowType')?.value || 'compound';
-  const groupAppType = $('appType')?.value || 'Hunting';
-
-  let fpsThreshold = 270;
-  let focMin = 12;
-  let focMax = 18;
-  let gpiThreshold = 9.5;
-
-  if (groupBowType === 'recurve' || groupBowType === 'longbow') {
-    fpsThreshold = 220;
-    focMin = 15;
-    focMax = 22;
-    gpiThreshold = 12;
-  } else if (groupAppType === 'Target') {
-    fpsThreshold = 280;
-    gpiThreshold = 8.5;
-  }
-
-  const fpsGood = fps >= fpsThreshold;
-  const focGood = foc >= focMin && foc <= focMax;
-  const gpiGood = gpi <= gpiThreshold;
-  const goodCount = (fpsGood ? 1 : 0) + (focGood ? 1 : 0) + (gpiGood ? 1 : 0);
-  const groupPercent = (goodCount / 3) * 100;
-
-  const groupStabilityValue = $('groupStabilityValue');
-  const groupStabilityMarker = $('groupStabilityMarker');
-
-  if (groupStabilityValue) groupStabilityValue.textContent = `${goodCount}/3`;
-  if (groupStabilityMarker) groupStabilityMarker.style.left = `${groupPercent}%`;
-
   // === Custom Sight Pin Zeros ===
   const pinCountSelect = $('pinCount');
   const pinCount = pinCountSelect ? Number(pinCountSelect.value) : 3;
@@ -5744,11 +5437,9 @@ function calculateEverything() {
   // === 6. Core Calculated Stats ===
   addRow('FOC', foc.toFixed(1) + '%');
   addRow('GPP', gpp.toFixed(1));
-  addRow('GPI', gpi.toFixed(1) + ' gr/in');
   addRow('Effective Draw Weight', effectiveLoad + ' lb');
   addRow('Stiffness', actualSpine + ' (' + status + ')');
   addRow('Flatness (20→60 yd)', arcHeightFt.toFixed(1) + ' ft arc');
-  addRow('Group Stability', `${goodCount}/3 conditions met`);
 
   // === 7. Trajectory at Current Range ===
   addRow('Max Height at Range', maxHeightFtRounded + ' ft at ' + maxHeightDistYd + ' yd');
