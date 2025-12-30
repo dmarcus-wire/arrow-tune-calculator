@@ -2,15 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <!--width=device-width — forces page to fit screen width.
-      initial-scale=1.0 — loads at correct zoom.
-      maximum-scale=1.0, user-scalable=no — prevents pinch zoom 
-        (good for PWA feel — optional, remove if you want zoom).-->
-  <meta name="viewport" content="width=device-width, 
-    initial-scale=1.0, 
-    maximum-scale=1.0, 
-    user-scalable=yes">
   
+  <!-- Optimal viewport: responsive, allows manual zoom, prevents input auto-zoom (with CSS help) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Enables "Add to Home Screen" prompt on Android -->
   <meta name="mobile-web-app-capable" content="yes">
 
   <title>ArrowForge – Smart Arrow Tuner</title>
@@ -36,6 +32,18 @@
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 
   <style>
+    /* Prevent auto-zoom on inputs (iOS Safari) while allowing manual pinch-zoom */
+    input, select, textarea {
+      font-size: 16px !important; /* Stops iOS from zooming on focus */
+    }
+
+    /* Optional: Slightly smaller text on larger screens for better aesthetics */
+    @media (min-width: 768px) {
+      input, select, textarea {
+        font-size: 1rem !important; /* or 15px, 14px — whatever fits your design */
+      }
+    }
+
     :root {
       --bg:#f8fafc; --card:#ffffff; --text:#1e293b; --light:#64748b; --border:#e2e8f0;
       --primary:#0ea5e9; --success:#22c55e; --warning:#f59e0b; --danger:#ef4444; --purple:#8b5cf6;
