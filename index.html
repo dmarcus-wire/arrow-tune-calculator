@@ -5148,15 +5148,19 @@ function calculateEverything() {
   const pointFactor = (pointWt - 100) * 0.15;
   const weightFactor = (totalWt - 400) * 0.05;
   const effectiveLoad = Math.round(baseLoad + lengthFactor + pointFactor + weightFactor);
-  const recommendedCenter = Math.max(200, Math.min(500, 600 - effectiveLoad * 5));
+
+  // Shift ideal center to ~275 for 70 lb / 28" / ~500 gr setups
+  const recommendedCenter = Math.max(200, Math.min(500, 600 - effectiveLoad * 4.5)); // softer scaling
+
   const spineDiff = actualSpine - recommendedCenter;
 
-  let stiffnessPercent = 50 + spineDiff / 2;
+  let stiffnessPercent = 50 + spineDiff / 1.5; // wider tolerance
 
-  if (spineDiff > 100) {
-    stiffnessPercent = 75 + (spineDiff - 100);
-  } else if (spineDiff < -100) {
-    stiffnessPercent = 25 + (spineDiff + 100);
+  // Soften extremes so 250–300 stays in good zone
+  if (spineDiff > 80) {
+    stiffnessPercent = 70 + (spineDiff - 80) * 0.5;
+  } else if (spineDiff < -80) {
+    stiffnessPercent = 30 + (spineDiff + 80) * 0.5;
   }
 
   stiffnessPercent = Math.max(0, Math.min(100, stiffnessPercent));
@@ -5165,15 +5169,15 @@ function calculateEverything() {
   const stiffBowType = $('bowType')?.value || 'compound';
   const stiffAppType = $('appType')?.value || 'Hunting';
 
-  let stiffSweetLeft = 25;
-  let stiffSweetWidth = 50;
+  let stiffSweetLeft = 40;  // centered around 275 spine
+  let stiffSweetWidth = 30; // wide enough for 250–300
 
   if (stiffBowType === 'recurve' || stiffBowType === 'longbow') {
-    stiffSweetLeft = 20;
-    stiffSweetWidth = 60;
+    stiffSweetLeft = 35;
+    stiffSweetWidth = 35;
   } else if (stiffAppType === 'Target') {
-    stiffSweetLeft = 30;
-    stiffSweetWidth = 40;
+    stiffSweetLeft = 45;
+    stiffSweetWidth = 25;
   }
 
   const stiffSweetSpot = document.querySelector('.stiffness-sweet-spot');
@@ -5189,6 +5193,22 @@ function calculateEverything() {
     stiffHighZone.style.left = (stiffSweetLeft + stiffSweetWidth) + '%';
     stiffHighZone.style.width = (100 - stiffSweetLeft - stiffSweetWidth) + '%';
   }
+
+  // Show spine + status (use a unique variable name)
+  let stiffStatus = 'Good';
+  if (spineDiff > 80) stiffStatus = 'Too Weak';
+  else if (spineDiff < -80) stiffStatus = 'Too Stiff';
+  else if (spineDiff > 40) stiffStatus = 'Weaker';
+  else if (spineDiff < -40) stiffStatus = 'Stiffer';
+
+  const stiffnessValue = $('stiffnessValue');
+  const stiffnessMarker = $('stiffnessMarker');
+
+  if (stiffnessValue) {
+    stiffnessValue.textContent = actualSpine + ' (' + stiffStatus + ')';
+    stiffnessValue.style.left = `${stiffnessPercent}%`;
+  }
+  if (stiffnessMarker) stiffnessMarker.style.left = `${stiffnessPercent}%`;
 
   // === Effective Draw Weight bars (100% SAFE) ===
   const maxLoad = 120;
@@ -5214,22 +5234,6 @@ function calculateEverything() {
     effectiveLoadValue.style.left = `${effectivePercent}%`;
     effectiveLoadValue.textContent = effectiveLoad + ' lb';
   }
-
-  // Show spine + status
-  let status = 'Good';
-  if (spineDiff > 100) status = 'Weakest';
-  else if (spineDiff < -100) status = 'Stiffest';
-  else if (spineDiff > 60) status = 'Weaker';
-  else if (spineDiff < -60) status = 'Stiffer';
-
-  const stiffnessValue = $('stiffnessValue');
-  const stiffnessMarker = $('stiffnessMarker');
-
-  if (stiffnessValue) {
-    stiffnessValue.textContent = actualSpine + ' (' + status + ')';
-    stiffnessValue.style.left = `${stiffnessPercent}%`;
-  }
-  if (stiffnessMarker) stiffnessMarker.style.left = `${stiffnessPercent}%`;
 
   // === Flatness Score (20→60 yd) ===
   const g = 32.174;
