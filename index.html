@@ -1139,8 +1139,8 @@
         <!---Point Weight-->           
         <div class="input-row" style="align-items:center; gap:0.5rem;">
           <div style="display:flex; align-items:center; gap:0.4rem;">
-            <label for="pointWt">Point weight gr</label>
-            <button type="button" onclick="showPointWtPopup()" class="info-btn" title="About Point Weight">ⓘ</button>
+            <label for="pointWt">Up Front weight gr</label>
+            <button type="button" onclick="showPointWtPopup()" class="info-btn" title="About Up Front Weight">ⓘ</button>
           </div>
           <input type="number" id="pointWt" placeholder="125" min="50" max="300" step="0.5" class="left-align" style="flex:1;">
         </div>        
@@ -2930,12 +2930,25 @@ async function runAIArrowRecommender() {
   const bowModel = $('bowModel').value.trim() || 'Unknown Bow';
   const drawLen = parseFloat($('drawLen').value) || 28;
   const drawWt = parseFloat($('drawWt').value) || 70;
+  const bowType = $('bowType').value || 'compound';
+  const arrowLen = parseFloat($('arrowLen').value) || (drawLen + 0.5);
+  const pointWt = parseFloat($('pointWt').value) || 125;
 
   try {
     analyzerStatus.innerHTML = 'Querying AI for arrow recommendations...';
 
+    // ← UPDATED: Include bowType in the query
     const response = await fetch(
-      `https://arrowforgeapp.com/api/arrow-recommender?appType=${encodeURIComponent(appType)}&bowModel=${encodeURIComponent(bowModel)}&drawLen=${drawLen}&drawWt=${drawWt}`
+      `https://arrowforgeapp.com/api/arrow-recommender?` +
+      new URLSearchParams({
+        appType: appType,
+        bowModel: bowModel,
+        drawLen: drawLen.toString(),
+        drawWt: drawWt.toString(),
+        bowType: bowType,
+        arrowLen: arrowLen.toString(),
+        pointWt: pointWt.toString()
+      })
     );
 
     if (!response.ok) throw new Error(`API error: ${response.status}`);
@@ -2954,7 +2967,7 @@ async function runAIArrowRecommender() {
       analyzerStatus.innerHTML = `Found 3 optimized builds`;
       setTimeout(() => { analyzerStatus.style.display = 'none'; }, 1500);
 
-      // Open the new slider modal
+      // Open the slider modal with recommendations
       showArrowRecommenderModal(data.matches, drawLen);
     } else {
       analyzerStatus.innerHTML = 'No recommendations found';
@@ -3311,12 +3324,13 @@ function showPointWtPopup() {
   const isLight = pointWt < sweetMin;
 
   $('gameMathContent').innerHTML = `
-    <p><strong>Point Weight Math & Usage</strong></p>
-    <p>Point weight (broadhead + insert/outsert) is one of the most powerful tuning levers — it dramatically affects FOC, total arrow weight, trajectory, and penetration.</p>
+    <p><strong>Up Front / Point Weight Math & Usage</strong></p>
+    <p>Point weight or Up Front Weight (broadhead + insert/outsert + weights) is one of the most powerful tuning levers — it dramatically affects FOC, total arrow weight, trajectory, and penetration.</p>
+    <p><strong>IF YOU FILL IN THE COMPONENT DETAILS</strong> this field is just point weight</p>
     <hr>
     <p><strong>Your Current Build:</strong></p>
     <ul style="margin-left:1.25rem;font-size:0.9rem;">
-      <li>Point Weight: <strong>${pointWt.toFixed(1)} gr</strong></li>
+      <li>Up Front / Point Weight: <strong>${pointWt.toFixed(1)} gr</strong></li>
       <li>Setup: <strong>${typeLabel}</strong></li>
     </ul>
     <hr>
@@ -3342,7 +3356,7 @@ function showPointWtPopup() {
       <li>Game Effectiveness ratings</li>
     </ul>
     <hr>
-    <p><strong>Pro Tip:</strong> Changing point weight by even 25 gr can noticeably shift FOC, speed, and penetration — experiment here before buying new heads!</p>
+    <p><strong>Pro Tip:</strong> Changing point / up front weight by even 25 gr can noticeably shift FOC, speed, and penetration — experiment here before buying new heads!</p>
   `;
   $('gameMathModal').style.display = 'flex';
 }
