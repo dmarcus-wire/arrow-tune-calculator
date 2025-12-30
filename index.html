@@ -44,6 +44,23 @@
       }
     }
 
+    /* Force number inputs to left-align text and cursor on mobile */
+    input[type="number"] {
+      text-align: left !important;
+      direction: ltr !important; /* forces left-to-right cursor behavior */
+    }
+
+    /* Ensure the arrows (spinner) don't interfere */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield; /* Firefox */
+    }
+
     :root {
       --bg:#f8fafc; --card:#ffffff; --text:#1e293b; --light:#64748b; --border:#e2e8f0;
       --primary:#0ea5e9; --success:#22c55e; --warning:#f59e0b; --danger:#ef4444; --purple:#8b5cf6;
@@ -52,36 +69,54 @@
       --bg:#0f172a; --card:#020617; --text:#e2e8f0; --light:#94a3b8; --border:#1e293b;
     }
     * { margin:0; padding:0; box-sizing:border-box; }
+
     body {
-      font-family:'Inter',sans-serif;
-      background:var(--bg);
-      color:var(--text);
-      padding:0.5rem; /* desktop */
-      padding-bottom: env(safe-area-inset-bottom, 1rem); /* extra bottom space for home bar */
-      padding-top: env(safe-area-inset-top, 0.5rem);
-      min-height:100vh;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      
+      /* Symmetric base padding with safe-area support on all sides */
+      padding: 
+        max(0.5rem, env(safe-area-inset-top)) 
+        max(0.5rem, env(safe-area-inset-right)) 
+        max(1.5rem, env(safe-area-inset-bottom)) 
+        max(0.5rem, env(safe-area-inset-left));
     }
-    .container {
-      max-width:1600px;
-      margin:auto;
-      display:grid;
-      gap:1rem 1.5rem;
-    }
-    @media (max-width:768px) {
+
+    /* Mobile: Slightly larger base padding for comfort */
+    @media (max-width: 768px) {
       body {
-        padding:1rem;
-        padding-bottom: max(1rem, env(safe-area-inset-bottom));
+        padding: 
+          max(1rem, env(safe-area-inset-top)) 
+          max(1rem, env(safe-area-inset-right)) 
+          max(2.5rem, env(safe-area-inset-bottom)) 
+          max(1rem, env(safe-area-inset-left));
       }
     }
-    @media (max-width:1023px) { .container { grid-template-columns:1fr; } }
-    @media (min-width:1024px) { .container { grid-template-columns:460px 1fr; } }
-    .card {
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:1rem;
-      box-shadow:0 4px 12px rgba(15,23,42,0.08);
+
+    /* Desktop layout */
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: grid;
+      gap: 1rem 1.5rem;
     }
+
+    @media (max-width: 1023px) { 
+      .container { grid-template-columns: 1fr; } 
+    }
+    @media (min-width: 1024px) { 
+      .container { grid-template-columns: 460px 1fr; } 
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem;
+      box-shadow: 0 4px 12px rgba(15,23,42,0.08);
+    } 
 
     /* Left-aligned inputs — clean and mobile-friendly */
     .input-row input,
@@ -834,7 +869,7 @@
         </div>
       </div>
 
-      <p style="color:var(--light);font-size:0.85rem; margin-top:0.5rem; text-align:center;">ArrowForge • Offline • Live • v0.0.20</p>
+      <p style="color:var(--light);font-size:0.85rem; margin-top:0.5rem; text-align:center;">ArrowForge • Offline • Live • v0.1</p>
     </div>
     
     <div class="card">
@@ -6279,7 +6314,7 @@ toggleArrowDetailsMode();
   <br><br></p>
 
   <p>Questions? Feedback? Email <a href="mailto:arrowforgeapp@tuta.io" style="color:var(--purple);">arrowforgeapp@tuta.io</a><br></p>
-  <p>ArrowForge v0.0.20 — Built for archers, by archers 🏹<br></br></p>
+  <p>ArrowForge v0.1 — Built for archers, by archers 🏹<br></br></p>
   <span style="font-size:0.8rem; opacity:0.8;">© 2025 Frontier Forge LLC -    © 2025 <a href="/about.html" style="color:var(--light);">About</a></span>
 </footer>
 
