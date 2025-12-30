@@ -2154,37 +2154,53 @@ function showBraceHeightPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
-/* Brace Height (min 5, max 9) */
+// Brace Height - Smooth UX with realistic bounds
 const braceHeightInput = document.getElementById('braceHeight');
 
 if (braceHeightInput) {
+  // Block negative sign and scientific notation
+  braceHeightInput.addEventListener('keydown', (e) => {
+    if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+      e.preventDefault();
+    }
+  });
+
+  // Block pasting negatives
+  braceHeightInput.addEventListener('paste', (e) => {
+    const paste = (e.clipboardData || window.clipboardData).getData('text');
+    if (/[eE-]/.test(paste)) {
+      e.preventDefault();
+    }
+  });
+
+  // Live visual feedback while typing
   braceHeightInput.addEventListener('input', () => {
-    let val = parseFloat(braceHeightInput.value);
-    if (isNaN(val)) return; // Allow typing
-
-    if (val < braceHeightInput.min) {
-      braceHeightInput.value = braceHeightInput.min;
-    }
-    if (val > braceHeightInput.max) {
-      braceHeightInput.value = braceHeightInput.max;
-    }
-
-    // Optional: red border for invalid
-    if (isNaN(val) || val < braceHeightInput.min || val > braceHeightInput.max) {
-      braceHeightInput.style.borderColor = 'red';
+    let value = parseFloat(braceHeightInput.value);
+    if (isNaN(value) || value < 3 || value > 9) {
+      braceHeightInput.style.borderColor = 'var(--warning)';
     } else {
       braceHeightInput.style.borderColor = '';
     }
   });
 
+  // Enforce bounds + clean up on blur only
   braceHeightInput.addEventListener('blur', () => {
-    let val = parseFloat(braceHeightInput.value);
-    if (isNaN(val) || val < braceHeightInput.min) {
-      braceHeightInput.value = braceHeightInput.min;
-    } else if (val > braceHeightInput.max) {
-      braceHeightInput.value = braceHeightInput.max;
+    let value = parseFloat(braceHeightInput.value);
+
+    if (isNaN(value) || value < 3) {
+      braceHeightInput.value = '3.0';
+      braceHeightInput.style.borderColor = 'var(--warning)';
+      setTimeout(() => braceHeightInput.style.borderColor = '', 1500);
+    } else if (value > 9) {
+      braceHeightInput.value = '9.0';
+      braceHeightInput.style.borderColor = 'var(--warning)';
+      setTimeout(() => braceHeightInput.style.borderColor = '', 1500);
+    } else {
+      braceHeightInput.value = value.toFixed(1); // e.g., 6.5 instead of 6.49999
+      braceHeightInput.style.borderColor = '';
     }
-    braceHeightInput.style.borderColor = ''; // Reset border
+
+    calculateEverything();
   });
 }
 
@@ -2232,29 +2248,54 @@ function showDrawWtPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
-// Draw Weight (min 30)
+// Draw Weight - Smooth UX for kids/women + adults
 const drawWtInput = document.getElementById('drawWt');
-drawWtInput.addEventListener('input', () => {
-  if (drawWtInput.value < drawWtInput.min) {
-    drawWtInput.value = drawWtInput.min;
-  }
-});
-drawWtInput.addEventListener('blur', () => {
-  if (drawWtInput.value < drawWtInput.min || isNaN(drawWtInput.value)) {
-    drawWtInput.value = drawWtInput.min;
-  }
-});
 
-drawWtInput.addEventListener('input', () => {
-  if (drawWtInput.value < drawWtInput.min) {
-    drawWtInput.style.borderColor = 'red';
-  } else {
-    drawWtInput.style.borderColor = '';
-  }
-});
+if (drawWtInput) {
+  // Block negative sign and scientific notation
+  drawWtInput.addEventListener('keydown', (e) => {
+    if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+      e.preventDefault();
+    }
+  });
 
-if (drawWtInput.value > drawWtInput.max) {
-  drawWtInput.value = drawWtInput.max;
+  // Block pasting negatives
+  drawWtInput.addEventListener('paste', (e) => {
+    const paste = (e.clipboardData || window.clipboardData).getData('text');
+    if (/[eE-]/.test(paste)) {
+      e.preventDefault();
+    }
+  });
+
+  // Visual feedback + enforce bounds only on blur
+  drawWtInput.addEventListener('blur', () => {
+    let value = parseFloat(drawWtInput.value);
+
+    if (isNaN(value) || value < 30) {
+      drawWtInput.value = '30'; // auto-correct to minimum
+      drawWtInput.style.borderColor = 'var(--warning)';
+      setTimeout(() => drawWtInput.style.borderColor = '', 1500);
+    } else if (value > 90) {
+      drawWtInput.value = '90';
+      drawWtInput.style.borderColor = 'var(--warning)';
+      setTimeout(() => drawWtInput.style.borderColor = '', 1500);
+    } else {
+      drawWtInput.value = value.toFixed(1);
+      drawWtInput.style.borderColor = '';
+    }
+
+    calculateEverything();
+  });
+
+  // Live red border while typing invalid values
+  drawWtInput.addEventListener('input', () => {
+    let value = parseFloat(drawWtInput.value);
+    if (isNaN(value) || value < 30 || value > 90) {
+      drawWtInput.style.borderColor = 'var(--warning)';
+    } else {
+      drawWtInput.style.borderColor = '';
+    }
+  });
 }
 
 /*Draw Length info icon*/
@@ -2284,18 +2325,55 @@ function showDrawLenPopup() {
   $('gameMathModal').style.display = 'flex';
 }
 
-// Draw Length (min 24)
+// Draw Length - Smooth UX for kids, women, and all bow types
 const drawLenInput = document.getElementById('drawLen');
-drawLenInput.addEventListener('input', () => {
-  if (drawLenInput.value < drawLenInput.min) {
-    drawLenInput.value = drawLenInput.min;
-  }
-});
-drawLenInput.addEventListener('blur', () => {
-  if (drawLenInput.value < drawLenInput.min || isNaN(drawLenInput.value)) {
-    drawLenInput.value = drawLenInput.min;
-  }
-});
+
+if (drawLenInput) {
+  // Block negative sign and scientific notation
+  drawLenInput.addEventListener('keydown', (e) => {
+    if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+      e.preventDefault();
+    }
+  });
+
+  // Block pasting negatives
+  drawLenInput.addEventListener('paste', (e) => {
+    const paste = (e.clipboardData || window.clipboardData).getData('text');
+    if (/[eE-]/.test(paste)) {
+      e.preventDefault();
+    }
+  });
+
+  // Live visual feedback while typing
+  drawLenInput.addEventListener('input', () => {
+    let value = parseFloat(drawLenInput.value);
+    if (isNaN(value) || value < 20 || value > 40) {
+      drawLenInput.style.borderColor = 'var(--warning)';
+    } else {
+      drawLenInput.style.borderColor = '';
+    }
+  });
+
+  // Enforce bounds + clean up on blur only
+  drawLenInput.addEventListener('blur', () => {
+    let value = parseFloat(drawLenInput.value);
+
+    if (isNaN(value) || value < 20) {
+      drawLenInput.value = '20.0';
+      drawLenInput.style.borderColor = 'var(--warning)';
+      setTimeout(() => drawLenInput.style.borderColor = '', 1500);
+    } else if (value > 40) {
+      drawLenInput.value = '40.0';
+      drawLenInput.style.borderColor = 'var(--warning)';
+      setTimeout(() => drawLenInput.style.borderColor = '', 1500);
+    } else {
+      drawLenInput.value = value.toFixed(1); // e.g., 27.5 instead of 27.49999
+      drawLenInput.style.borderColor = '';
+    }
+
+    calculateEverything();
+  });
+}
 
 
 /* Let-Off % info icon popup */
